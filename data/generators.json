@@ -1,0 +1,24 @@
+{
+	"generators": [
+		{
+			"id": "neighbor_kid",
+			"base_cost": 60,
+			"growth": 1.25,
+			"production": 1,
+			"draw_thresholds": [1, 10, 25],
+			"name": "Vizinho da casa 12",
+			"description": "Veio \"só olhar\". Está no terceiro round.",
+			"appears_as": "Rapaz de chinelo, no aparelho lateral"
+		},
+		{
+			"id": "retired_uncle",
+			"base_cost": 2500,
+			"growth": 1.25,
+			"production": 8,
+			"draw_thresholds": [1, 10],
+			"name": "Tio aposentado",
+			"description": "Treina de camisa social. Sabe de tudo, ajuda em nada.",
+			"appears_as": "Senhor de calça de tergal e luva velha"
+		}
+	]
+}

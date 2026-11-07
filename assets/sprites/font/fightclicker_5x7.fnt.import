@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://dj1x6kmoywqlh"
+path="res://.godot/imported/fightclicker_5x7.fnt-070dcba8ebec55ef0aedd1f752734b12.fontdata"
+
+[deps]
+
+source_file="res://assets/sprites/font/fightclicker_5x7.fnt"
+dest_files=["res://.godot/imported/fightclicker_5x7.fnt-070dcba8ebec55ef0aedd1f752734b12.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

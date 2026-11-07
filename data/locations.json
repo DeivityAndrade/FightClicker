@@ -1,0 +1,14 @@
+{
+	"default_location": "garage",
+	"locations": [
+		{ "id": "garage", "training_mult": 1.0, "apparatus_suffix": "",
+		  "name": "Fundo de garagem",
+		  "ambience": "Uma lâmpada, um carro coberto de lona e um saco que já apanhou mais que você." },
+		{ "id": "gym", "training_mult": 2.0, "apparatus_suffix": "_gym",
+		  "move": { "id": "move_gym", "cost": 1000, "currency": "money", "requires": "belt" },
+		  "name": "Academia Boa Esquina",
+		  "ambience": "Pôster desbotado, mensalidade atrasada e um espelho que trinca onde você bate.",
+		  "move_button": "MUDAR",
+		  "move_description": "Sai da garagem. Mais treino e 2 lutas novas." }
+	]
+}

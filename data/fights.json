@@ -1,0 +1,30 @@
+{
+	"combat": {
+		"general_share": 0.10,
+		"life_base": 100, "life_per_endurance": 5,
+		"damage_base": 10, "damage_per_strength": 1,
+		"reduction_max": 0.5,
+		"crit_base": 0.05, "crit_gain": 0.50, "crit_multiplier": 2.0,
+		"dodge_base": 0.03, "dodge_gain": 0.50, "dodge_cap": 0.75,
+		"damage_spread": 0.15,
+		"first_attack": 0.9, "attack_interval": 1.8, "counter_delay": 0.5,
+		"time_limit": 16.0, "min_ko_time": 5.0, "round_length": 6.0,
+		"intro_seconds": 1.5, "outro_seconds": 1.5
+	},
+	"tactics": [
+		{ "id": "aggressive", "name": "AGRESSIVO", "hint": "Bate mais forte. Defende pior.",
+		  "damage_mult": 1.35, "taken_mult": 1.25, "pierce": 0.5, "dodge_mult": 1.0, "dodge_bonus": 0.0, "counter_mult": 0.0, "crit_guard": 0.0, "block": false },
+		{ "id": "defensive", "name": "DEFENSIVO", "hint": "Fecha a guarda. O crítico dele não entra.",
+		  "damage_mult": 0.85, "taken_mult": 0.85, "pierce": 0.0, "dodge_mult": 1.0, "dodge_bonus": 0.0, "counter_mult": 0.0, "crit_guard": 1.0, "block": true },
+		{ "id": "counter", "name": "CONTRA-ATAQUE", "hint": "Esquiva mais e responde com golpe extra.",
+		  "damage_mult": 0.90, "taken_mult": 1.0, "pierce": 0.0, "dodge_mult": 2.0, "dodge_bonus": 0.0, "counter_mult": 1.0, "crit_guard": 0.0, "block": false }
+	],
+	"default_tactic": "defensive",
+	"risk": { "samples": 200, "easy_min": 0.90, "even_min": 0.40, "hud_refresh_seconds": 1.0 },
+	"reason": { "delta_share": 0.25, "delta_min": 10, "target": 0.90, "search_steps": 14,
+	            "search_max_share": 16.0, "tactic_tip_gap": 0.25, "lead_ratio": 2.0,
+	            "search_opp_share": 4.0, "luck_min": 0.90, "far_min_ratio": 2.0,
+	            "stat_life_min_pct": 10, "stat_stronger_min_ratio": 1.2, "stat_stronger_x_ratio": 2.0,
+	            "stat_stronger_cap_ratio": 10.0, "stat_dodge_min_pct": 20, "stat_dodge_min_attacks": 3,
+	            "stat_crits_min": 2 }
+}

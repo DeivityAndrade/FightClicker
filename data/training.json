@@ -1,0 +1,86 @@
+{
+	"click": {
+		"base_training": 1,
+		"crit_chance": 0.10,
+		"crit_multiplier": 3
+	},
+	"assist": { "interval": 3.0, "still_seconds": 1.0, "first_delay": 1.0 },
+	"default_focus": "punching_bag",
+	"attributes": {
+		"strength": { "name": "Força", "hint": "Força: quanto dói o seu soco." },
+		"agility": { "name": "Agilidade", "hint": "Agilidade: golpe certeiro e corpo que sai da frente." },
+		"endurance": { "name": "Resistência", "hint": "Resistência: quanto você aguenta apanhar." }
+	},
+	"apparatus": [
+		{
+			"id": "punching_bag",
+			"attribute": "strength",
+			"name": "Saco remendado",
+			"focus_label": ["FORÇA", "SACO"],
+			"first_hint": "Clique no saco para treinar",
+			"crit_texts": ["NA MOSCA!", "PEGOU DE JEITO!", "ESSE DEIXOU MARCA!", "A VIGA TREMEU!", "DESSA ELE LEMBRA!"],
+			"upgrades": [
+				{ "id": "bag_patch", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Fita nova no saco", "description": "Mais fita, menos areia no chão." },
+				{ "id": "bag_sand", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Areia peneirada", "description": "Soco que volta com juros." }
+			]
+		},
+		{
+			"id": "treadmill",
+			"unlock": { "id": "unlock_treadmill", "cost": 500, "requires": "", "name": "Esteira", "description": "Gira, geme e cheira a ferrugem. Mas corre.", "arrives_as": "Veio do ferro-velho num carrinho de mão." },
+			"attribute": "endurance",
+			"name": "Esteira enferrujada",
+			"focus_label": ["RESISTÊNCIA", "ESTEIRA"],
+			"first_hint": "Clique na esteira para correr",
+			"crit_texts": ["SEGUROU A ONDA!", "SEGUNDO FÔLEGO!", "AINDA TEM GÁS!", "A ESTEIRA GEMEU!", "NEM SUOU!"],
+			"upgrades": [
+				{ "id": "treadmill_oil", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Óleo de cozinha na esteira", "description": "Range menos. Cheira a batata frita." },
+				{ "id": "treadmill_belt", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Correia emendada", "description": "Dá voltas inteiras sem pular." }
+			]
+		},
+		{
+			"id": "jump_rope",
+			"unlock": { "id": "unlock_jump_rope", "cost": 1500, "requires": "treadmill", "name": "Corda", "description": "Um varal, dois cabos e muita paciência.", "arrives_as": "Tirada do varal da vizinha. Ela nem notou." },
+			"attribute": "agility",
+			"name": "Corda de varal",
+			"focus_label": ["AGILIDADE", "CORDA"],
+			"first_hint": "Clique na corda para pular",
+			"crit_texts": ["SEM TROPEÇAR!", "PULO DUPLO!", "LEVE COMO PENA!", "NEM TOCOU O CHÃO!", "ESSA FOI LIMPA!"],
+			"upgrades": [
+				{ "id": "rope_laundry", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Corda sem nó", "description": "Agora só prende duas vezes por minuto." },
+				{ "id": "rope_handles", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Cabos de cabo de vassoura", "description": "Pega firme. Serragem inclusa." }
+			]
+		},
+		{
+			"id": "speed_bag",
+			"art": "boxing",
+			"split": { "strength": 0.40, "agility": 0.45, "endurance": 0.15 },
+			"unlock": { "id": "unlock_speed_bag", "cost": 2500, "requires": "treadmill",
+			            "name": "Pera", "description": "Pequena, veloz e sem perdão pra distraído.",
+			            "arrives_as": "Presa na parede. Alguém jurou que aguenta." },
+			"name": "Pera veloz",
+			"focus_label": ["BOXE", "PERA"],
+			"first_hint": "Clique na pera: força e agilidade juntas",
+			"crit_texts": ["TRA-TRA-TRA!", "RITMO DE SINO!", "A PERA SUMIU!", "MÃO DE RELÓGIO!", "NEM VIU VOLTAR!"],
+			"upgrades": [
+				{ "id": "tech_boxing_1", "cost": 1500, "multiplier": 3, "visual_level": 1, "name": "Jab duplo", "description": "Um pra medir, outro pra doer." },
+				{ "id": "tech_boxing_2", "cost": 15000, "multiplier": 5, "visual_level": 1, "name": "Esquiva e volta", "description": "A cabeça sai da frente. A mão, não." }
+			]
+		},
+		{
+			"id": "grappling_dummy",
+			"art": "bjj",
+			"split": { "strength": 0.25, "agility": 0.15, "endurance": 0.60 },
+			"unlock": { "id": "unlock_grappling_dummy", "cost": 2500, "requires": "treadmill",
+			            "name": "Boneco", "description": "Não reclama, não bate, não desiste.",
+			            "arrives_as": "Veio num tatame velho. Cheira a vestiário." },
+			"name": "Boneco de tatame",
+			"focus_label": ["JIU-JITSU", "BONECO"],
+			"first_hint": "Clique no boneco: resistência e força juntas",
+			"crit_texts": ["ENCAIXOU!", "GUARDA PASSADA!", "PEGOU AS COSTAS!", "PEDIU TAPA!", "O TATAME GEMEU!"],
+			"upgrades": [
+				{ "id": "tech_bjj_1", "cost": 1500, "multiplier": 3, "visual_level": 1, "name": "Guarda fechada", "description": "Entrou, não sai. Nem pra tomar água." },
+				{ "id": "tech_bjj_2", "cost": 15000, "multiplier": 5, "visual_level": 1, "name": "Raspagem", "description": "Embaixo é só o começo." }
+			]
+		}
+	]
+}

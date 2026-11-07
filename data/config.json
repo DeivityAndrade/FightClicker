@@ -1,0 +1,6 @@
+{
+	"autosave_intervalo_segundos": 30,
+	"multiplicador_debug": 1000,
+	"ui_atualizacoes_por_segundo": 10,
+	"debug_unidades_gerador": 10
+}

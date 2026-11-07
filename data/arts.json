@@ -1,0 +1,18 @@
+{
+	"arts": [
+		{ "id": "boxing", "name": "Boxe", "apparatus": "speed_bag",
+		  "tagline": "Mão rápida, cabeça fria. Quem clica, manda.",
+		  "rule": { "type": "manual_click_bonus", "value": 0.5 },
+		  "fight": { "damage_mult": 1.10, "taken_mult": 1.0 },
+		  "rule_text": "+{pct}% TREINO NO CLIQUE DA SUA MÃO",
+		  "fight_text": "BOXE: +{pct}% DE DANO",
+		  "icon": "art_boxing" },
+		{ "id": "bjj", "name": "Jiu-jitsu", "apparatus": "grappling_dummy",
+		  "tagline": "Sem pressa. Quanto mais tempo, mais aperta.",
+		  "rule": { "type": "crew_time_bonus", "start": 0.2, "per_minute": 0.12, "cap": 1.0 },
+		  "fight": { "damage_mult": 1.0, "taken_mult": 0.90 },
+		  "rule_text": "EQUIPE +{pct}% (SOBE {rate}% POR MINUTO ATÉ {cap}%)",
+		  "fight_text": "JIU-JITSU: -{pct}% DE DANO RECEBIDO",
+		  "icon": "art_bjj" }
+	]
+}

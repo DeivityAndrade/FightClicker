@@ -1,0 +1,429 @@
+# Direção visual — Fightclicker
+
+Dono: Diretor de Arte. Versão 1 (2026-11-05). Base: `PROMPT.md`, `docs/visao.md` (decisões do dono de 2026-11-05).
+Mockups desta versão: `docs/arte/mockups/garagem_*.png` e `academia_*.png`, gerados por `tools/art/*.gd`.
+
+> Gênero e linha visual: pixel art arcade de gestão de treino. Punch Club é referência **de gênero**.
+> Arte, paleta, personagens, layout e locais são **100% nossos**. Nada copiado nem "redesenhado por cima".
+
+---
+
+## 1. Resolução e escala
+
+| Item | Decisão |
+|---|---|
+| **Resolução base** | **640 x 360** |
+| Janela padrão | 1280 x 720 (escala **2x**) |
+| 1920 x 1080 | escala **3x** (inteira, sem borda) |
+| 2560 x 1440 / 4K | 4x / 6x |
+| Filtro | **Nearest** em tudo (`rendering/textures/canvas_textures/default_texture_filter = Nearest`) |
+| Stretch | `display/window/stretch/mode = viewport`, `aspect = keep`, `scale_mode = integer` |
+| Snap | `rendering/2d/snap/snap_2d_transforms_to_pixel = true` e `snap_2d_vertices_to_pixel = true` |
+
+**Por que 640x360 e não 320x180:** um incremental vive de números, nomes de geradores e preços.
+Em 320x180 cabem uns 50 caracteres por linha e a sala ficaria com uns 150 px de largura: o painel
+espremeria a cena ou os textos. Em 640x360 cabem a sala, dois painéis laterais e uma barra de
+botões, com fonte 5x7 legível, e o resultado continua "pixelado arcade" porque tudo é desenhado
+na grade de 640x360 e ampliado por inteiro. O que dá o ar arcade é a **grade de pixel visível**, a
+paleta curta e o contorno escuro, não a resolução mínima.
+
+Regra de ouro: **nada fora da grade**. Sem rotação livre de sprites, sem escala não-inteira, sem
+anti-aliasing. Animação = troca de quadros ou deslocamento em pixel inteiro.
+
+## 2. Layout da tela principal (640x360)
+
+```
+y 0  ┌──────────────── HUD: $ dinheiro | ⚡ treino +x/s | ★ fama | nome do local ───────────────┐
+y 18 ├─ PAINEL ESQ ──┬───────────────── SALA DE TREINO (384x272) ─────────────────┬─ PAINEL DIR ─┤
+     │ 0..127        │ 128..511                                                    │ 512..639     │
+     │ atributos     │ parede do fundo + chão em leve perspectiva                  │ EQUIPE/ITENS │
+     │ legado em jogo│ centro (x=320): lutador + aparelho em foco = ALVO DO CLIQUE │ geradores    │
+     │ próxima luta  │ outros aparelhos e gente treinando em volta                 │ melhorias    │
+     │ (prévia ELE x │                                                             │ próximo local│
+     │  VOCÊ, risco) │                                                             │              │
+y 290├───────────────┴─────────────────────────────────────────────────────────────┴──────────────┤
+     │ por clique / auto  │  [FOCO 1] [FOCO 2] [FOCO 3] ([FOCO 4 = arte])  │  [ LUTAR! ] [APOSENTAR]│
+y 360└──────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **O alvo central fica sempre no mesmo ponto da tela** (aparelho em foco em x≈336, y≈190–250;
+  lutador ao lado). Trocar o foco troca o aparelho que está no centro, não o lugar do clique (visão).
+- Os painéis **nunca** cobrem a sala. Popups (prévia de luta, fim de carreira, mudança de local)
+  abrem como janela central por cima, escurecendo a sala com dither 50% de `ink`.
+- Números flutuantes saem do ponto clicado e sobem ~24 px em 0,6 s. Normal: `y1` com contorno
+  `ink`, fonte 1x. Crítico/bônus: `r3`, fonte **2x**, com "!".
+- Cursor do mouse = **a luva equipada** (sprite 10x10 com contorno claro), a mesma que aparece nas
+  mãos do lutador.
+- Botões: chanfro de 1 px (claro em cima, escuro embaixo), contorno `ink`, sombra de 1 px. Botão
+  selecionado/ativo tem a cor do atributo e um sublinhado. Preço que não dá para pagar fica `r2`.
+- Cores fixas de atributo em toda a UI: **Força = vermelho (`r1/r2/r3`)**, **Agilidade = azul
+  (`b1/b2/b3`)**, **Resistência = amarelo (`y0/y1`)**, **arte marcial = roxo (`p1/p2`)**,
+  treino/renda = verde (`gr2/gr3`), dinheiro = amarelo-ouro (`y1`), Legado = roxo (`p2`).
+
+## 3. Paleta (42 cores, fechada)
+
+Toda cor do jogo sai desta tabela. Sombra e luz **andam na rampa** (nunca escurecer com
+multiplicação livre). A UI usa a mesma paleta. Fonte da verdade em código: `tools/art/pixel_lib.gd`
+(`PAL_HEX` e `RAMPS`).
+
+| Rampa | Cores (escuro → claro) | Uso |
+|---|---|---|
+| Neutro | `ink #14101a` · `d1 #2a2233` · `d2 #3d3346` · `g0 #4a4552` · `g1 #6b6570` · `g2 #8f8890` · `g3 #b8b0aa` · `cream #d9cdb4` · `white #f2ece0` | contorno, painéis, concreto, texto |
+| Madeira/couro | `br0 #3b2622` · `br1 #6b3f2a` · `br2 #9a5f36` · `br3 #c98a4b` → `y0` `y1` `y2` | viga, prateleira, madeira, ferrugem |
+| Luz quente | `y0 #e0a040` · `y1 #f5d26b` · `y2 #fff3c4` | lâmpada, dinheiro, número do clique |
+| Vermelho | `r0 #5a1a22` · `r1 #9c2a2a` · `r2 #d4473a` · `r3 #f07a5a` | luva, saco, Força, crítico, perigo |
+| Pele | `sk0 #7a4632` · `sk1 #b9744f` · `sk2 #e3a275` | personagens (mais tons de pele entram como rampas extras) |
+| Azul | `b0 #1f2a44` · `b1 #2f4a78` · `b2 #4d7bb3` · `b3 #8fbbe0` | calção, ringue, céu, Agilidade |
+| Verde | `gr0 #1f3d33` · `gr1 #2f6b4a` · `gr2 #5aa25a` · `gr3 #a6d86a` | barrado da academia, treino/s, "fácil" |
+| Aço | `st0 #3a4452` · `st1 #5a6676` · `st2 #7f8c9a` · `st3 #a9b4bf` | porta de garagem, esteira, metal |
+| Roxo | `p0 #4a2f6b` · `p1 #7a4fa0` · `p2 #b07ad8` | fama, Legado, arte marcial, (locais absurdos) |
+
+- Fundo de tela e contorno: sempre `ink` (preto arroxeado, nunca #000).
+- Locais 5 e 6 (templo, dojo fora da realidade) podem ganhar **uma** rampa nova cada (ex.: dourado
+  de templo, ciano "irreal"). Fora isso, a paleta não cresce.
+
+## 4. Perspectiva da sala
+
+**Vista frontal de "caixa de diorama"**: parede do fundo reta e de frente, duas paredes laterais
+estreitas em perspectiva e chão em trapézio. **Sem teto visível** (uma viga atravessa o alto da
+parede e segura saco, lâmpada e corda). É a leitura mais clara para clicar e a mais barata de
+animar: sprites são desenhados de frente / 3/4, sem precisar de versões isométricas.
+
+Geometria fixa (em pixels da base), igual em todos os locais:
+
+| Elemento | Valor |
+|---|---|
+| Área da sala | x 128..511, y 18..289 (384x272) |
+| Ponto de fuga | (320, −28) |
+| Parede do fundo | x 170..470, do topo até y 220 (escala 0,78 da moldura) |
+| Chão | trapézio de y 220 (x 170..470) a y 289 (x 128..511), ~70 px de profundidade |
+| Linha de piso a y | largura = 384·(y+28)/317, centrada em x 320 |
+| Viga | y 24..31 |
+| "Pés" de quem está no centro | y ≈ 272 |
+
+Profundidade por **ordem de desenho** (quem tem os pés mais embaixo desenha por cima), não por
+escala: todo personagem tem o mesmo tamanho em qualquer ponto do chão. Sombra no chão: elipse
+achatada (`ink` ou um tom abaixo do piso) com dither nas bordas.
+
+## 5. Regras de desenho
+
+- **Contorno de 1 px `ink`** em todo objeto. **Personagens (revisado em 2026-11-05):** contorno só na
+  **silhueta externa**; entre partes do mesmo corpo use sombra de contato, nunca contorno por parte
+  (isso deixava riscos pretos no ombro, quadril e joelho). Vale a skill `padrao-personagem`
+  (`.claude/skills/padrao-personagem/`), que prevalece sobre esta seção para gente.
+- **2 a 3 tons por material** + 1 brilho pontual: base, sombra (rampa −1), luz (rampa +1).
+- Luz principal de cada local definida (garagem: lâmpada no alto, ao centro; academia: tubos frios).
+  Sombra do lado oposto à luz; a cena recebe um passo de luz em faixas com **dither ordenado 4x4
+  (Bayer)** só nas bordas das faixas. A UI nunca recebe luz.
+- Dither: só para luz, sombra no chão, umidade, tecido/lona. Nunca em texto.
+- Nada de gradiente suave nem cor fora da paleta.
+
+## 6. Tamanhos padrão
+
+| Coisa | Tamanho (px da base) | Observação |
+|---|---|---|
+| Lutador / pessoas | **~64 de altura**, quadro **44x72** | pés na linha 67 do quadro; ~5,5 cabeças |
+| Luva equipada | 10x11 na mão, 10x10 no cursor | mesma arte, mesmo item |
+| Aparelho central (saco) | **30x62** + corrente | alvo de clique; área clicável sugerida 48x90 |
+| Saco longo (Muay Thai) | 22x112 | |
+| Esteira | 86x42 (vista de lado) | |
+| Corda de pular | ~16x40 pendurada; ~44x64 em uso (quadros do lutador) | |
+| Aparelho de arte no chão (boneco, tatame) | até 64x40 | |
+| Ícones de UI | 9x9 (HUD), 16x16 (loja) | |
+| Grade de piso/parede | blocos 20x10 (garagem), placas no chão em 10 colunas | |
+
+Um sprite por arquivo PNG, cada um com o quadro do tamanho padrão e o ponto de apoio (pés / gancho)
+na mesma coordenada, para trocar a arte depois sem mexer em cena.
+
+## 7. Fonte pixel
+
+- **Padrão do projeto: fonte bitmap própria 5x7** (maiúsculas, números, pontuação e acentos do
+  português: Ç Ã Á Â É Ê Í Ó Ô Õ Ú). Já existe desenhada em `tools/art/pixel_lib.gd` (`GLYPHS`) e é
+  a dos mockups. É 100% nossa, sem licença para checar, e encaixa na grade de 640x360. **Fase 2:**
+  exportada como BMFont (`assets/sprites/font/fightclicker_5x7.fnt` + `_contorno.fnt`), com minúsculas; Godot carrega direto (`font_size = 11`; 22 = 2x).
+- **Alternativas livres (SIL OFL 1.1), sem baixar agora:**
+  - *Press Start 2P* (CodeMan38) — 8x8, bem arcade, para títulos e números grandes ("LUTAR!", "K.O.").
+    Conferir se tem todos os acentos do português antes de adotar.
+  - *Silkscreen* (Jason Kottke) — pequena e limpa para rótulos.
+  - *Pixelify Sans* — tem acentos e minúsculas, boa para textos longos (diálogos do mentor).
+- Tamanhos: texto 1x (7 px de altura), destaque 2x (14 px). Sempre com sombra de 1 px `ink` ou
+  contorno `ink` quando estiver sobre a cena.
+
+## 8. Evolução dos locais
+
+A sala é **sempre a mesma caixa** (mesma geometria, mesmo ponto do alvo central). O que muda é o
+"material" da caixa, a luz, os aparelhos e quantas pessoas treinam. Isso deixa cada local barato
+(um conjunto de peças trocáveis) e a mudança muito visível.
+
+| # | Local | Paredes | Chão | Luz | Aparelhos (versão) | Gente / detalhes |
+|---|---|---|---|---|---|---|
+| 1 | **Fundo de garagem** | blocos de concreto cinza, umidade na base, viga de madeira | concreto manchado de óleo, juntas | **uma lâmpada pendurada**, quente e fraca, cantos escuros; luz do dia vazando sob a porta | saco remendado com fita, corda de varal, esteira enferrujada | carro coberto com lona, prateleira de latas, pôster rasgado, **foto do mentor anterior** |
+| 2 | **Academia de bairro** | pintura creme + barrado verde, tinta descascada, rachadura | placas de borracha | **tubos fluorescentes** frios, luz uniforme; janela alta com grade | saco de couro, corda com cabos, esteira que funciona, **aparelho da arte** | ringue pequeno, espelho, relógio, pôsteres desbotados, banco; treinador e parceiros |
+| 3 | **Centro de treinamento** | galpão: chapa metálica, faixas de patrocinador | tatame/emborrachado com faixas pintadas | refletores industriais, mais claro | aparelhos de marca, pera e saco duplos | logos, alunos em fila, quadro de horários |
+| 4 | **Complexo de elite** | painéis escuros com LED, vidro | piso polido com reflexo (dither) | holofotes de palco, contraluz colorido | aparelhos "high-tech" caricatos | equipe enorme, câmeras, troféus |
+| 5 | **Templo na montanha** | madeira e pedra, portas de correr, montanha ao fundo | tábuas antigas | luz de lanternas e pôr do sol | saco de couro antigo amarrado em corda, tronco de madeira | monges, **um urso parceiro de treino** |
+| 6 | **Dojo no fim da realidade** | sala flutuando no vazio, paredes rachando em pixels | tatame que se desfaz nas bordas | luz sem fonte, roxo/ciano | aparelhos absurdos (meteoro acorrentado, corda que deixa rastro, esteira que gira o chão) | estrelas, fragmentos flutuando |
+
+Entre mudanças, dentro do mesmo local, a sala evolui aos poucos: cada upgrade de aparelho troca o
+sprite (saco remendado → saco novo → saco de couro), e cada gerador comprado coloca mais gente em
+pontos fixos da sala (até um limite de desenho; o número continua subindo).
+
+## 9. Aparelhos por arte e por atributo
+
+Segue a tabela do Diretor de Jogo em `docs/visao.md`. Básicos (todo local) e um aparelho por arte:
+
+| Aparelho | Atributo / arte | Garagem | Academia de bairro | Centro de treinamento | Fim absurdo |
+|---|---|---|---|---|---|
+| Saco de pancada | Força | saco remendado com fita, corrente | saco de couro com faixa | saco de marca + mola | meteoro acorrentado |
+| Corda de pular | Agilidade | corda de varal num prego, marcas de giz | corda com cabos, num gancho | corda de aço com rolamento | corda que deixa rastro de luz |
+| Esteira | Resistência | esteira enferrujada, visor apagado | esteira branca, visor verde aceso | esteira de alto rendimento | esteira que gira o chão |
+| Pera (saco de velocidade) | **Boxe** | — (arte só a partir da academia) | plataforma de madeira com pera vermelha | pera dupla, plataforma metálica | — |
+| Saco longo | **Muay Thai** | — | saco longo preto com faixas vermelhas | saco longo + aparador de chute | — |
+| Boneco de grappling no tatame | **Jiu-jitsu** | — | boneco de lona num tatame azul | tatame grande, boneco de couro | — |
+| Boneco de arremesso | **Judô/Wrestling** | — | boneco de lona de pé, com pegada | boneco de couro + colchão de queda | — |
+
+Estilo por arte (para os aparelhos e detalhes da sala quando a arte é escolhida):
+- **Boxe:** vermelho e madeira, couro, cordas de ringue. Formas redondas.
+- **Muay Thai:** preto com faixas vermelhas/douradas, bandagens, formas longas e verticais.
+- **Jiu-jitsu:** azul de tatame e lona branca, formas baixas, no chão.
+- **Judô/Wrestling:** branco/cru e azul-escuro, lona grossa, formas largas e pesadas.
+
+## 10. Animações mínimas
+
+Toda animação em quadros de pixel inteiro, 8–12 fps (a UI pode ser mais rápida). O lutador é
+articulado em partes separadas (cabeça, tronco, braços, pernas, luvas), como já está nos mockups.
+
+| Aparelho / ação | Repouso | No clique / em uso | Quadros |
+|---|---|---|---|
+| Saco de pancada | balanço leve (±1 px, 1,5 s) | empurra 3–4 px para longe do golpe, volta em 3 quadros com 1 px de sobra; corrente acompanha | 4 |
+| Corda de pular | parada no prego | lutador pula: corda faz arco em cima → frente → embaixo (pés sobem 3 px) | 4 |
+| Esteira | parada | faixas da lona correm 2 px por quadro, rolos giram, visor pisca | 2–4 (loop) |
+| Pera | parada | vai e volta rápido (3 posições) | 3 |
+| Saco longo | parado | balanço lateral maior, mais lento que o saco | 4 |
+| Boneco de grappling | deitado | lutador por cima, boneco amassa 2 px | 3 |
+| Boneco de arremesso | de pé | inclina e volta (sem rotação livre: quadros desenhados) | 4 |
+| Lutador parado | respiração (tronco/cabeça ±1 px) | — | 2 |
+| Lutador golpe | — | antecipação → golpe (braço da frente estica) → volta | 3 |
+| Lâmpada (garagem) | pisca 1 quadro a cada ~8 s; balança quando o saco é atingido forte | — | 2 |
+| Tubos (academia) | um tubo falha de vez em quando | — | 2 |
+| Número do clique | sobe e some (troca para tom mais escuro no fim) | crítico: escala 2x e tremida de 1 px | — |
+| Impacto | 3 a 5 traços brancos no ponto do golpe, 2 quadros | tela treme 1–2 px (só pixel inteiro) | 2 |
+
+## 11. O que é placeholder e o que precisa de artista humano
+
+- **Tudo nos mockups é placeholder gerado por código** (formas, retângulos, elipses e luz
+  calculada). Serve para fixar resolução, paleta, layout, tamanhos e clima. Não é a arte final.
+- **Precisa de pixel artist humano para a versão final:** o lutador e as pessoas (anatomia, rosto,
+  silhueta com personalidade, poses de cada golpe/esquiva/queda/vitória), as animações quadro a
+  quadro, os aparelhos com material convincente (couro, lona, metal), o cenário de cada local com
+  detalhe narrativo, o rival e o mentor, e os locais 3–6.
+- O que pode ficar do código: paleta, grade de layout, a fonte 5x7 (com revisão), molduras de
+  painel/botão, sombras, luz em faixas e a montagem da sala por peças.
+- Poses atuais: todos usam a mesma guarda de boxe (inclusive quem corre na esteira e o treinador).
+  É limitação do placeholder.
+
+## 12. Como gerar os mockups de novo
+
+Os scripts ficam em `tools/art/` (`pixel_lib.gd` + `make_mockup_garage.gd` + `make_mockup_academia.gd`).
+Rodar a partir de uma pasta com um `project.godot` vazio (para não disparar import no projeto):
+
+```
+godot --headless --path <pasta_temporaria_com_project.godot> --quit-after 5 --script E:/Fightclicker/tools/art/make_mockup_garage.gd
+godot --headless --path <pasta_temporaria_com_project.godot> --quit-after 5 --script E:/Fightclicker/tools/art/make_mockup_academia.gd
+```
+
+(`--quit-after` garante que o Godot fecha mesmo se o script der erro.) Saída: `*_base.png`
+(640x360) e `*_x2.png` (1280x720, nearest) em `docs/arte/mockups/`.
+
+## 13. Sprites da Fase 2 (garagem)
+
+- Gerador: `tools/art/make_sprites_fase2.gd` (usa `pixel_lib.gd`, que agora tem minúsculas e o
+  personagem articulado por poses `character()`). Teste da fonte: `tools/art/test_font.gd`.
+- Saída: `assets/sprites/{garage,equipment,characters,fx,ui,font}/`, 1x, uma folha por animação
+  (quadros lado a lado). `assets/sprites/manifest.json` traz quadro, nº de quadros, fps, pivô,
+  posição na sala, 9-slice e a ponte com os ids de `data/` (`by_data_id`).
+- Regra de foco: o aparelho em foco vai para o centro (saco em x 336); o saco descansa à esquerda
+  (x 258), a esteira à direita (x 445), a corda no prego (352,72).
+- Pessoas: pontos fixos com a luz da lâmpada já aplicada (vizinho 1/2/3, tio 1/2).
+- Lutador: quadro 48x72 (a guia antiga dizia 44x72; ficou 48 para caber o soco esticado), pés na linha 67.
+- Conferência: `docs/arte/mockups/fase2_sala_x2.png` (sala montada só com os sprites e as
+  posições do manifest) e `fase2_sprites_x3.png` (folha de contato).
+
+## 14. Fase 3 (lutas, fim de carreira)
+
+Gerador: `tools/art/make_sprites_fase3.gd` (rodar como no §12; **acrescenta** ao `manifest.json`, não apaga a Fase 2).
+Se rodar o `make_sprites_fase2.gd` de novo, ele reescreve o manifest só com a Fase 2: rode o da Fase 3 logo depois.
+A fonte 5x7 ganhou `º` e `ª` ("2º ROUND").
+
+**Arena (única):** estacionamento de uma borracharia à noite. Galpão de chapa ondulada, placa pintada à mão,
+porta de enrolar "07", pneus e tambores, carro com farol aceso, alambrado e poste de sódio. Luz vem de um
+refletor de obra pendurado num cabo em cima do "ringue" riscado a giz no asfalto; cantos quase pretos.
+Público em silhueta (`arena_crowd_back` atrás, `arena_crowd_front` nos cantos de baixo), 2 quadros (parado / vibrando).
+Faixa y 0..45 é céu escuro: o HUD de luta fica ali (`fight_layout` no manifest).
+
+**Vista de luta:** de lado. Jogador à esquerda virado para a direita (pivô 296,318), adversário à direita virado
+para a esquerda (346,318). Quadro **112x104 para todos**, pivô (56,98) nos pés. Mesmo rig articulado da garagem
+(perna de trás, braço de trás, tronco, perna da frente, cabeça, luva de trás, braço da frente + luva), cada parte
+com contorno ink próprio; tamanho do corpo por escala (Dinho 0,92 · Dudu 0,98 · jogador 1,0 · Brutão 1,08 · Muralha 1,12).
+9 ações por lutador: idle, jab, heavy, hit, dodge, block, tired, victory, ko (3–5 quadros). O manifest traz
+`hit_frame`, `hit_point` e a posição das duas mãos em cada quadro (`hands`), para casar efeito e número com a simulação.
+
+**Adversários** (aparência do Roteirista, `docs/fases/fase3-textos.md`): cada um com silhueta e cor dominante própria
+— Dudu Alongado (branco/verde-musgo, meião, faixa mole), Brutão do Posto (o mais largo, boné do posto, macacão azul,
+luva com fita isolante vermelha), Dinho Pulga (baixo, moletom azul com capuz, bandana, tênis laranja, cadarço solto,
+saltita), Seu Muralha (alto, barriga, bigode grisalho, camiseta amarela, cinturão de pano — o mesmo do ícone).
+
+**Luvas:** velha (r0/r1/r2, fita e punho encardido), lona (bege, fita branca), couro (marrom-avermelhado, costura clara),
+marca (preta, listra amarela torta). Cada luva tem: item 12x13, ícone 16x16 da loja, cursor (+ x2/x3), folhas da
+garagem e da luta já pintadas (sufixo `_glove_lN`) e a arte "luvas penduradas". Regra: trocar a luva troca tudo pelo
+mesmo sufixo (`by_data_id.glove_lN.sprite_suffix`). Conferência: `mockups/fase3_luvas_x3.png`.
+
+**Cores de UI novas:** tática agressivo = vermelho (Força), defensivo = amarelo (Resistência), contra-ataque = azul
+(Agilidade), usando os botões de foco já existentes como "selecionado". Risco fácil/equilibrado/perigoso = verde/amarelo/
+vermelho, sempre com ícone (✓, =, caveira) além da cor. Dinheiro `y1` ($), fama `p2` (estrela), Legado `p2` (chama roxa
+— a chama que passa de um lutador para o próximo). LUTAR! é vermelho (arriscar); APOSENTAR é roxo (Legado).
+Fim de carreira: moldura de concreto com fita vermelha; aposentadoria: moldura roxa com cantos dourados.
+
+**Mockups:** `fase3_luta_x2.png` (luta montada + tira de quadros-chave), `fase3_previa_x2.png` (ELE x VOCÊ sobre a
+garagem escurecida), `fase3_fim_x2.png` (derrota e aposentadoria), `fase3_sprites_x3.png` (folha de contato).
+
+**Placeholder:** tudo gerado por código. Para a versão final precisa de pixel artist: rostos e expressões (hoje são
+2–3 pixels), anatomia e peso de cada adversário, poses de golpe com antecipação e follow-through de verdade (hoje os
+golpes são interpolação de pontos), a queda (o quadro "caindo" é rígido), o público com gente desenhada, a arena com
+mais história, e o cinturão. As luvas e a UI podem ficar com retoque.
+
+## 15. Fase 4 (árvore de habilidades, Metrônomo, revanche)
+
+Gerador: `tools/art/make_sprites_fase4.gd` (rodar como no §12; **acrescenta** ao `manifest.json`). Se rodar os da Fase 2/3 de novo,
+rode o da Fase 4 depois. Nenhuma arte de personagem nesta fase (o auto-soco usa o rig e o jab que já existem).
+
+**Ícones dos nós:** `skill_<id>` 16x16 em cor (cartão de início, resumo da garagem) e `skill_<id>_gray` (trancado). Na árvore, peça
+24x24 por estado: `_owned` (moldura acesa na cor do ramo + ✓ verde), `_buyable` (borda verde viva, 2 quadros a 3 fps — verde = "dá
+para comprar", como o preço da loja), `_missing` (ícone meio apagado + moeda roxa riscada; preço em r2/r3), `_locked` (cinza + cadeado).
+Cor dos ramos: **Corpo = vermelho** (`r1/r2/r3`, efeito em r3), **Carreira = ouro** (`br2/y0/y1`, efeito em y1). Símbolos: jab = luva
+com risco de velocidade; Memória muscular = metrônomo com faísca roxa; Mão pesada = punho descendo com estouro; Garagem animada/lotada =
+2 / 3 bustos de camiseta verde (renda passiva); Bolsa = saco de dinheiro; Olho de treinador = olho + %; Empresário = maleta com notas;
+Torcida = braços erguidos + estrela; Saber cair = chama do Legado pousada num colchonete.
+
+**Tela da árvore:** janela `ui_tree_window` (quadro de madeira com pregos, 9-slice) + título `ui_window_title_retire` (roxo).
+Duas colunas `ui_tree_column_body/career` com faixa de cabeçalho na cor do ramo. O "Y" logo abaixo do 1º nó são três peças
+empilhadas no mesmo ponto (`ui_tree_fork_stem/left/right_normal|active`), e a ligação do 1º ao 2º nó de cada caminho é
+`ui_tree_link_normal|active` (há ladrilhos `ui_tree_link_v/h_*` para outros tamanhos). Linha **ativa = roxo do Legado** com faísca
+branca a cada 4 px; normal = cinza. Uma ligação acende quando o nó de baixo dela está comprado. Plaquinhas de preço/estado
+`ui_tree_plate_buy/owned/missing/locked`. Geometria recomendada em `manifest.tree_layout` (janela 480x300 em 80,20). Nome longo em
+"PEDE: {nome}" passa de 104 px: o UI/UX decide entre nome curto, 2 linhas ou "PEDE O DE CIMA".
+
+**Metrônomo:** prop `garage/metronome_l1|l2|l3` (quadro 18x26, pivô 9,25 no pé), na prateleira da garagem em **(240,118)**, na
+frente da caixa de papelão; nível 0 = sem prop. l1 = metrônomo velho de feira (madeira gasta, quina lascada, fita crepe, haste de
+lata), l2 = madeira envernizada com peso de latão, l3 = laca preta com frisos dourados. 8 quadros = um vai-e-volta = 2 auto-socos;
+quadros 0 e 4 são os extremos e têm o risquinho do "tic". fps = 4 / intervalo (2,0 / 4,0 / 5,7), ou sincronizar pelo acumulador
+(fórmula em `by_data_id.metronome.sync`). Ícones da LOJA `icon_metronome_lN` (16x16, pontinhos = nível).
+
+**Revanche:** marca = **esparadrapo em X** com pingo de mertiolate (`icon_revenge` 9x9, `icon_revenge_16`), sobre fita vermelha
+9-slice `ui_seal_revenge` com o texto `revenge_mark` do ui_texts. `seal_revenge_mark` traz o texto padrão embutido (só usar se o
+texto não mudar). Vitória: `ui_banner_revenge` ("REVANCHE!" 3x sobre estouro vermelho, 2 quadros) e `ui_banner_revenge_burst` (só o
+estouro, para escrever o texto do ui_texts por cima).
+
+**Cartão "o que você trouxe":** `ui_career_card` (roxo com cantos dourados, 9-slice), `ui_career_card_title`, `ui_career_card_row`
+(ícone 16 + effect_text na cor do ramo). Resumo da garagem: `ui_legacy_nodes_badge`.
+
+**Mockups:** `fase4_arvore_x2.png` (árvore com 3 nós comprados, 1 comprável, 3 faltando Legado e 3 trancados), `fase4_garagem_x2.png`
+(garagem com Metrônomo, cartão de início, marca no bloco PRÓXIMA; prateleira ampliada nos 3 níveis, os 8 quadros do pêndulo e o
+REVANCHE!), `fase4_sprites_x3.png` (folha de contato).
+
+**Placeholder:** ícones e molduras podem ficar com retoque de um pixel artist (principalmente Mão pesada, Empresário e Saber cair, que
+são os menos imediatos em 16 px). O Metrônomo precisa de artista para ter material de verdade (veio da madeira, metal da haste).
+
+## 16. Fase 4b (aparelhos que chegam, modo assistido)
+
+Gerador: `tools/art/make_sprites_fase4b.gd` (rodar como no §12; **acrescenta** ao `manifest.json`). Se rodar os das Fases 2/3/4 de novo,
+rode o da 4b depois. Nenhuma arte de personagem.
+
+**Aparelho que falta = fita crepe + plaquinha de papelão** (nunca caixa fechada). Fita = `cream` com borda `g3`, pontas rasgadas.
+- Esteira: `garage/tape_mark_treadmill` (trapézio no chão em perspectiva, mesmo pivô e posição da `treadmill_lN_side`, 445,267) +
+  `ghost_treadmill` (sombra pontilhada ink 50% com cadeado, opcional). Plaquinha em pé no fundo da marca (base em 445,257) com o
+  `sign_brick` na frente.
+- Corda: `garage/tape_mark_rope` na **parede**, em volta do prego (352,72), como quadro de ferramentas + `ghost_rope`. Plaquinha colada
+  acima do prego, borda esquerda em x 340 (à direita da corrente do saco), com 2 `sign_tape_bit`.
+- `sign_cardboard` é 9-slice; texto 1x em `br0`, sem sombra, centrado, 2 linhas (nome / preço). A fonte 5x7 não tem travessão.
+
+**Trancado na UI:** `icon_<aparelho>_locked` (cadeado cinza) e `_locked_buyable` (dourado), 16x16, no cartão da aba TREINO (5,3) e no
+botão de foco (2,9). Botão de foco trancado `ui_button_focus_locked_buyable|buyable_pulse|missing|locked` (9-slice 16x17, mesmas margens;
+`_full` = 122x34 pronto). Verde = comprável, como no resto do jogo. Cartão de compra `ui_card_unlock` (borda de papelão) e `_flash` (piscada).
+
+**Chegada:** a esteira cai (offsets y -20,-10,-3,0,1,0 a 24 fps) e no impacto some a marca, toca `fx_arrive_dust` (6 quadros, 12 fps)
+e a tela treme 1 px. A corda é pendurada (-8,-3,0,1,0) com `fx_arrive_sparkle` (5 quadros, 12 fps). Detalhes em `manifest.by_data_id.unlock_*`.
+
+**Modo assistido:** chip 9-slice `ui_assist_chip_hint|waiting|active|active_pulse|metronome` (altura 13; ícone 9x9 em 3,2, texto em 15,3) com
+`icon_key_shift`, `icon_assist_wait`, `icon_assist_active`, `icon_metronome_9`. Botão `ui_button_hold_normal` (tecla de aço) e `_pressed`
+(afunda 1 px, verde = assistindo). Sugestão: faixa de baixo da sala, centrada, abaixo dos pés do lutador (`manifest.by_data_id.assist`).
+
+**Mockups:** `fase4b_garagem_x2.png` (começo de carreira + prancha dos estados) e `fase4b_sprites_x3.png` (folha de contato).
+**Placeholder:** a fita, o papelão e a poeira podem ficar com retoque. Um pixel artist melhoraria a textura do papelão, a letra "à mão"
+(hoje é a fonte 5x7) e a poeira (volume de verdade, não bolinhas pontilhadas).
+
+## 17. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu)
+
+Gerador: `tools/art/make_sprites_fase5.gd` (rodar como no §12; **acrescenta** ao `manifest.json` e relê o arquivo na hora de gravar,
+para não apagar o que o Artista de Personagens gravou). Se rodar os das Fases 2/3/4/4b de novo, rode o da Fase 5 depois.
+Nenhuma arte de personagem aqui (os 2 adversários da academia são do Artista de Personagens).
+
+**A sala (`gym/gym_bg`, 384x272 em 128,18):** a mesma caixa da garagem, com os mesmos ganchos (336 e 258), o mesmo prego da corda (352,72),
+o mesmo ponto do Metrônomo (240,118, na ponta da prateleira) e os mesmos pontos de gente. O degrau acima da garagem se lê por:
+- **parede pintada** (creme em cima, barrado verde `gr1` embaixo, tinta descascando na borda, rachaduras) no lugar do bloco de concreto;
+- **viga de aço** e **2 tubos frios** (`gym_tube` em 218,34 e 422,34; quadro 1 = tubo falhando) no lugar da lâmpada: luz uniforme,
+  clara embaixo dos tubos, caindo só nos cantos e na frente do chão (`gym_step()` no gerador; a mesma luz vai nos sprites `_side/_wall/_rest_gym`);
+- **nome pintado à mão** "ACADEMIA / BOA ESQUINA" acima do **espelho trincado** (estrela de trinca, um caco faltando e fita crepe em X);
+- **pôsteres desbotados** (LUTA, SÁB), relógio, prateleira com troféu pequeno, quadro de cortiça da **mensalidade** (papel com carimbo vermelho),
+  banco com toalha e mochila, relógio de round (3:00, 3 luzes), luvas penduradas, extintor, porta da rua com vidro aramado e plaquinha
+  verde, janela alta com grade na parede lateral, halteres;
+- **piso de borracha** em xadrez e **tatame azul gasto** no canto da frente à esquerda (com rasgo remendado).
+O lugar acima da porta (x 410–462, y 44–98) fica livre de propósito: é onde a pera mora.
+
+**Aparelhos básicos na academia:** sufixo `_gym` no nome do sprite (`bag_l1_idle` → `bag_l1_idle_gym`), mesmos quadros, pivôs, fps e pontos.
+Sem `_gym` no manifest = usa o da garagem. Saco: couro marrom com tiras creme (l0) / preto com faixas vermelhas e emblema (l1).
+Esteira: branca com visor verde aceso (l0) / faixa verde e chave vermelha (l1). Corda: PVC vermelho com cabos pretos (l0) / aço encapado com
+cabos de madeira (l1); a `rope_lN_swing_gym` é a mesma animação recolorida.
+
+**Pera veloz (Boxe):** silhueta oposta à do saco: **haste fina + tábua larga + gota pequena** (o saco é um cilindro gordo numa corrente).
+- Foco: `speed_bag_lN_idle/hit` num pedestal em pé, pivô no chão em **(330,274)**, ordenar como y 268 (o lutador, em 303,272, fica na frente).
+  A pera fica na altura do soco (y 215–226). O clique tem 5 quadros a 18 fps (vai para trás, bate, volta direita/esquerda, assenta).
+- Descanso: `speed_bag_lN_wall(_gym)`, plataforma parafusada na parede acima da porta, pivô no meio de cima da tábua em **(436,46)**.
+- l0 = pera remendada com fita, compensado, saco de areia no pé; l1 (Jab duplo) = couro com costura, tábua envernizada, anilha.
+- Falta: `tape_mark_speed_bag` (quadro de fita na parede com o contorno a caneta) + `ghost_speed_bag`; plaquinha colada logo abaixo,
+  centrada em x 432 a partir de y 102 (na garagem cai na porta de enrolar). Chegada: offsets -8,-3,0,1,0 + `fx_arrive_sparkle` + `speed_bag_l0_wall_swing`.
+
+**Boneco de tatame (Jiu-jitsu):** formas baixas, azul de tatame e lona.
+- Foco: `grappling_dummy_lN_idle/hit`, sentado de perfil olhando para o lutador, sobre um pedaço de tatame; pivô no chão em **(338,279)**,
+  ordenar como y 266. Clique: amassa 2 px, tomba 2 px, volta (3 quadros, 12 fps). O lutador usa o `fighter_punch` (placeholder: sem pose de grappling nesta fase).
+- Descanso: `grappling_dummy_lN_rest(_gym)`, deitado de costas no canto da frente à esquerda, pivô **(228,283)** (na academia, em cima do tatame gasto).
+- l0 = lona crua com fita prata num tatame velho; l1 (Guarda fechada) = couro azul com alças e faixa preta, tatame novo.
+- Falta: `tape_mark_grappling_dummy` no chão + `ghost_grappling_dummy`; plaquinha em pé no fundo da marca, base em (230,268) com o `sign_brick`.
+  Chegada: offsets -18,-8,-2,0,1,0 + `fx_arrive_dust_small` + tremida de 1 px.
+
+**UI da fase:**
+- Artes: `art_boxing` (luva vermelha) e `art_bjj` (nó da faixa azul) em 16x16 e `_9`; ilustração do cartão `art_card_<arte>` (72x56).
+  Cor de arte marcial continua roxa (botão de foco `ui_button_focus_art`, chip do HUD `ui_art_chip`), e cada arte tem sua cor de faixa:
+  Boxe vermelho, Jiu-jitsu azul (`ui_art_card_header_<arte>`).
+- Janela de arte: `ui_art_card` / `_hover` / `_last` (borda dourada) + selo `ui_art_tag_last` + botão `ui_button_art_*`. Layout sugerido em
+  `manifest.by_data_id.art_window` (janela 420x268 em 110,34; 2 cartões de 190x220).
+- Técnicas: `icon_tech_boxing_1|2`, `icon_tech_bjj_1|2` (16x16). Aparelhos: `icon_speed_bag`, `icon_grappling_dummy` + `_locked(_buyable)`.
+- MUDAR: `icon_move` (caixa de papelão com fita), botão `ui_button_move_normal|hover|pressed|disabled` (verde = dá para pagar; apagado nunca some)
+  e cartão `ui_move_card|_ready|_dim` para o bloco PRÓXIMA. HUD do local: `icon_location_gym` / `icon_location_garage`.
+- Árvore: `ui_tree_column_style` (faixa roxa), `icon_branch_style`, abas `ui_tree_tab_normal|active` (se o UI/UX preferir abas), nós
+  `skill_style_boxing` (luva + sininho) e `skill_style_bjj` (ampulheta sobre a faixa) com as 4 peças de estado da Fase 4.
+- 4 botões de foco: cabem em 372 px com largura 90 e passo 94 (134, 228, 322, 416); "RESISTÊNCIA" não cabe em 90 px: usar "RESIST." ou 2 linhas
+  (decisão do UI/UX, passa pela `alinhamento-ui`).
+
+**Onde fica cada um na academia:** lutador, equipe (vizinhos, tios, Prof. Nelson), Metrônomo, corrente e corda nos **mesmos pontos da garagem**
+(`manifest.by_data_id.gym`). A sala foi desenhada em volta deles. As pessoas têm a luz da lâmpada pintada: na academia ficam um pouco mais quentes.
+
+**Mockups:** `fase5_academia_x2.png` (academia com Boxe, equipe completa e pera na parede + janela de arte da 1ª chegada),
+`fase5_marcas_x2.png` (garagem de uma carreira de Boxe com a marca da pera e o cartão MUDAR; prancha com o boneco em marca/foco/descanso,
+pera em foco, as 2 chegadas, MUDAR sem dinheiro, aba ESTILO e ícones), `fase5_sprites_x3.png` (folha de contato).
+
+**Placeholder / precisa de pixel artist:** a sala da academia é o marco da fase e merece um artista: textura de tinta e reboco, o espelho
+(reflexo de verdade), os pôsteres com ilustração, o banco e a porta com material. O boneco precisa de anatomia e volume de lona/couro
+(hoje é feito de cápsulas), e o lutador precisa de uma pose de grappling por cima dele (Artista de Personagens). A pera pede o couro
+brilhante e o borrão de movimento desenhados à mão. Os ícones de técnica (principalmente Guarda fechada e Esquiva e volta) são os menos
+imediatos em 16 px. As pessoas deveriam ganhar uma versão com a luz fria da academia.

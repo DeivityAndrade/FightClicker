@@ -1,0 +1,22 @@
+{
+	"opponents": [
+		{ "id": "opp_warmup", "name": "Dudu Alongado", "description": "Alonga mais do que luta. Bom pra começar.",
+		  "entry": "Tô só esquentando. Pode vir.", "wins_line": "Foi aquecimento pra mim. Foi mal.", "loses_line": "Eu ainda nem tinha alongado o ombro.",
+		  "strength": 1200, "agility": 100, "endurance": 800, "prize_money": 50, "prize_fame": 10, "belt": false, "profile": "EQUILIBRADO" },
+		{ "id": "opp_strong", "name": "Brutão do Posto", "description": "Carrega botijão no braço. Derruba parede.",
+		  "entry": "Carrego botijão. Você é mais leve.", "wins_line": "Foi só um empurrãozinho.", "loses_line": "Alguém anota a placa desse soco.",
+		  "strength": 27000, "agility": 1400, "endurance": 5400, "prize_money": 150, "prize_fame": 30, "belt": false, "profile": "FORTE" },
+		{ "id": "opp_fast", "name": "Dinho Pulga", "description": "Você pisca e ele já bateu. Duas vezes.",
+		  "entry": "Se piscar, perde. Já perdeu.", "wins_line": "Nem vi você cair. Sério.", "loses_line": "Tropecei. Conta como tropeço.",
+		  "strength": 20000, "agility": 110000, "endurance": 6000, "prize_money": 800, "prize_fame": 60, "belt": false, "profile": "RÁPIDO" },
+		{ "id": "opp_tank", "name": "Seu Muralha", "description": "Dono do cinturão. Não cai, só cansa.",
+		  "entry": "O cinturão é meu há onze anos.", "wins_line": "O cinturão fica. Eu também.", "loses_line": "Onze anos. Pode levar. Pesa.",
+		  "strength": 78000, "agility": 58000, "endurance": 490000, "prize_money": 1000, "prize_fame": 100, "belt": true, "profile": "RESISTENTE" },
+		{ "id": "opp_gym_1", "location": "gym", "name": "Tonhão do Tatame", "description": "Faixa roxa de cor duvidosa. Pesa e não sai.",
+		  "entry": "Aqui o tatame é meu. Fica à vontade.", "wins_line": "Bem-vindo à academia. Paga a mensalidade.", "loses_line": "Tá bom, pode ficar. Cuidado com o espelho.",
+		  "strength": 260000, "agility": 100000, "endurance": 1100000, "prize_money": 2500, "prize_fame": 120, "belt": false, "profile": "RESISTENTE" },
+		{ "id": "opp_gym_2", "location": "gym", "name": "Kid Navalha", "description": "Campeão da casa. Corta o ar e a conversa.",
+		  "entry": "Eu vi você chegar de chinelo.", "wins_line": "Volta quando a garagem te soltar.", "loses_line": "Amanhã cedo. Você e eu. De novo.",
+		  "strength": 500000, "agility": 1000000, "endurance": 2000000, "prize_money": 6000, "prize_fame": 200, "belt": false, "profile": "RÁPIDO" }
+	]
+}

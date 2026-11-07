@@ -1,0 +1,33 @@
+{
+	"paid_generators": [
+		{ "id": "gen_paid_1", "base_cost": 50, "growth": 1.6, "production": 25, "draw_thresholds": [1, 4],
+		  "name": "Prof. Nelson", "description": "Cobra por hora e confere o relógio.",
+		  "appears_as": "Homem de moletom do clube do bairro, apito no pescoço e prancheta, no aparelho em foco" }
+	],
+	"gloves": {
+		"id": "glove_shop",
+		"base": { "id": "glove_old", "name": "Luva velha", "sprite_suffix": "" },
+		"levels": [
+			{ "id": "glove_l1", "cost": 120, "click_multiplier": 2, "sprite_suffix": "_glove_l1",
+			  "name": "Luva de lona", "description": "Comprada na feira. Ainda cheira a novo." },
+			{ "id": "glove_l2", "cost": 500, "click_multiplier": 2, "sprite_suffix": "_glove_l2",
+			  "name": "Luva de couro", "description": "Costura dupla. Os dedos agradecem." }
+		]
+	},
+	"metronome": {
+		"id": "metronome",
+		"name": "Metrônomo", "description": "Marca o ritmo. Seu lutador acompanha.",
+		"appears_as": "Metrônomo de feira na prateleira, pêndulo no andamento",
+		"levels": [
+			{ "id": "metronome_l1", "cost": 80, "interval": 2.0,
+			  "name": "Pêndulo lento", "description": "Preguiçoso, mas não perde a hora.",
+			  "appears_as": "Metrônomo de feira, pêndulo preguiçoso" },
+			{ "id": "metronome_l2", "cost": 150, "interval": 1.0,
+			  "name": "Pêndulo firme", "description": "Agora o saco sente o compasso.",
+			  "appears_as": "Metrônomo de madeira, pêndulo firme" },
+			{ "id": "metronome_l3", "cost": 300, "interval": 0.7,
+			  "name": "Pêndulo afinado", "description": "Quase tão rápido quanto a sua mão. Quase.",
+			  "appears_as": "Metrônomo de palco, pêndulo veloz" }
+		]
+	}
+}

@@ -1,0 +1,61 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://ui/garagem.gd" id="1_garagem"]
+[ext_resource type="Script" path="res://ui/sala.gd" id="2_sala"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="3_hud"]
+[ext_resource type="Script" path="res://ui/painel_atributos.gd" id="4_esq"]
+[ext_resource type="Script" path="res://ui/painel_loja.gd" id="5_dir"]
+[ext_resource type="Script" path="res://ui/barra_baixo.gd" id="6_barra"]
+[ext_resource type="Script" path="res://ui/debug_overlay.gd" id="7_debug"]
+[ext_resource type="Script" path="res://ui/fluxo.gd" id="8_fluxo"]
+[ext_resource type="Script" path="res://ui/faixa_assistido.gd" id="9_assist"]
+
+[node name="Garagem" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_garagem")
+
+[node name="Fundo" type="ColorRect" parent="."]
+mouse_filter = 2
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.0784314, 0.0627451, 0.101961, 1)
+
+[node name="Sala" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("2_sala")
+metadata/ui_align = "ignore"
+
+[node name="FaixaAssistido" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("9_assist")
+
+[node name="Hud" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("3_hud")
+
+[node name="PainelAtributos" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("4_esq")
+
+[node name="PainelLoja" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("5_dir")
+
+[node name="BarraBaixo" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("6_barra")
+
+[node name="Fluxo" type="Control" parent="."]
+mouse_filter = 2
+layout_mode = 0
+script = ExtResource("8_fluxo")
+
+[node name="DebugOverlay" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("7_debug")

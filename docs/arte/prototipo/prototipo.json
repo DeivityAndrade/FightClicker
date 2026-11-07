@@ -1,0 +1,127 @@
+{
+  "_nota": "Protótipo. Mesmos frame_size/pivot/hit_frame/hit_point do manifest atual; mãos = centros das luvas.",
+  "fight_player_idle": {
+    "frame_size": [
+      112,
+      104
+    ],
+    "hands": [
+      {
+        "hand_back": [
+          12,
+          -61
+        ],
+        "hand_front": [
+          16,
+          -59
+        ]
+      },
+      {
+        "hand_back": [
+          12,
+          -61
+        ],
+        "hand_front": [
+          16,
+          -59
+        ]
+      },
+      {
+        "hand_back": [
+          12,
+          -59
+        ],
+        "hand_front": [
+          16,
+          -57
+        ]
+      },
+      {
+        "hand_back": [
+          12,
+          -59
+        ],
+        "hand_front": [
+          16,
+          -57
+        ]
+      }
+    ],
+    "pivot": [
+      56,
+      98
+    ]
+  },
+  "fight_player_jab": {
+    "frame_size": [
+      112,
+      104
+    ],
+    "hands": [
+      {
+        "hand_back": [
+          11,
+          -61
+        ],
+        "hand_front": [
+          12,
+          -61
+        ]
+      },
+      {
+        "hand_back": [
+          15,
+          -61
+        ],
+        "hand_front": [
+          31,
+          -61
+        ]
+      },
+      {
+        "hand_back": [
+          14,
+          -61
+        ],
+        "hand_front": [
+          25,
+          -61
+        ]
+      },
+      {
+        "hand_back": [
+          13,
+          -61
+        ],
+        "hand_front": [
+          17,
+          -59
+        ]
+      }
+    ],
+    "hit_frame": 1,
+    "hit_point": [
+      31,
+      -61
+    ],
+    "pivot": [
+      56,
+      98
+    ]
+  },
+  "fighter_punch": {
+    "frame_size": [
+      48,
+      72
+    ],
+    "hit_frame": 2,
+    "hit_point_sala": [
+      323,
+      222
+    ],
+    "pivot": [
+      22,
+      67
+    ]
+  }
+}
