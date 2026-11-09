@@ -832,18 +832,18 @@
 			"floor_mark": "tape_mark_rope",
 			"ghost": "ghost_rope",
 			"mark_pos": [
-				352,
-				72
+				296,
+				155
 			],
 			"sign": {
 				"frame": "sign_cardboard",
 				"mode": "parede",
-				"top_left": [
-					340,
-					37
+				"top_center": [
+					296,
+					116
 				],
 				"tape": "sign_tape_bit",
-				"note": "Plaquinha colada na parede ACIMA do prego, com a borda esquerda em x 340 (à direita da corrente do saco, x 335) e 2 sign_tape_bit nos cantos de cima. Cresce para a direita. Na parede não cabe 'DEPOIS DA ESTEIRA' numa linha só com o nome: usar 3 linhas (CORDA / DEPOIS DA / ESTEIRA)."
+				"note": "Plaquinha colada na parede ACIMA do prego, centrada em x 296 (à esquerda da corrente do saco, x 335) e 2 sign_tape_bit nos cantos de cima. Na parede não cabe 'DEPOIS DA ESTEIRA' numa linha só com o nome: usar 3 linhas (CORDA / DEPOIS DA / ESTEIRA)."
 			},
 			"icon_locked": "icon_rope_locked",
 			"icon_locked_buyable": "icon_rope_locked_buyable",
@@ -858,8 +858,8 @@
 			"arrive": {
 				"fx": "fx_arrive_sparkle",
 				"fx_pos": [
-					352,
-					72
+					296,
+					155
 				],
 				"sprite": "rope_lN_idle",
 				"drop": "ver sprites.fx_arrive_sparkle.drop"
@@ -1692,8 +1692,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -1714,8 +1714,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -1909,13 +1909,13 @@
 			"file": "res://assets/sprites/characters/fighter_rope.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -1925,20 +1925,20 @@
 				]
 			},
 			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
+			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 8 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
 			"hit_frame": 2
 		},
 		"rope_l0_swing": {
 			"file": "res://assets/sprites/equipment/rope_l0_swing.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -1953,13 +1953,13 @@
 			"file": "res://assets/sprites/equipment/rope_l1_swing.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -8902,13 +8902,13 @@
 			"file": "res://assets/sprites/characters/fighter_rope_glove_l1.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -8918,7 +8918,7 @@
 				]
 			},
 			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
+			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 8 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
 			"hit_frame": 2,
 			"note": "Igual a fighter_rope (mesmo quadro, pivô e posições), com a Luva de lona nas mãos."
 		},
@@ -9003,13 +9003,13 @@
 			"file": "res://assets/sprites/characters/fighter_rope_glove_l2.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -9019,7 +9019,7 @@
 				]
 			},
 			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
+			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 8 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
 			"hit_frame": 2,
 			"note": "Igual a fighter_rope (mesmo quadro, pivô e posições), com a Luva de couro nas mãos."
 		},
@@ -9104,13 +9104,13 @@
 			"file": "res://assets/sprites/characters/fighter_rope_glove_l3.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -9120,7 +9120,7 @@
 				]
 			},
 			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
+			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 8 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
 			"hit_frame": 2,
 			"note": "Igual a fighter_rope (mesmo quadro, pivô e posições), com a Luva de marca nas mãos."
 		},
@@ -11712,8 +11712,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -11756,8 +11756,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -12112,8 +12112,8 @@
 			"impact_frame": 0,
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"drop": {
@@ -12674,8 +12674,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -12686,13 +12686,13 @@
 			"file": "res://assets/sprites/equipment/rope_l0_swing_gym.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
@@ -12717,8 +12717,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -12729,13 +12729,13 @@
 			"file": "res://assets/sprites/equipment/rope_l1_swing_gym.png",
 			"frame_size": [
 				48,
-				72
+				80
 			],
 			"frames": 4,
 			"fps": 10.0,
 			"pivot": [
 				22,
-				67
+				75
 			],
 			"loop": false,
 			"positions": {
