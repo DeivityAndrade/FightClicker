@@ -1,0 +1,31 @@
+{
+	"_sobre": "Golpes das lutas (Fase 6 proposta). Os MESMOS golpes valem para o jogador e para os adversários: cada lutador tem um estilo, e o estilo lista os golpes. A escolha do golpe é só visual: não usa o sorteio da simulação e não muda dano, esquiva nem resultado de luta. Campo `anim` = nome da ação no manifest (by_data_id.<lutador>.actions, ou fight_player_<anim> / <id>_<anim>); se o sprite não existir, a tela usa o golpe antigo (jab/heavy). Campo `defender_anim` = reação de quem apanha (também com fallback para `hit`).",
+	"_kinds": "Tipo do evento onde o golpe pode aparecer: jab (acerto normal), crit (crítico), counter (contra-ataque). Esquiva e bloqueio não usam golpe novo.",
+	"_unlock": "base = todo lutador do estilo já tem; ou o id de um nó da árvore de habilidades (reservado: a árvore vai liberar golpes por estilo).",
+	"styles": {
+		"boxing": {
+			"name": "Boxe",
+			"moves": ["jab", "heavy", "hook", "uppercut", "body_shot"]
+		}
+	},
+	"moves": {
+		"jab": {
+			"style": "boxing", "name": "Jab", "anim": "jab", "kinds": ["jab"], "unlock": "base"
+		},
+		"heavy": {
+			"style": "boxing", "name": "Direto forte", "anim": "heavy", "kinds": ["crit", "counter"], "unlock": "base"
+		},
+		"hook": {
+			"style": "boxing", "name": "Gancho", "anim": "hook", "kinds": ["jab", "crit"], "unlock": "base",
+			"defender_anim": "hit_head"
+		},
+		"uppercut": {
+			"style": "boxing", "name": "Uppercut", "anim": "uppercut", "kinds": ["crit", "counter"], "unlock": "base",
+			"defender_anim": "hit_up"
+		},
+		"body_shot": {
+			"style": "boxing", "name": "Soco no estômago", "anim": "body_shot", "kinds": ["jab"], "unlock": "base",
+			"defender_anim": "hit_body"
+		}
+	}
+}
