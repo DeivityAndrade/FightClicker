@@ -550,11 +550,13 @@ func _reagir(aparelho: String, critico: bool) -> void:
 	var nb := GameState.nivel_visual(SACO)
 	match aparelho:
 		SACO:
-			_lutador.definir(_f("fighter_punch"))
+			# Treino variado: jab com as duas mãos e, de vez em quando, uppercut e golpe lateral (COMBO_SACO).
+			var golpe := _proximo_golpe_saco()
+			_lutador.definir(_f(golpe))
 			_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
 			_saco.definir(_n("bag_l%d_hit" % nb))
 			_saco.tocar([0, 1, 2, 3], 14.0, false, _saco_repouso)
-			var hp: Array = UiTema.sprite("fighter_punch").get("hit_point", [323, 222])
+			var hp: Array = UiTema.sprite(golpe).get("hit_point", [323, 222])
 			_impacto(Vector2(float(hp[0]), float(hp[1])), critico)
 		PERA:
 			# A pera é bem mais rápida que o saco (5 quadros a 18 fps); o lutador usa o soco normal.
@@ -595,6 +597,20 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_poeira(UiTema.pos("fx_dust", "esteira"))
 			if critico:
 				_critico_fx(Vector2(334, 232))
+
+
+## Sequência dos golpes no saco: jab direita, jab esquerda, jab direita, jab esquerda, uppercut, jab direita,
+## jab esquerda, golpe lateral. Só visual (o ganho do clique não muda). Sprites: tools/art/golpes.json (garage).
+const COMBO_SACO := ["fighter_punch", "fighter_punch_b", "fighter_punch", "fighter_punch_b", "fighter_uppercut",
+	"fighter_punch", "fighter_punch_b", "fighter_hook"]
+var _i_combo := 0
+
+
+## Próximo golpe do combo. Se a arte de algum golpe não existir (manifest mexido), cai no jab de sempre.
+func _proximo_golpe_saco() -> String:
+	var g: String = COMBO_SACO[_i_combo % COMBO_SACO.size()]
+	_i_combo += 1
+	return g if not UiTema.sprite(g).is_empty() else "fighter_punch"
 
 
 func _saco_repouso() -> void:

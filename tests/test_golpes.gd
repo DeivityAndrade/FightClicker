@@ -11,6 +11,7 @@ func rodar_testes() -> void:
 	_teste_arquivos_ruins()
 	_teste_escolha()
 	_teste_arte_do_jogador()
+	_teste_arte_do_treino()
 	_teste_eventos_da_luta()
 
 
@@ -103,6 +104,25 @@ func _teste_arte_do_jogador() -> void:
 			var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
 			checar(img != null and img.get_size() == Vector2i(int(e.frame_size[0]) * n, int(e.frame_size[1])), "%s: PNG com %d quadros do tamanho certo" % [nome, n])
 	checar(com_arte >= 3, "pelo menos uppercut, gancho e soco no estômago têm arte do jogador (%d)" % com_arte)
+
+
+# Golpes do treino (garagem, 48x72): os 3 sprites da sequência do saco existem nas 4 luvas, com quadros, PNG, ponto de
+# contato absoluto e a posição foco_saco que a sala usa.
+func _teste_arte_do_treino() -> void:
+	var man: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/sprites/manifest.json"))
+	var sala := FileAccess.get_file_as_string("res://ui/sala.gd")
+	for base in ["fighter_punch", "fighter_punch_b", "fighter_uppercut", "fighter_hook"]:
+		checar(sala.contains('"%s"' % base), "a sequência do saco usa %s" % base)
+		for suf in ["", "_glove_l1", "_glove_l2", "_glove_l3"]:
+			var nome: String = base + suf
+			var e: Dictionary = man.sprites.get(nome, {})
+			checar(not e.is_empty(), "%s está no manifest" % nome)
+			if e.is_empty():
+				continue
+			var n := int(e.frames)
+			var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
+			checar(img != null and img.get_size() == Vector2i(48 * n, 72), "%s: PNG com %d quadros 48x72" % [nome, n])
+			checar(e.has("hit_point") and e.positions.has("foco_saco") and int(e.hit_frame) < n, "%s: contato e posição do saco" % nome)
 
 
 func _novo(nome: String) -> Node:

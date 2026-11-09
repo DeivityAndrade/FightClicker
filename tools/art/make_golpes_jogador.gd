@@ -12,6 +12,9 @@ const FW := 112
 const FH := 104
 const PIVOT := [56, 98]
 const POSE_BASE := {"hip": [0, -37], "top": [2, -61], "toef": [15, -1], "toeb": [-3, -1]}
+# Garagem (3/4, 48x72, pivô (22,67)): pose-base de make_sprites_jogador.gd (gpose). Cada quadro do JSON só diz o que muda.
+const GPOSE_BASE := {"hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47],
+	"hl": [-8, -50], "hr": [10, -51], "el": [-9, -40], "er": [10, -40], "toel": [-1, 0], "toer": [10, 0]}
 
 const GLOVES := {
 	"": {"name": "Luva velha", "style": "old", "ramp": ["r0", "r1", "r2"]},
@@ -42,6 +45,42 @@ func pose_do_quadro(q: Dictionary) -> Dictionary:
 
 func vec(a: Variant) -> Vector2:
 	return Vector2(float(a[0]), float(a[1]))
+
+
+func gpose_do_quadro(q: Dictionary) -> Dictionary:
+	var p := {}
+	for k in GPOSE_BASE:
+		p[k] = vec(GPOSE_BASE[k])
+	for k in q:
+		if (k as String).begins_with("_"):
+			continue
+		var v: Variant = q[k]
+		p[k] = vec(v) if (v is Array and (v as Array).size() == 2) else v
+	return p
+
+
+## Golpes do TREINO (garagem): mesma ideia, visão 3/4. Devolve [quadros, ponto de contato relativo ao pivô].
+func gen_garage(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> Array:
+	var frames := []
+	var contato := Vector2.ZERO
+	var i := 0
+	for q in g.frames:
+		var p := gpose_do_quadro(q)
+		frames.append(P.garage_frame(b, p, "fighter_%s%s[%d]" % [nome, suffix, i]))
+		if i == int(g.hit_frame):
+			contato = p[g.hit_hand]
+		i += 1
+	return [frames, contato]
+
+
+func entrada_garage(nome: String, g: Dictionary, suffix: String, contato: Vector2) -> Dictionary:
+	var fs: Array = g.foco_saco
+	return {
+		"file": "res://assets/sprites/characters/fighter_%s%s.png" % [nome, suffix],
+		"frame_size": [48, 72], "frames": g.frames.size(), "fps": g.fps, "pivot": g.pivot, "loop": false,
+		"positions": {"foco_saco": fs}, "facing": "direita", "hit_frame": g.hit_frame,
+		"hit_point": [fs[0] + contato.x, fs[1] + contato.y],
+	}
 
 
 func make_build(suffix: String) -> Dictionary:
@@ -85,7 +124,10 @@ func _init() -> void:
 	L = load(base + "/pixel_lib.gd").new()
 	P = load(base + "/personagem_lib.gd").new(L)
 	DirAccess.make_dir_recursive_absolute(out_dir + "fight")
-	var todos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(base + "/golpes.json")).moves
+	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(base + "/golpes.json"))
+	var todos: Dictionary = dados.moves
+	var garagem: Dictionary = dados.get("garage", {})
+	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
 	for suffix in GLOVES:
 		var b := make_build(suffix)
 		for nome in todos:
@@ -95,6 +137,13 @@ func _init() -> void:
 			var fr := gen(b, nome, g, suffix)
 			P.strip(fr).save_png(out_dir + "fight/fight_player_%s%s.png" % [nome, suffix])
 			entradas["fight_player_%s%s" % [nome, suffix]] = entrada(nome, g, suffix)
+		for nome in garagem:
+			if not so_estes.is_empty() and not (nome in so_estes):
+				continue
+			var g: Dictionary = garagem[nome]
+			var r := gen_garage(b, nome, g, suffix)
+			P.strip(r[0]).save_png(out_dir + "characters/fighter_%s%s.png" % [nome, suffix])
+			entradas["fighter_%s%s" % [nome, suffix]] = entrada_garage(nome, g, suffix, r[1])
 	var f := FileAccess.open(out_dir + "golpes_manifest.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(entradas, "\t"))
 	f.close()
