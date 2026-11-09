@@ -22,7 +22,7 @@ extends SceneTree
 const BASE := Vector2(640, 360)
 const TOL := 1.0
 const PASTA_SAVE := "user://test/ui_audit/"
-const SAIDA_PADRAO := "C:/Users/deivi/AppData/Local/Temp/claude/ui_audit"
+const SAIDA_PADRAO := "user://ui_audit_saida"  # pasta do usuário do Godot (funciona em qualquer PC)
 const CONFIG := "res://data/config.json"
 
 const ESTADOS_TODOS := [
@@ -51,7 +51,7 @@ const NOS_TODOS := ["body_jab", "body_muscle_memory", "body_heavy_hands", "body_
 	"career_scouting", "career_purse_2", "career_crowd", "career_good_loser"]
 
 var gs: Node
-var saida := SAIDA_PADRAO
+var saida := ProjectSettings.globalize_path(SAIDA_PADRAO)
 var pedidos: Array = []
 var estados_feitos := 0
 var problemas: Array[String] = []
