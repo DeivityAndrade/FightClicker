@@ -10,6 +10,7 @@ func rodar_testes() -> void:
 	_teste_dados_reais()
 	_teste_arquivos_ruins()
 	_teste_escolha()
+	_teste_arte_do_jogador()
 	_teste_eventos_da_luta()
 
 
@@ -76,6 +77,32 @@ func _teste_escolha() -> void:
 			sem_repetir = false
 		ant = g
 	checar(sem_repetir, "não repete o mesmo golpe duas vezes seguidas")
+
+
+# Arte do jogador para cada golpe do catálogo que já tem sprite no manifest: quadros, mãos, hit_frame e tamanho do PNG
+# batem (as 4 luvas). Golpe sem sprite ainda é permitido (a tela usa o jab/heavy); o que existir tem que estar certo.
+func _teste_arte_do_jogador() -> void:
+	var m := MovesData.carregar()
+	var man: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/sprites/manifest.json"))
+	var acoes: Dictionary = man.by_data_id.player_fight.actions
+	var com_arte := 0
+	for id in m.golpes:
+		var anim := str(m.golpes[id].anim)
+		if not acoes.has(anim):
+			continue
+		com_arte += 1
+		for suf in ["", "_glove_l1", "_glove_l2", "_glove_l3"]:
+			var nome: String = str(acoes[anim]) + suf
+			var e: Dictionary = man.sprites.get(nome, {})
+			checar(not e.is_empty(), "%s está no manifest" % nome)
+			if e.is_empty():
+				continue
+			var n := int(e.frames)
+			checar_igual((e.hands as Array).size(), n, "%s: uma posição de mão por quadro" % nome)
+			checar(int(e.get("hit_frame", 0)) < n, "%s: hit_frame dentro dos quadros" % nome)
+			var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
+			checar(img != null and img.get_size() == Vector2i(int(e.frame_size[0]) * n, int(e.frame_size[1])), "%s: PNG com %d quadros do tamanho certo" % [nome, n])
+	checar(com_arte >= 3, "pelo menos uppercut, gancho e soco no estômago têm arte do jogador (%d)" % com_arte)
 
 
 func _novo(nome: String) -> Node:

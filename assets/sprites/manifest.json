@@ -143,7 +143,10 @@
 				"block": "fight_player_block",
 				"tired": "fight_player_tired",
 				"victory": "fight_player_victory",
-				"ko": "fight_player_ko"
+				"ko": "fight_player_ko",
+				"hook": "fight_player_hook",
+				"uppercut": "fight_player_uppercut",
+				"body_shot": "fight_player_body_shot"
 			},
 			"portrait": "portrait_player",
 			"portrait_frame": "ui_portrait_frame",
@@ -14163,6 +14166,894 @@
 				0
 			],
 			"note": "Peça 24x24 do nó Peso do tempo (ampulheta sobre a faixa). TRANCADO (arte ainda não desbloqueada): cinza e cadeado."
+		},
+		"fight_player_body_shot": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-58
+					],
+					"hand_front": [
+						12,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						22,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						32,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						31,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-47
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_body_shot_glove_l1": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot_glove_l1.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-58
+					],
+					"hand_front": [
+						12,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						22,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						32,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						31,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-47
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_body_shot_glove_l2": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot_glove_l2.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-58
+					],
+					"hand_front": [
+						12,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						22,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						32,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						31,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-47
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_body_shot_glove_l3": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot_glove_l3.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-58
+					],
+					"hand_front": [
+						12,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						22,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						32,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-61
+					],
+					"hand_front": [
+						31,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-47
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						8,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						21,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						32,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						27,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-67
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook_glove_l1": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook_glove_l1.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						8,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						21,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						32,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						27,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-67
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook_glove_l2": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook_glove_l2.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						8,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						21,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						32,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						27,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-67
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook_glove_l3": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook_glove_l3.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						8,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						21,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						32,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						27,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				32,
+				-67
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-60
+					],
+					"hand_front": [
+						12,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						30,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						30,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				30,
+				-70
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut_glove_l1": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut_glove_l1.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-60
+					],
+					"hand_front": [
+						12,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						30,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						30,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				30,
+				-70
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut_glove_l2": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut_glove_l2.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-60
+					],
+					"hand_front": [
+						12,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						30,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						30,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				30,
+				-70
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut_glove_l3": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut_glove_l3.png",
+			"fps": 12.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-60
+					],
+					"hand_front": [
+						12,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						30,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						30,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-61
+					],
+					"hand_front": [
+						18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				30,
+				-70
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
 		}
 	},
 	"fight_layout": {
