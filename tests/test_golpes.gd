@@ -12,6 +12,7 @@ func rodar_testes() -> void:
 	_teste_escolha()
 	_teste_arte_do_jogador()
 	_teste_arte_do_treino()
+	_teste_arte_da_corda()
 	_teste_eventos_da_luta()
 
 
@@ -123,6 +124,28 @@ func _teste_arte_do_treino() -> void:
 			var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
 			checar(img != null and img.get_size() == Vector2i(48 * n, 72), "%s: PNG com %d quadros 48x72" % [nome, n])
 			checar(e.has("hit_point") and e.positions.has("foco_saco") and int(e.hit_frame) < n, "%s: contato e posição do saco" % nome)
+
+
+# Pular corda: o corpo (4 luvas) e a corda em DUAS camadas (atrás e na frente do personagem) existem com 6 quadros 48x80
+# cada, em todas as versões (garagem/academia, níveis 0 e 1), e a sala usa as duas camadas.
+func _teste_arte_da_corda() -> void:
+	var man: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/sprites/manifest.json"))
+	var sala := FileAccess.get_file_as_string("res://ui/sala.gd")
+	checar(sala.contains("_corda_costas") and sala.contains("swing_back"), "a sala desenha a camada de trás da corda")
+	var nomes: Array = ["fighter_rope", "fighter_rope_glove_l1", "fighter_rope_glove_l2", "fighter_rope_glove_l3"]
+	for lv in ["0", "1"]:
+		for suf in ["", "_gym"]:
+			nomes.append("rope_l%s_swing%s" % [lv, suf])
+			nomes.append("rope_l%s_swing_back%s" % [lv, suf])
+	for nome in nomes:
+		var e: Dictionary = man.sprites.get(nome, {})
+		checar(not e.is_empty(), "%s está no manifest" % nome)
+		if e.is_empty():
+			continue
+		checar_igual(int(e.frames), 6, "%s: 6 quadros (um giro da corda)" % nome)
+		var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
+		checar(img != null and img.get_size() == Vector2i(48 * 6, 80), "%s: PNG 6 quadros 48x80" % nome)
+		checar(e.positions.has("foco_corda"), "%s: posição foco_corda" % nome)
 
 
 func _novo(nome: String) -> Node:

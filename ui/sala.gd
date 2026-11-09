@@ -42,7 +42,13 @@ var _saco: AnimSprite
 var _corda_prego: AnimSprite
 var _esteira: AnimSprite
 var _lutador: AnimSprite
-var _corda_giro: AnimSprite
+var _corda_giro: AnimSprite  # corda NA FRENTE do lutador (por cima do corpo)
+var _corda_costas: AnimSprite  # corda ATRÁS do lutador (por baixo do corpo)
+# Pular corda: 6 quadros por clique (um giro completo: atrás, acima da cabeça, na frente por cima do corpo, sob os pés,
+# atrás de novo, aterrissa). O quadro 5 é a pose de repouso. Sprites: tools/art/golpes.json (bloco rope).
+const CORDA_QUADROS := [0, 1, 2, 3, 4, 5]
+const CORDA_FPS := 24.0
+const CORDA_REPOUSO := 5
 var _sombra_lutador: Sprite2D
 var _pessoas: Dictionary = {}  # gerador -> Array[{sprite, sombra, visivel}]
 var _fx_impacto: Array[AnimSprite] = []
@@ -142,6 +148,8 @@ func _montar() -> void:
 	_lutador.position = UiTema.pos("fighter_idle", "foco_saco")
 	_corda_giro = _novo_anim("rope_l0_swing", "foco_corda", 0)
 	_corda_giro.visible = false
+	_corda_costas = _novo_anim("rope_l0_swing_back", "foco_corda", 0)
+	_corda_costas.visible = false
 	# Aparelhos das artes (Fase 5): só são desenhados na carreira da arte e depois de comprados.
 	_pera = _novo_anim("speed_bag_l0_wall", "parede", -40)
 	_pera.visible = false
@@ -237,6 +245,7 @@ func _aplicar_layout() -> void:
 	_corda_prego.position = UiTema.pos(_n("rope_l%d_idle" % nr), "prego")
 	_corda_prego.visible = foco != CORDA and GameState.aparelho_montado(CORDA)  # sem corda: só a marca de fita no prego
 	_corda_giro.visible = false
+	_corda_costas.visible = false
 
 	# Esteira: no centro (foco) ou à direita.
 	var nome_esteira := _n("treadmill_l%d_idle" % ne) if foco == ESTEIRA else _n("treadmill_l%d_side" % ne)
@@ -258,6 +267,7 @@ func _aplicar_layout() -> void:
 func _pose_repouso() -> void:
 	var foco := GameState.foco
 	_corda_giro.visible = false
+	_corda_costas.visible = false
 	match foco:
 		SACO, PERA, BONECO:  # a pera e o boneco usam o fighter_idle/punch no ponto do saco (303,272)
 			_lutador.definir(_f("fighter_idle"))
@@ -265,17 +275,22 @@ func _pose_repouso() -> void:
 			_lutador.z_index = int(_lutador.position.y)
 			_lutador.tocar([0, 1, 2, 3], 4.0, true)
 		CORDA:
-			# Parado segurando a corda: quadro de aterrissagem + corda baixa, mesmo pivô.
+			# Parado segurando a corda: quadro de aterrissagem + corda frouxa na frente, mesmo pivô.
 			_lutador.definir(_f("fighter_rope"))
 			_lutador.position = UiTema.pos("fighter_rope", "foco_corda")
 			_lutador.z_index = int(_lutador.position.y)
-			_lutador.parar(3)
+			_lutador.parar(CORDA_REPOUSO)
 			var nr := GameState.nivel_visual(CORDA)
 			_corda_giro.definir(_n("rope_l%d_swing" % nr))
 			_corda_giro.position = UiTema.pos(_n("rope_l%d_swing" % nr), "foco_corda")
 			_corda_giro.z_index = _lutador.z_index + 1
-			_corda_giro.parar(1)
+			_corda_giro.parar(CORDA_REPOUSO)
 			_corda_giro.visible = true
+			_corda_costas.definir(_n("rope_l%d_swing_back" % nr))
+			_corda_costas.position = UiTema.pos(_n("rope_l%d_swing_back" % nr), "foco_corda")
+			_corda_costas.z_index = _lutador.z_index - 1
+			_corda_costas.parar(CORDA_REPOUSO)
+			_corda_costas.visible = true
 		_:
 			_lutador.definir(_f("fighter_run"))
 			_lutador.position = UiTema.pos("fighter_run", "foco_esteira")
@@ -553,7 +568,7 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			# Treino variado: jab com as duas mãos e, de vez em quando, uppercut e golpe lateral (COMBO_SACO).
 			var golpe := _proximo_golpe_saco()
 			_lutador.definir(_f(golpe))
-			_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
+			_tocar_golpe_saco(golpe)
 			_saco.definir(_n("bag_l%d_hit" % nb))
 			_saco.tocar([0, 1, 2, 3], 14.0, false, _saco_repouso)
 			var hp: Array = UiTema.sprite(golpe).get("hit_point", [323, 222])
@@ -577,11 +592,15 @@ func _reagir(aparelho: String, critico: bool) -> void:
 		CORDA:
 			var nr := GameState.nivel_visual(CORDA)
 			_lutador.definir(_f("fighter_rope"))
-			_lutador.tocar([1, 2, 3], 14.0, false, _pose_repouso)
+			_lutador.tocar(CORDA_QUADROS, CORDA_FPS, false, _pose_repouso)
 			_corda_giro.definir(_n("rope_l%d_swing" % nr))
 			_corda_giro.visible = true
 			_corda_giro.z_index = _lutador.z_index + 1
-			_corda_giro.tocar([1, 2, 3], 14.0)
+			_corda_giro.tocar(CORDA_QUADROS, CORDA_FPS)
+			_corda_costas.definir(_n("rope_l%d_swing_back" % nr))
+			_corda_costas.visible = true
+			_corda_costas.z_index = _lutador.z_index - 1
+			_corda_costas.tocar(CORDA_QUADROS, CORDA_FPS)
 			_poeira(UiTema.pos("fx_dust", "corda"))
 			if critico:
 				_critico_fx(Vector2(336, 232))
@@ -611,6 +630,17 @@ func _proximo_golpe_saco() -> String:
 	var g: String = COMBO_SACO[_i_combo % COMBO_SACO.size()]
 	_i_combo += 1
 	return g if not UiTema.sprite(g).is_empty() else "fighter_punch"
+
+
+## Toca o golpe no lutador. O jab da mão da frente (o original) continua nos quadros 1-3 a 18 fps, como sempre foi. Os
+## golpes novos têm quadros de movimento do corpo todo: tocam inteiros, na velocidade do manifest (contato no quadro 2).
+func _tocar_golpe_saco(golpe: String) -> void:
+	if golpe == "fighter_punch":
+		_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
+		return
+	var sp := UiTema.sprite(golpe)
+	var quadros: Array = range(int(sp.get("frames", 4)))
+	_lutador.tocar(quadros, float(sp.get("fps", 24.0)), false, _pose_repouso)
 
 
 func _saco_repouso() -> void:
