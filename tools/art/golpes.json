@@ -1,0 +1,38 @@
+{
+	"_sobre": "Poses-chave dos golpes de luta, em dados. Valem para o jogador e (espelhadas e na escala do corpo de cada um) para os adversários. Coordenadas em px relativas ao pivô = entre os pés, na sola; y negativo = para cima; lutador virado para a direita; membros do rig: braço 12+13 px, perna 17,5+16,5 px (alcance do braço = 25). Chaves de cada quadro: hip, top (quadril e topo do tronco), head, tw (giro do tronco), hf/hb (centro da luva da frente/de trás), ef/eb (cotovelo forçado, opcional), pf/pb (lado para onde o cotovelo dobra, quando o cotovelo não é forçado), toef/toeb e shoef/shoeb (pé: flat|ball|up), kf/kb (joelho), far_glove_front (luva de trás na frente do rosto). NÃO force a orientação da luva (gkf/gkb): o rig a escolhe pela direção do antebraço, e é isso que a faz encaixar no braço. Padrão de cada quadro: hip [0,-37], top [2,-61], toef [15,-1], toeb [-3,-1].",
+	"moves": {
+		"uppercut": {
+			"_ideia": "Uppercut da mão da frente: 0 agacha e recolhe a mão na cintura, 1 empurra com as pernas e o cotovelo avança baixo, 2 CONTATO: antebraço na vertical sob o queixo, corpo estica, 3 segura no alto, 4 volta à guarda.",
+			"fps": 12.0, "hit_frame": 2, "hit_point": [25, -66],
+			"frames": [
+				{"hip": [-2, -31], "top": [-4, -54], "head": [-1, -64], "tw": -0.6, "hf": [10, -40], "hb": [8, -60], "pf": [0, 1]},
+				{"hip": [1, -34], "top": [4, -57], "head": [6, -67], "tw": 0.8, "shoeb": "ball", "hf": [17, -52], "hb": [14, -62], "pf": [0, 1], "far_glove_front": true},
+				{"hip": [4, -37], "top": [10, -61], "head": [13, -71], "tw": 1.8, "shoeb": "ball", "hf": [25, -66], "hb": [15, -63], "pf": [0, 1], "far_glove_front": true},
+				{"hip": [4, -37], "top": [11, -62], "head": [14, -72], "tw": 1.6, "shoeb": "ball", "hf": [26, -69], "hb": [16, -63], "pf": [0, 1], "far_glove_front": true},
+				{"hip": [1, -37], "top": [3, -61], "head": [6, -71], "tw": 0.4, "hf": [18, -60], "hb": [6, -61]}
+			]
+		},
+		"hook": {
+			"_ideia": "Gancho (mão da frente): 0 gira o tronco para trás, 1 o cotovelo abre e sobe, 2 CONTATO: cotovelo alto à frente e luva na altura do rosto, tronco gira de vez, 3 passa um pouco do alvo, 4 volta.",
+			"fps": 12.0, "hit_frame": 2, "hit_point": [27, -73],
+			"frames": [
+				{"hip": [-1, -36], "top": [-3, -60], "head": [0, -70], "tw": -0.8, "hf": [7, -67], "hb": [14, -62], "far_glove_front": true, "ef": [5, -59]},
+				{"hip": [1, -37], "top": [4, -61], "head": [7, -71], "tw": 1.2, "shoeb": "ball", "hf": [18, -72], "hb": [15, -62], "far_glove_front": true, "ef": [14, -62]},
+				{"hip": [3, -37], "top": [9, -61], "head": [11, -71], "tw": 2.2, "shoeb": "ball", "hf": [27, -73], "hb": [15, -62], "far_glove_front": true, "ef": [22, -62]},
+				{"hip": [3, -37], "top": [8, -60], "head": [10, -70], "tw": 1.8, "shoeb": "ball", "hf": [25, -71], "hb": [15, -62], "far_glove_front": true, "ef": [20, -61]},
+				{"hip": [1, -37], "top": [3, -61], "head": [6, -71], "tw": 0.4, "hf": [18, -60], "hb": [6, -61]}
+			]
+		},
+		"body_shot": {
+			"_ideia": "Gancho ao corpo (mão da frente): 0 gira para trás e abaixa, 1 desce o tronco e o cotovelo abre para o lado, 2 CONTATO na barriga (cotovelo alto e aberto, antebraço descendo, cabeça atrás da luva de trás), 3 segura, 4 volta.",
+			"fps": 12.0, "hit_frame": 2, "hit_point": [31, -47],
+			"frames": [
+				{"hip": [-1, -33], "top": [-4, -56], "head": [-1, -66], "tw": -0.8, "hf": [9, -56], "hb": [14, -62], "far_glove_front": true, "ef": [5, -55]},
+				{"hip": [1, -31], "top": [4, -53], "head": [7, -63], "tw": 1.0, "shoeb": "ball", "hf": [20, -50], "hb": [15, -60], "far_glove_front": true, "ef": [14, -56]},
+				{"hip": [3, -31], "top": [10, -52], "head": [14, -62], "tw": 1.8, "shoeb": "ball", "hf": [31, -47], "hb": [16, -60], "far_glove_front": true, "ef": [21, -56]},
+				{"hip": [3, -32], "top": [9, -53], "head": [13, -63], "tw": 1.5, "shoeb": "ball", "hf": [29, -48], "hb": [16, -60], "far_glove_front": true, "ef": [20, -56]},
+				{"hip": [1, -37], "top": [3, -61], "head": [6, -71], "tw": 0.4, "hf": [18, -60], "hb": [6, -61]}
+			]
+		}
+	}
+}
