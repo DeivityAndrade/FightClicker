@@ -56,6 +56,18 @@ func gpose_do_quadro(q: Dictionary) -> Dictionary:
 			continue
 		var v: Variant = q[k]
 		p[k] = vec(v) if (v is Array and (v as Array).size() == 2) else v
+	# Luva da garagem: o rig usa "up" (de pé) quando ninguém diz nada. Se a pose mexe na mão, a luva tem que acompanhar o
+	# antebraço ("" = automático, pela direção cotovelo -> mão); só a guarda parada fica com a luva de pé.
+	if q.has("hl") and not q.has("gkl"):
+		p["gkl"] = ""
+	if q.has("hr") and not q.has("gkr"):
+		p["gkr"] = ""
+	# Cotovelo: se a pose mexe na mão e não diz o cotovelo, o IK acha (comprimento do braço sempre constante).
+	# Cotovelo fixo com a mão longe dele esticava o antebraço (30 px em vez de ~10).
+	if q.has("hl") and not q.has("el"):
+		p.erase("el")
+	if q.has("hr") and not q.has("er"):
+		p.erase("er")
 	return p
 
 
