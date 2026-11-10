@@ -237,6 +237,7 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	UiTema.textura_rect(hud, str(info_t.get("icon_9", "icon_tactic_" + tid + "_9")), float(pt[0]), float(pt[1]) - 1)
 	UiTema.rotulo(hud, nome_t, _cor_tatica(str(info_t.get("color", "white"))), float(pt[0]) + 12, float(pt[1]))
 	_rotulo_combo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]), float(pt[1]) + 13.0)
+	_rotulo_combo.scale = Vector2(2, 2)  # o combo precisa ser lido no meio da luta
 	_rotulo_combo.modulate.a = 0.0
 
 	# Adversário (direita, espelhado)

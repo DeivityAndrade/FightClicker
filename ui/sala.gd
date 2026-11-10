@@ -103,6 +103,8 @@ func _ready() -> void:
 	GameState.luva_mudou.connect(_ao_luva)
 	GameState.carreira_mudou.connect(_ao_carreira)
 	GameState.auto_socou.connect(_ao_auto_socou)
+	GameState.evento_dourado.connect(_ao_evento_dourado)
+	GameState.frenesi_mudou.connect(_ao_frenesi_mudou)
 	GameState.metronomo_mudou.connect(_ao_metronomo)
 	GameState.aparelho_comprado.connect(_ao_aparelho_comprado)
 	GameState.economia_mudou.connect(_atualizar_marcas)
@@ -392,6 +394,16 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _clique_em(p: Vector2) -> void:
+	if _evento_rect.size != Vector2.ZERO and _evento_rect.has_point(p):
+		if GameState.pegar_evento_dourado():
+			_esconder_evento()
+			var n := _pegar_numero()
+			_ordem += 1
+			n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
+			n.iniciar(UiTema.txt("frenzy_start", "FRENESI X{n}!", {"n": int(GameState.FRENESI_MULT)}), UiTema.Y1, true, "", p + Vector2(0, -10), 1.0, 26.0)
+			sfx.compra()
+			_tremer(1, 0.12)
+		return
 	if ALVO.has_point(p):
 		_pos_clique = p
 		GameState.clicar()
@@ -622,6 +634,11 @@ func _reagir(aparelho: String, critico: bool) -> void:
 const COMBO_SACO := ["fighter_punch", "fighter_punch_b", "fighter_punch", "fighter_punch_b", "fighter_uppercut",
 	"fighter_punch", "fighter_punch_b", "fighter_hook"]
 var _i_combo := 0
+# Evento dourado: o cinturão dourado aparece num ponto sorteado da sala por alguns segundos; clicar liga o FRENESI (x7).
+var _evento_spr: AnimSprite
+var _evento_rect := Rect2()
+var _tween_evento: Tween
+var _rotulo_frenesi: Label
 # Reação do saco por golpe: o uppercut o levanta, o golpe lateral o balança para o lado. A corrente acompanha.
 var _tween_saco: Tween
 var _saco_base := Vector2.ZERO
@@ -645,6 +662,42 @@ func _proximo_golpe_saco() -> String:
 
 ## O saco reage ao golpe (só o visual): jab = o balanço de sempre; uppercut = pula para cima; lateral = vai para o lado e volta
 ## com folga. `critico` exagera. A corrente do saco segue. Se o layout mudar no meio (troca de foco), o balanço é cancelado.
+func _ao_evento_dourado(duracao: float) -> void:
+	if GameState.modal_aberto:
+		return
+	if _evento_spr == null:
+		_evento_spr = _novo_anim("belt_amateur_big", "", 950)
+	var x := _rng.randf_range(AREA.position.x + 50.0, AREA.end.x - 70.0)
+	var y := _rng.randf_range(AREA.position.y + 40.0, AREA.position.y + 150.0)
+	_evento_spr.position = Vector2(x, y)
+	_evento_spr.visible = true
+	_evento_spr.modulate = Color(1.0, 0.82, 0.25)  # dourado
+	_evento_spr.scale = Vector2(0.5, 0.5)
+	_evento_spr.tocar([0, 1, 2], 6.0, true)
+	_evento_rect = Rect2(x - 32.0, y - 20.0, 64.0, 40.0)
+	if _tween_evento != null and _tween_evento.is_valid():
+		_tween_evento.kill()
+	_tween_evento = create_tween().set_loops()  # pulsa até sumir
+	_tween_evento.tween_property(_evento_spr, "scale", Vector2(0.62, 0.62), 0.35).set_trans(Tween.TRANS_SINE)
+	_tween_evento.tween_property(_evento_spr, "scale", Vector2(0.5, 0.5), 0.35).set_trans(Tween.TRANS_SINE)
+	sfx.foco()
+
+
+func _esconder_evento() -> void:
+	_evento_rect = Rect2()
+	if _tween_evento != null and _tween_evento.is_valid():
+		_tween_evento.kill()
+	if _evento_spr != null:
+		_evento_spr.visible = false
+
+
+func _ao_frenesi_mudou(restante: float) -> void:
+	if _rotulo_frenesi == null:
+		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(AREA.position.x, AREA.position.y + 2.0, AREA.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
+		_rotulo_frenesi.z_index = 980
+	_rotulo_frenesi.visible = restante > 0.0
+
+
 func _balancar_saco(golpe: String, critico: bool) -> void:
 	var dir := Vector2.ZERO
 	var picos := []
@@ -1149,6 +1202,10 @@ func _cancelar_chegada() -> void:
 # --- Quadro a quadro ---
 
 func _process(delta: float) -> void:
+	if _evento_rect.size != Vector2.ZERO and (GameState.evento_dourado_restante <= 0.0 or GameState.modal_aberto):
+		_esconder_evento()  # venceu o tempo, alguém pegou ou abriu uma janela/luta
+	if _rotulo_frenesi != null and _rotulo_frenesi.visible:
+		_rotulo_frenesi.text = UiTema.txt("frenzy_label", "FRENESI X{n}  {s}S", {"n": int(GameState.FRENESI_MULT), "s": int(ceil(GameState.frenesi_restante))})
 	# Tremida: pixel inteiro, decai até zero.
 	if _shake_t > 0.0:
 		_shake_t -= delta
