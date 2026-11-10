@@ -44,11 +44,15 @@ var _esteira: AnimSprite
 var _lutador: AnimSprite
 var _corda_giro: AnimSprite  # corda NA FRENTE do lutador (por cima do corpo)
 var _corda_costas: AnimSprite  # corda ATRÁS do lutador (por baixo do corpo)
-# Pular corda: 6 quadros por clique (um giro completo: atrás, acima da cabeça, na frente por cima do corpo, sob os pés,
-# atrás de novo, aterrissa). O quadro 5 é a pose de repouso. Sprites: tools/art/golpes.json (bloco rope).
+# Pular corda: laço de 6 quadros (um giro completo: atrás, acima da cabeça, na frente por cima do corpo, sob os pés,
+# atrás de novo, aterrissa). Enquanto o jogador clica, o laço CONTINUA (a corda nunca para no meio); passado o tempo sem
+# clique, o giro termina e o lutador assenta no quadro 6 (corda frouxa na frente). Sprites: tools/art/golpes.json (rope).
 const CORDA_QUADROS := [0, 1, 2, 3, 4, 5]
 const CORDA_FPS := 24.0
-const CORDA_REPOUSO := 5
+const CORDA_REPOUSO := 6
+const CORDA_FOLGA_MS := 480  # sem clique por este tempo = a corda assenta
+var _corda_girando := false
+var _corda_ultimo_clique := 0
 var _sombra_lutador: Sprite2D
 var _pessoas: Dictionary = {}  # gerador -> Array[{sprite, sombra, visivel}]
 var _fx_impacto: Array[AnimSprite] = []
@@ -590,17 +594,10 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_boneco.tocar([0, 1, 2], 12.0, false, _boneco_repouso)
 			_impacto(_ponto_impacto(_boneco.nome_sprite, "grappling_dummy", Vector2(330, 232)), critico)
 		CORDA:
-			var nr := GameState.nivel_visual(CORDA)
-			_lutador.definir(_f("fighter_rope"))
-			_lutador.tocar(CORDA_QUADROS, CORDA_FPS, false, _pose_repouso)
-			_corda_giro.definir(_n("rope_l%d_swing" % nr))
-			_corda_giro.visible = true
-			_corda_giro.z_index = _lutador.z_index + 1
-			_corda_giro.tocar(CORDA_QUADROS, CORDA_FPS)
-			_corda_costas.definir(_n("rope_l%d_swing_back" % nr))
-			_corda_costas.visible = true
-			_corda_costas.z_index = _lutador.z_index - 1
-			_corda_costas.tocar(CORDA_QUADROS, CORDA_FPS)
+			_corda_ultimo_clique = Time.get_ticks_msec()
+			if not _corda_girando:
+				_corda_girando = true
+				_girar_corda()
 			_poeira(UiTema.pos("fx_dust", "corda"))
 			if critico:
 				_critico_fx(Vector2(336, 232))
@@ -641,6 +638,30 @@ func _tocar_golpe_saco(golpe: String) -> void:
 	var sp := UiTema.sprite(golpe)
 	var quadros: Array = range(int(sp.get("frames", 4)))
 	_lutador.tocar(quadros, float(sp.get("fps", 24.0)), false, _pose_repouso)
+
+
+## Um giro completo da corda (corpo + camada da frente + camada de trás, no mesmo ritmo).
+func _girar_corda() -> void:
+	var nr := GameState.nivel_visual(CORDA)
+	_lutador.definir(_f("fighter_rope"))
+	_lutador.tocar(CORDA_QUADROS, CORDA_FPS, false, _fim_giro_corda)
+	_corda_giro.definir(_n("rope_l%d_swing" % nr))
+	_corda_giro.visible = true
+	_corda_giro.z_index = _lutador.z_index + 1
+	_corda_giro.tocar(CORDA_QUADROS, CORDA_FPS)
+	_corda_costas.definir(_n("rope_l%d_swing_back" % nr))
+	_corda_costas.visible = true
+	_corda_costas.z_index = _lutador.z_index - 1
+	_corda_costas.tocar(CORDA_QUADROS, CORDA_FPS)
+
+
+## Fim de um giro: se ainda há cliques recentes, o próximo giro começa na hora (rotação contínua); senão, assenta.
+func _fim_giro_corda() -> void:
+	if GameState.foco == CORDA and Time.get_ticks_msec() - _corda_ultimo_clique < CORDA_FOLGA_MS:
+		_girar_corda()
+		return
+	_corda_girando = false
+	_pose_repouso()
 
 
 func _saco_repouso() -> void:

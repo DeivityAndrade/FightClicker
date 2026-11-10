@@ -211,6 +211,20 @@ func suave(u: float, modo: String) -> float:
 	return u
 
 
+## Cadeia cinética do soco: a força sobe do chão (pé de trás -> quadril -> tronco -> ombro -> mão), então cada parte do corpo
+## chega ao alvo em momentos diferentes. `lag` (0 a ~0.5, por propriedade, no "lag" do golpe) atrasa a parte: no golpe (chegada
+## "in") a mão sai por último e acelera no fim; na recuperação (chegada "out") o atraso inverte e a mão volta ANTES do corpo
+## (o braço recolhe mais rápido do que foi). Nos chaves, todas as partes se encontram exatamente.
+func u_parte(lin: float, modo: String, lag: float) -> float:
+	var l := lin
+	if lag > 0.0:
+		if modo == "out":
+			l = clampf(lin * (1.0 + lag), 0.0, 1.0)
+		else:
+			l = clampf((lin - lag) / (1.0 - lag), 0.0, 1.0)
+	return suave(l, modo)
+
+
 ## Se o golpe tem "keys" + "n", cria g.frames com n quadros: entre dois chaves, números e pares [x, y] são interpolados com a
 ## suavização do chave de chegada; o resto (texto, verdadeiro/falso) vale o do chave de partida até chegar ao próximo.
 func expandir(g: Dictionary) -> void:
@@ -229,9 +243,10 @@ func expandir(g: Dictionary) -> void:
 			if float(kk.at) > float(k0.at):
 				k1 = kk
 				break
-		var u := 0.0
+		var lin := 0.0
 		if k1 != k0:
-			u = suave((float(i) - float(k0.at)) / (float(k1.at) - float(k0.at)), str(k1.get("ease", "inout")))
+			lin = (float(i) - float(k0.at)) / (float(k1.at) - float(k0.at))
+		var lags: Dictionary = g.get("lag", {})
 		var q := {}
 		if float(k0.at) == float(i):
 			q["_hold"] = int(k0.get("hold", 0))  # quadro-chave com "hold": o quadro se repete (impacto segurado)
@@ -240,6 +255,7 @@ func expandir(g: Dictionary) -> void:
 				continue
 			var a: Variant = k0[key]
 			var b: Variant = k1.get(key, a)
+			var u := u_parte(lin, str(k1.get("ease", "inout")), float(lags.get(key, 0.0)))
 			if a is Array and b is Array and (a as Array).size() == 2:
 				q[key] = [lerpf(float(a[0]), float(b[0]), u), lerpf(float(a[1]), float(b[1]), u)]
 			elif (a is float or a is int) and (b is float or b is int):

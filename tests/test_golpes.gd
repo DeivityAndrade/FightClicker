@@ -142,9 +142,9 @@ func _teste_arte_da_corda() -> void:
 		checar(not e.is_empty(), "%s está no manifest" % nome)
 		if e.is_empty():
 			continue
-		checar_igual(int(e.frames), 6, "%s: 6 quadros (um giro da corda)" % nome)
+		checar_igual(int(e.frames), 7, "%s: 7 quadros (laço de 6 + repouso)" % nome)
 		var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
-		checar(img != null and img.get_size() == Vector2i(48 * 6, 80), "%s: PNG 6 quadros 48x80" % nome)
+		checar(img != null and img.get_size() == Vector2i(48 * 7, 80), "%s: PNG 7 quadros 48x80" % nome)
 		checar(e.positions.has("foco_corda"), "%s: posição foco_corda" % nome)
 
 
