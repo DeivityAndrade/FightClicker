@@ -135,7 +135,7 @@
 			]
 		},
 		"ko_knees": {
-			"_ideia": "K.O. por soco no estômago: dobra, cai de joelhos e tomba de cara para a frente.",
+			"_ideia": "Queda para a frente (soco no estômago ou golpe normal): dobra, cai de joelhos e tomba de cara para a frente.",
 			"n": 7, "fps": 9.0, "hit_frame": 0, "ground_frame": 5,
 			"keys": [
 				{"at": 0, "ease": "inout", "hip": [-3, -35], "top": [6.0, -57.3], "tw": 0.3, "hf": [6.3, -36.7], "hb": [2.0, -40.6], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "ko", "pf": [0.5, 1], "pb": [0.5, 1], "hrot": 20.0, "toef": [15, -1], "toeb": [-3, -1]},

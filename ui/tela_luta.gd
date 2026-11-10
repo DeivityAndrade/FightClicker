@@ -471,14 +471,16 @@ func _anim_do_golpe(quem: int, e: Dictionary) -> String:
 	return str(e.attack_anim)
 
 
-## Queda do K.O. pelo golpe que derrubou: estômago = de joelhos; golpe forte (crítico, contra-ataque, uppercut, direto) = para trás.
+## Queda do K.O. pelo golpe que derrubou: golpe forte (crítico, contra-ataque, uppercut, direto) = lançado para trás; soco no
+## estômago = queda para a frente (ajoelha e tomba); golpe normal (jab, gancho) = alterna entre a queda para a frente e a de
+## sempre, de forma fixa para a mesma luta (pelo instante do golpe), para as lutas não acabarem sempre iguais.
 func _queda_do_golpe(alvo: int, e: Dictionary) -> String:
 	var anim := str(e.get("anim_usada", e.get("attack_anim", "")))
 	var nome := "ko"
-	if anim == "body_shot":
-		nome = "ko_knees"
-	elif anim in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]:
+	if anim in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]:
 		nome = "ko_back"
+	elif anim == "body_shot" or int(round(float(e.get("t", 0.0)) * 100.0)) % 2 == 0:
+		nome = "ko_knees"
 	if forcar_ko != "":
 		nome = forcar_ko
 	return nome if _existe_anim(alvo, nome) else "ko"
