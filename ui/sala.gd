@@ -638,6 +638,7 @@ var _i_combo := 0
 var _evento_spr: AnimSprite
 var _evento_rect := Rect2()
 var _tween_evento: Tween
+var _tween_ouro: Tween
 var _rotulo_frenesi: Label
 # Reação do saco por golpe: o uppercut o levanta, o golpe lateral o balança para o lado. A corrente acompanha.
 var _tween_saco: Tween
@@ -660,26 +661,25 @@ func _proximo_golpe_saco() -> String:
 	return g if not UiTema.sprite(g).is_empty() else "fighter_punch"
 
 
-## O saco reage ao golpe (só o visual): jab = o balanço de sempre; uppercut = pula para cima; lateral = vai para o lado e volta
-## com folga. `critico` exagera. A corrente do saco segue. Se o layout mudar no meio (troca de foco), o balanço é cancelado.
+## Evento dourado: a luva dourada aparece num ponto sorteado, flutua por alguns segundos e espera o clique.
 func _ao_evento_dourado(duracao: float) -> void:
 	if GameState.modal_aberto:
 		return
 	if _evento_spr == null:
-		_evento_spr = _novo_anim("belt_amateur_big", "", 950)
+		_evento_spr = _novo_anim("event_golden_glove", "", 950)
 	var x := _rng.randf_range(AREA.position.x + 50.0, AREA.end.x - 70.0)
 	var y := _rng.randf_range(AREA.position.y + 40.0, AREA.position.y + 150.0)
 	_evento_spr.position = Vector2(x, y)
 	_evento_spr.visible = true
-	_evento_spr.modulate = Color(1.0, 0.82, 0.25)  # dourado
-	_evento_spr.scale = Vector2(0.5, 0.5)
+	_evento_spr.modulate = Color.WHITE
+	_evento_spr.scale = Vector2(2, 2)
 	_evento_spr.tocar([0, 1, 2], 6.0, true)
-	_evento_rect = Rect2(x - 32.0, y - 20.0, 64.0, 40.0)
+	_evento_rect = Rect2(x - 26.0, y - 24.0, 52.0, 48.0)
 	if _tween_evento != null and _tween_evento.is_valid():
 		_tween_evento.kill()
-	_tween_evento = create_tween().set_loops()  # pulsa até sumir
-	_tween_evento.tween_property(_evento_spr, "scale", Vector2(0.62, 0.62), 0.35).set_trans(Tween.TRANS_SINE)
-	_tween_evento.tween_property(_evento_spr, "scale", Vector2(0.5, 0.5), 0.35).set_trans(Tween.TRANS_SINE)
+	_tween_evento = create_tween().set_loops()  # flutua até sumir
+	_tween_evento.tween_property(_evento_spr, "position:y", y - 4.0, 0.4).set_trans(Tween.TRANS_SINE)
+	_tween_evento.tween_property(_evento_spr, "position:y", y + 4.0, 0.4).set_trans(Tween.TRANS_SINE)
 	sfx.foco()
 
 
@@ -696,6 +696,15 @@ func _ao_frenesi_mudou(restante: float) -> void:
 		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(AREA.position.x, AREA.position.y + 2.0, AREA.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
 		_rotulo_frenesi.z_index = 980
 	_rotulo_frenesi.visible = restante > 0.0
+	# Durante o FRENESI o lutador (e as luvas) brilham em dourado, pulsando.
+	if _tween_ouro != null and _tween_ouro.is_valid():
+		_tween_ouro.kill()
+	if restante > 0.0:
+		_tween_ouro = create_tween().set_loops()
+		_tween_ouro.tween_property(_lutador, "modulate", Color(1.5, 1.2, 0.5), 0.25).set_trans(Tween.TRANS_SINE)
+		_tween_ouro.tween_property(_lutador, "modulate", Color(1.15, 1.0, 0.7), 0.25).set_trans(Tween.TRANS_SINE)
+	else:
+		_lutador.modulate = Color.WHITE
 
 
 func _balancar_saco(golpe: String, critico: bool) -> void:

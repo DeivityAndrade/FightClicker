@@ -46,6 +46,13 @@ var _rotulo_round: Label
 # Novidades da luta: combo (golpes seguidos do jogador sem ser acertado), congelamento no impacto e câmera lenta no K.O.
 var _combo := 0
 var _rotulo_combo: Label
+# Barra de ESPECIAL (só visual, nunca muda o resultado da luta): cada golpe que entra enche a barra; levar soco esvazia metade;
+# na barra cheia o golpe seguinte vira o SUPER UPPERCUT, com efeitos. O cálculo é feito antes da luta, na ordem dos eventos.
+const ESPECIAL_GOLPES := 5
+var _esp_fundo: ColorRect
+var _esp_cheio: ColorRect
+var _esp_rotulo: Label
+var _tween_esp: Tween
 var _tween_combo: Tween
 var _congelar_id := 0
 var _rotulo_tempo: Label
@@ -238,6 +245,18 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	UiTema.rotulo(hud, nome_t, _cor_tatica(str(info_t.get("color", "white"))), float(pt[0]) + 12, float(pt[1]))
 	_rotulo_combo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]), float(pt[1]) + 13.0)
 	_rotulo_combo.scale = Vector2(2, 2)  # o combo precisa ser lido no meio da luta
+	_rotulo_combo.position.y += 9.0
+	_esp_fundo = ColorRect.new()
+	_esp_fundo.color = Color(0.05, 0.04, 0.09, 0.85)
+	_esp_fundo.position = Vector2(float(pt[0]), float(pt[1]) + 12.0)
+	_esp_fundo.size = Vector2(110, 6)
+	hud.add_child(_esp_fundo)
+	_esp_cheio = ColorRect.new()
+	_esp_cheio.color = UiTema.Y1
+	_esp_cheio.position = Vector2(1, 1)
+	_esp_cheio.size = Vector2(0, 4)
+	_esp_fundo.add_child(_esp_cheio)
+	_esp_rotulo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]) + 114.0, float(pt[1]) + 10.0)
 	_rotulo_combo.modulate.a = 0.0
 
 	# Adversário (direita, espelhado)
@@ -334,6 +353,19 @@ func _agendar_tudo() -> void:
 			_cue(t_round + 0.9, func() -> void: _esconder_banner())
 
 	var eventos: Array = luta.events
+	var cont := 0  # barra de especial, na ordem em que os golpes acontecem
+	for e in eventos:
+		e["barra_apos"] = -1
+		if str(e.type) == "dodge" or bool(e.get("blocked", false)):
+			continue
+		if int(e.who) == 0:
+			cont += 1
+			if cont >= ESPECIAL_GOLPES and _existe_anim(0, "uppercut") and not bool(e.ko):
+				e["especial"] = true
+				cont = 0
+		else:
+			cont /= 2
+		e["barra_apos"] = cont
 	for e in eventos:
 		_agendar_evento(e)
 
@@ -393,12 +425,20 @@ func _agendar_evento(e: Dictionary) -> void:
 	var t := float(e.t)
 	# Golpe da luta (data/moves.json): usa o sprite do golpe se ele existir; senão, o jab/heavy de sempre.
 	var anim := _anim_do_golpe(quem, e)
+	var especial := bool(e.get("especial", false))
+	if especial:
+		anim = "uppercut"
+		e["move_anim"] = "uppercut"
+		e["defender_move_anim"] = "hit_up"
 	e["anim_usada"] = anim
 	e["reacao_usada"] = _reacao_do_golpe(alvo, e, anim)
 	var s := UiTema.sprite(_nome(quem, anim))
 	var antes := float(int(s.get("hit_frame", 1))) / maxf(float(s.get("fps", 12.0)), 1.0)
 	# O golpe sai `hit_frame / fps` antes: o contato cai exatamente em `t`.
 	_cue(t - antes, func() -> void: _tocar(quem, anim))
+	if especial:
+		_cue(t - antes - 0.35, func() -> void: _preparar_especial())
+		_cue(t + 0.9, func() -> void: _esconder_banner())
 	if str(e.kind) == "dodge" or str(e.type) == "dodge":
 		var sd := UiTema.sprite(_nome(alvo, "dodge"))
 		var um_quadro := 1.0 / maxf(float(sd.get("fps", 14.0)), 1.0)
@@ -542,6 +582,12 @@ func _acertou(e: Dictionary) -> void:
 	_barras[alvo].definir(pct, true)
 	_l[alvo].vida = pct
 
+	# Barra de especial: o número já foi calculado antes da luta (o especial esvazia a barra com um estouro).
+	if bool(e.get("especial", false)):
+		_estourar_especial(contato)
+	elif int(e.get("barra_apos", -1)) >= 0:
+		_esp_definir(int(e.barra_apos))
+
 	# Combo: golpes seguidos do jogador sem apanhar no meio (esquiva ou bloqueio do adversário quebram a sequência).
 	if quem == 0 and not bloqueado:
 		_combo += 1
@@ -583,6 +629,50 @@ func _congelar(duracao_real: float, escala: float) -> void:
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
+
+
+func _esp_definir(n: int) -> void:
+	if _esp_cheio == null:
+		return
+	var alvo_w := 108.0 * clampf(float(n) / float(ESPECIAL_GOLPES), 0.0, 1.0)
+	if _tween_esp != null and _tween_esp.is_valid():
+		_tween_esp.kill()
+	_esp_cheio.modulate = Color.WHITE
+	_esp_cheio.color = UiTema.Y1 if n < ESPECIAL_GOLPES - 1 else UiTema.Y2
+	_tween_esp = create_tween()
+	_tween_esp.tween_property(_esp_cheio, "size:x", alvo_w, 0.12)
+	_esp_rotulo.text = ""
+
+
+## Um golpe antes do especial: a barra enche inteira e pisca, o lutador brilha e aparece o aviso.
+func _preparar_especial() -> void:
+	if _esp_cheio == null:
+		return
+	if _tween_esp != null and _tween_esp.is_valid():
+		_tween_esp.kill()
+	_esp_cheio.size.x = 108.0
+	_esp_cheio.color = UiTema.Y2
+	_esp_rotulo.text = UiTema.txt("fight_special", "SUPER!").to_upper()
+	_tween_esp = create_tween().set_loops()
+	_tween_esp.tween_property(_esp_cheio, "modulate", Color(2, 2, 2), 0.1)
+	_tween_esp.tween_property(_esp_cheio, "modulate", Color.WHITE, 0.1)
+	var spr: AnimSprite = _l[0].spr
+	spr.modulate = Color(1.7, 1.45, 0.6)
+	spr.create_tween().tween_property(spr, "modulate", Color.WHITE, 0.6)
+	_texto_banner(UiTema.txt("fight_special_banner", "SUPER UPPERCUT!"), UiTema.Y2, 2)
+	sfx.publico()
+	_publico_cheer(false)
+
+
+func _estourar_especial(contato: Vector2) -> void:
+	_tocar_fx("fx_fight_crit", contato, false)
+	_tocar_fx("fx_fight_crit", contato + Vector2(0, -8), false)
+	_tremer(4, 0.32)
+	_flash_tela(0.7)
+	_lampada.tocar([1, 0, 1, 0, 1, 0], 12.0)
+	_publico_cheer(true)
+	_congelar(0.14, 0.04)
+	_esp_definir(0)
 
 
 func _mostrar_combo() -> void:
