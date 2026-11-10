@@ -68,20 +68,23 @@ func _montar() -> void:
 		_fita_revanche(y + 40.0)
 		y += 17.0
 
+	# Respiro: a regra do tempo (2 linhas) só aparece na 1ª luta da carreira; nas outras, esse espaço vira ar entre as seções.
+	var regra := GameState.indice_escada == 0
+	var ar := 0.0 if regra else 1.0
 	# Descrição dele
 	y += 42.0
 	UiTema.rotulo_centro(painel, str(opp.description).to_upper(), UiTema.CREAM, 320.0, y)
 
 	# --- Atributos lado a lado ---
-	y += 13.0
+	y += 13.0 + 2.0 * ar
 	for atr in ATRIBUTOS:
 		_linha_atributo(atr, y)
-		y += 16.0
+		y += 16.0 + ar
 	y += 1.0
 	var lead := str(_dados.lead)
 	if lead != "":
 		UiTema.rotulo_centro(painel, UiTema.txt("lead_" + lead), UiTema.R3, 320.0, y)
-	y += 12.0
+	y += 12.0 + 2.0 * ar
 
 	# --- Risco ---
 	UiTema.rotulo(painel, UiTema.txt("risk_label", "RISCO"), UiTema.G3, X0, y + 3)
@@ -93,25 +96,25 @@ func _montar() -> void:
 	# Porcentagem de vitória (só com o nó "Olho clínico"): ao lado do selo, na cor do risco.
 	_percent = UiTema.rotulo(painel, "", UiTema.WHITE, X0, y + 3)
 	_percent.visible = false
-	y += 19.0
+	y += 19.0 + 2.0 * ar
 
 	# --- Táticas ---
 	UiTema.rotulo(painel, UiTema.txt("tactic_label", "TÁTICA"), UiTema.G3, X0, y)
-	y += 10.0
+	y += 10.0 + ar
 	var x := X0
 	for t in GameState.lutas.taticas:
 		_montar_tatica(t, x, y)
 		x += 107.0
 	y += 22.0 + 2.0 + 13.0 + 4.0  # 4 px de respiro entre a linha de risco e a dica
 	_dica = UiTema.rotulo(painel, "", UiTema.G3, X0, y, X1 - X0, HORIZONTAL_ALIGNMENT_CENTER)
-	y += 14.0
+	y += 14.0 + 2.0 * ar
 	if traco != "":
 		_linha_traco(str(_dados.get("art", "")), traco, y)
 		y += 11.0
 
 	# --- Em jogo ---
 	divisor(X0, y, X1 - X0)
-	y += 5.0
+	y += 5.0 + 2.0 * ar
 	if bool(_dados.stake_belt):
 		linha_icone("icon_belt_amateur_9", UiTema.txt("stake_belt", "SE VENCER: O CINTURÃO AMADOR"), UiTema.Y1, X0, y)
 	else:
@@ -120,9 +123,10 @@ func _montar() -> void:
 	# O texto vem pronto do GameState: "METADE DO LEGADO" ou o percentual real (com o nó "Saber cair").
 	linha_icone("icon_legacy", str(_dados.get("stake_lose", UiTema.txt("stake_lose"))).to_upper(), UiTema.R3, X0, y)
 	y += 15.0
-	UiTema.rotulo_centro(painel, UiTema.txt("time_rule", "SEM K.O. NO TEMPO: VENCE QUEM TEM MAIS VIDA"), UiTema.G2, 320.0, y)
-	y += 9.0
-	UiTema.rotulo_centro(painel, UiTema.txt("time_rule_tie", "EMPATE EXATO: FICA COM ELE"), UiTema.G2, 320.0, y)
+	if regra:
+		UiTema.rotulo_centro(painel, UiTema.txt("time_rule", "SEM K.O. NO TEMPO: VENCE QUEM TEM MAIS VIDA"), UiTema.G2, 320.0, y)
+		y += 9.0
+		UiTema.rotulo_centro(painel, UiTema.txt("time_rule_tie", "EMPATE EXATO: FICA COM ELE"), UiTema.G2, 320.0, y)
 
 	# --- Botões ---
 	# Dois botões do mesmo tamanho, com 4 px entre eles, ocupando a largura útil da janela.
@@ -220,11 +224,8 @@ func _montar_tatica(t: Dictionary, x: float, y: float) -> void:
 		faixa.size = Vector2(98, 10)
 		faixa.set_meta("ui_margens", "h")
 		painel.add_child(faixa)
-		var nome_r := UiTema.nome_risco(rot)
-		var grupo := 12.0 + UiTema.largura_visivel(nome_r)
-		var gx := roundf((98.0 - grupo) / 2.0)
+		var gx := roundf((98.0 - UiTema.tamanho_quadro("icon_risk_" + rot).x) / 2.0)
 		UiTema.textura_rect(faixa, "icon_risk_" + rot, gx, 1)
-		UiTema.rotulo(faixa, nome_r, UiTema.cor_risco(rot), gx + 12.0, 1)
 	_rotulo_tatica[id] = {"botao": b, "sub": sub, "info": info}
 
 

@@ -672,14 +672,14 @@ func _ao_evento_dourado(duracao: float) -> void:
 	_evento_spr.position = Vector2(x, y)
 	_evento_spr.visible = true
 	_evento_spr.modulate = Color.WHITE
-	_evento_spr.scale = Vector2(2, 2)
+	_evento_spr.scale = Vector2.ONE
 	_evento_spr.tocar([0, 1, 2], 6.0, true)
-	_evento_rect = Rect2(x - 26.0, y - 24.0, 52.0, 48.0)
+	_evento_rect = Rect2(x - 18.0, y - 18.0, 36.0, 34.0)
 	if _tween_evento != null and _tween_evento.is_valid():
 		_tween_evento.kill()
 	_tween_evento = create_tween().set_loops()  # flutua até sumir
-	_tween_evento.tween_property(_evento_spr, "position:y", y - 4.0, 0.4).set_trans(Tween.TRANS_SINE)
-	_tween_evento.tween_property(_evento_spr, "position:y", y + 4.0, 0.4).set_trans(Tween.TRANS_SINE)
+	_tween_evento.tween_property(_evento_spr, "position:y", y - 3.0, 0.4).set_trans(Tween.TRANS_SINE)
+	_tween_evento.tween_property(_evento_spr, "position:y", y + 3.0, 0.4).set_trans(Tween.TRANS_SINE)
 	sfx.foco()
 
 

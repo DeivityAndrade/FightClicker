@@ -55,6 +55,10 @@ var _esp_rotulo: Label
 var _tween_esp: Tween
 var _tween_combo: Tween
 var _congelar_id := 0
+# Queda do K.O. conforme o golpe final (só visual): "ko" (desaba), "ko_back" (golpe forte: é lançado para trás e cai de costas)
+# ou "ko_knees" (soco no estômago: ajoelha e tomba para a frente). Vale para o jogador e para qualquer adversário que tenha a arte.
+var _ko_nome := "ko"
+static var forcar_ko := ""  # só para gravações e testes: força a queda ("ko_back" | "ko_knees"), se a arte existir
 var _rotulo_tempo: Label
 var _rng := RandomNumberGenerator.new()
 var _shake_t := 0.0
@@ -368,6 +372,10 @@ func _agendar_tudo() -> void:
 		e["barra_apos"] = cont
 	for e in eventos:
 		_agendar_evento(e)
+	_ko_nome = "ko"
+	for e in eventos:
+		if bool(e.get("ko", false)):
+			_ko_nome = _queda_do_golpe(int(e.target), e)
 
 	# O motivo da derrota NÃO é lido aqui: o GameState o calcula em segundo plano e a tela de fim o lê ao abrir.
 
@@ -384,15 +392,17 @@ func _agendar_tudo() -> void:
 		else:
 			_cue(t_ko + 0.06, func() -> void: _cair(perdedor))
 		var t_queda := (float(grogue.to) if not grogue.is_empty() else t_ko + 0.06)
-		var fps_ko := float(UiTema.sprite(_nome(perdedor, "ko")).get("fps", 10.0))
-		_cue(t_queda + 3.0 / fps_ko, func() -> void: _chao(perdedor))
-		_cue(t_queda + 3.0 / fps_ko + 0.5, func() -> void: _estado(vencedor, "victory"))
-		_cue(t_queda + 3.0 / fps_ko + 0.45, func() -> void:
+		var spr_ko := UiTema.sprite(_nome(perdedor, _ko_nome))
+		var fps_ko := float(spr_ko.get("fps", 10.0))
+		var t_chao := t_queda + float(spr_ko.get("ground_frame", 3)) / fps_ko  # quadro em que o corpo bate no chão
+		_cue(t_chao, func() -> void: _chao(perdedor))
+		_cue(t_chao + 0.5, func() -> void: _estado(vencedor, "victory"))
+		_cue(t_chao + 0.45, func() -> void:
 			if bool(res.win):
 				sfx.vitoria()
 			else:
 				sfx.derrota())
-		_cue(t_queda + 3.0 / fps_ko + 0.2, func() -> void: sfx.sino_fim())
+		_cue(t_chao + 0.2, func() -> void: sfx.sino_fim())
 		_t_parada = t_ko
 	else:
 		# Fim por pontos: "TEMPO!", sino, o vencedor comemora e o outro cansa.
@@ -459,6 +469,19 @@ func _anim_do_golpe(quem: int, e: Dictionary) -> String:
 	if ma != "" and _existe_anim(quem, ma):
 		return ma
 	return str(e.attack_anim)
+
+
+## Queda do K.O. pelo golpe que derrubou: estômago = de joelhos; golpe forte (crítico, contra-ataque, uppercut, direto) = para trás.
+func _queda_do_golpe(alvo: int, e: Dictionary) -> String:
+	var anim := str(e.get("anim_usada", e.get("attack_anim", "")))
+	var nome := "ko"
+	if anim == "body_shot":
+		nome = "ko_knees"
+	elif anim in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]:
+		nome = "ko_back"
+	if forcar_ko != "":
+		nome = forcar_ko
+	return nome if _existe_anim(alvo, nome) else "ko"
 
 
 ## Reação específica do golpe (queixo, cabeça, barriga) só quando o atacante FEZ esse golpe (o sprite dele existe); se ele caiu
@@ -634,7 +657,7 @@ func _exit_tree() -> void:
 func _esp_definir(n: int) -> void:
 	if _esp_cheio == null:
 		return
-	var alvo_w := 108.0 * clampf(float(n) / float(ESPECIAL_GOLPES), 0.0, 1.0)
+	var alvo_w := roundf(108.0 * clampf(float(n) / float(ESPECIAL_GOLPES), 0.0, 1.0))
 	if _tween_esp != null and _tween_esp.is_valid():
 		_tween_esp.kill()
 	_esp_cheio.modulate = Color.WHITE
@@ -722,7 +745,7 @@ func _cair(i: int) -> void:
 	var l: Dictionary = _l[i]
 	l.estado = "ko"
 	var spr: AnimSprite = l.spr
-	spr.definir(_nome(i, "ko"))
+	spr.definir(_nome(i, _ko_nome))
 	spr.z_index = Z_LUTADOR
 	var fps := float(UiTema.sprite(spr.nome_sprite).get("fps", 10.0))
 	var seq: Array = []
@@ -736,7 +759,8 @@ func _cair(i: int) -> void:
 # Quadro 3 do ko = o corpo bate no chão: poeira, tremida, letreiro K.O., estrelinhas e torcida.
 func _chao(i: int) -> void:
 	var l: Dictionary = _l[i]
-	_tocar_fx("fx_dust_fall", (l.base as Vector2) + Vector2(-14.0 * float(l.dir), 0), i == 1)
+	var frente := _ko_nome == "ko_knees"  # tomba para a frente: poeira e estrelas do outro lado
+	_tocar_fx("fx_dust_fall", (l.base as Vector2) + Vector2((14.0 if frente else -14.0) * float(l.dir), 0), i == 1)
 	_tremer(2, 0.3)
 	_flash_tela(0.4)
 	sfx.queda()
@@ -746,6 +770,10 @@ func _chao(i: int) -> void:
 	_banner_ko_mostrar()
 	var est: AnimSprite = l["estrelas"]
 	var ko_cab := _vetor(UiTema.manifest().get("fight_layout", {}).get("ko_head_point", [-36, -12]))
+	if frente:
+		ko_cab = Vector2(38, -12)
+	elif _ko_nome == "ko_back":
+		ko_cab = Vector2(-42, -12)
 	est.position = (l.base as Vector2) + Vector2(ko_cab.x * float(l.dir), ko_cab.y) * float(l.escala)
 	est.visible = true
 	est.tocar([0, 1, 2, 3, 4, 5], 10.0, true)

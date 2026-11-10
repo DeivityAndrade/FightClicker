@@ -90,6 +90,7 @@ func _luta() -> void:
 	gs.atributos = {"strength": 1000.0, "agility": 100.0, "endurance": 700.0}
 	await _abrir()
 	gs.rng.seed = k
+	load("res://ui/tela_luta.gd").set("forcar_ko", OS.get_environment("DEMO_FORCAR_KO"))  # opcional: grava uma queda específica
 	var fluxo: Node = cena.get_node("Fluxo")
 	fluxo.abrir_previa()
 	await _esperar(1.2)
@@ -116,6 +117,20 @@ func _melhor_semente() -> int:
 		var p := float(vistos.size()) * 100.0 - absf(dur - 10.0)
 		if bool(info.result.win):
 			p += 500.0  # a demonstração fica melhor com o jogador vencendo
+		# DEMO_KO=barriga | forte | perde: prefere lutas que acabam com esse tipo de queda (para gravar cada K.O.).
+		var quer := OS.get_environment("DEMO_KO")
+		if quer != "" and bool(info.result.ko):
+			for e in info.events:
+				if not bool(e.get("ko", false)):
+					continue
+				var forte: bool = str(e.get("move", "")) in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]
+				var barriga: bool = str(e.get("move", "")) == "body_shot"
+				if quer == "barriga" and int(e.who) == 0 and barriga:
+					p += 3000.0
+				elif quer == "forte" and int(e.who) == 0 and forte and not barriga:
+					p += 3000.0
+				elif quer == "perde" and int(e.who) == 1 and (forte or barriga):
+					p += 3500.0
 		gs.aguardar_motivo()
 		gs.aplicar_save(snap.duplicate(true))
 		if p > pontos:

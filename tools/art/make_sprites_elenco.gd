@@ -435,7 +435,7 @@ func opp_pose(oid: String, action: String, i: int, base: Dictionary) -> Dictiona
 	var s: float = d.s
 	var p: Dictionary = base.duplicate()
 	p.merge(personality(oid, action, i), true)
-	var lying: bool = action == "ko" and i >= 2
+	var lying: bool = bool(base.get("lying", false)) or (action == "ko" and i >= 2)
 	var hip: Vector2 = p.hip
 	var top: Vector2 = p.top
 	var dn := (top - hip).normalized()
@@ -1050,8 +1050,10 @@ func gen_reacao(oid: String, b: Dictionary, nome: String, rea: Dictionary, base:
 	var i := 0
 	for q in rea.frames:
 		var p := opp_pose(oid, nome, i, pose_da_reacao(q))
-		p["hf"] = mir(vet(q.hf) * s)
-		p["hb"] = mir(vet(q.hb) * s)
+		# A pose é desenhada virada à DIREITA (e o quadro é espelhado no fim): as mãos entram sem espelhar. (Espelhar aqui jogava
+		# as luvas para o lado das costas em todas as reações dos adversários.)
+		p["hf"] = vet(q.get("hf", [14, -58])) * s
+		p["hb"] = vet(q.get("hb", [5, -61])) * s
 		if oid == "opp_strong":
 			p["after_near_leg"] = hook_sleeves
 		elif oid == "opp_gym_1":
@@ -1082,8 +1084,8 @@ func run_reacoes(caminho: String) -> void:
 			strip.save_png(out_dir + res_to_rel(arquivo))
 			var maos := []
 			for q in rea[nome].frames:
-				var hf: Vector2 = mir(vet(q.hf) * s)
-				var hb: Vector2 = mir(vet(q.hb) * s)
+				var hf: Vector2 = mir(vet(q.get("hf", [14, -58])) * s)
+				var hb: Vector2 = mir(vet(q.get("hb", [5, -61])) * s)
 				maos.append({"hand_front": [hf.x, hf.y], "hand_back": [hb.x, hb.y]})
 			var e: Dictionary = (base as Dictionary).duplicate(true)
 			e["file"] = arquivo
@@ -1094,6 +1096,8 @@ func run_reacoes(caminho: String) -> void:
 			e["hands"] = maos
 			e.erase("hit_frame")
 			e.erase("hit_point")
+			if rea[nome].has("ground_frame"):
+				e["ground_frame"] = rea[nome].ground_frame
 			entradas[oid + "_" + nome] = e
 			if not acoes.has(oid):
 				acoes[oid] = {}
