@@ -1,5 +1,5 @@
 {
-	"_sobre": "Poses dos golpes de luta e do treino, em dados, para o jogador e (espelhadas e na escala do corpo de cada um) os adversários. Cada golpe novo é descrito por QUADROS-CHAVE (\"keys\") e o gerador cria os quadros do meio com suavização (\"ease\": in = começa devagar, out = termina devagar, inout = os dois, linear). \"n\" = quantidade de quadros finais, \"at\" = em que quadro o chave cai. Todo chave deve trazer as MESMAS propriedades (o que não está no chave de partida não é interpolado). Coordenadas em px relativas ao pivô = entre os pés, na sola; y negativo = para cima; lutador virado para a direita. LUTA (perfil, 112x104, braço 12+13 px): hip, top (quadril e topo do tronco), head, tw (giro do tronco), hf/hb (centro da luva da frente/de trás), pf/pb (lado para onde o cotovelo dobra), toef/toeb e shoef/shoeb (pé: flat|ball|up), far_glove_front (luva de trás na frente do rosto). TREINO (garagem, 3/4, 48x72, braço 10+10,5 px): hip, top, head, sl/sr (ombros), hl/hr (luvas), el/er (cotovelo fixo; se ausente o IK decide), pl/pr, toel/toer, tw, face. NÃO force a orientação da luva: o rig a escolhe pela direção do antebraço. Para golpes antigos em lista de \"frames\" valem as mesmas chaves. CADEIA CINÉTICA: o soco não move tudo junto. A força sobe do chão (pé de trás -> quadril -> tronco -> ombro -> mão), então o chave \"lag\" do golpe atrasa cada propriedade (0 = sai na frente, ~0.4 = sai por último): a mão que soca chega depois do corpo e acelera no fim; na recuperação o atraso inverte e a mão recolhe antes do corpo.",
+	"_sobre": "Poses dos golpes de luta e do treino, em dados, para o jogador e (espelhadas e na escala do corpo de cada um) os adversários. Cada golpe novo é descrito por QUADROS-CHAVE (\"keys\") e o gerador cria os quadros do meio com suavização (\"ease\": in = começa devagar, out = termina devagar, inout = os dois, linear). \"n\" = quantidade de quadros finais, \"at\" = em que quadro o chave cai. Todo chave deve trazer as MESMAS propriedades (o que não está no chave de partida não é interpolado). Coordenadas em px relativas ao pivô = entre os pés, na sola; y negativo = para cima; lutador virado para a direita. LUTA (perfil, 112x104, braço 12+13 px): hip, top (quadril e topo do tronco), head, tw (giro do tronco), hf/hb (centro da luva da frente/de trás), pf/pb (lado para onde o cotovelo dobra), toef/toeb e shoef/shoeb (pé: flat|ball|up), far_glove_front (luva de trás na frente do rosto). TREINO (garagem, 3/4, 48x72, braço 10+10,5 px): hip, top, head, sl/sr (ombros), hl/hr (luvas), el/er (cotovelo fixo; se ausente o IK decide), pl/pr, toel/toer, tw, face. NÃO force a orientação da luva: o rig a escolhe pela direção do antebraço. Para golpes antigos em lista de \"frames\" valem as mesmas chaves. CADEIA CINÉTICA: o soco não move tudo junto. A força sobe do chão (pé de trás -> quadril -> tronco -> ombro -> mão), então o chave \"lag\" do golpe atrasa cada propriedade (0 = sai na frente, ~0.4 = sai por último): a mão que soca chega depois do corpo e acelera no fim; na recuperação o atraso inverte e a mão recolhe antes do corpo. REAÇÕES (bloco \"reactions\"): como o corpo de quem APANHA se move, na mesma linguagem dos golpes (chaves, ease, lag). hit_head (gancho), hit_up (uppercut) e hit_body (soco na barriga); valem para o jogador e, espelhadas e na escala de cada corpo, para os adversários (make_reacoes_adversarios.gd). O golpe aponta a reação em data/moves.json (defender_anim).",
 	"moves": {
 		"uppercut": {
 			"_ideia": "Uppercut da mão da frente em 8 quadros: 0 guarda, 1-2 agacha e recolhe a mão na cintura (giro do tronco para trás), 3 empurra com as pernas, 4 CONTATO com a luva subindo sob o queixo (corpo estica), 5 segura no alto, 6-7 volta à guarda.",
@@ -82,6 +82,43 @@
 				{"hip": [0, -34], "top": [1, -52], "head": [1, -59], "sl": [-8, -48], "sr": [8, -48], "hl": [-12, -29], "hr": [12, -29], "toel": [-2, -3], "toer": [7, -3], "shoel": "34ball", "shoer": "34ball", "phi": 232},
 				{"hip": [0, -31], "top": [1, -49], "head": [1, -56], "sl": [-8, -45], "sr": [8, -45], "hl": [-12, -25], "hr": [12, -25], "toel": [-2, -1], "toer": [7, -1], "shoel": "34ball", "shoer": "34ball", "phi": 275},
 				{"hip": [0, -30], "top": [1, -48], "head": [1, -55], "sl": [-8, -45], "sr": [8, -45], "hl": [-12, -26], "hr": [12, -26], "slack": 11, "phi": 175}
+			]
+		}
+	},
+	"reactions": {
+		"hit_head": {
+			"_ideia": "Levou um gancho no rosto (7 quadros): o golpe chega e a cabeça é jogada de lado e para trás, o tronco gira para longe, as mãos abrem; o corpo cede um pouco e volta à guarda.",
+			"n": 7, "fps": 14.0, "hit_frame": 0, "lag": {"top": 0.1, "head": 0.18, "hb": 0.12, "hf": 0.12},
+			"keys": [
+				{"at": 0, "ease": "inout", "hip": [0, -37], "top": [2, -61], "head": [5, -71], "tw": 0.3, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "normal"},
+				{"at": 1, "ease": "in", "hip": [-1, -37], "top": [-3, -60], "head": [-7, -68], "tw": -1.3, "hf": [11, -61], "hb": [1, -63], "pf": [0, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 2, "ease": "out", "hip": [-2, -36], "top": [-4, -59], "head": [-5, -68], "tw": -0.9, "hf": [10, -60], "hb": [1, -62], "pf": [0, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 4, "ease": "inout", "hip": [-1, -36], "top": [-1, -60], "head": [0, -70], "tw": -0.2, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 6, "ease": "inout", "hip": [0, -37], "top": [2, -61], "head": [5, -71], "tw": 0.3, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "normal"}
+			]
+		},
+		"hit_up": {
+			"_ideia": "Levou um uppercut (7 quadros): o queixo sobe, a cabeça vai para cima e para trás, o corpo é levantado (calcanhares sobem) e as mãos voam; depois cai para trás e se recompõe.",
+			"n": 7, "fps": 14.0, "hit_frame": 0, "lag": {"top": 0.1, "head": 0.18, "hb": 0.12, "hf": 0.12},
+			"keys": [
+				{"at": 0, "ease": "inout", "hip": [0, -37], "top": [2, -61], "head": [5, -71], "tw": 0.3, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "normal"},
+				{"at": 1, "ease": "in", "hip": [-1, -39], "top": [-2, -62], "head": [-3, -77], "tw": -0.6, "hf": [8, -69], "hb": [-1, -67], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "ball", "shoef": "ball", "face": "pain"},
+				{"at": 2, "ease": "out", "hip": [-2, -38], "top": [-4, -61], "head": [-6, -75], "tw": -0.8, "hf": [9, -67], "hb": [0, -65], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "ball", "shoef": "ball", "face": "pain"},
+				{"at": 3, "ease": "inout", "hip": [-3, -36], "top": [-5, -60], "head": [-6, -72], "tw": -0.5, "hf": [11, -62], "hb": [2, -63], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 5, "ease": "inout", "hip": [-1, -36], "top": [0, -60], "head": [1, -70], "tw": 0.1, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 6, "ease": "inout", "hip": [0, -37], "top": [2, -61], "head": [5, -71], "tw": 0.3, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "normal"}
+			]
+		},
+		"hit_body": {
+			"_ideia": "Levou um soco na barriga (7 quadros): o ar sai, o tronco dobra para a frente e para baixo, a cabeça cai, os joelhos cedem e as mãos descem para a barriga; depois se levanta devagar.",
+			"n": 7, "fps": 14.0, "hit_frame": 0, "lag": {"head": 0.2, "hb": 0.12, "hf": 0.12},
+			"keys": [
+				{"at": 0, "ease": "inout", "hip": [0, -37], "top": [2, -61], "head": [5, -71], "tw": 0.3, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "normal"},
+				{"at": 1, "ease": "in", "hip": [-3, -35], "top": [4, -54], "head": [8, -62], "tw": 0.9, "hf": [11, -46], "hb": [4, -48], "pf": [0, 1], "pb": [0, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 2, "ease": "out", "hip": [-3, -33], "top": [5, -52], "head": [9, -60], "tw": 1.1, "hf": [11, -45], "hb": [4, -47], "pf": [0, 1], "pb": [0, 1], "far_glove_front": false, "shoeb": "ball", "shoef": "flat", "face": "pain"},
+				{"at": 4, "ease": "inout", "hip": [-2, -34], "top": [4, -55], "head": [8, -64], "tw": 0.7, "hf": [12, -50], "hb": [5, -52], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 5, "ease": "inout", "hip": [-1, -36], "top": [2, -59], "head": [6, -68], "tw": 0.4, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "pain"},
+				{"at": 6, "ease": "inout", "hip": [0, -37], "top": [2, -61], "head": [5, -71], "tw": 0.3, "hf": [14, -58], "hb": [5, -61], "pf": [-0.4, 1], "pb": [-0.3, 1], "far_glove_front": false, "shoeb": "flat", "shoef": "flat", "face": "normal"}
 			]
 		}
 	}

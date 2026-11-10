@@ -29,10 +29,10 @@
 			  "name": "Pêndulo afinado", "description": "Quase tão rápido quanto a sua mão. Quase.",
 			  "appears_as": "Metrônomo de palco, pêndulo veloz" },
 			{ "id": "metronome_l4", "cost": 700, "interval": 0.5,
-			  "name": "Pêndulo de estúdio", "description": "Já dá para dançar no ritmo.",
+			  "name": "Pêndulo veloz", "description": "Já dá para dançar no ritmo.",
 			  "appears_as": "Metrônomo de estúdio, pêndulo rápido" },
 			{ "id": "metronome_l5", "cost": 2000, "interval": 0.4,
-			  "name": "Pêndulo de campeão", "description": "A sala inteira entra no compasso.",
+			  "name": "Pêndulo mestre", "description": "A sala inteira entra no compasso.",
 			  "appears_as": "Metrônomo de campeão, pêndulo quase invisível" }
 		]
 	}

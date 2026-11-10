@@ -741,9 +741,9 @@ func _rodar_fase4b() -> void:
 			gs.clicar()  # mão mexendo em t=0
 			_tecla(KEY_SHIFT, true)
 			var socos0: int = gs.assist_socos_total
-			await _esperar(2.2)  # clique em t=0: mão parada em 1 s, primeiro soco 1 s depois; o número dura 0,5 s
+			await _esperar(1.4)  # clique em t=0: mão parada em 0,6 s, primeiro soco 0,6 s depois (1,2 s); o número dura 0,5 s
 			_exigir(gs.assistido_estado() == "active", _estado, "deveria estar active: %s (segurando gs=%s faixa=%s modal=%s bloq=%s)" % [gs.assistido_estado(), gs.assistido_segurando(), faixa.segurando(), gs.modal_aberto, gs.acoes_bloqueadas()])
-			_exigir(gs.assist_socos_total > socos0, _estado, "nenhum auto-soco do assistido em 2,2 s")
+			_exigir(gs.assist_socos_total > socos0, _estado, "nenhum auto-soco do assistido em 1,4 s")
 			var vivos := 0
 			for nn in _cena.get_node("Sala")._numeros:
 				if nn.ativo:

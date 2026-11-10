@@ -236,6 +236,7 @@ func _aplicar_layout() -> void:
 	# Saco: no centro (foco) ou à esquerda. Na academia os aparelhos básicos usam o sprite com sufixo _gym (_n).
 	var nome_saco := _n("bag_l%d_idle" % nb) if foco == SACO else _n("bag_l%d_side" % nb)
 	var chave := "centro" if foco == SACO else "lado_esquerdo"
+	_matar_balanco_saco()
 	_saco.definir(nome_saco)
 	_saco.position = UiTema.pos(nome_saco, chave)
 	_saco.z_index = int(_saco.position.y) + int(UiTema.sprite(nome_saco).get("sort_y_offset", 0))
@@ -575,6 +576,7 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_tocar_golpe_saco(golpe)
 			_saco.definir(_n("bag_l%d_hit" % nb))
 			_saco.tocar([0, 1, 2, 3], 14.0, false, _saco_repouso)
+			_balancar_saco(golpe, critico)
 			var hp: Array = UiTema.sprite(golpe).get("hit_point", [323, 222])
 			_impacto(Vector2(float(hp[0]), float(hp[1])), critico)
 		PERA:
@@ -620,6 +622,18 @@ func _reagir(aparelho: String, critico: bool) -> void:
 const COMBO_SACO := ["fighter_punch", "fighter_punch_b", "fighter_punch", "fighter_punch_b", "fighter_uppercut",
 	"fighter_punch", "fighter_punch_b", "fighter_hook"]
 var _i_combo := 0
+# Reação do saco por golpe: o uppercut o levanta, o golpe lateral o balança para o lado. A corrente acompanha.
+var _tween_saco: Tween
+var _saco_base := Vector2.ZERO
+var _saco_dir := Vector2.ZERO
+var _saco_k := 0.0:
+	set(v):
+		_saco_k = v
+		if _saco != null:
+			_saco.position = _saco_base + _saco_dir * v
+			_corrente.x = _saco_base.x - 1.0 + _saco_dir.x * v * 0.5
+			_corrente.y_fim = _saco_base.y + _saco_dir.y * v
+			_corrente.queue_redraw()
 
 
 ## Próximo golpe do combo. Se a arte de algum golpe não existir (manifest mexido), cai no jab de sempre.
@@ -627,6 +641,41 @@ func _proximo_golpe_saco() -> String:
 	var g: String = COMBO_SACO[_i_combo % COMBO_SACO.size()]
 	_i_combo += 1
 	return g if not UiTema.sprite(g).is_empty() else "fighter_punch"
+
+
+## O saco reage ao golpe (só o visual): jab = o balanço de sempre; uppercut = pula para cima; lateral = vai para o lado e volta
+## com folga. `critico` exagera. A corrente do saco segue. Se o layout mudar no meio (troca de foco), o balanço é cancelado.
+func _balancar_saco(golpe: String, critico: bool) -> void:
+	var dir := Vector2.ZERO
+	var picos := []
+	match golpe:
+		"fighter_uppercut":
+			dir = Vector2(0, -5)
+			picos = [[1.0, 0.06], [-0.25, 0.13], [0.0, 0.12]]
+		"fighter_hook":
+			dir = Vector2(7, 0)
+			picos = [[1.0, 0.07], [-0.55, 0.13], [0.25, 0.11], [0.0, 0.1]]
+		_:
+			return
+	_matar_balanco_saco()
+	_saco_base = _saco.position
+	_saco_dir = dir * (1.5 if critico else 1.0)
+	_saco_k = 0.0
+	_tween_saco = create_tween()
+	for pico in picos:
+		_tween_saco.tween_property(self, "_saco_k", float(pico[0]), float(pico[1])).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_tween_saco.tween_callback(func() -> void: _saco_k = 0.0)
+
+
+func _matar_balanco_saco() -> void:
+	if _tween_saco != null and _tween_saco.is_valid():
+		_tween_saco.kill()
+		_saco_dir = Vector2.ZERO
+		if _saco != null and _saco_base != Vector2.ZERO:
+			_saco.position = _saco_base
+			_corrente.x = _saco_base.x - 1.0
+			_corrente.y_fim = _saco_base.y
+			_corrente.queue_redraw()
 
 
 ## Toca o golpe no lutador. O jab da mão da frente (o original) continua nos quadros 1-3 a 18 fps, como sempre foi. Os

@@ -146,7 +146,10 @@
 				"ko": "fight_player_ko",
 				"hook": "fight_player_hook",
 				"uppercut": "fight_player_uppercut",
-				"body_shot": "fight_player_body_shot"
+				"body_shot": "fight_player_body_shot",
+				"hit_head": "fight_player_hit_head",
+				"hit_up": "fight_player_hit_up",
+				"hit_body": "fight_player_hit_body"
 			},
 			"portrait": "portrait_player",
 			"portrait_frame": "ui_portrait_frame",
@@ -167,7 +170,10 @@
 				"block": "opp_warmup_block",
 				"tired": "opp_warmup_tired",
 				"victory": "opp_warmup_victory",
-				"ko": "opp_warmup_ko"
+				"ko": "opp_warmup_ko",
+				"hit_body": "opp_warmup_hit_body",
+				"hit_head": "opp_warmup_hit_head",
+				"hit_up": "opp_warmup_hit_up"
 			},
 			"portrait": "portrait_opp_warmup",
 			"portrait_frame": "ui_portrait_frame",
@@ -192,7 +198,10 @@
 				"block": "opp_strong_block",
 				"tired": "opp_strong_tired",
 				"victory": "opp_strong_victory",
-				"ko": "opp_strong_ko"
+				"ko": "opp_strong_ko",
+				"hit_body": "opp_strong_hit_body",
+				"hit_head": "opp_strong_hit_head",
+				"hit_up": "opp_strong_hit_up"
 			},
 			"portrait": "portrait_opp_strong",
 			"portrait_frame": "ui_portrait_frame",
@@ -217,7 +226,10 @@
 				"block": "opp_fast_block",
 				"tired": "opp_fast_tired",
 				"victory": "opp_fast_victory",
-				"ko": "opp_fast_ko"
+				"ko": "opp_fast_ko",
+				"hit_body": "opp_fast_hit_body",
+				"hit_head": "opp_fast_hit_head",
+				"hit_up": "opp_fast_hit_up"
 			},
 			"portrait": "portrait_opp_fast",
 			"portrait_frame": "ui_portrait_frame",
@@ -242,7 +254,10 @@
 				"block": "opp_tank_block",
 				"tired": "opp_tank_tired",
 				"victory": "opp_tank_victory",
-				"ko": "opp_tank_ko"
+				"ko": "opp_tank_ko",
+				"hit_body": "opp_tank_hit_body",
+				"hit_head": "opp_tank_hit_head",
+				"hit_up": "opp_tank_hit_up"
 			},
 			"portrait": "portrait_opp_tank",
 			"portrait_frame": "ui_portrait_frame_gold",
@@ -267,7 +282,10 @@
 				"block": "opp_gym_1_block",
 				"tired": "opp_gym_1_tired",
 				"victory": "opp_gym_1_victory",
-				"ko": "opp_gym_1_ko"
+				"ko": "opp_gym_1_ko",
+				"hit_body": "opp_gym_1_hit_body",
+				"hit_head": "opp_gym_1_hit_head",
+				"hit_up": "opp_gym_1_hit_up"
 			},
 			"portrait": "portrait_opp_gym_1",
 			"portrait_frame": "ui_portrait_frame",
@@ -292,7 +310,10 @@
 				"block": "opp_gym_2_block",
 				"tired": "opp_gym_2_tired",
 				"victory": "opp_gym_2_victory",
-				"ko": "opp_gym_2_ko"
+				"ko": "opp_gym_2_ko",
+				"hit_body": "opp_gym_2_hit_body",
+				"hit_head": "opp_gym_2_hit_head",
+				"hit_up": "opp_gym_2_hit_up"
 			},
 			"portrait": "portrait_opp_gym_2",
 			"portrait_frame": "ui_portrait_frame",
@@ -15835,6 +15856,2664 @@
 					272
 				]
 			}
+		},
+		"fight_player_hit_body": {
+			"action": "hit_body",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-48
+					],
+					"hand_front": [
+						11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-47
+					],
+					"hand_front": [
+						11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						4.39836119459053,
+						-48.9918059729527
+					],
+					"hand_front": [
+						11.3983611945905,
+						-46.9918059729527
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-52
+					],
+					"hand_front": [
+						12,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_body_glove_l1": {
+			"action": "hit_body",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_body_glove_l1.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-48
+					],
+					"hand_front": [
+						11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-47
+					],
+					"hand_front": [
+						11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						4.39836119459053,
+						-48.9918059729527
+					],
+					"hand_front": [
+						11.3983611945905,
+						-46.9918059729527
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-52
+					],
+					"hand_front": [
+						12,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_body_glove_l2": {
+			"action": "hit_body",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_body_glove_l2.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-48
+					],
+					"hand_front": [
+						11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-47
+					],
+					"hand_front": [
+						11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						4.39836119459053,
+						-48.9918059729527
+					],
+					"hand_front": [
+						11.3983611945905,
+						-46.9918059729527
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-52
+					],
+					"hand_front": [
+						12,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_body_glove_l3": {
+			"action": "hit_body",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_body_glove_l3.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-48
+					],
+					"hand_front": [
+						11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-47
+					],
+					"hand_front": [
+						11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						4.39836119459053,
+						-48.9918059729527
+					],
+					"hand_front": [
+						11.3983611945905,
+						-46.9918059729527
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-52
+					],
+					"hand_front": [
+						12,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_head": {
+			"action": "hit_head",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-63
+					],
+					"hand_front": [
+						11,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-62
+					],
+					"hand_front": [
+						10,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						2.59344477836213,
+						-61.6016388054095
+					],
+					"hand_front": [
+						11.5934447783621,
+						-59.2032776108189
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_head_glove_l1": {
+			"action": "hit_head",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_head_glove_l1.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-63
+					],
+					"hand_front": [
+						11,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-62
+					],
+					"hand_front": [
+						10,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						2.59344477836213,
+						-61.6016388054095
+					],
+					"hand_front": [
+						11.5934447783621,
+						-59.2032776108189
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_head_glove_l2": {
+			"action": "hit_head",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_head_glove_l2.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-63
+					],
+					"hand_front": [
+						11,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-62
+					],
+					"hand_front": [
+						10,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						2.59344477836213,
+						-61.6016388054095
+					],
+					"hand_front": [
+						11.5934447783621,
+						-59.2032776108189
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_head_glove_l3": {
+			"action": "hit_head",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_head_glove_l3.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-63
+					],
+					"hand_front": [
+						11,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-62
+					],
+					"hand_front": [
+						10,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						2.59344477836213,
+						-61.6016388054095
+					],
+					"hand_front": [
+						11.5934447783621,
+						-59.2032776108189
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_up": {
+			"action": "hit_up",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-67
+					],
+					"hand_front": [
+						8,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-65
+					],
+					"hand_front": [
+						9,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-63
+					],
+					"hand_front": [
+						11,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						3.1950835837716,
+						-62.2032776108189
+					],
+					"hand_front": [
+						12.1950835837716,
+						-60.4065552216379
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_up_glove_l1": {
+			"action": "hit_up",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_up_glove_l1.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-67
+					],
+					"hand_front": [
+						8,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-65
+					],
+					"hand_front": [
+						9,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-63
+					],
+					"hand_front": [
+						11,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						3.1950835837716,
+						-62.2032776108189
+					],
+					"hand_front": [
+						12.1950835837716,
+						-60.4065552216379
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_up_glove_l2": {
+			"action": "hit_up",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_up_glove_l2.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-67
+					],
+					"hand_front": [
+						8,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-65
+					],
+					"hand_front": [
+						9,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-63
+					],
+					"hand_front": [
+						11,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						3.1950835837716,
+						-62.2032776108189
+					],
+					"hand_front": [
+						12.1950835837716,
+						-60.4065552216379
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"fight_player_hit_up_glove_l3": {
+			"action": "hit_up",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hit_up_glove_l3.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-67
+					],
+					"hand_front": [
+						8,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-65
+					],
+					"hand_front": [
+						9,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-63
+					],
+					"hand_front": [
+						11,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						3.1950835837716,
+						-62.2032776108189
+					],
+					"hand_front": [
+						12.1950835837716,
+						-60.4065552216379
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_fast_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_fast/opp_fast_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-3.6800000667572,
+						-44.1599998474121
+					],
+					"hand_front": [
+						-10.1199998855591,
+						-42.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-3.6800000667572,
+						-43.2400016784668
+					],
+					"hand_front": [
+						-10.1199998855591,
+						-41.4000015258789
+					]
+				},
+				{
+					"hand_back": [
+						-4.04649257659912,
+						-45.0724639892578
+					],
+					"hand_front": [
+						-10.4864921569824,
+						-43.2324638366699
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-47.8400001525879
+					],
+					"hand_front": [
+						-11.039999961853,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				}
+			],
+			"loop": false,
+			"note": "Dinho Pulga (rápido): baixo e magro, moletom azul com capuz, bandana, tênis laranja de cadarço solto, saltita. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_fast_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_fast/opp_fast_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-0.920000016689301,
+						-57.9600028991699
+					],
+					"hand_front": [
+						-10.1199998855591,
+						-56.120002746582
+					]
+				},
+				{
+					"hand_back": [
+						-0.920000016689301,
+						-57.0400009155273
+					],
+					"hand_front": [
+						-9.19999980926514,
+						-55.2000007629395
+					]
+				},
+				{
+					"hand_back": [
+						-2.38596940040588,
+						-56.6735076904297
+					],
+					"hand_front": [
+						-10.6659698486328,
+						-54.4670181274414
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				}
+			],
+			"loop": false,
+			"note": "Dinho Pulga (rápido): baixo e magro, moletom azul com capuz, bandana, tênis laranja de cadarço solto, saltita. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_fast_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_fast/opp_fast_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						0.920000016689301,
+						-61.6399993896484
+					],
+					"hand_front": [
+						-7.3600001335144,
+						-63.4799995422363
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-59.7999992370605
+					],
+					"hand_front": [
+						-8.27999973297119,
+						-61.6399993896484
+					]
+				},
+				{
+					"hand_back": [
+						-1.8400000333786,
+						-57.9600028991699
+					],
+					"hand_front": [
+						-10.1199998855591,
+						-57.0400009155273
+					]
+				},
+				{
+					"hand_back": [
+						-2.93947696685791,
+						-57.2270164489746
+					],
+					"hand_front": [
+						-11.2194766998291,
+						-55.574031829834
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-4.59999990463257,
+						-56.120002746582
+					],
+					"hand_front": [
+						-12.8800001144409,
+						-53.3600006103516
+					]
+				}
+			],
+			"loop": false,
+			"note": "Dinho Pulga (rápido): baixo e magro, moletom azul com capuz, bandana, tênis laranja de cadarço solto, saltita. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_gym_1_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_gym_1/opp_gym_1_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-4.15999984741211,
+						-49.9199981689453
+					],
+					"hand_front": [
+						-11.4399995803833,
+						-47.8399963378906
+					]
+				},
+				{
+					"hand_back": [
+						-4.15999984741211,
+						-48.879997253418
+					],
+					"hand_front": [
+						-11.4399995803833,
+						-46.7999992370605
+					]
+				},
+				{
+					"hand_back": [
+						-4.57429552078247,
+						-50.9514770507813
+					],
+					"hand_front": [
+						-11.8542947769165,
+						-48.8714752197266
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-54.0799980163574
+					],
+					"hand_front": [
+						-12.4799995422363,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tonhão do Tatame (resistente, veterano da academia): largo e pesado, quimono velho amarelado de faixa roxa desbotada (ponta preta), descalço, orelha de couve-flor, barba curta, luvas azuis. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_gym_1_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_gym_1/opp_gym_1_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-1.03999996185303,
+						-65.5199966430664
+					],
+					"hand_front": [
+						-11.4399995803833,
+						-63.439998626709
+					]
+				},
+				{
+					"hand_back": [
+						-1.03999996185303,
+						-64.4799957275391
+					],
+					"hand_front": [
+						-10.3999996185303,
+						-62.3999977111816
+					]
+				},
+				{
+					"hand_back": [
+						-2.69718241691589,
+						-64.0657043457031
+					],
+					"hand_front": [
+						-12.0571823120117,
+						-61.5714073181152
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tonhão do Tatame (resistente, veterano da academia): largo e pesado, quimono velho amarelado de faixa roxa desbotada (ponta preta), descalço, orelha de couve-flor, barba curta, luvas azuis. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_gym_1_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_gym_1/opp_gym_1_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						1.03999996185303,
+						-69.6800003051758
+					],
+					"hand_front": [
+						-8.31999969482422,
+						-71.7599945068359
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-67.5999984741211
+					],
+					"hand_front": [
+						-9.35999965667725,
+						-69.6800003051758
+					]
+				},
+				{
+					"hand_back": [
+						-2.07999992370605,
+						-65.5199966430664
+					],
+					"hand_front": [
+						-11.4399995803833,
+						-64.4799957275391
+					]
+				},
+				{
+					"hand_back": [
+						-3.32288694381714,
+						-64.69140625
+					],
+					"hand_front": [
+						-12.6828861236572,
+						-62.8228149414063
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-5.19999980926514,
+						-63.439998626709
+					],
+					"hand_front": [
+						-14.5599994659424,
+						-60.3199996948242
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tonhão do Tatame (resistente, veterano da academia): largo e pesado, quimono velho amarelado de faixa roxa desbotada (ponta preta), descalço, orelha de couve-flor, barba curta, luvas azuis. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_gym_2_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_gym_2/opp_gym_2_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-4.32000017166138,
+						-51.8400039672852
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-49.6800003051758
+					]
+				},
+				{
+					"hand_back": [
+						-4.32000017166138,
+						-50.7600021362305
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-48.6000022888184
+					]
+				},
+				{
+					"hand_back": [
+						-4.75023031234741,
+						-52.9111518859863
+					],
+					"hand_front": [
+						-12.310230255127,
+						-50.7511520385742
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-56.1600036621094
+					],
+					"hand_front": [
+						-12.9600009918213,
+						-54.0000038146973
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				}
+			],
+			"loop": false,
+			"note": "Kid Navalha (rápido, campeão da academia): magro e comprido, braços longos, sem camisa, calção de cetim prateado com cós dourado, bota de boxe preta, luvas brancas, risco de navalha no cabelo e na sobrancelha. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_gym_2_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_gym_2/opp_gym_2_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-1.08000004291534,
+						-68.0400009155273
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-65.8800048828125
+					]
+				},
+				{
+					"hand_back": [
+						-1.08000004291534,
+						-66.9599990844727
+					],
+					"hand_front": [
+						-10.8000001907349,
+						-64.8000030517578
+					]
+				},
+				{
+					"hand_back": [
+						-2.8009204864502,
+						-66.5297698974609
+					],
+					"hand_front": [
+						-12.520920753479,
+						-63.9395408630371
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				}
+			],
+			"loop": false,
+			"note": "Kid Navalha (rápido, campeão da academia): magro e comprido, braços longos, sem camisa, calção de cetim prateado com cós dourado, bota de boxe preta, luvas brancas, risco de navalha no cabelo e na sobrancelha. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_gym_2_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_gym_2/opp_gym_2_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						1.08000004291534,
+						-72.3600006103516
+					],
+					"hand_front": [
+						-8.64000034332275,
+						-74.5200042724609
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-70.2000045776367
+					],
+					"hand_front": [
+						-9.72000026702881,
+						-72.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-2.16000008583069,
+						-68.0400009155273
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-66.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-3.45069050788879,
+						-67.1795425415039
+					],
+					"hand_front": [
+						-13.170690536499,
+						-65.2390823364258
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				}
+			],
+			"loop": false,
+			"note": "Kid Navalha (rápido, campeão da academia): magro e comprido, braços longos, sem camisa, calção de cetim prateado com cós dourado, bota de boxe preta, luvas brancas, risco de navalha no cabelo e na sobrancelha. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_strong_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_strong/opp_strong_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-4.32000017166138,
+						-51.8400039672852
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-49.6800003051758
+					]
+				},
+				{
+					"hand_back": [
+						-4.32000017166138,
+						-50.7600021362305
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-48.6000022888184
+					]
+				},
+				{
+					"hand_back": [
+						-4.75023031234741,
+						-52.9111518859863
+					],
+					"hand_front": [
+						-12.310230255127,
+						-50.7511520385742
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-56.1600036621094
+					],
+					"hand_front": [
+						-12.9600009918213,
+						-54.0000038146973
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				}
+			],
+			"loop": false,
+			"note": "Brutão do Posto (forte): o mais largo, boné do posto, regata com graxa, macacão amarrado, luva com fita isolante vermelha. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_strong_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_strong/opp_strong_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-1.08000004291534,
+						-68.0400009155273
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-65.8800048828125
+					]
+				},
+				{
+					"hand_back": [
+						-1.08000004291534,
+						-66.9599990844727
+					],
+					"hand_front": [
+						-10.8000001907349,
+						-64.8000030517578
+					]
+				},
+				{
+					"hand_back": [
+						-2.8009204864502,
+						-66.5297698974609
+					],
+					"hand_front": [
+						-12.520920753479,
+						-63.9395408630371
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				}
+			],
+			"loop": false,
+			"note": "Brutão do Posto (forte): o mais largo, boné do posto, regata com graxa, macacão amarrado, luva com fita isolante vermelha. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_strong_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_strong/opp_strong_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						1.08000004291534,
+						-72.3600006103516
+					],
+					"hand_front": [
+						-8.64000034332275,
+						-74.5200042724609
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-70.2000045776367
+					],
+					"hand_front": [
+						-9.72000026702881,
+						-72.3600006103516
+					]
+				},
+				{
+					"hand_back": [
+						-2.16000008583069,
+						-68.0400009155273
+					],
+					"hand_front": [
+						-11.8800001144409,
+						-66.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-3.45069050788879,
+						-67.1795425415039
+					],
+					"hand_front": [
+						-13.170690536499,
+						-65.2390823364258
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				},
+				{
+					"hand_back": [
+						-5.40000009536743,
+						-65.8800048828125
+					],
+					"hand_front": [
+						-15.1200008392334,
+						-62.6400032043457
+					]
+				}
+			],
+			"loop": false,
+			"note": "Brutão do Posto (forte): o mais largo, boné do posto, regata com graxa, macacão amarrado, luva com fita isolante vermelha. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_tank_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_tank/opp_tank_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-4.48000001907349,
+						-53.7600021362305
+					],
+					"hand_front": [
+						-12.3199996948242,
+						-51.5200004577637
+					]
+				},
+				{
+					"hand_back": [
+						-4.48000001907349,
+						-52.6399993896484
+					],
+					"hand_front": [
+						-12.3199996948242,
+						-50.4000015258789
+					]
+				},
+				{
+					"hand_back": [
+						-4.9261646270752,
+						-54.8708229064941
+					],
+					"hand_front": [
+						-12.7661647796631,
+						-52.6308212280273
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-58.2400016784668
+					],
+					"hand_front": [
+						-13.4400005340576,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				}
+			],
+			"loop": false,
+			"note": "Seu Muralha (resistente, cinturão): alto, barriga firme, bigode grisalho, camiseta amarela de várzea, cinturão de pano. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_tank_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_tank/opp_tank_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-1.12000000476837,
+						-70.5599975585938
+					],
+					"hand_front": [
+						-12.3199996948242,
+						-68.3199996948242
+					]
+				},
+				{
+					"hand_back": [
+						-1.12000000476837,
+						-69.4400024414063
+					],
+					"hand_front": [
+						-11.1999998092651,
+						-67.1999969482422
+					]
+				},
+				{
+					"hand_back": [
+						-2.90465831756592,
+						-68.9938354492188
+					],
+					"hand_front": [
+						-12.984658241272,
+						-66.3076705932617
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				}
+			],
+			"loop": false,
+			"note": "Seu Muralha (resistente, cinturão): alto, barriga firme, bigode grisalho, camiseta amarela de várzea, cinturão de pano. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_tank_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_tank/opp_tank_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						1.12000000476837,
+						-75.0400009155273
+					],
+					"hand_front": [
+						-8.96000003814697,
+						-77.2799987792969
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-72.8000030517578
+					],
+					"hand_front": [
+						-10.0799999237061,
+						-75.0400009155273
+					]
+				},
+				{
+					"hand_back": [
+						-2.24000000953674,
+						-70.5599975585938
+					],
+					"hand_front": [
+						-12.3199996948242,
+						-69.4400024414063
+					]
+				},
+				{
+					"hand_back": [
+						-3.57849359512329,
+						-69.6676712036133
+					],
+					"hand_front": [
+						-13.6584939956665,
+						-67.6553421020508
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				},
+				{
+					"hand_back": [
+						-5.59999990463257,
+						-68.3199996948242
+					],
+					"hand_front": [
+						-15.6800003051758,
+						-64.9599990844727
+					]
+				}
+			],
+			"loop": false,
+			"note": "Seu Muralha (resistente, cinturão): alto, barriga firme, bigode grisalho, camiseta amarela de várzea, cinturão de pano. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_warmup_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_warmup/opp_warmup_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						-3.92000007629395,
+						-47.0400009155273
+					],
+					"hand_front": [
+						-10.7800006866455,
+						-45.0800018310547
+					]
+				},
+				{
+					"hand_back": [
+						-3.92000007629395,
+						-46.060001373291
+					],
+					"hand_front": [
+						-10.7800006866455,
+						-44.1000022888184
+					]
+				},
+				{
+					"hand_back": [
+						-4.31039428710938,
+						-48.0119705200195
+					],
+					"hand_front": [
+						-11.1703939437866,
+						-46.0519714355469
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-50.9599990844727
+					],
+					"hand_front": [
+						-11.7600002288818,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				}
+			],
+			"loop": false,
+			"note": "Dudu Alongado (aquecimento): magro, regata branca, calção verde-musgo, meião branco, faixa mole. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_warmup_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_warmup/opp_warmup_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						-0.980000019073486,
+						-61.7400016784668
+					],
+					"hand_front": [
+						-10.7800006866455,
+						-59.7800025939941
+					]
+				},
+				{
+					"hand_back": [
+						-0.980000019073486,
+						-60.7600021362305
+					],
+					"hand_front": [
+						-9.80000019073486,
+						-58.8000030517578
+					]
+				},
+				{
+					"hand_back": [
+						-2.54157590866089,
+						-60.3696060180664
+					],
+					"hand_front": [
+						-11.3615760803223,
+						-58.019214630127
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				}
+			],
+			"loop": false,
+			"note": "Dudu Alongado (aquecimento): magro, regata branca, calção verde-musgo, meião branco, faixa mole. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_warmup_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_warmup/opp_warmup_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						0.980000019073486,
+						-65.6600036621094
+					],
+					"hand_front": [
+						-7.84000015258789,
+						-67.620002746582
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-63.7000007629395
+					],
+					"hand_front": [
+						-8.81999969482422,
+						-65.6600036621094
+					]
+				},
+				{
+					"hand_back": [
+						-1.96000003814697,
+						-61.7400016784668
+					],
+					"hand_front": [
+						-10.7800006866455,
+						-60.7600021362305
+					]
+				},
+				{
+					"hand_back": [
+						-3.13118195533752,
+						-60.9592132568359
+					],
+					"hand_front": [
+						-11.9511823654175,
+						-59.1984252929688
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				},
+				{
+					"hand_back": [
+						-4.90000009536743,
+						-59.7800025939941
+					],
+					"hand_front": [
+						-13.7200002670288,
+						-56.8400001525879
+					]
+				}
+			],
+			"loop": false,
+			"note": "Dudu Alongado (aquecimento): magro, regata branca, calção verde-musgo, meião branco, faixa mole. Virado para a esquerda. Recebeu golpe: 0 cabeça vai para trás (rosto de dor), 1 recua, 2 recupera. Começar no quadro de contato do outro.",
+			"pivot": [
+				56,
+				98
+			]
 		}
 	},
 	"fight_layout": {

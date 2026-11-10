@@ -19,16 +19,16 @@ extends SceneTree
 ## (inclinação, base, pescoço, ombros, ponta do pé). As mãos vêm do manifest, espelhadas; o quadro é desenhado
 ## virado para a direita com pivô (55,98) e espelhado no fim, o que devolve o pivô exato (56,98).
 
-const ROOT := "E:/Fightclicker/"
-const MANIFEST := ROOT + "assets/sprites/manifest.json"
-const MOCK := ROOT + "docs/arte/mockups/elenco_completo_x3.png"
+var ROOT := OS.get_environment("FIGHTCLICKER_ROOT") if OS.get_environment("FIGHTCLICKER_ROOT") != "" else "E:/Fightclicker/"
+var MANIFEST := ROOT + "assets/sprites/manifest.json"
+var MOCK := ROOT + "docs/arte/mockups/elenco_completo_x3.png"
 const FW := 112
 const FH := 104
 const ACTIONS := ["idle", "jab", "heavy", "hit", "dodge", "block", "tired", "victory", "ko"]
 const OPPS := ["opp_warmup", "opp_strong", "opp_fast", "opp_tank"]
 const OPPS_GYM := ["opp_gym_1", "opp_gym_2"]   # Fase 5: academia (modo "gym")
-const MOCK_GYM := ROOT + "docs/arte/mockups/academia_adversarios_x3.png"
-const MOCK_GYM_ARENA := ROOT + "docs/arte/mockups/academia_adversarios_arena_x2.png"
+var MOCK_GYM := ROOT + "docs/arte/mockups/academia_adversarios_x3.png"
+var MOCK_GYM_ARENA := ROOT + "docs/arte/mockups/academia_adversarios_arena_x2.png"
 const HELPERS := ["neighbor_1", "neighbor_2", "neighbor_3", "uncle_1", "uncle_2", "coach_1"]
 const LIGHT_C := Vector2(305, 90)   # lâmpada da garagem (mesma do fundo)
 const PORTRAIT_BG := {"opp_warmup": ["gr0", "gr1"], "opp_strong": ["r0", "r1"], "opp_fast": ["b0", "b2"], "opp_tank": ["br1", "y0"],
@@ -1024,6 +1024,86 @@ func run_gym() -> void:
 	gym_contact_sheet(newf, portraits, pl)
 	gym_arena(newf, out_dir + "seq")
 
+# ================================================================ REAÇÕES de quem apanha (poses em tools/art/golpes.json)
+## Modo "reacoes": gera hit_head / hit_up / hit_body de cada adversário a partir das poses do jogador (as MESMAS de
+## make_golpes_jogador.gd, já expandidas em reacoes_expandidas.json), espelhadas e na escala de cada corpo (opp_pose).
+## Uso: ... make_sprites_elenco.gd -- <saida> <antigos> reacoes <reacoes_expandidas.json>
+## Escreve <saida>/opponents/... e reacoes_adv_manifest.json (entradas e ações para o manifest.json).
+func vet(a: Variant) -> Vector2:
+	return Vector2(float(a[0]), float(a[1]))
+
+
+func pose_da_reacao(q: Dictionary) -> Dictionary:
+	var p := fpose()
+	for k in q:
+		var v: Variant = q[k]
+		p[k] = vet(v) if (v is Array and (v as Array).size() == 2) else v
+	return p
+
+
+func gen_reacao(oid: String, b: Dictionary, nome: String, rea: Dictionary, base: Dictionary) -> Array:
+	var s: float = opp_def(oid).s
+	var piv := v2(base.pivot)
+	var fs := Vector2i(int(base.frame_size[0]), int(base.frame_size[1]))
+	var gpiv := Vector2(fs.x - 1 - piv.x, piv.y)
+	var frames := []
+	var i := 0
+	for q in rea.frames:
+		var p := opp_pose(oid, nome, i, pose_da_reacao(q))
+		p["hf"] = mir(vet(q.hf) * s)
+		p["hb"] = mir(vet(q.hb) * s)
+		if oid == "opp_strong":
+			p["after_near_leg"] = hook_sleeves
+		elif oid == "opp_gym_1":
+			p["after_near_leg"] = func(lib, O: Vector2, ctx: Dictionary) -> void:
+				ctx["b"] = b
+				hook_belt(lib, O, ctx)
+		var im: Image = P.fight_frame(b, p, "%s_%s[%d]" % [oid, nome, i], fs, gpiv)
+		_check_bounds(im, oid + "_" + nome, i)
+		im.flip_x()
+		frames.append(im)
+		i += 1
+	return frames
+
+
+func run_reacoes(caminho: String) -> void:
+	var rea: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(caminho))
+	var entradas := {}
+	var acoes := {}
+	for oid in OPPS + OPPS_GYM:
+		var b := make_opp_build(oid)
+		var base := spr(oid + "_hit")
+		var s: float = opp_def(oid).s
+		for nome in rea:
+			var fr := gen_reacao(oid, b, nome, rea[nome], base)
+			var arquivo: String = str(base.file).replace("_hit.png", "_%s.png" % nome)
+			var strip: Image = P.strip(fr)
+			DirAccess.make_dir_recursive_absolute((out_dir + res_to_rel(arquivo)).get_base_dir())
+			strip.save_png(out_dir + res_to_rel(arquivo))
+			var maos := []
+			for q in rea[nome].frames:
+				var hf: Vector2 = mir(vet(q.hf) * s)
+				var hb: Vector2 = mir(vet(q.hb) * s)
+				maos.append({"hand_front": [hf.x, hf.y], "hand_back": [hb.x, hb.y]})
+			var e: Dictionary = (base as Dictionary).duplicate(true)
+			e["file"] = arquivo
+			e["frames"] = fr.size()
+			e["fps"] = float(rea[nome].fps)
+			e["loop"] = false
+			e["action"] = nome
+			e["hands"] = maos
+			e.erase("hit_frame")
+			e.erase("hit_point")
+			entradas[oid + "_" + nome] = e
+			if not acoes.has(oid):
+				acoes[oid] = {}
+			acoes[oid][nome] = oid + "_" + nome
+	var f := FileAccess.open(out_dir + "reacoes_adv_manifest.json", FileAccess.WRITE)
+	f.store_string(JSON.stringify({"sprites": entradas, "actions": acoes}, "\t"))
+	f.close()
+	print("ok: %d folhas de reação" % entradas.size())
+
+
 # ================================================================ main
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -1033,6 +1113,11 @@ func _init() -> void:
 	L = load(base + "/pixel_lib.gd").new()
 	P = load(base + "/personagem_lib.gd").new(L)
 	M = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
+	if args.size() > 3 and args[2] == "reacoes":
+		run_reacoes(args[3])
+		_write_report()
+		quit()
+		return
 	if args.size() > 2 and args[2] == "gym":
 		run_gym()
 		_write_report()
