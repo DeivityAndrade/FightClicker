@@ -78,9 +78,10 @@ func gen_garage(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> A
 	var i := 0
 	for q in g.frames:
 		var p := gpose_do_quadro(q)
-		frames.append(P.garage_frame(b, p, "fighter_%s%s[%d]" % [nome, suffix, i]))
+		var dxg := float(p.get("dx", 0.0))
+		frames.append(P.garage_frame(b, p, "fighter_%s%s[%d]" % [nome, suffix, i], Vector2i(48, 72), Vector2(22.0 + dxg, 67.0)))
 		if i == int(g.hit_frame):
-			contato = p[g.hit_hand]
+			contato = p[g.hit_hand] + Vector2(dxg, 0.0)
 		i += 1
 	return [frames, contato]
 
@@ -232,8 +233,10 @@ func expandir(g: Dictionary) -> void:
 		if k1 != k0:
 			u = suave((float(i) - float(k0.at)) / (float(k1.at) - float(k0.at)), str(k1.get("ease", "inout")))
 		var q := {}
+		if float(k0.at) == float(i):
+			q["_hold"] = int(k0.get("hold", 0))  # quadro-chave com "hold": o quadro se repete (impacto segurado)
 		for key in k0:
-			if key in ["at", "ease"]:
+			if key in ["at", "ease", "hold"]:
 				continue
 			var a: Variant = k0[key]
 			var b: Variant = k1.get(key, a)
@@ -244,11 +247,43 @@ func expandir(g: Dictionary) -> void:
 			else:
 				q[key] = a
 		frames.append(q)
-	g["frames"] = frames
+	# Segura os quadros pedidos (hold = repetições extras, como o `len` por quadro do Punch Club) e refaz o índice do contato.
+	var final := []
+	var mapa := {}
+	for i in frames.size():
+		mapa[i] = final.size()
+		var rep := 1 + int(frames[i].get("_hold", 0))
+		var q2: Dictionary = (frames[i] as Dictionary).duplicate()
+		q2.erase("_hold")
+		for r in rep:
+			final.append(q2.duplicate())
+	g["frames"] = final
+	g["hit_frame"] = mapa[int(g.hit_frame)]
 	if g.has("hit_hand"):
 		pass
-	elif frames.size() > int(g.hit_frame) and frames[int(g.hit_frame)].has("hf"):
-		g["hit_point"] = frames[int(g.hit_frame)].hf  # o ponto do contato é onde a luva está no quadro do contato
+	elif final.size() > int(g.hit_frame) and final[int(g.hit_frame)].has("hf"):
+		var fq: Dictionary = final[int(g.hit_frame)]
+		g["hit_point"] = [float(fq.hf[0]) + float(fq.get("dx", 0.0)), float(fq.hf[1])]  # onde a luva está no contato (com o deslize do corpo)
+
+
+## Rastro (smear) do golpe: faixa clara entre a posição da luva no quadro anterior e a atual, só onde o quadro está vazio
+## (nunca por cima do corpo). Para antes da luva, para ela continuar legível.
+func rastro(im: Image, a: Vector2, b: Vector2) -> void:
+	var d := b - a
+	var comp := d.length() - 5.0
+	if comp < 5.0:
+		return
+	var dir := d.normalized()
+	var passos := int(comp)
+	for st in passos:
+		var t := float(st) / float(passos)
+		var pos := a + dir * (comp * t)
+		var alfa := 0.2 + 0.7 * t
+		for off in [0, 1]:
+			var x := roundi(pos.x)
+			var y := roundi(pos.y) + int(off)
+			if x >= 0 and y >= 0 and x < im.get_width() and y < im.get_height() and im.get_pixel(x, y).a < 0.5:
+				im.set_pixel(x, y, Color(1, 1, 1, alfa))
 
 
 func make_build(suffix: String) -> Dictionary:
@@ -260,11 +295,16 @@ func gen(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> Array:
 	var frames := []
 	var piv := Vector2(PIVOT[0], PIVOT[1])
 	var i := 0
+	var mao_antes := Vector2.ZERO
 	for q in g.frames:
 		var p := pose_do_quadro(q)
 		var tag := "fight_player_%s%s[%d]" % [nome, suffix, i]
-		var im: Image = P.fight_frame(b, p, tag, Vector2i(FW, FH), piv)
-		var hfp: Vector2 = piv + p.hf
+		var origem := piv + Vector2(float(p.get("dx", 0.0)), 0.0)  # o corpo todo desliza (como o x/y por quadro do Punch Club)
+		var im: Image = P.fight_frame(b, p, tag, Vector2i(FW, FH), origem)
+		var hfp: Vector2 = origem + p.hf
+		if bool(p.get("smear", false)) and i > 0:
+			rastro(im, mao_antes, hfp)
+		mao_antes = hfp
 		var idf: int = P.ids[int(hfp.y) * FW + int(hfp.x)]
 		if idf != P.NEAR_GLOVE:
 			report.append("AVISO %s: mão da frente %s não cai na luva (id %d)" % [tag, str(p.hf), idf])
@@ -276,7 +316,8 @@ func gen(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> Array:
 func entrada(nome: String, g: Dictionary, suffix: String) -> Dictionary:
 	var maos := []
 	for q in g.frames:
-		maos.append({"hand_front": q.hf, "hand_back": q.hb})
+		var dx := float(q.get("dx", 0.0))
+		maos.append({"hand_front": [float(q.hf[0]) + dx, float(q.hf[1])], "hand_back": [float(q.hb[0]) + dx, float(q.hb[1])]})
 	return {
 		"file": "res://assets/sprites/fight/fight_player_%s%s.png" % [nome, suffix],
 		"frame_size": [FW, FH], "frames": g.frames.size(), "fps": g.fps, "pivot": PIVOT, "loop": false,
