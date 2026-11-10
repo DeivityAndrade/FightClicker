@@ -19,15 +19,21 @@
 		"name": "Metrônomo", "description": "Marca o ritmo. Seu lutador acompanha.",
 		"appears_as": "Metrônomo de feira na prateleira, pêndulo no andamento",
 		"levels": [
-			{ "id": "metronome_l1", "cost": 80, "interval": 2.0,
+			{ "id": "metronome_l1", "cost": 80, "interval": 1.2,
 			  "name": "Pêndulo lento", "description": "Preguiçoso, mas não perde a hora.",
 			  "appears_as": "Metrônomo de feira, pêndulo preguiçoso" },
-			{ "id": "metronome_l2", "cost": 150, "interval": 1.0,
+			{ "id": "metronome_l2", "cost": 150, "interval": 0.9,
 			  "name": "Pêndulo firme", "description": "Agora o saco sente o compasso.",
 			  "appears_as": "Metrônomo de madeira, pêndulo firme" },
-			{ "id": "metronome_l3", "cost": 300, "interval": 0.7,
+			{ "id": "metronome_l3", "cost": 300, "interval": 0.65,
 			  "name": "Pêndulo afinado", "description": "Quase tão rápido quanto a sua mão. Quase.",
-			  "appears_as": "Metrônomo de palco, pêndulo veloz" }
+			  "appears_as": "Metrônomo de palco, pêndulo veloz" },
+			{ "id": "metronome_l4", "cost": 700, "interval": 0.5,
+			  "name": "Pêndulo de estúdio", "description": "Já dá para dançar no ritmo.",
+			  "appears_as": "Metrônomo de estúdio, pêndulo rápido" },
+			{ "id": "metronome_l5", "cost": 2000, "interval": 0.4,
+			  "name": "Pêndulo de campeão", "description": "A sala inteira entra no compasso.",
+			  "appears_as": "Metrônomo de campeão, pêndulo quase invisível" }
 		]
 	}
 }

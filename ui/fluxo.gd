@@ -94,7 +94,15 @@ func _abrir_vitoria(resumo: Dictionary, tocar_som: bool) -> void:
 	var j := JanelaVitoria.new()
 	_abrir(j)
 	j.abrir_com(resumo, tocar_som)
-	j.continuar_pedido.connect(_fechar_tudo)
+	j.continuar_pedido.connect(_fechar_vitoria.bind(resumo))
+
+
+## Fecha a vitória. Se foi o chefe do cinturão, a mudança para a academia é AUTOMÁTICA (o prêmio paga a mudança e ainda
+## sobra dinheiro): antes o jogador ganhava o prêmio, o prêmio sumia no preço da mudança e ele chegava "sem nada".
+func _fechar_vitoria(resumo: Dictionary) -> void:
+	_fechar_tudo()
+	if bool(resumo.get("belt", false)) and GameState.pode_mudar():
+		GameState.mudar()
 
 
 # --- Fim de carreira ---

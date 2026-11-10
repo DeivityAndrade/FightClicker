@@ -97,7 +97,7 @@ func _teste_dados() -> void:
 	checar_igual([boneco.art, boneco.unlock.cost, boneco.split], ["bjj", 2500.0, {"strength": 0.25, "agility": 0.15, "endurance": 0.60}],
 		"boneco: Jiu-jitsu, 2.500, 25/15/60")
 	checar_igual([pera.upgrades.size(), pera.upgrades[0].cost, pera.upgrades[0].multiplier, pera.upgrades[1].cost, pera.upgrades[1].multiplier],
-		[2, 1500.0, 3.0, 15000.0, 5.0], "técnicas do Boxe: x3 por 1.500 e x5 por 15.000")
+		[4, 1500.0, 3.0, 15000.0, 5.0], "técnicas do Boxe: x3 por 1.500, x5 por 15.000 (e mais 2 níveis)")
 	checar_igual(d.default_focus, "punching_bag", "foco padrão continua o saco")
 	a.validar_aparelhos(d)
 	checar_igual([a.arte("boxing").apparatus, a.arte("bjj").apparatus], ["speed_bag", "grappling_dummy"], "artes apontam para os aparelhos")
@@ -355,7 +355,7 @@ func _teste_boxe() -> void:
 	var gm := _com_arte("f5_boxe_metronomo", "boxing")
 	gm.nivel_metronomo = 1
 	_passar(gm, 4.0)
-	checar_igual(gm.treino, 2.0, "Metrônomo (2 socos em 4 s) sem o bônus do Boxe")
+	checar_igual(gm.treino, 3.0, "Metrônomo (3 socos em 4 s) sem o bônus do Boxe")
 	var ga := _com_arte("f5_boxe_assistido", "boxing")
 	ga.definir_assistido(true)
 	_passar(ga, 5.0)

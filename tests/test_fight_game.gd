@@ -223,7 +223,7 @@ func _teste_vitoria_e_premio() -> void:
 		gs.lutar()
 		gs.concluir_luta()
 	checar(gs.cinturao and gs.precisa_mudar() and not gs.escada_completa(), "4 vitórias: cinturão, e o próximo (academia) pede a mudança")
-	checar_igual(gs.dinheiro, 2000.0, "50 + 150 + 800 + 1000")
+	checar_igual(gs.dinheiro, 3500.0, "50 + 150 + 800 + 2500")
 	checar_igual(gs.fama, 200, "fama 10 + 30 + 60 + 100")
 	checar_igual(gs.legado_em_jogo(), 500, "pote 400 + 100 do cinturão")
 	checar(not gs.pode_lutar(), "depois do cinturão, na garagem, não há luta (só a mudança)")
