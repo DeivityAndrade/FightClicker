@@ -333,11 +333,13 @@ func entrada(nome: String, g: Dictionary, suffix: String) -> Dictionary:
 	var maos := []
 	for q in g.frames:
 		var dx := float(q.get("dx", 0.0))
-		maos.append({"hand_front": [float(q.hf[0]) + dx, float(q.hf[1])], "hand_back": [float(q.hb[0]) + dx, float(q.hb[1])]})
+		var qf: Array = q.get("hf", [14, -58])
+		var qb: Array = q.get("hb", [5, -61])
+		maos.append({"hand_front": [float(qf[0]) + dx, float(qf[1])], "hand_back": [float(qb[0]) + dx, float(qb[1])]})
 	return {
 		"file": "res://assets/sprites/fight/fight_player_%s%s.png" % [nome, suffix],
 		"frame_size": [FW, FH], "frames": g.frames.size(), "fps": g.fps, "pivot": PIVOT, "loop": false,
-		"facing": "direita", "action": nome, "hit_frame": g.hit_frame, "hit_point": g.hit_point, "hands": maos,
+		"facing": "direita", "action": nome, "hit_frame": g.hit_frame, "hit_point": g.get("hit_point", [0, 0]), "hands": maos,
 	}
 
 
@@ -355,6 +357,9 @@ func _init() -> void:
 		expandir(todos[nm])
 	for nm in dados.get("garage", {}):
 		expandir(dados.garage[nm])
+	var reacoes: Dictionary = dados.get("reactions", {})
+	for nm in reacoes:
+		expandir(reacoes[nm])
 	var garagem: Dictionary = dados.get("garage", {})
 	var corda: Dictionary = dados.get("rope", {}).get("corda", {})
 	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
@@ -372,6 +377,18 @@ func _init() -> void:
 			P.strip(frc).save_png(out_dir + "characters/fighter_rope%s.png" % suffix)
 			entradas["fighter_rope%s" % suffix] = entrada_corda("res://assets/sprites/characters/fighter_rope%s.png" % suffix, corda,
 				"6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.")
+		for nome in reacoes:
+			if not so_estes.is_empty() and not (nome in so_estes):
+				continue
+			var gr: Dictionary = reacoes[nome]
+			P.strip(gen(b, nome, gr, suffix)).save_png(out_dir + "fight/fight_player_%s%s.png" % [nome, suffix])
+			var er := entrada(nome, gr, suffix)
+			er.erase("hit_frame")
+			er.erase("hit_point")
+			er["action"] = nome
+			if gr.has("ground_frame"):
+				er["ground_frame"] = gr.ground_frame
+			entradas["fight_player_%s%s" % [nome, suffix]] = er
 		for nome in garagem:
 			if not so_estes.is_empty() and not (nome in so_estes):
 				continue
@@ -391,6 +408,12 @@ func _init() -> void:
 				"Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.")
 			entradas[nome_costas] = entrada_corda("res://assets/sprites/equipment/%s.png" % nome_costas, corda,
 				"Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.")
+	var expandidas := {}
+	for nome in reacoes:
+		expandidas[nome] = {"fps": reacoes[nome].fps, "frames": reacoes[nome].frames}
+	var fx := FileAccess.open(out_dir + "reacoes_expandidas.json", FileAccess.WRITE)
+	fx.store_string(JSON.stringify(expandidas))
+	fx.close()
 	var f := FileAccess.open(out_dir + "golpes_manifest.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(entradas, "\t"))
 	f.close()

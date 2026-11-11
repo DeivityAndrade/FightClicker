@@ -23,11 +23,13 @@ func _teste_dados_reais() -> void:
 	checar_igual(d.aparelho("jump_rope").attribute, "agility", "corda = agilidade")
 	checar_igual(d.aparelho("treadmill").attribute, "endurance", "esteira = resistência")
 	for a in d.aparelhos:
-		checar_igual(a.upgrades.size(), 2, "%s tem 2 níveis" % a.id)
+		checar_igual(a.upgrades.size(), 4, "%s tem 4 níveis" % a.id)
 		checar_igual(a.upgrades[0].cost, 300.0, "%s nível 1 custa 300" % a.id)
 		checar_igual(a.upgrades[0].multiplier, 3.0, "%s nível 1 x3" % a.id)
 		checar_igual(a.upgrades[1].cost, 5000.0, "%s nível 2 custa 5000" % a.id)
 		checar_igual(a.upgrades[1].multiplier, 5.0, "%s nível 2 x5" % a.id)
+		checar_igual([a.upgrades[2].cost, a.upgrades[2].multiplier, a.upgrades[3].cost, a.upgrades[3].multiplier],
+			[60000.0, 4.0, 800000.0, 5.0], "%s níveis 3 e 4: x4 por 60 mil e x5 por 800 mil" % a.id)
 		checar_igual(a.upgrades[0].visual_level, 1, "%s nível 1 troca o sprite" % a.id)
 		checar(a.crit_texts.size() == 5 and a.name != a.id and a.first_hint != "", "%s tem textos" % a.id)
 		checar(a.upgrades[0].name != a.upgrades[0].id and a.upgrades[0].description != "", "%s: melhoria com texto" % a.id)

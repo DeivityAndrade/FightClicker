@@ -5,7 +5,7 @@ extends SceneTree
 ## Uso (um trecho por vez; precisa de janela, sem --headless). A janela pode ficar fora da tela:
 ##   Godot_console.exe --path <projeto> --resolution 1280x720 --position -3000,-3000 --fixed-fps 30 \
 ##       --write-movie <saida>.avi --script res://tools/ui/gravar_demo.gd -- <trecho>
-## Trechos: treino (clica no saco: jab das duas mãos, uppercut e golpe lateral) | corda (pula corda) |
+## Trechos: treino (clica no saco: jab das duas mãos, uppercut e golpe lateral) | corda (pula corda) | dourado (evento do cinturão dourado) |
 ##          chegada_corda (marca na parede, compra e a corda sendo pendurada) | luta (luta com golpes variados)
 ## Para a luta, um 2º argumento fixa a semente (a mesma luta em duas versões do jogo): ... -- luta 123
 ## Converter: ffmpeg -i saida.avi -c:v libx264 -pix_fmt yuv420p saida.mp4
@@ -33,6 +33,8 @@ func _initialize() -> void:
 			await _chegada_corda()
 		"luta":
 			await _luta()
+		"dourado":
+			await _dourado()
 		_:
 			printerr("trecho desconhecido: %s" % trecho)
 	await _esperar(0.5)
@@ -69,12 +71,26 @@ func _chegada_corda() -> void:
 	await _esperar(0.5)
 
 
+func _dourado() -> void:
+	_novo()
+	await _abrir()
+	await _esperar(1.0)
+	gs.evento_dourado_restante = gs.EVENTO_DURACAO  # o cinturão dourado aparece (sem esperar o sorteio de 45-90 s)
+	gs.evento_dourado.emit(gs.EVENTO_DURACAO)
+	await _esperar(2.0)
+	var sala: Node = cena.get_node("Sala")
+	sala._clique_em(sala._evento_rect.get_center())  # o jogador clica no cinturão: FRENESI x7
+	await _clicar(26, 0.3)
+	await _esperar(1.0)
+
+
 func _luta() -> void:
 	var k := semente_fixa if semente_fixa > 0 else _melhor_semente()
 	_novo()
 	gs.atributos = {"strength": 1000.0, "agility": 100.0, "endurance": 700.0}
 	await _abrir()
 	gs.rng.seed = k
+	load("res://ui/tela_luta.gd").set("forcar_ko", OS.get_environment("DEMO_FORCAR_KO"))  # opcional: grava uma queda específica
 	var fluxo: Node = cena.get_node("Fluxo")
 	fluxo.abrir_previa()
 	await _esperar(1.2)
@@ -83,7 +99,7 @@ func _luta() -> void:
 
 
 ## Procura uma semente cuja luta mostre o máximo de golpes diferentes do jogador (uppercut, gancho e soco baixo)
-## e dure pouco (bom para vídeo). A luta é sempre a mesma para a mesma semente.
+## e dure pouco, de preferência com o jogador vencendo (bom para vídeo). A luta é sempre a mesma para a mesma semente.
 func _melhor_semente() -> int:
 	_novo()
 	gs.atributos = {"strength": 1000.0, "agility": 100.0, "endurance": 700.0}
@@ -99,6 +115,22 @@ func _melhor_semente() -> int:
 				vistos[str(e.get("move", ""))] = true
 		var dur: float = float(info.result.t_end)
 		var p := float(vistos.size()) * 100.0 - absf(dur - 10.0)
+		if bool(info.result.win):
+			p += 500.0  # a demonstração fica melhor com o jogador vencendo
+		# DEMO_KO=barriga | forte | perde: prefere lutas que acabam com esse tipo de queda (para gravar cada K.O.).
+		var quer := OS.get_environment("DEMO_KO")
+		if quer != "" and bool(info.result.ko):
+			for e in info.events:
+				if not bool(e.get("ko", false)):
+					continue
+				var forte: bool = str(e.get("move", "")) in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]
+				var barriga: bool = str(e.get("move", "")) == "body_shot"
+				if quer == "barriga" and int(e.who) == 0 and barriga:
+					p += 3000.0
+				elif quer == "forte" and int(e.who) == 0 and forte and not barriga:
+					p += 3000.0
+				elif quer == "perde" and int(e.who) == 1 and (forte or barriga):
+					p += 3500.0
 		gs.aguardar_motivo()
 		gs.aplicar_save(snap.duplicate(true))
 		if p > pontos:

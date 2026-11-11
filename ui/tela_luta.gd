@@ -43,6 +43,22 @@ var _banner_sub: Label
 var _banner_fundo: ColorRect
 var _banner_ko: Sprite2D
 var _rotulo_round: Label
+# Novidades da luta: combo (golpes seguidos do jogador sem ser acertado), congelamento no impacto e câmera lenta no K.O.
+var _combo := 0
+var _rotulo_combo: Label
+# Barra de ESPECIAL (só visual, nunca muda o resultado da luta): cada golpe que entra enche a barra; levar soco esvazia metade;
+# na barra cheia o golpe seguinte vira o SUPER UPPERCUT, com efeitos. O cálculo é feito antes da luta, na ordem dos eventos.
+const ESPECIAL_GOLPES := 5
+var _esp_fundo: ColorRect
+var _esp_cheio: ColorRect
+var _esp_rotulo: Label
+var _tween_esp: Tween
+var _tween_combo: Tween
+var _congelar_id := 0
+# Queda do K.O. conforme o golpe final (só visual): "ko" (desaba), "ko_back" (golpe forte: é lançado para trás e cai de costas)
+# ou "ko_knees" (soco no estômago: ajoelha e tomba para a frente). Vale para o jogador e para qualquer adversário que tenha a arte.
+var _ko_nome := "ko"
+static var forcar_ko := ""  # só para gravações e testes: força a queda ("ko_back" | "ko_knees"), se a arte existir
 var _rotulo_tempo: Label
 var _rng := RandomNumberGenerator.new()
 var _shake_t := 0.0
@@ -231,6 +247,21 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	var nome_t := str(GameState.lutas.tatica(tid).get("name", tid)).to_upper()
 	UiTema.textura_rect(hud, str(info_t.get("icon_9", "icon_tactic_" + tid + "_9")), float(pt[0]), float(pt[1]) - 1)
 	UiTema.rotulo(hud, nome_t, _cor_tatica(str(info_t.get("color", "white"))), float(pt[0]) + 12, float(pt[1]))
+	_rotulo_combo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]), float(pt[1]) + 13.0)
+	_rotulo_combo.scale = Vector2(2, 2)  # o combo precisa ser lido no meio da luta
+	_rotulo_combo.position.y += 9.0
+	_esp_fundo = ColorRect.new()
+	_esp_fundo.color = Color(0.05, 0.04, 0.09, 0.85)
+	_esp_fundo.position = Vector2(float(pt[0]), float(pt[1]) + 12.0)
+	_esp_fundo.size = Vector2(110, 6)
+	hud.add_child(_esp_fundo)
+	_esp_cheio = ColorRect.new()
+	_esp_cheio.color = UiTema.Y1
+	_esp_cheio.position = Vector2(1, 1)
+	_esp_cheio.size = Vector2(0, 4)
+	_esp_fundo.add_child(_esp_cheio)
+	_esp_rotulo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]) + 114.0, float(pt[1]) + 10.0)
+	_rotulo_combo.modulate.a = 0.0
 
 	# Adversário (direita, espelhado)
 	var info_o: Dictionary = by.get(opp_id, {})
@@ -304,6 +335,7 @@ func iniciar(dados: Dictionary) -> void:
 func _agendar_tudo() -> void:
 	var intro := float(luta.intro_seconds)
 	var res: Dictionary = luta.result
+	_combo = 0
 	# Abertura: "1º ROUND", depois "LUTEM!" com o sino.
 	_cue(-intro + 0.05, func() -> void:
 		_texto_banner(UiTema.txt("fight_round", "{n}º ROUND", {"n": 1}), UiTema.WHITE, 2)
@@ -313,10 +345,37 @@ func _agendar_tudo() -> void:
 		_texto_banner(UiTema.txt("fight_start", "LUTEM!"), UiTema.Y2, 3)
 		_publico_cheer(false))
 	_cue(0.15, func() -> void: _esconder_banner())
+	# 2º e 3º rounds: sino e faixa no começo de cada round (só se a luta ainda estiver de pé).
+	var dur_round := float(GameState.lutas.combate.round_length)
+	var fim_real := float(res.t_ko) if bool(res.ko) else float(res.t_end)
+	for r in [2, 3]:
+		var t_round := dur_round * float(r - 1)
+		if t_round < fim_real - 0.4:
+			_cue(t_round, func() -> void:
+				sfx.sino_inicio()
+				_texto_banner(UiTema.txt("fight_round", "{n}º ROUND", {"n": r}), UiTema.WHITE, 2))
+			_cue(t_round + 0.9, func() -> void: _esconder_banner())
 
 	var eventos: Array = luta.events
+	var cont := 0  # barra de especial, na ordem em que os golpes acontecem
+	for e in eventos:
+		e["barra_apos"] = -1
+		if str(e.type) == "dodge" or bool(e.get("blocked", false)):
+			continue
+		if int(e.who) == 0:
+			cont += 1
+			if cont >= ESPECIAL_GOLPES and _existe_anim(0, "uppercut") and not bool(e.ko):
+				e["especial"] = true
+				cont = 0
+		else:
+			cont /= 2
+		e["barra_apos"] = cont
 	for e in eventos:
 		_agendar_evento(e)
+	_ko_nome = "ko"
+	for e in eventos:
+		if bool(e.get("ko", false)):
+			_ko_nome = _queda_do_golpe(int(e.target), e)
 
 	# O motivo da derrota NÃO é lido aqui: o GameState o calcula em segundo plano e a tela de fim o lê ao abrir.
 
@@ -333,15 +392,17 @@ func _agendar_tudo() -> void:
 		else:
 			_cue(t_ko + 0.06, func() -> void: _cair(perdedor))
 		var t_queda := (float(grogue.to) if not grogue.is_empty() else t_ko + 0.06)
-		var fps_ko := float(UiTema.sprite(_nome(perdedor, "ko")).get("fps", 10.0))
-		_cue(t_queda + 3.0 / fps_ko, func() -> void: _chao(perdedor))
-		_cue(t_queda + 3.0 / fps_ko + 0.5, func() -> void: _estado(vencedor, "victory"))
-		_cue(t_queda + 3.0 / fps_ko + 0.45, func() -> void:
+		var spr_ko := UiTema.sprite(_nome(perdedor, _ko_nome))
+		var fps_ko := float(spr_ko.get("fps", 10.0))
+		var t_chao := t_queda + float(spr_ko.get("ground_frame", 3)) / fps_ko  # quadro em que o corpo bate no chão
+		_cue(t_chao, func() -> void: _chao(perdedor))
+		_cue(t_chao + 0.5, func() -> void: _estado(vencedor, "victory"))
+		_cue(t_chao + 0.45, func() -> void:
 			if bool(res.win):
 				sfx.vitoria()
 			else:
 				sfx.derrota())
-		_cue(t_queda + 3.0 / fps_ko + 0.2, func() -> void: sfx.sino_fim())
+		_cue(t_chao + 0.2, func() -> void: sfx.sino_fim())
 		_t_parada = t_ko
 	else:
 		# Fim por pontos: "TEMPO!", sino, o vencedor comemora e o outro cansa.
@@ -374,12 +435,20 @@ func _agendar_evento(e: Dictionary) -> void:
 	var t := float(e.t)
 	# Golpe da luta (data/moves.json): usa o sprite do golpe se ele existir; senão, o jab/heavy de sempre.
 	var anim := _anim_do_golpe(quem, e)
+	var especial := bool(e.get("especial", false))
+	if especial:
+		anim = "uppercut"
+		e["move_anim"] = "uppercut"
+		e["defender_move_anim"] = "hit_up"
 	e["anim_usada"] = anim
-	e["reacao_usada"] = _reacao_do_golpe(alvo, e)
+	e["reacao_usada"] = _reacao_do_golpe(alvo, e, anim)
 	var s := UiTema.sprite(_nome(quem, anim))
 	var antes := float(int(s.get("hit_frame", 1))) / maxf(float(s.get("fps", 12.0)), 1.0)
 	# O golpe sai `hit_frame / fps` antes: o contato cai exatamente em `t`.
 	_cue(t - antes, func() -> void: _tocar(quem, anim))
+	if especial:
+		_cue(t - antes - 0.35, func() -> void: _preparar_especial())
+		_cue(t + 0.9, func() -> void: _esconder_banner())
 	if str(e.kind) == "dodge" or str(e.type) == "dodge":
 		var sd := UiTema.sprite(_nome(alvo, "dodge"))
 		var um_quadro := 1.0 / maxf(float(sd.get("fps", 14.0)), 1.0)
@@ -402,9 +471,26 @@ func _anim_do_golpe(quem: int, e: Dictionary) -> String:
 	return str(e.attack_anim)
 
 
-func _reacao_do_golpe(alvo: int, e: Dictionary) -> String:
+## Queda do K.O. pelo golpe que derrubou: golpe forte (crítico, contra-ataque, uppercut, direto) = lançado para trás; soco no
+## estômago = queda para a frente (ajoelha e tomba); golpe normal (jab, gancho) = alterna entre a queda para a frente e a de
+## sempre, de forma fixa para a mesma luta (pelo instante do golpe), para as lutas não acabarem sempre iguais.
+func _queda_do_golpe(alvo: int, e: Dictionary) -> String:
+	var anim := str(e.get("anim_usada", e.get("attack_anim", "")))
+	var nome := "ko"
+	if anim in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]:
+		nome = "ko_back"
+	elif anim == "body_shot" or int(round(float(e.get("t", 0.0)) * 100.0)) % 2 == 0:
+		nome = "ko_knees"
+	if forcar_ko != "":
+		nome = forcar_ko
+	return nome if _existe_anim(alvo, nome) else "ko"
+
+
+## Reação específica do golpe (queixo, cabeça, barriga) só quando o atacante FEZ esse golpe (o sprite dele existe); se ele caiu
+## no jab/heavy de sempre, quem apanha também usa o `hit` de sempre (senão reagiria a um golpe que não viu).
+func _reacao_do_golpe(alvo: int, e: Dictionary, anim_usada: String) -> String:
 	var r := str(e.get("defender_move_anim", ""))
-	if r != "" and _existe_anim(alvo, r):
+	if r != "" and anim_usada == str(e.get("move_anim", "")) and _existe_anim(alvo, r):
 		return r
 	return str(e.defender_anim)
 
@@ -521,6 +607,19 @@ func _acertou(e: Dictionary) -> void:
 	_barras[alvo].definir(pct, true)
 	_l[alvo].vida = pct
 
+	# Barra de especial: o número já foi calculado antes da luta (o especial esvazia a barra com um estouro).
+	if bool(e.get("especial", false)):
+		_estourar_especial(contato)
+	elif int(e.get("barra_apos", -1)) >= 0:
+		_esp_definir(int(e.barra_apos))
+
+	# Combo: golpes seguidos do jogador sem apanhar no meio (esquiva ou bloqueio do adversário quebram a sequência).
+	if quem == 0 and not bloqueado:
+		_combo += 1
+		_mostrar_combo()
+	elif quem == 1 and not bloqueado:
+		_combo = 0
+
 	# Som, tremida, flash, lâmpada e torcida: mais forte conforme o golpe.
 	if bloqueado:
 		sfx.bloqueio()
@@ -530,13 +629,87 @@ func _acertou(e: Dictionary) -> void:
 		_flash_tela(0.32)
 		_lampada.tocar([1, 0, 1, 0], 10.0)
 		_publico_cheer(true)
+		_congelar(0.07, 0.05)  # o impacto "pesa": os dois lutadores congelam um instante
 	elif tipo == "counter":
 		_tremer(1, 0.14)
 		_flash_tela(0.2)
 		_lampada.tocar([1, 0, 1, 0], 10.0)
 		_publico_cheer(true)
+		_congelar(0.06, 0.05)
 	elif ko:
 		_tremer(2, 0.2)
+	if ko:
+		_congelar(1.1, 0.3)  # K.O. em câmera lenta
+
+
+## Congela (ou desacelera) o jogo por `duracao_real` segundos de relógio real. Vale o efeito mais recente.
+func _congelar(duracao_real: float, escala: float) -> void:
+	_congelar_id += 1
+	var meu := _congelar_id
+	Engine.time_scale = escala
+	await get_tree().create_timer(duracao_real, true, false, true).timeout  # o último `true` ignora o time_scale
+	if meu == _congelar_id:
+		Engine.time_scale = 1.0
+
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
+
+
+func _esp_definir(n: int) -> void:
+	if _esp_cheio == null:
+		return
+	var alvo_w := roundf(108.0 * clampf(float(n) / float(ESPECIAL_GOLPES), 0.0, 1.0))
+	if _tween_esp != null and _tween_esp.is_valid():
+		_tween_esp.kill()
+	_esp_cheio.modulate = Color.WHITE
+	_esp_cheio.color = UiTema.Y1 if n < ESPECIAL_GOLPES - 1 else UiTema.Y2
+	_tween_esp = create_tween()
+	_tween_esp.tween_property(_esp_cheio, "size:x", alvo_w, 0.12)
+	_esp_rotulo.text = ""
+
+
+## Um golpe antes do especial: a barra enche inteira e pisca, o lutador brilha e aparece o aviso.
+func _preparar_especial() -> void:
+	if _esp_cheio == null:
+		return
+	if _tween_esp != null and _tween_esp.is_valid():
+		_tween_esp.kill()
+	_esp_cheio.size.x = 108.0
+	_esp_cheio.color = UiTema.Y2
+	_esp_rotulo.text = UiTema.txt("fight_special", "SUPER!").to_upper()
+	_tween_esp = create_tween().set_loops()
+	_tween_esp.tween_property(_esp_cheio, "modulate", Color(2, 2, 2), 0.1)
+	_tween_esp.tween_property(_esp_cheio, "modulate", Color.WHITE, 0.1)
+	var spr: AnimSprite = _l[0].spr
+	spr.modulate = Color(1.7, 1.45, 0.6)
+	spr.create_tween().tween_property(spr, "modulate", Color.WHITE, 0.6)
+	_texto_banner(UiTema.txt("fight_special_banner", "SUPER UPPERCUT!"), UiTema.Y2, 2)
+	sfx.publico()
+	_publico_cheer(false)
+
+
+func _estourar_especial(contato: Vector2) -> void:
+	_tocar_fx("fx_fight_crit", contato, false)
+	_tocar_fx("fx_fight_crit", contato + Vector2(0, -8), false)
+	_tremer(4, 0.32)
+	_flash_tela(0.7)
+	_lampada.tocar([1, 0, 1, 0, 1, 0], 12.0)
+	_publico_cheer(true)
+	_congelar(0.14, 0.04)
+	_esp_definir(0)
+
+
+func _mostrar_combo() -> void:
+	if _combo < 2 or _rotulo_combo == null:
+		return
+	_rotulo_combo.text = UiTema.txt("fight_combo", "COMBO X{n}", {"n": _combo}).to_upper()
+	_rotulo_combo.modulate.a = 1.0
+	if _tween_combo != null and _tween_combo.is_valid():
+		_tween_combo.kill()
+	_tween_combo = create_tween()
+	_tween_combo.tween_interval(1.2)
+	_tween_combo.tween_property(_rotulo_combo, "modulate:a", 0.0, 0.3)
 
 
 ## Número de dano que sobe do ponto de contato. O mais recente fica por cima e os que estavam embaixo dele são
@@ -557,6 +730,8 @@ func _numero_de_dano(dano: float, tipo: String, bloqueado: bool, origem: Vector2
 
 func _esquivou(e: Dictionary) -> void:
 	var alvo := int(e.target)
+	if int(e.who) == 0:
+		_combo = 0  # o soco do jogador foi esquivado: acaba o combo
 	var cab := _ponto_cabeca(alvo)
 	# Vento do soco que passou (desenhado para o soco do adversário; espelha quando é o adversário que esquiva).
 	_tocar_fx("fx_whoosh", cab + Vector2(-8.0 * float(_l[alvo].dir), 6.0), alvo == 1)
@@ -572,7 +747,7 @@ func _cair(i: int) -> void:
 	var l: Dictionary = _l[i]
 	l.estado = "ko"
 	var spr: AnimSprite = l.spr
-	spr.definir(_nome(i, "ko"))
+	spr.definir(_nome(i, _ko_nome))
 	spr.z_index = Z_LUTADOR
 	var fps := float(UiTema.sprite(spr.nome_sprite).get("fps", 10.0))
 	var seq: Array = []
@@ -586,7 +761,8 @@ func _cair(i: int) -> void:
 # Quadro 3 do ko = o corpo bate no chão: poeira, tremida, letreiro K.O., estrelinhas e torcida.
 func _chao(i: int) -> void:
 	var l: Dictionary = _l[i]
-	_tocar_fx("fx_dust_fall", (l.base as Vector2) + Vector2(-14.0 * float(l.dir), 0), i == 1)
+	var frente := _ko_nome == "ko_knees"  # tomba para a frente: poeira e estrelas do outro lado
+	_tocar_fx("fx_dust_fall", (l.base as Vector2) + Vector2((14.0 if frente else -14.0) * float(l.dir), 0), i == 1)
 	_tremer(2, 0.3)
 	_flash_tela(0.4)
 	sfx.queda()
@@ -596,6 +772,10 @@ func _chao(i: int) -> void:
 	_banner_ko_mostrar()
 	var est: AnimSprite = l["estrelas"]
 	var ko_cab := _vetor(UiTema.manifest().get("fight_layout", {}).get("ko_head_point", [-36, -12]))
+	if frente:
+		ko_cab = Vector2(38, -12)
+	elif _ko_nome == "ko_back":
+		ko_cab = Vector2(-42, -12)
 	est.position = (l.base as Vector2) + Vector2(ko_cab.x * float(l.dir), ko_cab.y) * float(l.escala)
 	est.visible = true
 	est.tocar([0, 1, 2, 3, 4, 5], 10.0, true)
@@ -767,6 +947,7 @@ func _finalizar() -> void:
 
 ## Esconde a arena e libera os recursos (chamado pelo Fluxo ao voltar para a garagem).
 func encerrar() -> void:
+	Engine.time_scale = 1.0
 	ativa = false
 	visible = false
 	for c in get_children():

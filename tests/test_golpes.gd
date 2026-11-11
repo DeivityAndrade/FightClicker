@@ -13,6 +13,7 @@ func rodar_testes() -> void:
 	_teste_arte_do_jogador()
 	_teste_arte_do_treino()
 	_teste_arte_da_corda()
+	_teste_reacoes()
 	_teste_eventos_da_luta()
 
 
@@ -146,6 +147,35 @@ func _teste_arte_da_corda() -> void:
 		var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
 		checar(img != null and img.get_size() == Vector2i(48 * 7, 80), "%s: PNG 7 quadros 48x80" % nome)
 		checar(e.positions.has("foco_corda"), "%s: posição foco_corda" % nome)
+
+
+# Reações de quem apanha (hit_head / hit_up / hit_body): existem para o jogador (4 luvas) e para os 6 adversários, com quadros,
+# mãos e PNG coerentes, e cada golpe do catálogo que aponta uma reação aponta para uma que existe nas folhas do jogador.
+func _teste_reacoes() -> void:
+	var man: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/sprites/manifest.json"))
+	var m := MovesData.carregar()
+	var nomes: Array = []
+	for r in ["hit_head", "hit_up", "hit_body"]:
+		for suf in ["", "_glove_l1", "_glove_l2", "_glove_l3"]:
+			nomes.append("fight_player_%s%s" % [r, suf])
+		for oid in ["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2"]:
+			nomes.append("%s_%s" % [oid, r])
+	for nome in nomes:
+		var e: Dictionary = man.sprites.get(nome, {})
+		checar(not e.is_empty(), "%s está no manifest" % nome)
+		if e.is_empty():
+			continue
+		var n := int(e.frames)
+		checar_igual((e.hands as Array).size(), n, "%s: uma posição de mão por quadro" % nome)
+		var img := Image.load_from_file(ProjectSettings.globalize_path(str(e.file)))
+		checar(img != null and img.get_size() == Vector2i(int(e.frame_size[0]) * n, int(e.frame_size[1])), "%s: PNG com %d quadros do tamanho certo" % [nome, n])
+	for oid in ["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2"]:
+		var acoes: Dictionary = man.by_data_id[oid].actions
+		checar(acoes.has("hit_head") and acoes.has("hit_up") and acoes.has("hit_body"), "%s: ações de reação no manifest" % oid)
+	for id in m.golpes:
+		var r := str(m.golpes[id].defender_anim)
+		if r != "":
+			checar(man.by_data_id.player_fight.actions.has(r), "o golpe %s aponta a reação %s, que existe" % [id, r])
 
 
 func _novo(nome: String) -> Node:

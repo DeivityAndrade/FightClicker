@@ -103,6 +103,8 @@ func _ready() -> void:
 	GameState.luva_mudou.connect(_ao_luva)
 	GameState.carreira_mudou.connect(_ao_carreira)
 	GameState.auto_socou.connect(_ao_auto_socou)
+	GameState.evento_dourado.connect(_ao_evento_dourado)
+	GameState.frenesi_mudou.connect(_ao_frenesi_mudou)
 	GameState.metronomo_mudou.connect(_ao_metronomo)
 	GameState.aparelho_comprado.connect(_ao_aparelho_comprado)
 	GameState.economia_mudou.connect(_atualizar_marcas)
@@ -236,6 +238,7 @@ func _aplicar_layout() -> void:
 	# Saco: no centro (foco) ou à esquerda. Na academia os aparelhos básicos usam o sprite com sufixo _gym (_n).
 	var nome_saco := _n("bag_l%d_idle" % nb) if foco == SACO else _n("bag_l%d_side" % nb)
 	var chave := "centro" if foco == SACO else "lado_esquerdo"
+	_matar_balanco_saco()
 	_saco.definir(nome_saco)
 	_saco.position = UiTema.pos(nome_saco, chave)
 	_saco.z_index = int(_saco.position.y) + int(UiTema.sprite(nome_saco).get("sort_y_offset", 0))
@@ -391,6 +394,16 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _clique_em(p: Vector2) -> void:
+	if _evento_rect.size != Vector2.ZERO and _evento_rect.has_point(p):
+		if GameState.pegar_evento_dourado():
+			_esconder_evento()
+			var n := _pegar_numero()
+			_ordem += 1
+			n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
+			n.iniciar(UiTema.txt("frenzy_start", "FRENESI X{n}!", {"n": int(GameState.FRENESI_MULT)}), UiTema.Y1, true, "", p + Vector2(0, -10), 1.0, 26.0)
+			sfx.compra()
+			_tremer(1, 0.12)
+		return
 	if ALVO.has_point(p):
 		_pos_clique = p
 		GameState.clicar()
@@ -575,6 +588,7 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_tocar_golpe_saco(golpe)
 			_saco.definir(_n("bag_l%d_hit" % nb))
 			_saco.tocar([0, 1, 2, 3], 14.0, false, _saco_repouso)
+			_balancar_saco(golpe, critico)
 			var hp: Array = UiTema.sprite(golpe).get("hit_point", [323, 222])
 			_impacto(Vector2(float(hp[0]), float(hp[1])), critico)
 		PERA:
@@ -620,6 +634,24 @@ func _reagir(aparelho: String, critico: bool) -> void:
 const COMBO_SACO := ["fighter_punch", "fighter_punch_b", "fighter_punch", "fighter_punch_b", "fighter_uppercut",
 	"fighter_punch", "fighter_punch_b", "fighter_hook"]
 var _i_combo := 0
+# Evento dourado: o cinturão dourado aparece num ponto sorteado da sala por alguns segundos; clicar liga o FRENESI (x7).
+var _evento_spr: AnimSprite
+var _evento_rect := Rect2()
+var _tween_evento: Tween
+var _tween_ouro: Tween
+var _rotulo_frenesi: Label
+# Reação do saco por golpe: o uppercut o levanta, o golpe lateral o balança para o lado. A corrente acompanha.
+var _tween_saco: Tween
+var _saco_base := Vector2.ZERO
+var _saco_dir := Vector2.ZERO
+var _saco_k := 0.0:
+	set(v):
+		_saco_k = v
+		if _saco != null:
+			_saco.position = _saco_base + _saco_dir * v
+			_corrente.x = _saco_base.x - 1.0 + _saco_dir.x * v * 0.5
+			_corrente.y_fim = _saco_base.y + _saco_dir.y * v
+			_corrente.queue_redraw()
 
 
 ## Próximo golpe do combo. Se a arte de algum golpe não existir (manifest mexido), cai no jab de sempre.
@@ -627,6 +659,85 @@ func _proximo_golpe_saco() -> String:
 	var g: String = COMBO_SACO[_i_combo % COMBO_SACO.size()]
 	_i_combo += 1
 	return g if not UiTema.sprite(g).is_empty() else "fighter_punch"
+
+
+## Evento dourado: a luva dourada aparece num ponto sorteado, flutua por alguns segundos e espera o clique.
+func _ao_evento_dourado(duracao: float) -> void:
+	if GameState.modal_aberto:
+		return
+	if _evento_spr == null:
+		_evento_spr = _novo_anim("event_golden_glove", "", 950)
+	var x := _rng.randf_range(AREA.position.x + 50.0, AREA.end.x - 70.0)
+	var y := _rng.randf_range(AREA.position.y + 40.0, AREA.position.y + 150.0)
+	_evento_spr.position = Vector2(x, y)
+	_evento_spr.visible = true
+	_evento_spr.modulate = Color.WHITE
+	_evento_spr.scale = Vector2.ONE
+	_evento_spr.tocar([0, 1, 2], 6.0, true)
+	_evento_rect = Rect2(x - 18.0, y - 18.0, 36.0, 34.0)
+	if _tween_evento != null and _tween_evento.is_valid():
+		_tween_evento.kill()
+	_tween_evento = create_tween().set_loops()  # flutua até sumir
+	_tween_evento.tween_property(_evento_spr, "position:y", y - 3.0, 0.4).set_trans(Tween.TRANS_SINE)
+	_tween_evento.tween_property(_evento_spr, "position:y", y + 3.0, 0.4).set_trans(Tween.TRANS_SINE)
+	sfx.foco()
+
+
+func _esconder_evento() -> void:
+	_evento_rect = Rect2()
+	if _tween_evento != null and _tween_evento.is_valid():
+		_tween_evento.kill()
+	if _evento_spr != null:
+		_evento_spr.visible = false
+
+
+func _ao_frenesi_mudou(restante: float) -> void:
+	if _rotulo_frenesi == null:
+		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(AREA.position.x, AREA.position.y + 2.0, AREA.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
+		_rotulo_frenesi.z_index = 980
+	_rotulo_frenesi.visible = restante > 0.0
+	# Durante o FRENESI o lutador (e as luvas) brilham em dourado, pulsando.
+	if _tween_ouro != null and _tween_ouro.is_valid():
+		_tween_ouro.kill()
+	if restante > 0.0:
+		_tween_ouro = create_tween().set_loops()
+		_tween_ouro.tween_property(_lutador, "modulate", Color(1.5, 1.2, 0.5), 0.25).set_trans(Tween.TRANS_SINE)
+		_tween_ouro.tween_property(_lutador, "modulate", Color(1.15, 1.0, 0.7), 0.25).set_trans(Tween.TRANS_SINE)
+	else:
+		_lutador.modulate = Color.WHITE
+
+
+func _balancar_saco(golpe: String, critico: bool) -> void:
+	var dir := Vector2.ZERO
+	var picos := []
+	match golpe:
+		"fighter_uppercut":
+			dir = Vector2(0, -5)
+			picos = [[1.0, 0.06], [-0.25, 0.13], [0.0, 0.12]]
+		"fighter_hook":
+			dir = Vector2(7, 0)
+			picos = [[1.0, 0.07], [-0.55, 0.13], [0.25, 0.11], [0.0, 0.1]]
+		_:
+			return
+	_matar_balanco_saco()
+	_saco_base = _saco.position
+	_saco_dir = dir * (1.5 if critico else 1.0)
+	_saco_k = 0.0
+	_tween_saco = create_tween()
+	for pico in picos:
+		_tween_saco.tween_property(self, "_saco_k", float(pico[0]), float(pico[1])).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_tween_saco.tween_callback(func() -> void: _saco_k = 0.0)
+
+
+func _matar_balanco_saco() -> void:
+	if _tween_saco != null and _tween_saco.is_valid():
+		_tween_saco.kill()
+		_saco_dir = Vector2.ZERO
+		if _saco != null and _saco_base != Vector2.ZERO:
+			_saco.position = _saco_base
+			_corrente.x = _saco_base.x - 1.0
+			_corrente.y_fim = _saco_base.y
+			_corrente.queue_redraw()
 
 
 ## Toca o golpe no lutador. O jab da mão da frente (o original) continua nos quadros 1-3 a 18 fps, como sempre foi. Os
@@ -1100,6 +1211,10 @@ func _cancelar_chegada() -> void:
 # --- Quadro a quadro ---
 
 func _process(delta: float) -> void:
+	if _evento_rect.size != Vector2.ZERO and (GameState.evento_dourado_restante <= 0.0 or GameState.modal_aberto):
+		_esconder_evento()  # venceu o tempo, alguém pegou ou abriu uma janela/luta
+	if _rotulo_frenesi != null and _rotulo_frenesi.visible:
+		_rotulo_frenesi.text = UiTema.txt("frenzy_label", "FRENESI X{n}  {s}S", {"n": int(GameState.FRENESI_MULT), "s": int(ceil(GameState.frenesi_restante))})
 	# Tremida: pixel inteiro, decai até zero.
 	if _shake_t > 0.0:
 		_shake_t -= delta
