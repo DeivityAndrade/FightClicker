@@ -1,6 +1,6 @@
 extends "res://tests/test_base.gd"
 ## Testa o evento dourado e o FRENESI: o cinturão dourado aparece de tempos em tempos, expira se ninguém clicar, não conta
-## com janela/luta aberta, e clicar nele liga o FRENESI (x7 nos cliques e auto-socos por 12 s, sem tocar na renda da equipe).
+## com janela/luta aberta, e clicar nele liga o FRENESI (multiplicador e duração vêm de golden_event, sem tocar na renda da equipe).
 
 const GameStateScript := preload("res://scripts/game_state.gd")
 
@@ -38,14 +38,16 @@ func _teste_aparece_e_expira() -> void:
 	var gs := _novo("dourado_aparece")
 	var vezes := []
 	gs.evento_dourado.connect(func(d: float) -> void: vezes.append(d))
-	_passar(gs, 44.0)
-	checar_igual(vezes.size(), 0, "antes de 45 s nunca aparece")
-	var t := 44.0 + _ate_aparecer(gs, 60.0)  # o sorteio é entre 45 e 90 s
-	checar(t >= 44.9 and t <= 90.2, "apareceu entre 45 e 90 s (%.1f s)" % t)
+	var emin: float = gs.EVENTO_ESPERA_MIN
+	var emax: float = gs.EVENTO_ESPERA_MAX
+	_passar(gs, emin - 1.0)
+	checar_igual(vezes.size(), 0, "antes do mínimo de espera nunca aparece")
+	var t := emin - 1.0 + _ate_aparecer(gs, emax)  # sorteio entre o mínimo e o máximo dos dados
+	checar(t >= emin - 0.1 and t <= emax + 0.2, "apareceu dentro da espera dos dados (%.1f s)" % t)
 	checar_igual(vezes.size(), 1, "aparece uma vez")
 	checar(gs.evento_dourado_restante > 0.0, "o cinturão está esperando o clique")
-	_passar(gs, 7.5)
-	checar_igual(gs.evento_dourado_restante, 0.0, "ninguém clicou: o cinturão some em 7 s")
+	_passar(gs, gs.EVENTO_DURACAO + 0.5)
+	checar_igual(gs.evento_dourado_restante, 0.0, "ninguém clicou: o cinturão some após visible_seconds")
 	checar(not gs.pegar_evento_dourado(), "sem cinturão, não dá para pegar")
 	checar_igual(gs.mult_frenesi(), 1.0, "sem frenesi: x1")
 	_liberar(gs)
@@ -53,23 +55,25 @@ func _teste_aparece_e_expira() -> void:
 
 func _teste_pegar_liga_frenesi() -> void:
 	var gs := _novo("dourado_frenesi")
-	_ate_aparecer(gs, 100.0)
+	_ate_aparecer(gs, gs.EVENTO_ESPERA_MAX + 1.0)
 	checar(gs.evento_dourado_restante > 0.0, "cinturão na sala")
 	var sinais := []
 	gs.frenesi_mudou.connect(func(r: float) -> void: sinais.append(r))
 	var base: float = gs.por_clique()
 	checar(gs.pegar_evento_dourado(), "clicar no cinturão liga o frenesi")
-	checar_igual(gs.mult_frenesi(), 7.0, "frenesi: x7")
+	var fm: float = gs.FRENESI_MULT
+	var fd: float = gs.FRENESI_DURACAO
+	checar_igual(gs.mult_frenesi(), fm, "frenesi: multiplicador dos dados")
 	var antes: float = gs.treino
 	gs.clicar()
-	checar_igual(gs.treino - antes, base * 7.0, "o clique rende 7 vezes")
+	checar_igual(gs.treino - antes, base * fm, "o clique rende o multiplicador dos dados")
 	antes = gs.treino
 	gs.auto_socar()
-	checar_igual(gs.treino - antes, gs.por_auto_soco() * 7.0, "o auto-soco também rende 7 vezes")
-	_passar(gs, 11.5)
-	checar_igual(gs.mult_frenesi(), 7.0, "aos 11,5 s ainda vale")
+	checar_igual(gs.treino - antes, gs.por_auto_soco() * fm, "o auto-soco também rende o multiplicador")
+	_passar(gs, fd - 0.5)
+	checar_igual(gs.mult_frenesi(), fm, "meio segundo antes do fim ainda vale")
 	_passar(gs, 1.0)
-	checar_igual(gs.mult_frenesi(), 1.0, "depois de 12 s acaba")
+	checar_igual(gs.mult_frenesi(), 1.0, "depois de frenzy_seconds acaba")
 	checar_igual(sinais.size(), 2, "sinal ao ligar e ao desligar")
 	antes = gs.treino
 	gs.clicar()
@@ -91,7 +95,7 @@ func _teste_janela_aberta_nao_conta() -> void:
 	checar_igual(vezes.size(), 0, "com janela/luta aberta o relógio do evento espera")
 	checar(not gs.pegar_evento_dourado(), "com janela aberta não dá para pegar")
 	gs.definir_modal(false)
-	_ate_aparecer(gs, 100.0)
+	_ate_aparecer(gs, gs.EVENTO_ESPERA_MAX + 1.0)
 	checar_igual(vezes.size(), 1, "ao fechar a janela o evento volta a correr")
 	_liberar(gs)
 

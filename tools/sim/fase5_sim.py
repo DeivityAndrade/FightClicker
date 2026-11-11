@@ -22,6 +22,11 @@ Variaveis de ambiente para testar alavancas:
   SIM_G1="F,A,R" SIM_G2="F,A,R" (atributos dos adversarios da academia)
   SIM_RET="480"                (robo: aposenta depois de N s seguidos no vermelho na academia)
   SIM_N, SIM_CARREIRAS, SIM_PROC, SIM_PERFIS, SIM_N_23B (como nos outros)
+  SIM_LUVA, SIM_PEGA, SIM_METRO, SIM_METRO_CUSTO, SIM_UPS, SIM_UPS_ARTE (ver fase4b_sim.py)
+
+Rebalanceamento pos-PRs (2026-11-11): Metronomo de 5 niveis, assistido, melhorias de 4 niveis, premio do Muralha
+($2.500) e a luva dourada (FRENESI, data/training.json -> golden_event) entram por data/ e pelo fase4b_sim.py.
+A mudanca automatica ja era a regra do robo (muda no mesmo passo do cinturao). Os 3 rounds sao so visuais.
 
 Rodar (nao ha python no PATH):
   "C:/Program Files/Blender Foundation/Blender 5.2/5.2/python/bin/python.exe" tools/sim/fase5_sim.py [secao ...]
@@ -463,7 +468,7 @@ class Carreira5(f4b.Carreira4b):
             self.comprar_loja()
             a = self.foco()
             cj = self.cps_agora()
-            ps = self.por_soco(a)
+            ps = self.por_soco(a) * self.fren_passo(dt)
             gc = cj * ps * dt * self.boxe_f * self.loc
             gm = self.metro_s() * ps * dt * self.loc
             ga = 0.0
@@ -510,6 +515,7 @@ class Carreira5(f4b.Carreira4b):
             self.talvez_lutar()
             if self.t != t0:
                 self.acc = cfg["interval"] - cfg["first_delay"]
+                self.fren_luta(self.t - t0)
         self.fechar_trechos()
         if not self.fim:
             self.fim = ("parado", self.t)

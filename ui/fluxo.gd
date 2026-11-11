@@ -97,23 +97,18 @@ func _abrir_vitoria(resumo: Dictionary, tocar_som: bool) -> void:
 	_abrir(j)
 	j.abrir_com(resumo, tocar_som)
 	j.continuar_pedido.connect(_fechar_vitoria.bind(resumo))
-	j.mudar_pedido.connect(_mudar_da_vitoria)
-
-
-## MUDAR pelo botão da vitória do cinturão: volta para a garagem (libera o modal) e muda. A mudança abre a janela de arte
-## (na 1ª vez) por conta própria, pelo sinal `escolha_arte_pedida`.
-func _mudar_da_vitoria() -> void:
-	_fechar_tudo()
-	if GameState.pode_mudar():
-		GameState.mudar()
 
 
 ## Fecha a vitória. Se foi o chefe do cinturão, a mudança para a academia é AUTOMÁTICA (o prêmio paga a mudança e ainda
 ## sobra dinheiro): antes o jogador ganhava o prêmio, o prêmio sumia no preço da mudança e ele chegava "sem nada".
 func _fechar_vitoria(resumo: Dictionary) -> void:
+	if not (janela is JanelaVitoria):
+		return  # idempotente: um 2º CONTINUAR não pode fechar a janela de arte que a mudança acabou de abrir
+	var jv := janela
 	_fechar_tudo()
-	if bool(resumo.get("belt", false)) and GameState.pode_mudar():
-		GameState.mudar()
+	if is_instance_valid(jv) and bool(resumo.get("belt", false)) and GameState.pode_mudar():
+		GameState.mudar()  # a janela de arte (1ª vez) abre pelo sinal `escolha_arte_pedida`
+	abrir_escolha_arte()  # garantia: com a escolha da arte pendente a janela sempre existe (não repete se já está aberta)
 
 
 # --- Fim de carreira ---

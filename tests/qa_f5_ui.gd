@@ -126,7 +126,7 @@ func rodar() -> void:
 	var escolher: Array = []
 	for b in j.find_children("*", "Button", true, false):
 		escolher.append(b)
-	chk(escolher.size() == 2, "2 botoes ESCOLHER (%d)" % escolher.size())
+	chk(escolher.size() == 4, "2 cartoes x (area + ESCOLHER) = 4 botoes (%d)" % escolher.size())
 	escolher[1].pressed.emit()
 	await esperar(0.5)
 	chk(gs.arte_id == "bjj", "escolheu Jiu-jitsu com 1 clique (%s)" % gs.arte_id)

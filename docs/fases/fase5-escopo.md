@@ -169,3 +169,23 @@ Sobre os 5 pontos que não fecham (design §10.7) e 2 pontos ligados. Nenhuma mu
 
 ## Aprovação do dono (2026-11-06)
 Plano da Fase 5 aprovado ("pode sim"), com os nomes do Roteirista (fase5-textos.md) e as decisões do Diretor.
+
+## Rebalanceamento pós-PRs (2026-11-11)
+Registrado pelo Designer a pedido do Produtor. Números e simulação: `fase5-design.md`, seção "Rebalanceamento pós-PRs".
+
+**Escolha do dono: o meio-termo** (nem a versão do PR, nem a 1ª proposta do Designer). O clique continua sendo a coisa mais forte do jogo e o teto de clique sobe.
+- **Luva dourada:** ×7, por menos tempo que os 12 s do PR. O intervalo entre luvas fica.
+- **Melhorias novas de clique** (saco, esteira, corda e técnicas das artes): ×3, com preço alto.
+- **A dificuldade se segura nos adversários da academia**, não enfraquecendo o clique. Tonhão e Kid podem subir e, se não houver outro jeito, o Seu Muralha também. Sempre com simulação.
+
+**Metas que passam a valer** (as 3 decisões do Diretor ficam aceitas com elas):
+| Critério | Meta nova | Antes |
+|---|---|---|
+| 23b: cinturão na 1ª carreira | **≤ 25% a 4/s e a 5/s**; nunca antes de 20:00 | ≤ 20% a 5/s, ≤ 25% a 4/s |
+| F4 22: 1ª derrota (mediana) | 10–15 min | igual |
+| Critério 11: Kid na mesma carreira da chegada | **≤ 35% a 5/s** | ≤ 25% |
+| Critério 10: Boxe × Jiu-jitsu até o cinturão | **≤ 10%** | ≤ 15% |
+| F4 8: árvore fecha | 5ª–8ª carreira | igual |
+| 4b 24: clique × assistido | **≥ 6×** | ≥ 8× |
+
+Também muda o que a decisão 4 da seção anterior dizia ("sem mudar o Tonhão") e a trava da 4b sobre não mexer em adversários: nesta rodada, por escolha do dono, Tonhão, Kid e Muralha foram recalibrados no simulador.

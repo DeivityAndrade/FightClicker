@@ -9,7 +9,7 @@
 		  "icon": "art_boxing" },
 		{ "id": "bjj", "name": "Jiu-jitsu", "apparatus": "grappling_dummy",
 		  "tagline": "Sem pressa. Quanto mais tempo, mais aperta.",
-		  "rule": { "type": "crew_time_bonus", "start": 0.2, "per_minute": 0.12, "cap": 1.0 },
+		  "rule": { "type": "crew_time_bonus", "start": 0.3, "per_minute": 0.15, "cap": 1.3 },
 		  "fight": { "damage_mult": 1.0, "taken_mult": 0.90 },
 		  "rule_text": "EQUIPE +{pct}% (SOBE {rate}% POR MINUTO ATÉ {cap}%)",
 		  "fight_text": "JIU-JITSU: -{pct}% DE DANO RECEBIDO",

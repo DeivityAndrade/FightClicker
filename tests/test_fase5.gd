@@ -84,7 +84,8 @@ func _teste_dados() -> void:
 	checar_igual(a.local("garage").move, {}, "garagem não se compra")
 	checar_igual(a.ids_artes(), ["boxing", "bjj"], "2 artes: Boxe e Jiu-jitsu")
 	checar_igual(a.arte("boxing").rule, {"type": "manual_click_bonus", "value": 0.5}, "Boxe: +50% no clique manual")
-	checar_igual(a.arte("bjj").rule, {"type": "crew_time_bonus", "start": 0.2, "per_minute": 0.12, "cap": 1.0}, "Jiu-jitsu: 20% + 12/min até 100%")
+	var rjj: Dictionary = a.arte("bjj").rule
+	checar(rjj.type == "crew_time_bonus" and float(rjj.start) > 0.0 and float(rjj.cap) > float(rjj.start), "Jiu-jitsu: regra de tempo (valores vêm do JSON)")
 	checar_igual([a.arte("boxing").fight, a.arte("bjj").fight], [{"damage_mult": 1.10, "taken_mult": 1.0}, {"damage_mult": 1.0, "taken_mult": 0.90}],
 		"traços de luta: +10% dano / -10% dano recebido")
 	var d := TrainingData.carregar()
@@ -106,11 +107,11 @@ func _teste_dados() -> void:
 	checar_igual([f.adversario("opp_gym_1").location, f.adversario("opp_gym_2").location, f.adversario("opp_tank").location],
 		["gym", "gym", "garage"], "Tonhão e Kid na academia; Muralha na garagem")
 	checar_igual([f.adversario("opp_gym_1").strength, f.adversario("opp_gym_1").agility, f.adversario("opp_gym_1").endurance,
-		f.adversario("opp_gym_1").prize_money, f.adversario("opp_gym_1").prize_fame], [260000.0, 100000.0, 1100000.0, 2500.0, 120.0],
-		"Tonhão do Tatame: 260K/100K/1,1M, $2.500, 120 de Fama")
+		f.adversario("opp_gym_1").prize_money, f.adversario("opp_gym_1").prize_fame], [390000.0, 150000.0, 1650000.0, 2500.0, 120.0],
+		"Tonhão do Tatame: 390K/150K/1,65M, $2.500, 120 de Fama")
 	checar_igual([f.adversario("opp_gym_2").strength, f.adversario("opp_gym_2").agility, f.adversario("opp_gym_2").endurance,
-		f.adversario("opp_gym_2").prize_money, f.adversario("opp_gym_2").prize_fame], [500000.0, 1000000.0, 2000000.0, 6000.0, 200.0],
-		"Kid Navalha: 500K/1M/2M, $6.000, 200 de Fama")
+		f.adversario("opp_gym_2").prize_money, f.adversario("opp_gym_2").prize_fame], [1150000.0, 2300000.0, 4600000.0, 6000.0, 200.0],
+		"Kid Navalha: 1,15M/2,3M/4,6M, $6.000, 200 de Fama")
 	checar_igual(f.indice_cinturao(), 3, "o cinturão é do Seu Muralha (índice 3)")
 	checar(not f.adversario("opp_gym_1").belt and not f.adversario("opp_gym_2").belt, "só o Muralha dá o cinturão")
 	checar_igual(f.carreira.gym_retire_hint_seconds, 300.0, "dica de aposentar aos 300 s")
@@ -263,7 +264,8 @@ func _teste_primeira_chegada_e_reabrir() -> void:
 	checar_igual(cartoes.map(func(c): return c.id), ["boxing", "bjj"], "janela mostra as 2 artes")
 	checar(not cartoes[0].last and not cartoes[1].last, "1ª vez: nenhuma marcada")
 	checar_igual(cartoes[0].rule_text, "+50% TREINO NO CLIQUE DA SUA MÃO", "texto da regra do Boxe")
-	checar_igual(cartoes[1].rule_text, "EQUIPE +20% (SOBE 12% POR MINUTO ATÉ 100%)", "texto da regra do Jiu-jitsu")
+	var rj0: Dictionary = gs.academia.arte("bjj").rule
+	checar_igual(cartoes[1].rule_text, "EQUIPE +%d%% (SOBE %d%% POR MINUTO ATÉ %d%%)" % [roundi(100.0 * rj0.start), roundi(100.0 * rj0.per_minute), roundi(100.0 * rj0.cap)], "texto da regra do Jiu-jitsu")
 	checar_igual(cartoes[0].fight_text, "BOXE: +10% DE DANO", "traço do Boxe")
 	checar_igual(cartoes[1].fight_text, "JIU-JITSU: -10% DE DANO RECEBIDO", "traço do Jiu-jitsu")
 	checar_igual([cartoes[0].apparatus, cartoes[0].apparatus_name], ["speed_bag", "PERA"], "aparelho assinatura do Boxe")
@@ -372,20 +374,27 @@ func _teste_boxe() -> void:
 		_liberar(g)
 
 
+## Bônus do Jiu-jitsu (sem estilo) após t segundos, lido da regra do JSON.
+func _bjj(rj: Dictionary, t: float) -> float:
+	return minf(float(rj.cap), float(rj.start) + float(rj.per_minute) * t / 60.0)
+
+
 func _teste_jiu_jitsu() -> void:
 	var gs := _com_arte("f5_jj", "bjj")
 	gs.geradores["neighbor_kid"] = 100  # 100/s
-	var casos := [[0.0, 1.20], [240.0, 1.68], [400.0, 2.0], [3600.0, 2.0]]
+	var rj: Dictionary = gs.academia.arte("bjj").rule
+	var t_teto: float = (float(rj.cap) - float(rj.start)) / float(rj.per_minute) * 60.0
+	var casos := [[0.0, 1.0 + _bjj(rj, 0.0)], [240.0, 1.0 + _bjj(rj, 240.0)], [t_teto, 1.0 + float(rj.cap)], [3600.0, 1.0 + float(rj.cap)]]
 	for caso in casos:
 		gs.arte_segundos = caso[0]
 		checar(absf(gs.producao_total() / 100.0 - caso[1]) < 1e-9, "Jiu-jitsu a %ss: equipe x%s" % [caso[0], caso[1]])
 	gs.arte_segundos = 0.0
-	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +20%", "HUD do Jiu-jitsu no começo")
+	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +%d%%" % roundi(100.0 * _bjj(rj, 0.0)), "HUD do Jiu-jitsu no começo")
 	gs.arte_segundos = 240.0
-	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +68%", "HUD aos 4 min")
+	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +%d%%" % roundi(100.0 * _bjj(rj, 240.0)), "HUD aos 4 min")
 	checar(not gs.arte_no_teto(), "ainda não no teto")
-	gs.arte_segundos = 400.0
-	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +100% (MÁX.)", "HUD no teto")
+	gs.arte_segundos = t_teto
+	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +%d%% (MÁX.)" % roundi(100.0 * float(rj.cap)), "HUD no teto")
 	checar(gs.arte_no_teto(), "no teto aos 6:40")
 	checar_igual([gs.por_clique(), gs.por_auto_soco()], [1.0, 1.0], "o clique não muda")
 	# O relógio anda no tick.
@@ -393,23 +402,23 @@ func _teste_jiu_jitsu() -> void:
 	g2.geradores["neighbor_kid"] = 100
 	_passar(g2, 60.0)
 	checar(absf(g2.arte_segundos - 60.0) < 1e-6, "art_seconds anda com o tempo")
-	checar(absf(g2.bonus_arte_equipe() - (0.2 + 0.12)) < 1e-9, "1 min: +32%")
+	checar(absf(g2.bonus_arte_equipe() - (float(rj.start) + float(rj.per_minute))) < 1e-9, "1 min: +32%")
 	# Com o nó ESTILO: começa em 30%, 18/min, teto 150%.
 	var g3 := _com_arte("f5_jj_estilo", "bjj")
 	g3.permanente["skill_nodes"] = ["style_bjj"]
 	g3._recalcular_bonus()
 	g3.geradores["neighbor_kid"] = 100
-	for caso in [[0.0, 1.30], [240.0, 2.02], [400.0, 2.50], [3600.0, 2.50]]:
+	for caso in [[0.0, 1.0 + 1.5 * _bjj(rj, 0.0)], [240.0, 1.0 + 1.5 * _bjj(rj, 240.0)], [t_teto, 1.0 + 1.5 * float(rj.cap)], [3600.0, 1.0 + 1.5 * float(rj.cap)]]:
 		g3.arte_segundos = caso[0]
 		checar(absf(g3.producao_total() / 100.0 - caso[1]) < 1e-9, "Jiu-jitsu + ESTILO a %ss: x%s" % [caso[0], caso[1]])
 	# Na academia, o x2 multiplica por cima.
 	var g4 := _na_academia("f5_jj_gym", "bjj")
 	g4.geradores["neighbor_kid"] = 100
-	checar(absf(g4.producao_total() - 100.0 * 2.0 * 1.2) < 1e-9, "academia + Jiu-jitsu: 2 x 1,2")
+	checar(absf(g4.producao_total() - 100.0 * 2.0 * (1.0 + _bjj(rj, 0.0))) < 1e-9, "academia + Jiu-jitsu: 2 x 1,2")
 	# Jiu-jitsu não corta o clique nem a árvore: soma.
 	g4.permanente["skill_nodes"] = ["body_crew"]
 	g4._recalcular_bonus()
-	checar(absf(g4.producao_total() - 100.0 * 1.5 * 2.0 * 1.2) < 1e-9, "árvore x local x Jiu-jitsu")
+	checar(absf(g4.producao_total() - 100.0 * 1.5 * 2.0 * (1.0 + _bjj(rj, 0.0))) < 1e-9, "árvore x local x Jiu-jitsu")
 	for g in [gs, g2, g3, g4]:
 		_liberar(g)
 
@@ -459,7 +468,7 @@ func _teste_aparelho_da_arte() -> void:
 	g2.geradores["neighbor_kid"] = 10
 	g2.arte_segundos = 0.0
 	g2.tick(1.0)
-	var ganho: float = 10.0 * 1.2
+	var ganho: float = 10.0 * (1.0 + float(g2.academia.arte("bjj").rule.start))
 	checar(absf(g2.treino - ganho) < 1e-9 and absf(g2.atributos.endurance - ganho * 0.60) < 1e-9 and absf(g2.atributos.strength - ganho * 0.25) < 1e-9,
 		"a equipe treina nos 3 atributos pelo split do boneco")
 	# Técnicas: x3 e x5.
@@ -515,7 +524,7 @@ func _teste_traco_de_luta() -> void:
 		g.atributos = {"strength": 200000.0, "agility": 60000.0, "endurance": 700000.0}
 		g.indice_escada = 3
 		var risco: Dictionary = g.risco_tatica("defensive")
-		var direta: float = g.motor.chance([200000.0, 60000.0, 700000.0], [78000.0, 58000.0, 490000.0], "defensive")
+		var direta: float = g.motor.chance([200000.0, 60000.0, 700000.0], [82000.0, 61000.0, 515000.0], "defensive")
 		checar_igual(risco.chance, direta, "prévia e motor concordam (arte '%s')" % g.arte_id)
 	var p_sem: float = sem.risco_tatica("defensive").chance
 	var p_bx: float = bx.risco_tatica("defensive").chance
@@ -534,9 +543,9 @@ func _teste_traco_de_luta() -> void:
 	var vitorias := 0
 	var n := 300
 	for i in n:
-		if bx.motor.lutar([90000.0, 60000.0, 500000.0], [78000.0, 58000.0, 490000.0], "defensive", 777 + i).win:
+		if bx.motor.lutar([90000.0, 60000.0, 500000.0], [82000.0, 61000.0, 515000.0], "defensive", 777 + i).win:
 			vitorias += 1
-	var chance: float = bx.motor.chance([90000.0, 60000.0, 500000.0], [78000.0, 58000.0, 490000.0], "defensive")
+	var chance: float = bx.motor.chance([90000.0, 60000.0, 500000.0], [82000.0, 61000.0, 515000.0], "defensive")
 	checar(absf(float(vitorias) / n - chance) < 0.12, "chance da prévia honesta com o traço (%s x %s)" % [float(vitorias) / n, chance])
 	for g in [sem, bx, bj]:
 		_liberar(g)
@@ -620,7 +629,7 @@ func _teste_estilo() -> void:
 	g2.permanente["skill_nodes"] = ["style_boxing"]
 	g2._recalcular_bonus()
 	g2.arte_segundos = 0.0
-	checar_igual(g2.bonus_arte_equipe(), 0.2, "nó do Boxe não muda o Jiu-jitsu")
+	checar_igual(g2.bonus_arte_equipe(), float(g2.academia.arte("bjj").rule.start), "nó do Boxe não muda o Jiu-jitsu")
 	_liberar(g2)
 	_liberar(gs)
 
@@ -698,7 +707,7 @@ func _teste_dados_mudam_o_jogo() -> void:
 	checar_igual(gt.atributos.strength, 1.0, "split do JSON: tudo na Força")
 	_liberar(gt)
 	# Adversário da academia no JSON.
-	var op := ler(FightData.CAMINHO_ADVERSARIOS).replace('"strength": 260000', '"strength": 123')
+	var op := ler(FightData.CAMINHO_ADVERSARIOS).replace('"strength": 390000', '"strength": 123')
 	escrever(pasta + "opponents.json", op)
 	var fd := FightData.carregar(FightData.CAMINHO_LUTAS, pasta + "opponents.json")
 	checar_igual(fd.adversario("opp_gym_1").strength, 123.0, "atributos do Tonhão vêm do JSON")
@@ -864,5 +873,9 @@ func _teste_textos() -> void:
 	var gr := _com_cinturao("f5_dica_retire")
 	gr.aposentar()
 	checar(gr.textos_fim().tip_extra in gr.lista_ui("tip_move_belt"), "aposentou com o cinturão sem mudar: dica da mudança")
-	for x in [gs, g, gd, gr]:
+	# N4: quem já mudou para a academia e se aposenta sem lutar lá não recebe a dica da mudança.
+	var gm := _na_academia("f5_dica_retire_gym", "boxing")
+	gm.aposentar()
+	checar(not (gm.textos_fim().tip_extra in gm.lista_ui("tip_move_belt")), "aposentou já na academia: sem dica da mudança")
+	for x in [gs, g, gd, gr, gm]:
 		_liberar(x)

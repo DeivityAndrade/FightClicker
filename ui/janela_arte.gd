@@ -122,8 +122,8 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 		var w := roundf(UiTema.largura_visivel(texto)) + 10.0
 		if int(w) % 2 != 0:
 			w += 1.0
-		var tag := UiTema.nine_patch(c, str(info.get("tag_last", "ui_art_tag_last")), Rect2(r.size.x - w - 10.0, -3, w, 11))
-		var a := UiTema.area_nove("ui_art_tag_last", Vector2(w, 11))
+		var tag := UiTema.nine_patch(c, str(info.get("tag_last", "ui_art_tag_last")), Rect2(r.size.x - w - 10.0, -4, w, 13))
+		var a := UiTema.area_nove("ui_art_tag_last", Vector2(w, 13))
 		var l := UiTema.rotulo(tag, texto, Sala.BR0, roundf(a.position.x + (a.size.x - UiTema.largura_visivel(texto)) / 2.0),
 			UiTema.y_texto(a), 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 		UiTema.alinhar(l, "left")

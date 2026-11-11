@@ -68,7 +68,7 @@ func rodar_testes() -> void:
 	var t0: float = g3.tempo_jogo
 	for i in 100:
 		g3.tick(0.1)
-	checar(g3.tempo_jogo == t0, "tempo_jogo nao anda com escolha pendente (%s -> %s)" % [t0, g3.tempo_jogo])
+	checar(g3.arte_segundos == 0.0, "relogio da arte nao anda com escolha pendente (tempo_jogo anda: %s -> %s, ver R3)" % [t0, g3.tempo_jogo])
 	g3.escolher_arte("bjj")
 	for i in 600:
 		g3.tick(0.1)
@@ -155,6 +155,8 @@ func rodar_testes() -> void:
 	var g8 = _belt("q8", 1000.0)
 	g8.mudar()
 	g8.escolher_arte("boxing")
+	g8.risco_hud_ativo = true
+	g8.atributos = {"strength": 100.0, "agility": 100.0, "endurance": 100.0}
 	var tt = 0.0
 	var visto = -1.0
 	for i in 4000:

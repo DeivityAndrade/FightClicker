@@ -201,7 +201,7 @@ func _teste_taticas_mudam_rotulo() -> void:
 # Critério 10: cada tática é a melhor contra pelo menos um adversário (perfil equilibrado, treino em que a
 # melhor dá ~65%).
 func _teste_cada_tatica_e_a_melhor() -> void:
-	var treino := {"opp_warmup": 1730.0, "opp_strong": 25300.0, "opp_fast": 75200.0, "opp_tank": 489000.0}
+	var treino := {"opp_warmup": 1730.0, "opp_strong": 25300.0, "opp_fast": 75200.0, "opp_tank": 514000.0}
 	var melhor_de := {}
 	for id in treino:
 		var t: float = treino[id]
@@ -222,7 +222,7 @@ func _teste_cada_tatica_e_a_melhor() -> void:
 
 # Critério 9: com o mesmo treino total, o "só Força" perde onde o equilibrado vence.
 func _teste_foco_unico_perde() -> void:
-	var treino := {"opp_warmup": 1960.0, "opp_strong": 28200.0, "opp_fast": 83100.0, "opp_tank": 528000.0}
+	var treino := {"opp_warmup": 1960.0, "opp_strong": 28200.0, "opp_fast": 83100.0, "opp_tank": 555000.0}
 	for id in treino:
 		var t: float = treino[id]
 		var melhor_so := 0.0

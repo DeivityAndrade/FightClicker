@@ -5,6 +5,7 @@
 		"crit_multiplier": 3
 	},
 	"assist": { "interval": 1.5, "still_seconds": 0.6, "first_delay": 0.6 },
+	"golden_event": { "wait_min": 60.0, "wait_max": 100.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 6.0 },
 	"default_focus": "punching_bag",
 	"attributes": {
 		"strength": { "name": "Força", "hint": "Força: quanto dói o seu soco." },
@@ -22,8 +23,8 @@
 			"upgrades": [
 				{ "id": "bag_patch", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Fita nova no saco", "description": "Mais fita, menos areia no chão." },
 				{ "id": "bag_sand", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Areia peneirada", "description": "Soco que volta com juros." },
-				{ "id": "bag_leather", "cost": 60000, "multiplier": 4, "visual_level": 1, "name": "Couro curtido", "description": "Aguenta mais. Devolve mais." },
-				{ "id": "bag_chain", "cost": 800000, "multiplier": 5, "visual_level": 1, "name": "Corrente de aço", "description": "Quem pendura aqui não pendura mais nada." }
+				{ "id": "bag_leather", "cost": 400000, "multiplier": 3, "visual_level": 1, "name": "Couro curtido", "description": "Aguenta mais. Devolve mais." },
+				{ "id": "bag_chain", "cost": 4000000, "multiplier": 3, "visual_level": 1, "name": "Corrente de aço", "description": "Quem pendura aqui não pendura mais nada." }
 			]
 		},
 		{
@@ -37,8 +38,8 @@
 			"upgrades": [
 				{ "id": "treadmill_oil", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Óleo de cozinha na esteira", "description": "Range menos. Cheira a batata frita." },
 				{ "id": "treadmill_belt", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Correia emendada", "description": "Dá voltas inteiras sem pular." },
-				{ "id": "treadmill_motor", "cost": 60000, "multiplier": 4, "visual_level": 1, "name": "Motor de máquina de lavar", "description": "Barulho de avião. Mas funciona." },
-				{ "id": "treadmill_incline", "cost": 800000, "multiplier": 5, "visual_level": 1, "name": "Rampa de palete", "description": "Agora é subida. A vida também." }
+				{ "id": "treadmill_motor", "cost": 400000, "multiplier": 3, "visual_level": 1, "name": "Motor de máquina de lavar", "description": "Barulho de avião. Mas funciona." },
+				{ "id": "treadmill_incline", "cost": 4000000, "multiplier": 3, "visual_level": 1, "name": "Rampa de palete", "description": "Agora é subida. A vida também." }
 			]
 		},
 		{
@@ -52,8 +53,8 @@
 			"upgrades": [
 				{ "id": "rope_laundry", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Corda sem nó", "description": "Agora só prende duas vezes por minuto." },
 				{ "id": "rope_handles", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Cabos de cabo de vassoura", "description": "Pega firme. Serragem inclusa." },
-				{ "id": "rope_beads", "cost": 60000, "multiplier": 4, "visual_level": 1, "name": "Cabo com contas", "description": "Gira quase sozinho." },
-				{ "id": "rope_steel", "cost": 800000, "multiplier": 5, "visual_level": 1, "name": "Cabo de aço", "description": "Não arrebenta. Você, sim." }
+				{ "id": "rope_beads", "cost": 400000, "multiplier": 3, "visual_level": 1, "name": "Cabo com contas", "description": "Gira quase sozinho." },
+				{ "id": "rope_steel", "cost": 4000000, "multiplier": 3, "visual_level": 1, "name": "Cabo de aço", "description": "Não arrebenta. Você, sim." }
 			]
 		},
 		{
@@ -70,8 +71,8 @@
 			"upgrades": [
 				{ "id": "tech_boxing_1", "cost": 1500, "multiplier": 3, "visual_level": 1, "name": "Jab duplo", "description": "Um pra medir, outro pra doer." },
 				{ "id": "tech_boxing_2", "cost": 15000, "multiplier": 5, "visual_level": 1, "name": "Esquiva e volta", "description": "A cabeça sai da frente. A mão, não." },
-				{ "id": "tech_boxing_3", "cost": 150000, "multiplier": 4, "visual_level": 1, "name": "Combinação de três", "description": "Jab, jab, cruzado. Sem pensar." },
-				{ "id": "tech_boxing_4", "cost": 2000000, "multiplier": 5, "visual_level": 1, "name": "Ritmo de campeão", "description": "O ringue aprende o seu compasso." }
+				{ "id": "tech_boxing_3", "cost": 600000, "multiplier": 3, "visual_level": 1, "name": "Combinação de três", "description": "Jab, jab, cruzado. Sem pensar." },
+				{ "id": "tech_boxing_4", "cost": 6000000, "multiplier": 3, "visual_level": 1, "name": "Ritmo de campeão", "description": "O ringue aprende o seu compasso." }
 			]
 		},
 		{
@@ -88,8 +89,8 @@
 			"upgrades": [
 				{ "id": "tech_bjj_1", "cost": 1500, "multiplier": 3, "visual_level": 1, "name": "Guarda fechada", "description": "Entrou, não sai. Nem pra tomar água." },
 				{ "id": "tech_bjj_2", "cost": 15000, "multiplier": 5, "visual_level": 1, "name": "Raspagem", "description": "Embaixo é só o começo." },
-				{ "id": "tech_bjj_3", "cost": 150000, "multiplier": 4, "visual_level": 1, "name": "Raspagem dupla", "description": "Dois giros, uma saída." },
-				{ "id": "tech_bjj_4", "cost": 2000000, "multiplier": 5, "visual_level": 1, "name": "Passagem de guarda", "description": "O chão passa a ser seu." }
+				{ "id": "tech_bjj_3", "cost": 600000, "multiplier": 3, "visual_level": 1, "name": "Raspagem dupla", "description": "Dois giros, uma saída." },
+				{ "id": "tech_bjj_4", "cost": 6000000, "multiplier": 3, "visual_level": 1, "name": "Passagem de guarda", "description": "O chão passa a ser seu." }
 			]
 		}
 	]
