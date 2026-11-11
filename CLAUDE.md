@@ -18,10 +18,12 @@ projeto foi continuado por outra ferramenta e o dono quer este jogo começado do
 | Artista de Personagens | `artista-personagens` | Lutadores e adversários: anatomia, encaixes, animação (skill `padrao-personagem`) |
 | Designer UI/UX | `designer-ui-ux` | Telas, layout, juice do clique |
 | Roteirista | `roteirista` | Nomes, textos, rival, mentor, tom |
+| Diretor de Cutscenes | `diretor-de-cutscenes` | Storyboard das cenas da história, falas com som de voz, dados de cena |
 | QA | `qa-tester` | Testa contra os critérios de aceite, reporta bugs |
 
 ## Modelos (regra do dono, para economizar tokens)
-- **Quem pensa** → Opus 5.5 com raciocínio médio (`model: opus`, `effort: medium`): Diretor de Jogo, Designer de Jogo, Diretor de Arte, Artista de Personagens.
+- **Quem pensa** → Opus 5.5 com raciocínio médio (`model: opus`, `effort: medium`): Diretor de Jogo, Designer de Jogo.
+- **Quem faz arte, animação e cenas** → Fable (`model: fable`, `effort: medium`): Diretor de Arte, Artista de Personagens, Diretor de Cutscenes (pedido do dono em 2026-11-11).
 - **Quem executa** → Sonnet 5.5 (`model: sonnet`): Programador, UI/UX, Roteirista, QA.
 - Ao criar um agente novo, classifique-o num dos dois grupos. Ao chamar um agente, use o tipo dele
   (não `general-purpose`), para valer o modelo do arquivo.
