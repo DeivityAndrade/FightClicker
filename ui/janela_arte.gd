@@ -28,7 +28,7 @@ func abrir_com() -> void:
 	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("art_window", {})
 	moldura("ui_window", JANELA)
 	faixa_titulo("retire", Rect2(116, 40, 408, 16), UiTema.txt("art_title", "QUE TIPO DE LUTADOR VOCÊ QUER SER?"))
-	UiTema.rotulo_centro(painel, GameState.subtitulo_escolha_arte().to_upper(), UiTema.G3, 320.0, 59.0)
+	UiTema.rotulo_centro(painel, GameState.subtitulo_escolha_arte().to_upper(), UiTema.G3, 320.0, 56.0)
 	# Camadas: fundos dos cartões, a área clicável de cada cartão e, por cima, o conteúdo (rótulos e botões ESCOLHER).
 	var fundos := Control.new()
 	fundos.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -122,8 +122,8 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 		var w := roundf(UiTema.largura_visivel(texto)) + 10.0
 		if int(w) % 2 != 0:
 			w += 1.0
-		var tag := UiTema.nine_patch(c, str(info.get("tag_last", "ui_art_tag_last")), Rect2(r.size.x - w - 10.0, -5, w, 11))
-		var a := UiTema.area_nove("ui_art_tag_last", Vector2(w, 11))
+		var tag := UiTema.nine_patch(c, str(info.get("tag_last", "ui_art_tag_last")), Rect2(r.size.x - w - 10.0, -4, w, 13))
+		var a := UiTema.area_nove("ui_art_tag_last", Vector2(w, 13))
 		var l := UiTema.rotulo(tag, texto, Sala.BR0, roundf(a.position.x + (a.size.x - UiTema.largura_visivel(texto)) / 2.0),
 			UiTema.y_texto(a), 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 		UiTema.alinhar(l, "left")

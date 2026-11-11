@@ -62,6 +62,8 @@ var luva_id := "glove_shop"
 var luva_base: Dictionary = {}
 var luvas: Array[Dictionary] = []
 var carreira: Dictionary = {}
+# Visual: golpes seguidos para encher a barra de ESPECIAL (fights.json -> presentation.special_hits)
+var golpes_especial := 5
 # Fase 4
 var ramos: Array[Dictionary] = []  # {id, name}
 var arvore: Array[Dictionary] = []  # nós válidos, na ordem do arquivo
@@ -137,6 +139,11 @@ func _ler_lutas(dados: Dictionary) -> void:
 		push_warning("FightData: time_limit deve ser > min_ko_time > 0; usando os padrões de tempo.")
 		combate.time_limit = PADRAO_COMBATE.time_limit[0]
 		combate.min_ko_time = PADRAO_COMBATE.min_ko_time[0]
+
+	var pr = dados.get("presentation", {})
+	if not (pr is Dictionary):
+		pr = {}
+	golpes_especial = int(TrainingData._num(pr, "special_hits", 5.0, 1.0, 50.0, "presentation."))
 
 	var lista = dados.get("tactics", [])
 	if not (lista is Array):

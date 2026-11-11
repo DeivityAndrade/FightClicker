@@ -471,3 +471,215 @@ Os números deste documento ficam como estão. O texto completo está no fim de 
 7. **Pera para o Boxe: correto** (escopo D; silhueta diferente do saco pesado).
 
 Pronto para o Produtor mostrar ao dono.
+
+---
+
+## Rebalanceamento pós-PRs (2026-11-11)
+
+Dono: Designer de Jogo. Base: código integrado (`integra/fase5-ui`, igual à `origin/main` em `data/` e `scripts/`), `docs/propostas/feedback-2026-11-11.md`, decisões do Diretor em `fase4b-escopo.md` e `fase5-escopo.md`.
+**Onde esta seção contradiz as seções 4.2, 10 e o Resumo acima, vale esta.** Os números das seções 10.2 a 10.6 são de antes dos PRs.
+
+### R1. O que os PRs mudaram e o que o simulador passou a modelar
+| Mudança (PRs 1 e 2) | Antes | Depois (PR) | No simulador |
+|---|---|---|---|
+| Metrônomo | 3 níveis: 2,0 / 1,0 / 0,7 s ($80 / 150 / 300) | 5 níveis: 1,2 / 0,9 / 0,65 / 0,5 / 0,4 s ($80 / 150 / 300 / 700 / 2.000) | já lia `data/shop.json`; nada a mudar |
+| Assistido (Shift) | 1 soco a cada 3,0 s; mão parada 1,0 s | 1 a cada 1,5 s; mão parada 0,6 s | já lia `data/training.json` |
+| Melhorias dos aparelhos | 2 níveis (×3, ×5) | 4 níveis (+ ×4 por 60K e ×5 por 800K; técnicas + ×4 por 150K e ×5 por 2M) | já lia `data/training.json` |
+| Luta em 3 rounds | `round_length` 6,0 | 5,33 (`time_limit` continua 16 s) | **nada**: `round_length` só rotula o round na tela (`luta.gd:207`, `game_state.gd:1169`); não entra no resultado |
+| Luva dourada (FRENESI) | não existia | aparece a cada 45–90 s, fica 7 s; clicar dá ×7 por 12 s em cliques e auto-socos (não na equipe) | **novo**, em `fase4b_sim.py` (vale também para o `fase5_sim.py`) |
+| Muralha paga $2.500, mudança automática | $1.000, botão MUDAR | $2.500; muda ao fechar a vitória; sobram $1.500 | prêmio lido de `data/`; o robô já mudava no mesmo passo do cinturão |
+
+**Modelo da luva dourada** (`fase4b_sim.py`, classe `Carreira4b`):
+```
+espera ~ U(wait_min, wait_max)            (o relógio corre durante o FRENESI; para na luta)
+o robô clica em PEGA = 80% das luvas, 1,5 s depois de aparecer (hipótese; SIM_PEGA muda); as outras somem em visible_seconds
+FRENESI: cliques, Metrônomo e assistido × frenzy_mult por frenzy_seconds (a equipe não muda); luta/prévia consomem o FRENESI
+fração do tempo em FRENESI = PEGA × frenzy_seconds / (espera média + PEGA × 1,5 + (1 − PEGA) × visible_seconds)
+ganho médio no soco      = 1 + (frenzy_mult − 1) × fração
+```
+- Com os números do PR (×7, 12 s, 45–90 s): **+82%** no treino de clique para quem pega 80% das luvas, **+104%** para quem pega todas.
+- As compras do robô usam o valor médio; o treino de cada passo usa o FRENESI sorteado (sorteio próprio, não mexe nos sorteios de luta).
+- Alavancas novas (não mexem em `data/`): `SIM_LUVA`, `SIM_PEGA`, `SIM_METRO`, `SIM_METRO_CUSTO`, `SIM_UPS`, `SIM_UPS_ARTE` (cabeçalho do `fase4b_sim.py`).
+- Conserto: o `fase4b_sim.py` sozinho quebrava desde a Fase 5 (`KeyError: speed_bag`, lia o desbloqueio dos aparelhos de arte). Agora ignora aparelho com `art`.
+- Conferência: com Metrônomo antigo, 2 melhorias e sem luva (`SIM_METRO=2.0,1.0,0.7 SIM_UPS=300:3,5000:5 SIM_PEGA=0`) o simulador devolve **17,0% / 24,2% / 23:51**, igual à seção 10.2.
+
+### R2. Como o código integrado ficou (antes de qualquer ajuste)
+| Critério | Meta | Antes dos PRs | **Com os PRs** | |
+|---|---|---|---|---|
+| 23b: cinturão na 1ª carreira, 5/s | ≤ 20% | 17,0% | **34,5%** | quebra |
+| 23b: idem, 4/s | ≤ 25% | 24,2% | **34,5%** | quebra |
+| 23b: mais cedo | nunca antes de 20:00 | 23:51 | **11:48** | quebra |
+| F4 22: 1ª derrota (mediana) 5/s / 4/s | 10–15 min | 12:14 / 14:14 | **9:44** / 11:44 | quebra a 5/s |
+| F5 11: Kid na mesma carreira da chegada (4–5/s) | ≤ 25% | 0–19% | **38–50%** (com as melhorias novas a 400K/4M; a 60K/800K é pior) | quebra |
+| F4 8: árvore fecha | 5ª–8ª | 5–6 | **4–5** | quebra |
+| 4b 24: típico ≥ 8× o assistido | ≥ 8× | 12–15× | **6,0× (4/s) / 7,5× (5/s)** | quebra na letra |
+
+**Quem causa o quê** (cada mudança sozinha, 400 jogadores, o resto como antes dos PRs):
+| Só esta mudança | 5/s | 4/s | mais cedo | 1ª derrota |
+|---|---|---|---|---|
+| Metrônomo novo | 21,2% | 22,8% | 23:51 | 12:14 / 14:14 |
+| Melhorias ×4 (60K) e ×5 (800K) | 16,2% | 29,0% | **17:48** | 13:14 / **15:14** |
+| Luva dourada ×7, 12 s | 24,2% | 24,0% | **15:23** | **9:14** / 10:44 |
+
+- **Metrônomo:** quase neutro na carreira 1. Os níveis 4 e 5 não mudam nada antes do cinturão (com só os 3 primeiros o resultado é idêntico).
+- **Melhorias novas:** a 60K o ×4 é comprado antes do Muralha e adianta o cinturão em 6 min. Na academia, ×4 e ×5 (×20 no clique) derrubam Tonhão e Kid em 2 + 3 min.
+- **Luva dourada:** dobra o treino de clique na média. É a mudança mais forte.
+
+### R3. Ajustes aplicados em `data/` (3, todos em `data/training.json` e `data/fights.json`)
+| # | Arquivo / campo | Antes (PR) | **Agora** | Motivo |
+|---|---|---|---|---|
+| 1 | `training.json` → `apparatus[saco, esteira, corda].upgrades[2]` (`bag_leather`, `treadmill_motor`, `rope_beads`) | 60.000, ×4 | **2.000.000, ×2** | a 60K adiantava o cinturão da carreira 1 para 17:48 (23b) e, na academia, fechava a fase em uma carreira |
+| 1 | idem `upgrades[3]` (`bag_chain`, `treadmill_incline`, `rope_steel`) | 800.000, ×5 | **8.000.000, ×2** | idem |
+| 2 | `training.json` → `apparatus[speed_bag, grappling_dummy].upgrades[2]` (`tech_boxing_3`, `tech_bjj_3`) | 150.000, ×4 | **2.500.000, ×2** | critério 11 (Kid na carreira da chegada) |
+| 2 | idem `upgrades[3]` (`tech_boxing_4`, `tech_bjj_4`) | 2.000.000, ×5 | **10.000.000, ×2** | idem |
+| 3 | `training.json` → bloco novo `golden_event` | constantes no código: ×7, 12 s, 45–90 s, 7 s | **×5, 6 s, 60–100 s, 7 s** | 23b e F4 22; ver R5 (**só vale quando o Programador ler o bloco**) |
+| — | `fights.json` → bloco novo `presentation.special_hits` | constante no código: 5 | **5** (igual) | só tirar do código; é visual |
+
+Por que assim:
+- **Melhorias 3 e 4 ficam, mas viram compra de fim de academia.** Com ×2 a 2M / 8M, o teto do aparelho passa de ×15 para ×60 (era ×300 no PR). A 3ª melhoria chega perto do Kid; a 4ª é para quem continua treinando depois dele. O teto de clique de verdade (pedido 12 do dono) pede adversários novos para gastar, e isso é a 5.1 (R7).
+- **A luva continua frequente** (uma a cada ~80 s) e com número grande na tela (×5), mas rende **+23%** de treino de clique para quem pega 80% e **+29%** para quem pega todas. Assim quem ignora a luva não fica para trás, e quem pega todas não quebra a fase.
+- **Metrônomo e assistido não foram mexidos.** Testei encarecer os níveis 4 e 5 ($1.500 / $5.000): o critério 11 não muda (26–31% contra 29–32%, dentro do ruído de 96 jogadores). Fica como o Matheus fez, que é o que o dono pediu.
+- **Não mexi** em adversários, limiares, árvore, artes, prêmio do Muralha nem preço da mudança.
+
+### R4. Resultado com os ajustes (rodado direto de `data/`; robô pega 80% das luvas)
+`fase5_sim.py`: 23b com 400 jogadores; sequência com 96 jogadores × 8 carreiras a 4–5/s e 48 a 3/s; controle com 24.
+
+| Critério | Meta | **Agora** | Situação |
+|---|---|---|---|
+| 23a: cinturão (mediana) | carreira 2 | **2** (p10 1, p90 3) em todos os perfis | **fecha** |
+| 23b: 5/s | ≤ 20% | **21,0%** | **não fecha por 1 ponto** (4 jogadores em 400) |
+| 23b: 4/s | ≤ 25% | **21,8%** | **fecha** |
+| 23b: mais cedo | ≥ 20:00 | **20:24** (5/s), 23:22 (4/s) | **fecha, no limite** |
+| F4 22: 1ª derrota (mediana) | 10–15 min | **11:14** (5/s) / **12:44** (4/s) | **fecha** |
+| F4 24: tempo morto, carreira 1 | mediana ≤ 10, p90 ≤ 13 | 5:00 / 9:31 (5/s); 6:00 / 11:01 (4/s); 6:30 / 12:32 (3/s) | **fecha** |
+| F4 24: carreiras 2–4 | p90 ≤ 10 | **≤ 7:01** (4–5/s); ≤ 8:00 (3/s) | **fecha** |
+| F5 13: tempo morto na academia | p90 ≤ 10 | **6:01–7:01** (pior 8:00) | **fecha** |
+| F5 9: 1ª chegada | carreiras 2–4 | mediana **2**; ~27 min de jogo (5/s), ~30 min (4/s), ~50 min (3/s) | **fecha** |
+| F5 10: Boxe × Jiu-jitsu até o cinturão | ≤ 15% (medido ≤ 10% antes) | 7:52 × 8:25 = **7,0%** (5/s); 8:25 × 8:55 = **5,9%** (4/s); 9:55 × 9:25 = **5,3%** (3/s, Jiu-jitsu na frente) | **fecha** |
+| F5 10: quem sai na frente | Boxe a 5/s; Jiu-jitsu no só-assistido | sim; só-assistido 26:57 (Boxe) × 17:55 (Jiu-jitsu) | **fecha** |
+| F5 11: Kid depois da chegada (mediana) | 1–2 carreiras a 4–5/s | **1** (p10 0, p90 2–3) nas duas artes; 3/s também 1 | **fecha** |
+| F5 11: Kid na mesma carreira da chegada | ≤ 25% | 5/s: **26–32%** (Boxe) e **29–31%** (Jiu-jitsu); 4/s: **22–24%**; 3/s: 19–21% | **não fecha a 5/s** |
+| F4 8: árvore fecha (típico) | 5ª–8ª | **5** (p10 4, p90 6–7) | **fecha, no limite de baixo** |
+| F5 14: até a carreira seguinte | ≤ 90 min | mediana **37–42 min**, p90 **51–60 min** | **fecha** |
+| 4b 24: típico × assistido | ≥ 8× | **6,0× (4/s) / 7,5× (5/s)** | **não fecha na letra** (R6) |
+| 4b 24: só-assistido vence o Dudu | sim | 10 de 12 na carreira 1 (aos 8:44) | **fecha** |
+| F5 12: carreira 1 igual à 4b | idêntica | 48 de 48 a 5, 4 e 3/s contra o `fase4b_sim.py` **de hoje** | fecha contra o 4b atual; **não é mais a carreira 1 de antes dos PRs** (ela ganhou Metrônomo mais forte e a luva) |
+
+Outros números:
+- **Só luta no VERDE na academia:** Kid na carreira da chegada em 77–79% (era 40% / 81%). Já aceito pelo Diretor (decisão 2).
+- **Carreira da 1ª chegada** (96 jogadores, 5/s, Boxe): cinturão aos 15:17, Tonhão 3:25 depois da mudança, Kid 6 min depois. Acaba em: 13 aposentam, 32 perdem no Tonhão, 20 perdem no Kid, 31 vencem tudo.
+- **Carreiras com arte desde o minuto 0** (5/s): cinturão aos ~8 min, Tonhão aos ~10:25, Kid aos ~15:20; 60% delas vencem o Kid.
+- **Controle** (24 jogadores, 6 nós, espera o verde; 5 min depois de mudar; mão / Metrônomo / equipe por s): Boxe 5/s 2,66K / 887 / 972; Jiu-jitsu 5/s 1,77K / 709 / 2,31K. O Metrônomo no nível 5 rende **33%** da mão do Boxe a 5/s e **50%** da mão sem arte.
+- **Legado médio por carreira** (2–8): 1.400–1.530 (era 1.200–1.450).
+- **Só-assistido (não clica):** cinturão na carreira 2 (mediana); com Jiu-jitsu vence o Kid em 12 de 72 carreiras, com Boxe em nenhuma.
+
+**Ruído que é preciso saber:** a porcentagem do 23b varia ±3 a 5 pontos entre configurações quase iguais (o robô olha a prévia de 30 em 30 s, e o resultado "pula"). Em 15 configurações testadas, o 5/s ficou entre 16% e 31% e o 4/s entre 17% e 29%, sem ordem clara. Com 400 jogadores, 21,0% e 20% não são distinguíveis. O "mais cedo" e a mediana da 1ª derrota são medidas estáveis; as porcentagens, não.
+
+### R5. O que continua aberto (decisão do Diretor)
+1. **23b a 5/s: 21,0% contra 20%.** Está dentro do ruído, mas não posso dizer que fecha. Opções: (a) aceitar como está, com a meta de 5/s em ≤ 25% enquanto existir a luva; (b) luva mais fraca (×4 por 6 s rende +17%; não simulei). Recomendo (a): baixar mais a luva tira a graça do que o dono pediu.
+2. **Kid na carreira da chegada a 5/s: 26–32% contra 25%.** A causa é a soma luva + Metrônomo 4/5 + $1.500 de sobra na chegada, tudo pedido do dono. Sem as melhorias 3 e 4 o número é o mesmo (27%), então elas não são mais a causa. Opções: (a) aceitar ≤ 35% a 5/s (a 4/s fecha); (b) Kid Navalha +5% nos três atributos (não simulei nesta rodada; a +10% a seção 10.7 mostra que o 4/s vai para 3 carreiras). Recomendo (a) agora e rever na 5.1, quando o teto de clique for redesenhado.
+3. **Assistido 6,0–7,5× contra ≥ 8×.** Para voltar aos 8× basta `assist.interval` 2,0 s (8× a 4/s, 10× a 5/s). **Não apliquei**: o dono pediu o Shift mais forte (item 5), o assistido só existe até o 1º Metrônomo ($80, 2–4 min de carreira) e o resultado do típico não muda. Recomendo reescrever o critério para **≥ 6×**.
+4. **Árvore fecha na 5ª (p10 4ª).** Dentro da meta, no limite. Sem ajuste.
+5. **Os critérios só valem depois que o Programador ligar `golden_event`.** Até lá o jogo roda ×7 por 12 s e o 23b fica em ~34% / 11:48.
+
+### R6. Para o Programador (não mexi em `scripts/`, `ui/` nem `tests/`)
+**1. Luva dourada: ler de `data/training.json` → `golden_event`** (no `TrainingData`, ao lado de `_ler_assist`; o `GameState` já tem `dados`).
+| Campo | Tipo / faixa | Padrão (bloco ou campo ausente) | Substitui em `scripts/game_state.gd` |
+|---|---|---|---|
+| `wait_min` | s, ≥ 1 | 60,0 | `EVENTO_ESPERA_MIN` (linha 74) |
+| `wait_max` | s, ≥ `wait_min` (se menor, usa `wait_min`, com aviso) | 100,0 | `EVENTO_ESPERA_MAX` (linha 75) |
+| `visible_seconds` | s, 1..60 | 7,0 | `EVENTO_DURACAO` (linha 73) |
+| `frenzy_mult` | 1..100 (1 = evento sem efeito) | 5,0 | `FRENESI_MULT` (linha 71) |
+| `frenzy_seconds` | s, 0..600 | 6,0 | `FRENESI_DURACAO` (linha 72) |
+- Também usam as constantes: `ui/sala.gd:403` e `:1217` (texto "FRENESI X{n}") e `tools/ui/gravar_demo.gd:78-79`. `frenzy_mult` pode não ser inteiro: mostrar com `NumberFormat`, não `int()`.
+- `tests/test_evento_dourado.gd` assume ×7 e 12 s: passar a ler do dado (ou usar JSON de teste).
+
+**2. Barra de ESPECIAL: ler de `data/fights.json` → `presentation.special_hits`** (no `FightData`, bloco novo; inteiro 1..50, padrão 5). Substitui `ESPECIAL_GOLPES` em `ui/tela_luta.gd:51` (usado nas linhas 367, 662 e 666). É só visual.
+
+**3. Testes que travam valores de `data/` que eu mudei:**
+- `tests/test_data.gd:32` espera `[60000, 4, 800000, 5]` nas melhorias 3 e 4 dos aparelhos básicos → agora `[2000000, 2, 8000000, 2]`. **Este teste falha até ser atualizado.**
+- Se houver teste que confere as técnicas 3 e 4 (150K ×4, 2M ×5), o valor novo é 2,5M ×2 e 10M ×2.
+
+**4. Reserva de $1.000 na LOJA (pergunta do Diretor, item 13):** com a mudança automática ela quase nunca aparece. Vale manter como rede de segurança (save migrado com cinturão na garagem; jogo fechado com a janela de vitória aberta). Não custa nada e não pede mudança.
+
+**5. Textos:** `belt_hint` diz "sobra dinheiro para gastar": confere ($1.500; $2.750 com a Bolsa negociada). As chaves `frenzy_start` e `frenzy_label` não existem em `ui_texts.json` (a tela usa o texto padrão do código, que já recebe `{n}` e `{s}`): vale criar as duas chaves.
+
+### R7. Feedback do dono (itens 5, 11, 12 e 16) e o que recomendo para a 5.1 (não implementado)
+| Item | Os números de hoje atendem? | Recomendo na 5.1 |
+|---|---|---|
+| **5. Metrônomo e Shift fracos** | **Sim, em número.** Metrônomo vai de 0,83 a 2,5 socos/s (era 0,5 a 1,43); no nível 5 vale 50–62% de uma mão a 4–5/s. O Shift dobrou (0,67 soco/s). Os dois ficaram como o PR deixou | Só ajuste fino se o dono ainda achar fraco depois de jogar. Limite: o Metrônomo no último nível não deve passar de ~60% da mão do típico; hoje está no teto disso para quem clica a 4/s |
+| **11. "Só jogo subindo a fazenda"** | **Em parte.** A luva só paga clique e auto-soco. Na academia de Jiu-jitsu, ~48% do treino vem da equipe e só ~37% da mão: a luva vale pouco para quem vive da equipe | Uma 2ª variante sorteada no mesmo evento, que paga em equipe: "BOLSA DA TORCIDA" = 30 a 45 s da renda da equipe na hora. Mesmo bloco `golden_event`, com uma lista `variants` e pesos. Simular junto: as duas variantes somadas não devem passar de ~+30% de treino total |
+| **12. Teto do clique baixo** | **Em parte.** Aparelhos foram de ×15 para ×60 (o PR dava ×300, que fechava a academia em uma carreira). **Luvas continuam em 2 níveis** (×4), e o sprite da luva L3 já existe | Luva L3 e L4 pagas em $ (é o que falta para gastar os $2.500 e $6.000 da academia; hoje só há Nelson e Metrônomo). Subir as melhorias 3 e 4 de volta para ×3/×4 **junto** com adversários que peçam isso. Sem adversário novo, mais teto só encurta a fase |
+| **16. Clicar sempre tem que ser bom** | **Na Fase 5, sim:** a 5/s o Boxe tira ~59% do treino da mão e o Jiu-jitsu ~37% (+ Metrônomo). O risco é daqui para a frente: geradores somam e o clique multiplica só por compras, então a mão perde peso a cada local novo | Um componente do clique que cresce com a equipe (ex.: melhoria "cada clique rende +X% do treino/s da equipe"), para a mão nunca cair abaixo de ~25% do total. E a luva dourada como motivo para olhar a sala. Tudo isso com simulador antes |
+
+### R8. Meio-termo escolhido pelo dono (2026-11-11) — VALE SOBRE R3, R4 e R5
+O dono não ficou com a versão do PR nem com a de R3. Pediu: luva de volta a ×7 por menos tempo, melhorias novas ×3 com preço alto, e a dificuldade segurada nos adversários, não no clique. As metas novas estão em `fase5-escopo.md`, seção "Rebalanceamento pós-PRs". **Os valores de R3 e os resultados de R4 ficam só como histórico.**
+
+**O que está em `data/` agora**
+| Arquivo / campo | PR | R3 (descartado) | **Agora** |
+|---|---|---|---|
+| `training.json` → `golden_event` | ×7, 12 s, 45–90 s | ×5, 6 s, 60–100 s | **×7, 6 s, 60–100 s, 7 s na sala** (+35% de clique para quem pega 80%; +44% pegando todas) |
+| `training.json` → melhorias 3 e 4 de saco, esteira e corda | 60K ×4, 800K ×5 | 2M ×2, 8M ×2 | **400K ×3, 4M ×3** (teto do aparelho ×135) |
+| `training.json` → técnicas 3 e 4 (pera, boneco) | 150K ×4, 2M ×5 | 2,5M ×2, 10M ×2 | **600K ×3, 6M ×3** |
+| `opponents.json` → `opp_tank` (Seu Muralha) F / A / R | 78K / 58K / 490K | igual | **82K / 61K / 515K** (+5%) |
+| `opponents.json` → `opp_gym_1` (Tonhão) | 260K / 100K / 1,1M | igual | **390K / 150K / 1,65M** (×1,5) |
+| `opponents.json` → `opp_gym_2` (Kid Navalha) | 500K / 1,0M / 2,0M | igual | **1,15M / 2,3M / 4,6M** (×2,3) |
+| `arts.json` → `bjj.rule` (`start` / `per_minute` / `cap`) | 0,20 / 0,12 / 1,00 | igual | **0,30 / 0,15 / 1,30** (teto aos 6:40, como antes; com o nó ESTILO: +195%) |
+| `fights.json` → `presentation.special_hits` | 5 no código | 5 | **5** |
+Prêmios, Fama, Metrônomo, assistido, mudança e Boxe não mudaram. Os nomes dos campos de `golden_event` e `special_hits` são os mesmos de R6.
+
+**Por que cada um**
+- **Luva ×7 por 6 s:** com 7 s e 8 s o cinturão mais cedo cai para 18:50 e 18:23 (meta ≥ 20:00), mesmo com o Muralha +5%. Seis segundos é o máximo que fecha. Mantive o intervalo que já estava em `data/` (60–100 s). **Se o dono quis dizer o intervalo do PR (45–90 s), o ganho sobe para +41% e o "nunca antes de 20:00" precisa ser simulado de novo.**
+- **Melhorias a 400K e 4M:** a 400K a 3ª melhoria não é comprada antes do Muralha na carreira 1 e vira a 1ª compra grande da academia; a 4ª chega entre o Tonhão e o Kid.
+- **Muralha +5%:** sem isso o cinturão mais cedo fica em 19:52. É o mínimo que passa de 20:00.
+- **Tonhão ×1,5 e Kid ×2,3:** o clique agora vale ×9 a mais na academia. Com o Kid ×2,0 ele cai na carreira da chegada em 40% (5/s, Boxe); com ×2,5 o Jiu-jitsu a 4/s leva 3 carreiras; com ×4 ninguém vence.
+- **Jiu-jitsu mais forte:** a luva e as melhorias novas só ajudam o clique. Sem mexer na equipe, o Boxe chegava ao cinturão 14% antes (7:19 × 8:23 a 5/s). Em vez de enfraquecer o Boxe, subi a curva do Jiu-jitsu.
+
+**Resultado** (direto de `data/`; 23b com 400 jogadores; sequência com 96 × 8 carreiras a 4–5/s e 48 a 3/s; robô pega 80% das luvas)
+| Critério | Meta do dono | **Agora** | Situação |
+|---|---|---|---|
+| 23a: cinturão (mediana) | carreira 2 | **2** (p10 1, p90 3) | **fecha** |
+| 23b: 5/s | ≤ 25% | **26,2%** | **1,2 ponto acima** (5 jogadores em 400; dentro do ruído, ver R4) |
+| 23b: 4/s | ≤ 25% | **25,2%** | **0,2 ponto acima** (1 jogador em 400) |
+| 23b: mais cedo | ≥ 20:00 | **20:24** (5/s), 22:51 (4/s) | **fecha, no limite** |
+| 1ª derrota (mediana) | 10–15 min | **11:14** (5/s) / **12:44** (4/s) | **fecha** |
+| Tempo morto, carreira 1 | mediana ≤ 10, p90 ≤ 13 | 5:00 / 10:01 (5/s); 5:30 / 11:31 (4/s); 6:30 / 13:02 (3/s) | **fecha** a 4–5/s |
+| Tempo morto, carreiras 2–4 e academia | p90 ≤ 10 | **≤ 8:00** | **fecha** |
+| Kid na mesma carreira da chegada, 5/s | ≤ 35% | **32%** (Boxe), **23%** (Jiu-jitsu); a 4/s 25% e 11% | **fecha** |
+| Kid depois da chegada (mediana) | 1–2 carreiras a 4–5/s | **1** (Boxe 5/s e 4/s, Jiu-jitsu 5/s), **2** (Jiu-jitsu 4/s) | **fecha** |
+| Idem a 3/s | Jiu-jitsu em 1–2 | Boxe **2**, Jiu-jitsu **3** | **não fecha para o Jiu-jitsu a 3/s** |
+| Boxe × Jiu-jitsu até o cinturão | ≤ 10% | 7:20 × 7:55 = **8,0%** (5/s); 8:25 × 8:25 = **0%** (4/s); 9:49 × 9:21 = **5,0%** (3/s) | **fecha** |
+| Árvore fecha | 5ª–8ª | **5** (p10 4, p90 6–7); 3/s: 5–6 | **fecha, no limite de baixo** |
+| Clique × assistido | ≥ 6× | **6,0× (4/s) / 7,5× (5/s)** | **fecha** |
+| 1ª chegada à academia | carreiras 2–4 | mediana 2; ~25 min de jogo (5/s), ~28 min (4/s), ~33 min (3/s) | **fecha** |
+| Até a carreira seguinte (crit. 14) | ≤ 90 min | mediana 36–41 min, p90 48–55 min | **fecha** |
+
+Outros números:
+- **O clique é o mais forte:** no controle, 5 min depois de mudar, a 5/s com Boxe: mão 8,7K/s, Metrônomo 2,9K/s, equipe 0,9K/s (a mão dá 70% do treino). Com Jiu-jitsu: 5,8K / 2,9K / 2,2K (53%).
+- **Carreira da chegada** (96 jogadores, 5/s, Boxe): cinturão aos 13:20, Tonhão 3:00 depois, Kid 7 min depois. Acaba em: 19 aposentam, 20 perdem no Tonhão, 26 perdem no Kid, 31 vencem tudo.
+- **Carreiras com arte** (5/s): cinturão aos ~7:20–7:55, Tonhão aos ~9:20–9:55, Kid aos ~14:50–16:25.
+- **Só luta no VERDE na academia:** Kid na carreira da chegada em 65% (Boxe) e 32% (Jiu-jitsu); árvore do Boxe na 4ª. Perfil já aceito pelo Diretor.
+- **Só-assistido** (controle): cinturão aos 31:27 (Boxe) e 17:55 (Jiu-jitsu); não vence o Kid.
+- **Controle** a 5/s (24 jogadores, passos de 30 s): Boxe 9:24 × Jiu-jitsu 10:22 = 10,3%. Na sequência, com 580 carreiras, é 8,0%.
+
+**O que não fecha, sem enfeite**
+1. **23b: 26,2% e 25,2% contra 25%.** Subir o Muralha não baixa a porcentagem (testei Resistência 520K e 550K e +5% em tudo: 25–28% em todos); ela depende do robô que luta no amarelo e balança ±3 pontos sozinha. O que eu sei baixar é o ganho da luva, e o dono não quer. Fica para o Diretor aceitar como "no limite" ou pedir a luva por 5 s.
+2. **Jiu-jitsu a 3/s leva 3 carreiras para o Kid** (meta 1–2). O Kid ×2,3 pesa mais para quem clica pouco, porque o teto novo é de clique.
+3. **Margens curtas:** mais cedo 20:24; árvore na 5ª com p10 na 4ª; Kid na mesma carreira 32% contra 35%.
+
+**Para o Programador, além de R6**
+- Padrões de `golden_event` no código, se o bloco faltar: `frenzy_mult` 7, `frenzy_seconds` 6, `wait_min` 60, `wait_max` 100, `visible_seconds` 7 (a tabela de R6 dizia ×5).
+- Testes que travam valores que mudaram e **devem falhar até serem atualizados** (não rodei a bateria):
+  - `tests/test_data.gd:32`: melhorias 3 e 4 → `[400000, 3, 4000000, 3]`;
+  - `tests/test_fase5.gd:109` e `:112`: Tonhão `[390000, 150000, 1650000, 2500, 120]`, Kid `[1150000, 2300000, 4600000, 6000, 200]`;
+  - `tests/test_fase5.gd:408-416` e o teste da curva do Jiu-jitsu (seção 12: 1,20 / 1,68 / 2,00): agora começa em **1,30**, vale **1,90** aos 240 s e **2,30** no teto (com o nó: 1,45 / 2,35 / 2,95);
+  - `tests/test_fight_data.gd`, se conferir os atributos do Muralha: `82000 / 61000 / 515000`;
+  - `tests/test_fase5.gd:701` troca `"strength": 260000` no texto do JSON: o valor agora é `390000`.
+- As seções 5.2, 7.1 e 4.2 deste documento mostram os números antigos de Jiu-jitsu, adversários e técnicas; valem os desta tabela.
+
+### Resumo do rebalanceamento
+- **Os PRs quebravam** o 23b (34,5% e cinturão aos 11:48), a 1ª derrota a 5/s (9:44), o Kid na carreira da chegada (38–50%) e a árvore (4ª–5ª). Causas: luva dourada (+82% de clique) e melhorias ×4 / ×5 baratas.
+- **Meio-termo do dono, em `data/`:** luva **×7 por 6 s a cada 60–100 s**; melhorias 3 e 4 **×3 por 400K e 4M** (técnicas **600K e 6M**); **Muralha +5%**, **Tonhão ×1,5**, **Kid ×2,3**; Jiu-jitsu **+30% → +130%** (era +20% → +100%); `special_hits` 5.
+- **Resultado:** cinturão na carreira 2; 23b **26,2% (5/s) / 25,2% (4/s), mais cedo 20:24**; 1ª derrota 11:14 / 12:44; Kid na carreira da chegada **32%** a 5/s; Boxe × Jiu-jitsu **8,0% / 0% / 5,0%**; árvore na **5ª**; clique **6,0–7,5×** o assistido; tempo morto p90 ≤ 11:31 na carreira 1 e ≤ 8:00 depois.
+- **Não fecha:** 23b por 1,2 e 0,2 ponto (ruído do robô); Jiu-jitsu a 3/s leva 3 carreiras para o Kid.
+- **Depende do Programador:** ler `golden_event` e `special_hits` de `data/` e atualizar os testes listados em R8. Sem a leitura, o jogo continua com ×7 por 12 s.

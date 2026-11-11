@@ -66,13 +66,14 @@ var tempo_jogo := 0.0  # segundos de jogo desta carreira
 var dinheiro_ganho := 0.0  # soma dos prêmios da carreira
 var luta: Dictionary = {}  # career.fight: luta decidida e ainda não aplicada ({} = nenhuma)
 # Evento dourado (estilo "biscoito dourado"): de vez em quando um cinturão dourado aparece por alguns segundos; quem clica nele
-# ganha o FRENESI: treino x7 nos CLIQUES e nos auto-socos por 12 s (não multiplica a renda da equipe: só rende para quem clica).
+# ganha o FRENESI: treino multiplicado nos CLIQUES e nos auto-socos por alguns segundos (não multiplica a renda da equipe: só rende para quem clica).
 # Não é salvo (é passageiro) e não conta enquanto uma janela/luta estiver aberta.
-const FRENESI_MULT := 7.0
-const FRENESI_DURACAO := 12.0
-const EVENTO_DURACAO := 7.0
-const EVENTO_ESPERA_MIN := 45.0
-const EVENTO_ESPERA_MAX := 90.0
+# Valores vindos de data/training.json -> golden_event (carregados em inicializar, junto com `dados`).
+var FRENESI_MULT := 7.0
+var FRENESI_DURACAO := 12.0
+var EVENTO_DURACAO := 7.0
+var EVENTO_ESPERA_MIN := 45.0
+var EVENTO_ESPERA_MAX := 90.0
 var frenesi_restante := 0.0
 var evento_dourado_restante := 0.0  # > 0: o cinturão dourado está na sala esperando o clique
 var _evento_espera := -1.0
@@ -161,6 +162,11 @@ func inicializar(pasta_save: String, caminho_config: String,
 		dados_academia: GymData = null) -> void:
 	config = GameConfig.carregar(caminho_config)
 	dados = TrainingData.carregar(caminho_treino, caminho_geradores, caminho_textos)
+	FRENESI_MULT = dados.golden_frenzy_mult
+	FRENESI_DURACAO = dados.golden_frenzy_seconds
+	EVENTO_DURACAO = dados.golden_visible_seconds
+	EVENTO_ESPERA_MIN = dados.golden_wait_min
+	EVENTO_ESPERA_MAX = dados.golden_wait_max
 	academia = dados_academia if dados_academia != null else GymData.carregar()
 	academia.validar_aparelhos(dados)
 	local_id = academia.local_padrao
@@ -1312,7 +1318,7 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 		"seed": int(snap.get("seed", 0)), "player": snap.get("player", {}).duplicate(),
 		"result": snap.get("result", {}).duplicate(), "reason": motivo_fim,
 		"summary": {"wins": indice_escada, "belts": 1 if cinturao else 0, "fame": fama,
-			"money_earned": dinheiro_ganho, "play_seconds": tempo_jogo, "art": arte_id},
+			"money_earned": dinheiro_ganho, "play_seconds": tempo_jogo, "art": arte_id, "location": local_id},
 	}
 	salvar()
 	permanente_mudou.emit()
@@ -1988,9 +1994,8 @@ func _dica_extra(f: Dictionary) -> String:
 	var lista: Array = []
 	var indice := int(f.get("career_number", 1))
 	if f.kind == "retire":
-		var i_cint := lutas.indice_cinturao()
-		var primeiro_gym := lutas.indice_primeiro_do_local(academia.destino_mudanca().get("id", "")) if not academia.destino_mudanca().is_empty() else -1
-		if int(s.get("belts", 0)) > 0 and primeiro_gym >= 0 and int(s.get("wins", 0)) <= primeiro_gym and i_cint >= 0:
+		# Só se encerrou com o cinturão ainda na garagem (a mudança é automática depois do cinturão).
+		if int(s.get("belts", 0)) > 0 and str(s.get("location", "")) == academia.local_padrao:
 			lista = lista_ui("tip_move_belt")
 	else:
 		var opp := lutas.adversario(str(f.get("opponent", "")))
@@ -2303,7 +2308,8 @@ func _validar_fim(v: Variant) -> Dictionary:
 		"reason": rs.duplicate(true) if rs is Dictionary else {},
 		"summary": {"wins": _inteiro_valido(s.get("wins", 0), 1.0e9), "belts": _inteiro_valido(s.get("belts", 0), 1.0e9),
 			"fame": _inteiro_valido(s.get("fame", 0), 1.0e15), "money_earned": _numero_valido(s.get("money_earned", 0.0)),
-			"play_seconds": _numero_valido(s.get("play_seconds", 0.0)), "art": _validar_arte_id(s.get("art", ""))},
+			"play_seconds": _numero_valido(s.get("play_seconds", 0.0)), "art": _validar_arte_id(s.get("art", "")),
+			"location": str(s.get("location", ""))},
 	}
 
 

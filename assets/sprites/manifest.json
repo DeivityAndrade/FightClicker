@@ -1198,12 +1198,12 @@
 				"frame": "sign_cardboard",
 				"mode": "chao",
 				"bottom_center": [
-					230,
+					244,
 					268
 				],
 				"brick": "sign_brick",
 				"brick_pos": [
-					230,
+					244,
 					271
 				],
 				"note": "Plaquinha em pé no fundo da marca, apoiada no tijolo (igual à da esteira)."

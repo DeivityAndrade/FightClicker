@@ -75,11 +75,11 @@ func _dourado() -> void:
 	_novo()
 	await _abrir()
 	await _esperar(1.0)
-	gs.evento_dourado_restante = gs.EVENTO_DURACAO  # o cinturão dourado aparece (sem esperar o sorteio de 45-90 s)
+	gs.evento_dourado_restante = gs.EVENTO_DURACAO  # o cinturão dourado aparece (sem esperar o sorteio de espera)
 	gs.evento_dourado.emit(gs.EVENTO_DURACAO)
 	await _esperar(2.0)
 	var sala: Node = cena.get_node("Sala")
-	sala._clique_em(sala._evento_rect.get_center())  # o jogador clica no cinturão: FRENESI x7
+	sala._clique_em(sala._evento_rect.get_center())  # o jogador clica no cinturão: FRENESI (dos dados)
 	await _clicar(26, 0.3)
 	await _esperar(1.0)
 

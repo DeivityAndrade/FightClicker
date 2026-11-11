@@ -93,6 +93,7 @@ func _ready() -> void:
 	_info_extra = UiTema.rotulo(_caixa_info, "", UiTema.GR3, 0, 0, 112)
 	# Fase 4: o bloco PRÓXIMA cresce com a fita da revanche e a dica do verde; a caixa de informação desce junto.
 	proxima.altura_mudou.connect(_ao_altura_proxima)
+	GameState.local_mudou.connect(func(_l: String) -> void: mostrar_info({}))
 	mostrar_info({})
 	atualizar()
 
@@ -156,7 +157,9 @@ func _margens_nove(n: NinePatchRect, nome: String) -> void:
 func mostrar_info(info: Dictionary) -> void:
 	if info.is_empty():
 		_info_titulo.text = ""
-		_info_texto.text = _ambientacao
+		# Fase 5: a ambientação é a do local atual (garagem ou Academia Boa Esquina).
+		var amb := str(GameState.local_atual().get("ambience", "")).to_upper()
+		_info_texto.text = amb if amb != "" else _ambientacao
 		_info_texto.add_theme_color_override("font_color", UiTema.G2)
 		_info_extra.text = ""
 	else:

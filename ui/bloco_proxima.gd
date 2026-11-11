@@ -170,10 +170,13 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary) -> void:
 		_medir()
 		return
 	_icone_cinturao.visible = true
-	_caixa.position.x = 16.0
-	_largura_caixa(100.0)  # o ícone do cinturão ocupa 12 px à esquerda: sem isso o texto passa da borda direita do painel
+	# O título recua 12 px com espaços (abaixo) e a caixa mantém 112 px: o texto longo da academia cabe sem sair do painel.
+	_caixa.position.x = 4.0
+	_largura_caixa(112.0)
 	_premio.visible = true
-	_nome.text = UiTema.txt("belt_title", "CINTURÃO AMADOR")
+	# O ícone do cinturão fica à esquerda do título (a caixa mantém os 112 px: o texto longo da academia não sai do painel).
+	var recuo := " ".repeat(int(ceil(12.0 / maxf(1.0, UiTema.largura(" ")))))
+	_nome.text = recuo + UiTema.txt("belt_title", "CINTURÃO AMADOR")
 	_nome.add_theme_color_override("font_color", UiTema.Y1)
 	if estado == "end":
 		_premio.text = UiTema.txt("no_more_fights_gym", "VOCÊ VENCEU A ACADEMIA. APOSENTAR VALE MAIS.")
@@ -182,6 +185,13 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary) -> void:
 		_premio.text = UiTema.txt("no_more_fights", "SEM MAIS ADVERSÁRIOS POR ENQUANTO")
 		_premio.add_theme_color_override("font_color", UiTema.G2)
 	_medir()
+
+
+func _largura_textos(w: float) -> void:
+	_caixa.size.x = w
+	for l in [_nome, _premio]:
+		l.custom_minimum_size = Vector2(w, 0)
+		l.size = Vector2(w, l.size.y)
 
 
 ## Cartão da mudança: ícone + nome da academia, o efeito, "tudo o que você comprou vai junto", "vale até o fim desta carreira"

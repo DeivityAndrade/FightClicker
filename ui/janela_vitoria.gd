@@ -1,8 +1,9 @@
 class_name JanelaVitoria
 extends JanelaBase
 ## Vitória: prêmio (dinheiro, fama, Legado em jogo) com contagem subindo, Legado em jogo atual e o próximo
-## adversário. Se foi o cinturão: cinturão amador grande e "ACADEMIA DE BAIRRO LIBERADA (EM BREVE)" (só texto,
-## nada clicável). O único botão é CONTINUAR, que volta para a garagem.
+## adversário. Se foi o cinturão: cinturão amador grande e o aviso da mudança para a academia (só texto,
+## nada clicável). O único botão é CONTINUAR. No cinturão a mudança para a academia é AUTOMÁTICA (o `Fluxo` a faz ao fechar):
+## a janela só avisa "você se muda para a academia" e não tem botão MUDAR.
 
 signal continuar_pedido
 
@@ -118,11 +119,11 @@ func _montar_cinturao(r: Dictionary) -> void:
 	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 215)
 	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
-	# Academia de bairro: aviso, NÃO é botão.
-	fundo_cor(Rect2(166, 236, 308, 36), Color(UiTema.P0, 0.55))
-	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 242)
-	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "ACADEMIA DE BAIRRO LIBERADA (EM BREVE)"), UiTema.Y1, 188, 242, 280)
-	UiTema.rotulo(painel, UiTema.txt("belt_hint", "NÃO HÁ MAIS LUTAS NESTA VERSÃO. APOSENTAR VALE MAIS."), UiTema.G3, 174, 256, 292)
+	# Academia de bairro: aviso de que a mudança é automática (NÃO é botão).
+	fundo_cor(Rect2(166, 232, 308, 42), Color(UiTema.P0, 0.55))
+	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 238)
+	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 188, 238, 280)
+	UiTema.rotulo(painel, UiTema.txt("belt_hint", "A MUDANÇA SAI DO PRÊMIO E SOBRA DINHEIRO PARA GASTAR."), UiTema.G3, 174, 252, 292)
 	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 

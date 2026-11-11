@@ -11,7 +11,11 @@ signal nova_carreira_pedido
 
 const JANELA := Rect2(80, 20, 480, 300)
 const FAIXA := Rect2(86, 26, 468, 16)
-const COLUNAS := {"body": Rect2(90, 48, 226, 228), "career": Rect2(324, 48, 226, 228)}
+const COLUNAS := {"body": Rect2(90, 48, 226, 228), "career": Rect2(324, 48, 226, 228), "style": Rect2(207, 48, 226, 228)}
+const SLOTS_ESTILO := [[56, 40], [170, 40]]  # Fase 5: os 2 nós do ESTILO lado a lado (centro-topo, relativo à coluna)
+const ALT_NO_ESTILO := 79.0  # peça + nome + efeito + plaquinha + "SÓ VALE JOGANDO DE ..." (2 linhas)
+const PAGINA_PRINCIPAL := "main"
+const PAGINA_ESTILO := "style"
 const ALTURA_CAB := 14.0
 const LARG_NO := 104.0  # largura útil por nó
 const ALT_NO := 57.0  # peça 24 + nome + efeito + plaquinha
@@ -29,6 +33,9 @@ var _celulas: Dictionary = {}  # id -> {cel, peca, plaqueta}
 var _donos_antes: Array = []
 var _dica: Control
 var _tw_legado: Tween
+var _pagina := PAGINA_PRINCIPAL  # Fase 5: "main" = CORPO e CARREIRA; "style" = aba ESTILO (só com as artes liberadas)
+var _colunas: Control
+var _abas: Dictionary = {}  # pagina -> Button
 
 
 func abrir_com() -> void:
@@ -62,26 +69,10 @@ func _montar_fixo() -> void:
 	_legado_rotulo = UiTema.rotulo(faixa, "", UiTema.P2, 0, UiTema.y_texto(area))
 	_mostrar_legado(_legado_mostrado)
 
-	# Colunas: faixa de cima com o nome do ramo (ícone + texto, o grupo centralizado).
-	for ramo in GameState.lutas.ramos:
-		var id := str(ramo.id)
-		if not COLUNAS.has(id):
-			continue
-		var r: Rect2 = COLUNAS[id]
-		UiTema.nine_patch(painel, "ui_tree_column_" + id, r)
-		var cab := Control.new()
-		cab.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		cab.position = r.position
-		cab.size = Vector2(r.size.x, ALTURA_CAB)
-		painel.add_child(cab)
-		var nome := UiTema.txt("tree_branch_" + id, str(ramo.name))
-		var icone := "icon_branch_" + id
-		var ti := UiTema.tamanho_quadro(icone)
-		var grupo := ti.x + 4.0 + UiTema.largura_visivel(nome)
-		var gx := roundf((r.size.x - grupo) / 2.0)
-		UiTema.textura_rect(cab, icone, gx, UiTema.y_imagem(Rect2(0, 0, r.size.x, ALTURA_CAB), ti.y))
-		var l := UiTema.rotulo(cab, nome, UiTema.WHITE, gx + ti.x + 4.0, UiTema.y_texto(Rect2(0, 0, r.size.x, ALTURA_CAB)))
-		l.add_theme_color_override("font_color", UiTema.WHITE)
+	_colunas = Control.new()
+	_colunas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_colunas.size = TELA
+	painel.add_child(_colunas)
 
 	_camada = Control.new()
 	_camada.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -93,8 +84,79 @@ func _montar_fixo() -> void:
 	_cliques.set_meta("ui_align_row", "free")  # os 4 botões da fileira dos nós não precisam de espaçamento igual
 	painel.add_child(_cliques)
 
-	var b := botao_texto(Rect2(240, 284, 160, 24), UiTema.txt("tree_new_career", "NOVA CARREIRA"), UiTema.WHITE)
+	# Com a aba ESTILO a fileira de baixo tem 3 botões iguais (140 px, folga de 20): [CORPO / CARREIRA] [NOVA CARREIRA] [ESTILO].
+	var com_abas := GameState.arvore_ramos().any(func(r: Dictionary) -> bool: return str(r.id) == "style")
+	var b := botao_texto(Rect2(250, 284, 140, 24) if com_abas else Rect2(240, 284, 160, 24),
+		UiTema.txt("tree_new_career", "NOVA CARREIRA"), UiTema.WHITE)
 	b.pressed.connect(func() -> void: nova_carreira_pedido.emit())
+	_montar_abas()
+
+
+## Colunas da página atual: CORPO e CARREIRA, ou ESTILO (cada uma com a faixa de cima: ícone + nome do ramo, centralizados).
+func _montar_colunas() -> void:
+	for c in _colunas.get_children():
+		c.queue_free()
+	var visiveis: Array = GameState.arvore_ramos().map(func(b: Dictionary) -> String: return str(b.id))
+	for ramo in GameState.lutas.ramos:
+		var id := str(ramo.id)
+		if not COLUNAS.has(id) or not (id in visiveis) or (id == "style") != (_pagina == PAGINA_ESTILO):
+			continue
+		var r: Rect2 = COLUNAS[id]
+		UiTema.nine_patch(_colunas, "ui_tree_column_" + id, r)
+		var cab := Control.new()
+		cab.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cab.position = r.position
+		cab.size = Vector2(r.size.x, ALTURA_CAB)
+		_colunas.add_child(cab)
+		var nome := UiTema.txt("tree_branch_" + id, str(ramo.name))
+		var icone := "icon_branch_" + id
+		var ti := UiTema.tamanho_quadro(icone)
+		var grupo := ti.x + 4.0 + UiTema.largura_visivel(nome)
+		var gx := roundf((r.size.x - grupo) / 2.0)
+		UiTema.textura_rect(cab, icone, gx, UiTema.y_imagem(Rect2(0, 0, r.size.x, ALTURA_CAB), ti.y))
+		var l := UiTema.rotulo(cab, nome, UiTema.WHITE, gx + ti.x + 4.0, UiTema.y_texto(Rect2(0, 0, r.size.x, ALTURA_CAB)))
+		l.add_theme_color_override("font_color", UiTema.WHITE)
+
+
+## Abas na fileira de baixo (só com o ramo ESTILO liberado): [CORPO / CARREIRA] NOVA CARREIRA [ESTILO], as duas abas do
+## mesmo tamanho e a mesma folga (10 px) para o botão do meio.
+func _montar_abas() -> void:
+	var tem_estilo := false
+	var nomes: Array[String] = []
+	for r in GameState.arvore_ramos():
+		if str(r.id) == "style":
+			tem_estilo = true
+		else:
+			nomes.append(UiTema.txt("tree_branch_" + str(r.id), str(r.name)))
+	if not tem_estilo:
+		return
+	var defs := [[PAGINA_PRINCIPAL, " / ".join(nomes), Rect2(90, 284, 140, 24)],
+		[PAGINA_ESTILO, UiTema.txt("tree_branch_style", "ESTILO"), Rect2(410, 284, 140, 24)]]
+	for d in defs:
+		var b := botao_texto(d[2], str(d[1]), UiTema.WHITE)
+		var pag: String = d[0]
+		b.pressed.connect(func() -> void: _trocar_pagina(pag))
+		_abas[pag] = b
+	_estilizar_abas()
+
+
+func _estilizar_abas() -> void:
+	for pag in _abas:
+		var b: Button = _abas[pag]
+		var ativa: bool = pag == _pagina
+		UiTema.aplicar_estilo_botao(b, "ui_button_pressed" if ativa else "ui_button_normal")
+		for c in b.get_children():
+			if c is Label:
+				c.add_theme_color_override("font_color", (UiTema.P2 if pag == PAGINA_ESTILO else UiTema.WHITE) if ativa else UiTema.G2)
+
+
+func _trocar_pagina(pag: String) -> void:
+	if pag == _pagina:
+		return
+	_pagina = pag
+	_estilizar_abas()
+	_reconstruir()
+	sfx.foco()
 
 
 ## "LEGADO: N" encostado na direita da faixa, com o ícone logo antes do texto.
@@ -112,6 +174,7 @@ func _mostrar_legado(valor: int) -> void:
 
 func _reconstruir() -> void:
 	_esconder_dica()
+	_montar_colunas()
 	for c in _camada.get_children():
 		c.queue_free()
 	for c in _cliques.get_children():
@@ -121,14 +184,22 @@ func _reconstruir() -> void:
 	var estado: Dictionary = {}
 	for n in nos:
 		estado[str(n.id)] = str(n.state)
-	# Ligações e Y por baixo dos nós.
-	for ramo in COLUNAS:
-		_desenhar_fios(ramo, COLUNAS[ramo], estado)
+	# Ligações e Y por baixo dos nós (só CORPO e CARREIRA: o ESTILO tem 2 nós soltos).
+	if _pagina == PAGINA_PRINCIPAL:
+		for ramo in ["body", "career"]:
+			_desenhar_fios(ramo, COLUNAS[ramo], estado)
+	var i_estilo := 0
 	for n in nos:
-		_montar_no(n)
+		if (str(n.branch) == "style") != (_pagina == PAGINA_ESTILO):
+			continue
+		_montar_no(n, i_estilo)
+		if str(n.branch) == "style":
+			i_estilo += 1
 
 
-func _slot(id: String, ramo: String) -> Array:
+func _slot(id: String, ramo: String, i_estilo: int = 0) -> Array:
+	if ramo == "style":
+		return SLOTS_ESTILO[mini(i_estilo, SLOTS_ESTILO.size() - 1)]
 	var slots: Dictionary = _layout.get("node_slots", {})
 	var nome := str(_slots.get(id, ""))
 	return slots.get(nome, [])
@@ -168,10 +239,10 @@ func _sprite_fio(pos_: Vector2, nome: String) -> Sprite2D:
 	return s
 
 
-func _montar_no(n: Dictionary) -> void:
+func _montar_no(n: Dictionary, i_estilo: int = 0) -> void:
 	var id := str(n.id)
 	var ramo := str(n.branch)
-	var slot := _slot(id, ramo)
+	var slot := _slot(id, ramo, i_estilo)
 	if slot.is_empty() or not COLUNAS.has(ramo):
 		push_warning("JanelaArvore: nó '%s' sem lugar no manifest.tree_layout; não aparece." % id)
 		return
@@ -186,7 +257,7 @@ func _montar_no(n: Dictionary) -> void:
 	var cel := Control.new()
 	cel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cel.position = Vector2(cx - LARG_NO / 2.0, topo)
-	cel.size = Vector2(LARG_NO, ALT_NO)
+	cel.size = Vector2(LARG_NO, ALT_NO_ESTILO if ramo == "style" else ALT_NO)
 	_camada.add_child(cel)
 	var peca := AnimSprite.new()
 	var nome_peca := str(tile.get(estado, "skill_%s_%s" % [id, estado]))
@@ -197,7 +268,7 @@ func _montar_no(n: Dictionary) -> void:
 	cel.add_child(peca)
 
 	var trancado := estado == "locked"
-	var cor_ramo := UiTema.R3 if ramo == "body" else UiTema.Y1
+	var cor_ramo := UiTema.R3 if ramo == "body" else (UiTema.P2 if ramo == "style" else UiTema.Y1)
 	var cor_nome := UiTema.G2 if trancado else UiTema.WHITE
 	var cor_efeito := UiTema.G1 if trancado else cor_ramo
 	UiTema.rotulo_centrado(cel, Rect2(0, 26, LARG_NO, 7), str(n.name).to_upper(), cor_nome, 1, false, "center_h")
@@ -226,6 +297,10 @@ func _montar_no(n: Dictionary) -> void:
 	var plaqueta := UiTema.nine_patch(cel, "ui_tree_plate_" + _sufixo_plaqueta(estado), Rect2((LARG_NO - w) / 2.0, 45, w, 11))
 	plaqueta.set_meta("ui_pos", "center_h")
 	UiTema.rotulo_centrado(plaqueta, UiTema.area_nove("ui_tree_plate_" + _sufixo_plaqueta(estado), Vector2(w, 11)), texto, cor_plaqueta)
+	if str(n.get("art_only_text", "")) != "":
+		# "SÓ VALE JOGANDO DE BOXE": o nó só vale na carreira dessa arte (2 linhas, centralizadas, embaixo da plaquinha).
+		var so := UiTema.rotulo(cel, str(n.art_only_text).to_upper(), UiTema.G2, 0, 60, LARG_NO, HORIZONTAL_ALIGNMENT_CENTER)
+		UiTema.alinhar(so, "center_h")
 	_celulas[id] = {"cel": cel, "peca": peca, "plaqueta": plaqueta}
 
 	# Botão transparente por cima da célula inteira: passar o mouse mostra o cartão, clicar compra.
@@ -316,8 +391,10 @@ func mostrar_dica(id: String) -> void:
 	var linhas: Array = [
 		{"texto": str(n.name).to_upper(), "cor": UiTema.Y1},
 		{"texto": str(n.description).to_upper(), "cor": UiTema.CREAM},
-		{"texto": str(n.effect_text).to_upper(), "cor": UiTema.R3 if str(n.branch) == "body" else UiTema.Y1},
+		{"texto": str(n.effect_text).to_upper(), "cor": UiTema.R3 if str(n.branch) == "body" else (UiTema.P2 if str(n.branch) == "style" else UiTema.Y1)},
 	]
+	if str(n.get("art_only_text", "")) != "":
+		linhas.append({"texto": str(n.art_only_text).to_upper(), "cor": UiTema.G2})
 	match estado:
 		"owned":
 			linhas.append({"texto": UiTema.txt("tree_owned", "APRENDIDO"), "cor": UiTema.GR3})

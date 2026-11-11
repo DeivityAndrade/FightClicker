@@ -48,7 +48,6 @@ var _combo := 0
 var _rotulo_combo: Label
 # Barra de ESPECIAL (só visual, nunca muda o resultado da luta): cada golpe que entra enche a barra; levar soco esvazia metade;
 # na barra cheia o golpe seguinte vira o SUPER UPPERCUT, com efeitos. O cálculo é feito antes da luta, na ordem dos eventos.
-const ESPECIAL_GOLPES := 5
 var _esp_fundo: ColorRect
 var _esp_cheio: ColorRect
 var _esp_rotulo: Label
@@ -364,7 +363,7 @@ func _agendar_tudo() -> void:
 			continue
 		if int(e.who) == 0:
 			cont += 1
-			if cont >= ESPECIAL_GOLPES and _existe_anim(0, "uppercut") and not bool(e.ko):
+			if cont >= GameState.lutas.golpes_especial and _existe_anim(0, "uppercut") and not bool(e.ko):
 				e["especial"] = true
 				cont = 0
 		else:
@@ -659,11 +658,11 @@ func _exit_tree() -> void:
 func _esp_definir(n: int) -> void:
 	if _esp_cheio == null:
 		return
-	var alvo_w := roundf(108.0 * clampf(float(n) / float(ESPECIAL_GOLPES), 0.0, 1.0))
+	var alvo_w := roundf(108.0 * clampf(float(n) / float(GameState.lutas.golpes_especial), 0.0, 1.0))
 	if _tween_esp != null and _tween_esp.is_valid():
 		_tween_esp.kill()
 	_esp_cheio.modulate = Color.WHITE
-	_esp_cheio.color = UiTema.Y1 if n < ESPECIAL_GOLPES - 1 else UiTema.Y2
+	_esp_cheio.color = UiTema.Y1 if n < GameState.lutas.golpes_especial - 1 else UiTema.Y2
 	_tween_esp = create_tween()
 	_tween_esp.tween_property(_esp_cheio, "size:x", alvo_w, 0.12)
 	_esp_rotulo.text = ""

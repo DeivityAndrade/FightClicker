@@ -143,7 +143,10 @@ func _teste_melhorias_e_multiplicadores() -> void:
 	checar(not gs.proxima_melhoria("punching_bag").is_empty(), "depois do nível 2 ainda há níveis (agora são 4)")
 	gs.treino = 1.0e9
 	checar(gs.comprar_melhoria("punching_bag") and gs.comprar_melhoria("punching_bag"), "compra os níveis 3 e 4")
-	checar_igual(gs.multiplicador_aparelho("punching_bag"), 300.0, "4 níveis: x300 no total (3 x 5 x 4 x 5)")
+	var total_dados := 1.0
+	for u in gs.dados.aparelho("punching_bag").upgrades:
+		total_dados *= float(u.multiplier)
+	checar_igual(gs.multiplicador_aparelho("punching_bag"), total_dados, "4 níveis: produto dos multiplicadores dos dados")
 	checar(gs.proxima_melhoria("punching_bag").is_empty(), "linha completa: sem próxima")
 	gs.treino = 1.0e9
 	checar(not gs.pode_comprar_melhoria("punching_bag"), "linha completa não compra mais")

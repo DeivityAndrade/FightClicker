@@ -6,6 +6,8 @@
 	"panel_upgrades": "MELHORIAS",
 	"per_click": "POR CLIQUE",
 	"auto": "AUTO",
+	"frenzy_start": "FRENESI X{n}!",
+	"frenzy_label": "FRENESI X{n}  {s}S",
 	"focus_label": "FOCO DE TREINO",
 	"can_afford_hint": "Falta treino",
 	"buy_generator": "CHAMAR",

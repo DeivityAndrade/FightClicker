@@ -13,6 +13,7 @@ const ATRIBUTOS: Array[String] = ["strength", "agility", "endurance"]
 # Padrões do design (usados se o arquivo faltar ou o campo for inválido).
 const PADRAO_CLIQUE := {"base_training": 1.0, "crit_chance": 0.10, "crit_multiplier": 3.0}
 const PADRAO_FOCO := "punching_bag"
+const PADRAO_EVENTO := {"wait_min": 60.0, "wait_max": 100.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 6.0}
 const PADRAO_ASSIST := {"interval": 3.0, "still_seconds": 1.0, "first_delay": 1.0}
 const PADRAO_APARELHOS := [
 	{"id": "punching_bag", "attribute": "strength", "upgrades": [
@@ -34,6 +35,12 @@ var default_focus := PADRAO_FOCO
 var assist_interval := 3.0
 var assist_still_seconds := 1.0
 var assist_first_delay := 1.0
+# Evento dourado (luva dourada): bloco "golden_event" de training.json
+var golden_wait_min := 45.0
+var golden_wait_max := 90.0
+var golden_visible_seconds := 7.0
+var golden_frenzy_mult := 7.0
+var golden_frenzy_seconds := 12.0
 ## Aparelhos de toda carreira (sem `art`), na ordem do arquivo. É o que a UI de hoje percorre.
 var aparelhos: Array[Dictionary] = []
 ## Fase 5: aparelhos assinatura das artes (com `art`), na ordem do arquivo. Só existem na carreira dessa arte.
@@ -156,6 +163,7 @@ func _ler_treino(dados: Dictionary) -> void:
 		aparelho(foco)["unlock"] = {}
 	default_focus = foco
 	_ler_assist(dados.get("assist", null))
+	_ler_evento_dourado(dados.get("golden_event", null))
 
 
 # Fase 4b: ritmo do modo assistido. O intervalo ainda é comparado com o Metrônomo 1 no GameState.
@@ -166,6 +174,22 @@ func _ler_assist(v: Variant) -> void:
 	assist_interval = _num(a, "interval", PADRAO_ASSIST.interval, 0.5, 60.0, "assist.")
 	assist_still_seconds = _num(a, "still_seconds", PADRAO_ASSIST.still_seconds, 0.0, 10.0, "assist.")
 	assist_first_delay = _num(a, "first_delay", PADRAO_ASSIST.first_delay, 0.0, assist_interval, "assist.")
+
+
+# Luva dourada: espera entre eventos, tempo na tela, multiplicador e duração do frenesi.
+func _ler_evento_dourado(v: Variant) -> void:
+	var e: Dictionary = v if v is Dictionary else {}
+	if not (v is Dictionary):
+		push_warning("TrainingData: bloco 'golden_event' ausente, usando padrões.")
+	golden_wait_min = _num(e, "wait_min", PADRAO_EVENTO.wait_min, 1.0, 3600.0, "golden_event.")
+	golden_wait_max = _num(e, "wait_max", PADRAO_EVENTO.wait_max, 1.0, 3600.0, "golden_event.")
+	golden_visible_seconds = _num(e, "visible_seconds", PADRAO_EVENTO.visible_seconds, 1.0, 60.0, "golden_event.")
+	golden_frenzy_mult = _num(e, "frenzy_mult", PADRAO_EVENTO.frenzy_mult, 1.0, 1000.0, "golden_event.")
+	golden_frenzy_seconds = _num(e, "frenzy_seconds", PADRAO_EVENTO.frenzy_seconds, 1.0, 600.0, "golden_event.")
+	if golden_wait_max < golden_wait_min:
+		push_warning("TrainingData: golden_event.wait_max < wait_min; usando os padrões de espera.")
+		golden_wait_min = PADRAO_EVENTO.wait_min
+		golden_wait_max = PADRAO_EVENTO.wait_max
 
 
 # Preenche aparelho.unlock = {id, cost, requires, name, description, arrives_as} ou {} (sempre montado).

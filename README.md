@@ -34,6 +34,19 @@ Valores ajustáveis: `data/config.json` (autosave, depuração), `data/training.
 - **F11**: alterna tela cheia (em 1080p dá escala x3).
 - **F12**: mostra/esconde a depuração (saldo x1000, +10 de cada gerador, salvar, recarregar, apagar save). Só em build de debug; a lógica está em `GameState.debug_*`.
 
+## Executavel para Windows
+
+O preset `Windows Desktop` gera uma versao release de 64 bits com os recursos
+embutidos no executavel (sem precisar instalar o Godot no computador de quem joga).
+Com os templates de exportacao do Godot 4.7.2 instalados, crie a pasta
+`build/Fightclicker-Windows` e execute:
+
+```powershell
+& "E:\testePresidente3\tools\godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --export-release "Windows Desktop" "build/Fightclicker-Windows/Fightclicker.exe"
+```
+
+A pasta `build/` e ignorada pelo Git. Distribua o executavel sem incluir seus saves.
+
 ## Como testar
 Um comando roda todos os testes (sem abrir janela) e a cena principal por 120 frames:
 

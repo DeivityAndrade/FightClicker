@@ -22,7 +22,7 @@ func _teste_dados_reais() -> void:
 	checar_igual([dudu.strength, dudu.agility, dudu.endurance], [1200.0, 100.0, 800.0], "Dudu 1.20K / 100 / 800")
 	checar_igual([dudu.prize_money, dudu.prize_fame, dudu.belt], [50.0, 10.0, false], "Dudu: $50, 10 de fama")
 	var muralha := d.adversario("opp_tank")
-	checar_igual([muralha.strength, muralha.agility, muralha.endurance], [78000.0, 58000.0, 490000.0], "Seu Muralha")
+	checar_igual([muralha.strength, muralha.agility, muralha.endurance], [82000.0, 61000.0, 515000.0], "Seu Muralha")
 	checar_igual([muralha.prize_money, muralha.prize_fame, muralha.belt], [2500.0, 100.0, true], "Seu Muralha: $2.500, 100, cinturão")
 	for a in d.adversarios:
 		checar(a.name != a.id and a.description != "" and a.profile != "" and a.entry != "", "%s tem textos" % a.id)

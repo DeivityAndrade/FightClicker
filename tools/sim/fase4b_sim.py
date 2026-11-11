@@ -13,6 +13,19 @@ Valores propostos em PROPOSTA_4B. Se data/training.json tiver "unlock" nos apare
 "assist", eles ganham da proposta. Variaveis de ambiente para testar alavancas:
   SIM_UNLOCK="750,2000"   (preco da esteira, preco da corda)
   SIM_ASSIST="3.0"        (intervalo do assistido, s)
+  SIM_LUVA="7,12,45,90,7" (luva dourada: multiplicador, duracao do FRENESI, espera min, espera max, tempo na sala)
+  SIM_PEGA="0.8,1.5"      (robo: fracao das luvas douradas que ele clica, tempo de reacao em s; "0" = ignora a luva)
+  SIM_METRO="1.2,0.9,0.65,0.5,0.4"  (intervalos do Metronomo, por nivel; niveis a mais sao cortados)
+  SIM_METRO_CUSTO="80,150,300,700,2000"
+  SIM_UPS="300:3,5000:5,60000:4,800000:5"   (melhorias dos 3 aparelhos basicos: custo:multiplicador)
+  SIM_UPS_ARTE="1500:3,15000:5,150000:4,2000000:5"  (tecnicas dos aparelhos de arte; usado pelo fase5_sim)
+
+Rebalanceamento pos-PRs (2026-11-11): Metronomo (5 niveis), assistido, melhorias (4 niveis) e premio do Muralha
+vem direto de data/. A LUVA DOURADA (FRENESI) e modelada aqui: de tempos em tempos ela aparece; o robo clica
+nela numa fracao das vezes (SIM_PEGA) e, por `frenzy_seconds`, cliques e auto-socos (Metronomo e assistido)
+valem x`frenzy_mult`. A equipe nao muda. Os numeros vem de data/training.json -> "golden_event"; se o bloco
+faltar, valem as constantes de scripts/game_state.gd (PADRAO_LUVA).
+Os 3 rounds sao so visuais (round_length nao entra no resultado; time_limit continua 16 s): nada a modelar.
   SIM_N, SIM_CARREIRAS, SIM_N_REV, SIM_PROC, SIM_PERFIS (como no fase4_sim)
 
 Rodar (nao ha python no PATH):
@@ -23,6 +36,7 @@ Numeros do design: SIM_N=32 SIM_CARREIRAS=8 SIM_N_REV=120 ... tudo
 import json
 import math
 import os
+import random
 import sys
 from multiprocessing import Pool
 
@@ -42,9 +56,14 @@ PROPOSTA_4B = {
         {"apparatus": "treadmill", "id": "unlock_treadmill", "cost": 500, "requires": ""},
         {"apparatus": "jump_rope", "id": "unlock_jump_rope", "cost": 1500, "requires": "treadmill"},
     ],
-    # modo assistido (Shift pressionado). interval > intervalo do Metronomo nivel 1 (2.0 s).
+    # modo assistido (Shift pressionado). interval > intervalo do Metronomo nivel 1. (data/ ganha: hoje 1,5 s x 1,2 s)
     "assist": {"interval": 3.0, "still_seconds": 1.0, "first_delay": 1.0},
 }
+# Luva dourada / FRENESI. Padrao = constantes de scripts/game_state.gd (FRENESI_MULT, FRENESI_DURACAO, EVENTO_*).
+PADRAO_LUVA = {"wait_min": 45.0, "wait_max": 90.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 12.0}
+LUVA = dict(PADRAO_LUVA)
+# Robo: clica em 80% das luvas, 1,5 s depois de ela aparecer (hipotese declarada; SIM_PEGA muda).
+ROBO_LUVA = {"catch": 0.8, "react": 1.5}
 TESTE_S = 10.0   # depois de comprar um aparelho o robo clica nele por 10 s (o foco vai para ele)
 
 
@@ -54,7 +73,8 @@ def carregar_4b(quieto=False):
     unlocks = json.loads(json.dumps(PROPOSTA_4B["unlocks"]))
     assist = dict(PROPOSTA_4B["assist"])
     fontes = []
-    do_data = [a for a in treino["apparatus"] if isinstance(a.get("unlock"), dict)]
+    # aparelhos de arte (Fase 5) ficam de fora: quem cuida deles e o fase5_sim
+    do_data = [a for a in treino["apparatus"] if isinstance(a.get("unlock"), dict) and not a.get("art")]
     if do_data:
         unlocks = [{"apparatus": a["id"], "id": a["unlock"].get("id", "unlock_" + a["id"]),
                     "cost": float(a["unlock"]["cost"]), "requires": a["unlock"].get("requires", "")} for a in do_data]
@@ -74,10 +94,67 @@ def carregar_4b(quieto=False):
     if os.environ.get("SIM_ASSIST"):
         assist["interval"] = float(os.environ["SIM_ASSIST"])
         fontes.append("SIM_ASSIST=%s" % os.environ["SIM_ASSIST"])
+    # --- luva dourada
+    LUVA.clear()
+    LUVA.update(PADRAO_LUVA)
+    if isinstance(treino.get("golden_event"), dict):
+        LUVA.update({k: float(v) for k, v in treino["golden_event"].items() if k in PADRAO_LUVA})
+        fontes.append("golden_event de data/training.json")
+    else:
+        fontes.append("luva dourada: constantes de game_state.gd")
+    if os.environ.get("SIM_LUVA"):
+        m, d, w0, w1, vis = (float(x) for x in os.environ["SIM_LUVA"].split(","))
+        LUVA.update(frenzy_mult=m, frenzy_seconds=d, wait_min=w0, wait_max=w1, visible_seconds=vis)
+        fontes.append("SIM_LUVA=%s" % os.environ["SIM_LUVA"])
+    if os.environ.get("SIM_PEGA"):
+        v = [float(x) for x in os.environ["SIM_PEGA"].split(",")]
+        ROBO_LUVA["catch"] = v[0]
+        if len(v) > 1:
+            ROBO_LUVA["react"] = v[1]
+        fontes.append("SIM_PEGA=%s" % os.environ["SIM_PEGA"])
+    # --- alavancas de teste (nao mexem em data/)
+    if os.environ.get("SIM_METRO") or os.environ.get("SIM_METRO_CUSTO"):
+        niv = [dict(L) for L in shop["metronome"]["levels"]]
+        if os.environ.get("SIM_METRO"):
+            iv = [float(x) for x in os.environ["SIM_METRO"].split(",")]
+            niv = niv[:len(iv)]
+            for L, x in zip(niv, iv):
+                L["interval"] = x
+        if os.environ.get("SIM_METRO_CUSTO"):
+            for L, x in zip(niv, os.environ["SIM_METRO_CUSTO"].split(",")):
+                L["cost"] = float(x)
+        shop["metronome"]["levels"] = niv
+        fontes.append("SIM_METRO*")
+    for var, de_arte in (("SIM_UPS", False), ("SIM_UPS_ARTE", True)):
+        if os.environ.get(var):
+            par = [x.split(":") for x in os.environ[var].split(",")]
+            for a in treino["apparatus"]:
+                if bool(a.get("art")) == de_arte:
+                    a["upgrades"] = [dict(a["upgrades"][min(i, len(a["upgrades"]) - 1)], id="%s_up%d" % (a["id"], i + 1),
+                                          cost=float(c), multiplier=float(m)) for i, (c, m) in enumerate(par)]
+            fontes.append("%s=%s" % (var, os.environ[var]))
     if not quieto:
         print("Fontes 4b: %s" % ", ".join(fontes))
         print("Precos: %s; assistido: %s" % (", ".join("%s %d" % (u["id"], u["cost"]) for u in unlocks), assist))
+        print("Metronomo: %s" % ", ".join("$%d %.2fs" % (L["cost"], L["interval"]) for L in shop["metronome"]["levels"]))
+        print("Melhorias do saco: %s" % ", ".join("%d x%g" % (u["cost"], u["multiplier"])
+              for u in next(a for a in treino["apparatus"] if a["id"] == BAG)["upgrades"]))
+        print("Luva dourada: %s; robo pega %.0f%% (reacao %.1f s) -> clique e auto-soco x%.2f na media" % (
+            LUVA, 100 * ROBO_LUVA["catch"], ROBO_LUVA["react"], fren_medio(ROBO_LUVA["catch"])))
     return dados + (unlocks, assist)
+
+
+def fren_uptime(pega, react=None):
+    """Fracao do tempo em FRENESI para quem clica em `pega` das luvas (o relogio da proxima corre durante o FRENESI)."""
+    if pega <= 0:
+        return 0.0
+    react = ROBO_LUVA["react"] if react is None else react
+    ciclo = (LUVA["wait_min"] + LUVA["wait_max"]) / 2.0 + pega * react + (1 - pega) * LUVA["visible_seconds"]
+    return min(1.0, pega * LUVA["frenzy_seconds"] / ciclo)
+
+
+def fren_medio(pega, react=None):
+    return 1.0 + (LUVA["frenzy_mult"] - 1.0) * fren_uptime(pega, react)
 
 
 # ---------------------------------------------------------------- ritmos de mao
@@ -93,8 +170,18 @@ def ritmo_misto(cps=4, bloco=120.0, descanso=60.0):
 
 class Carreira4b(f4.Carreira4):
     def __init__(self, R, treino, gens, shop, career, cps, estr, semente, bonus, unlocks, assist,
-                 regra_ap="asap", k=1, ritmo=None, usa_shift=False, **kw):
+                 regra_ap="asap", k=1, ritmo=None, usa_shift=False, pega=None, **kw):
         super().__init__(R, treino, gens, shop, career, cps, estr, semente, bonus, **kw)
+        # luva dourada (FRENESI): sorteio proprio, nao mexe nos sorteios de luta
+        self.pega = ROBO_LUVA["catch"] if pega is None else pega
+        self.fren_med = fren_medio(self.pega)
+        self.rng_ev = random.Random(semente * 7919 + 17)
+        self.fren_rest = 0.0
+        self.ev_vis = 0.0
+        self.ev_pega = False
+        self.ev_wait = self.rng_ev.uniform(LUVA["wait_min"], LUVA["wait_max"])
+        self.t_fren = 0.0
+        self.n_luvas = 0
         self.unlocks = unlocks
         self.assist_cfg = assist
         self.regra_ap = regra_ap          # "asap", "previa" ou "todos" (Fase 4: os 3 desde o minuto 0)
@@ -113,6 +200,39 @@ class Carreira4b(f4.Carreira4):
         self.treino_assist = 0.0
         self.treino_metro = 0.0
         self.t_eventos = {}
+
+    # --- luva dourada
+    def por_soco(self, a):
+        # valor ESPERADO do soco (com a media do FRENESI): e o que as decisoes de compra usam.
+        # O ganho real de cada passo usa fren_passo() no lugar da media (ver rodar()).
+        return f4.Carreira4.por_soco(self, a) * self.fren_med
+
+    def fren_passo(self, dt):
+        """Avanca o evento dourado em dt e devolve o fator deste passo sobre o soco ESPERADO (1/media ou mult/media)."""
+        if self.pega <= 0:
+            return 1.0
+        m = LUVA["frenzy_mult"] if self.fren_rest > 0 else 1.0
+        if self.fren_rest > 0:
+            self.fren_rest = max(0.0, self.fren_rest - dt)
+            self.t_fren += dt
+        if self.ev_vis > 0:
+            self.ev_vis -= dt
+            if self.ev_vis <= 1e-9:
+                self.ev_vis = 0.0
+                if self.ev_pega:
+                    self.fren_rest = LUVA["frenzy_seconds"]
+                    self.n_luvas += 1
+                self.ev_wait = self.rng_ev.uniform(LUVA["wait_min"], LUVA["wait_max"])
+        else:
+            self.ev_wait -= dt
+            if self.ev_wait <= 0:
+                self.ev_pega = self.rng_ev.random() < self.pega
+                self.ev_vis = ROBO_LUVA["react"] if self.ev_pega else LUVA["visible_seconds"]
+        return m / self.fren_med
+
+    def fren_luta(self, dur):
+        """Luta/previa: o FRENESI continua correndo (e se perde); o relogio da proxima luva espera."""
+        self.fren_rest = max(0.0, self.fren_rest - dur)
 
     # --- mao do jogador agora
     def cps_agora(self):
@@ -210,7 +330,7 @@ class Carreira4b(f4.Carreira4):
             self.comprar_loja()
             a = self.foco()
             cj = self.cps_agora()
-            ps = self.por_soco(a)
+            ps = self.por_soco(a) * self.fren_passo(dt)
             gc = cj * ps * dt
             gm = self.metro_s() * ps * dt
             ga = 0.0
@@ -253,6 +373,7 @@ class Carreira4b(f4.Carreira4):
             self.talvez_lutar()
             if self.t != t0:
                 self.acc = cfg["interval"] - cfg["first_delay"]   # luta: o assistido para e recomeca
+                self.fren_luta(self.t - t0)
         self.fechar_trechos()
         if not self.fim:
             self.fim = ("parado", self.t)
@@ -632,7 +753,7 @@ def _rodar_fatia(self):
         self.comprar_loja()
         a = self.foco()
         cj = self.cps_agora()
-        ps = self.por_soco(a)
+        ps = self.por_soco(a) * self.fren_passo(dt)
         gc = cj * ps * dt
         gm = self.metro_s() * ps * dt
         ga = 0.0
@@ -662,6 +783,7 @@ def _rodar_fatia(self):
         self.talvez_lutar()
         if self.t != t0:
             self.acc = cfg["interval"] - cfg["first_delay"]
+            self.fren_luta(self.t - t0)
     return fim_antes
 
 

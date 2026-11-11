@@ -18,7 +18,8 @@ var _fechado := false
 ## dados = `GameState.cartao_inicio()`: {title, career, nodes:[{id, name, effect_text, icon}]}.
 static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 	var nos: Array = dados.get("nodes", [])
-	var altura := 26.0 + 14.0 * nos.size()
+	var arte_texto := str(dados.get("art_text", ""))  # Fase 5: "ARTE: BOXE" como 1ª linha
+	var altura := 26.0 + 14.0 * (nos.size() + (1 if arte_texto != "" else 0))
 	var c := Control.new()
 	c.position = Vector2(x, y)
 	c.size = Vector2(LARGURA, altura)
@@ -37,6 +38,16 @@ static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 	UiTema.rotulo(c, titulo, UiTema.CREAM, gx + ic.x + 4.0, 5.0 + UiTema.y_texto(area_t))
 	# Uma linha por nó: ícone 16x16 à esquerda, efeito na cor do ramo (Corpo vermelho, Carreira ouro).
 	var yy := 21.0
+	if arte_texto != "":
+		var la := Control.new()
+		la.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		la.position = Vector2(5, yy)
+		la.size = Vector2(larg_int, 14)
+		c.add_child(la)
+		UiTema.nine_patch(la, "ui_career_card_row", Rect2(0, 0, larg_int, 14))
+		UiTema.textura_rect(la, "art_" + str(dados.get("art", "")), 2, -1)
+		UiTema.rotulo(la, arte_texto.to_upper(), UiTema.P2, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
+		yy += 14.0
 	for n in nos:
 		# Cada linha é um Control: o ícone de 16 px "encosta 1 px acima" (a arte pede) e não se sobrepõe ao da linha vizinha.
 		var linha := Control.new()

@@ -2,7 +2,7 @@
 name: diretor-de-arte
 description: Diretor de Arte / Pixel artist do Fightclicker. Use para decidir e manter a direção visual (pixel art arcade), paleta, resolução, perspectiva da sala de treino, tamanho de sprites e animações, e para produzir mockups e sprites placeholder em pixel art gerados por código. Entrega guia visual e imagens em assets/, não lógica de jogo.
 tools: Read, Glob, Grep, Write, Edit, Bash, PowerShell
-model: opus
+model: fable
 effort: medium
 ---
 

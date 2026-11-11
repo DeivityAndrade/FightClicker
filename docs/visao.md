@@ -2,6 +2,7 @@
 
 Fonte da verdade: `PROMPT.md`, **com as mudanças aprovadas pelo dono** registradas em "Decisões do dono" abaixo. Onde houver conflito, a decisão do dono vale sobre o PROMPT.
 Atualizado em 2026-11-05: sala de treino em pixel art, progressão de locais, carreira por run (derrota encerra a carreira) e árvore de habilidades.
+**Atualizado em 2026-11-11:** calendário com luta obrigatória no dia, árvore grande escondida, Honra, linhagem de discípulos e mentores, 1º lutador fixo, história costurada na carreira (`docs/direcao-narrativa.md`), pós-jogo, clique sempre gostoso, caixa de aparelho. Ver "Decisões do dono (2026-11-11)". Onde este texto antigo conflitar com essa seção, ela vale.
 
 ## Em uma frase
 Um incremental **ativo** em pixel art em que cada carreira começa socando um saco remendado no fundo de uma garagem; você sobe de local a cada cinturão, decide quando arriscar a próxima luta, e cada carreira encerrada deixa Legado para a próxima geração da linhagem chegar mais longe.
@@ -26,13 +27,34 @@ Um incremental **ativo** em pixel art em que cada carreira começa socando um sa
 | §5.3 Clique | ações de treino ligadas aos atributos | mesmo conceito, mas com **alvo central grande** e número em todo clique |
 
 O resto do PROMPT continua valendo, inclusive §5.10: nada de decadência, fome ou energia que bloqueia. A derrota é o único "custo", e ela é sempre uma escolha de risco do jogador, nunca um timer.
+*(2026-11-11)* Com o calendário, a luta tem **dia marcado e obrigatório**, mas continua sendo escolha: no dia o jogador decide **lutar ou passar o posto** (aposentar). Nenhuma luta começa sem ele apertar.
+
+## Decisões do dono (2026-11-11)
+Fonte: `docs/propostas/feedback-2026-11-11.md` (respostas e 2ª leva) e `docs/direcao-narrativa.md` (direção narrativa do dono, que manda sobre `docs/narrativa.md`).
+1. **Calendário com luta obrigatória no dia.** Cada campanha tem datas de luta. Para conviver com "derrota encerra a carreira":
+   - "faltam X dias" e o risco da próxima luta sempre visíveis; avisos a 3 dias e a 1 dia;
+   - lutar antes da data é livre; aposentar entre lutas continua possível a qualquer momento;
+   - no dia, o relógio **e o treino** param, a prévia abre e o jogador escolhe **Lutar** ou **Passar o posto** (100% do Legado); a luta nunca começa sozinha;
+   - o relógio só anda com o jogo aberto, na sala; offline nunca pula para o dia de uma luta.
+2. **Árvore grande, escondida.** Um mapa único que se revela, **no lugar das 3 abas**, com os 12 nós atuais no centro (ninguém perde Legado). Fica atrás de um botão, como no Fortune Mill: a sala é o jogo, a árvore abre com um clique. Paga com Legado.
+3. **Honra.** Moeda ganha **só ao se aposentar**, gasta numa **árvore do hall**, pequena e separada. O hall é o **mural da escola**: todo lutador entra; bônus e Honra só para quem saiu por vontade.
+4. **Linhagem de discípulos e mentores.** Cada carreira é uma **campanha** como representante da escola. Ao perder ou sair, o lutador **passa o posto** ao próximo discípulo e vira mentor. Personalização **só visual** (nome, pele, cabelo, calção).
+5. **1º lutador fixo.** A Carreira 1 é sempre o mesmo personagem (nome, visual e gesto da equipe). A personalização começa no **2º discípulo**. O 1º lutador é mentor, se afasta discretamente e volta como **último adversário** (não é vilão).
+6. **História costurada na carreira**, contada quase toda por narração passiva (comentários curtos, cenário, fotos), com poucas cenas curtas e puláveis. Toda fala toca um **som de voz por letra** (original nosso). Arcos ligados a marcos do jogo (`docs/roadmap.md`).
+7. **Pós-jogo:** a história termina; depois vêm um **modo infinito** e uma **torre** de combates.
+8. **O clique sempre tem que dar prazer** e o late game **nunca fica parado**: sempre existe uma próxima coisa a fazer.
+9. **Caixa de aparelho.** Toda carreira começa só com o saco. Aparelhos comprados chegam numa **caixa** que o jogador abre com cliques; a caixa é também a resposta da história para "por que recomprar": a escola encomenda o equipamento de cada novo discípulo.
+10. **Cada arte luta diferente** (golpes, animações, ritmo) e **cada liga tem sua arena**.
+11. **Rival** deixa de ser o chefe do mundial: começa menosprezando a escola e termina em respeito.
+12. **Todo discípulo começa na garagem.** Sai o nó "começar na academia".
 
 ## Pilares
-1. **Todo soco pesa.** Todo clique mostra número, o aparelho balança, a tela treme, o som bate. O clique perde espaço para a renda passiva com o tempo, mas nunca vira inútil.
+1. **Todo soco pesa.** Todo clique mostra número, o aparelho balança, a tela treme, o som bate. O clique perde espaço para a renda passiva com o tempo, mas nunca vira inútil. *(2026-11-11)* O clique é a mecânica essencial e **sempre dá prazer**, também no late game.
 2. **Ver o número crescer, e ver a sala crescer.** Renda passiva visível e constante; aparelhos melhoram, gente aparece treinando, o lutador troca de local.
-3. **Arriscar ou pendurar as luvas.** A decisão central da carreira: lutar mais uma (mais Legado se vencer, fim da carreira se perder) ou se aposentar com o que tem. A luta prova o treino.
+3. **Arriscar ou passar o posto.** A decisão central da carreira: lutar mais uma (mais Legado se vencer, fim da carreira se perder) ou se aposentar com o que tem. A luta prova o treino. *(2026-11-11)* Com o calendário, a decisão chega com data: no dia, lutar ou passar o posto.
 4. **Difícil, mas justo.** O jogo não é fácil: a primeira carreira provavelmente termina em derrota. Mas a derrota sempre explica o porquê e sempre deixa algo para a próxima carreira.
-5. **Linhagem, não reset.** Toda carreira encerrada vira mentor da próxima. O discípulo começa mais forte e pode testar outra arte marcial.
+5. **Linhagem, não reset.** Toda carreira encerrada vira mentor da próxima. O discípulo começa mais forte e pode testar outra arte marcial. *(2026-11-11)* A escola guarda o que aprendeu; cada discípulo constrói a própria trajetória. O que acontece na história (garagem salva, mentores, fotos) não recomeça.
+6. *(2026-11-11)* **Sempre há uma próxima coisa.** Luta com data, caixa para abrir, nó para comprar, evento para pegar. Nunca tempo morto longo, nem no fim.
 
 ## A tela principal: sala de treino com alvo central
 - **O centro da tela é o alvo de clique.** O lutador e o **aparelho em foco** ficam no centro da sala, grandes, com área de clique generosa. É o "botão no meio da tela" do incremental clássico, só que é um saco de pancada que balança.
@@ -82,6 +104,7 @@ O resto do PROMPT continua valendo, inclusive §5.10: nada de decadência, fome 
 ### Como funciona
 - Cada carreira começa **na garagem**, do zero (com os bônus da árvore).
 - O jogador treina e **escolhe quando lutar**. Não existe timer obrigando a lutar. Mas dinheiro só vem de lutas, e o custo de crescer é exponencial: ficar só treinando fica lento. Essa é a pressão.
+  - *(substituído em 2026-11-11)* Agora cada luta tem **data no calendário da campanha**. Pode lutar antes; no dia, luta ou passa o posto. A pressão passa a ser a data, sempre visível e avisada.
 - **Antes de cada luta, uma prévia:** atributos do adversário ao lado dos seus e um indicador de risco (fácil / equilibrado / perigoso). Perder tem que ser consequência de um risco que o jogador viu, nunca uma surpresa.
 - **Vencer:** dinheiro, fama, avanço na escada, cinturões, e o Legado acumulado da carreira sobe.
 - **Perder:** a carreira termina. Tela de fim de carreira mostra o que faltou ("faltaram 120 de Resistência", "ele te derrubou no 2º round"), o Legado ganho e o atalho para a árvore.
@@ -96,6 +119,7 @@ O resto do PROMPT continua valendo, inclusive §5.10: nada de decadência, fome 
 - O Legado acumulado cresce com vitórias, cinturões e fama da carreira. Cada luta vencida aumenta o pote; a próxima luta põe metade dele em risco. Esse é o "arriscar ou pendurar as luvas".
 - Aposentar cedo demais rende pouco (o pote é pequeno). Ninguém ganha nada perdendo de propósito: aposentar é sempre melhor que perder.
 - Nas duas saídas o lutador **vira mentor** do próximo. A linhagem não depende de vencer.
+- *(2026-11-11)* Só a aposentadoria rende **Honra** e bônus no mural. Aposentar no dia da luta (no lugar de lutar) conta como aposentadoria.
 
 ### O que se perde e o que se mantém
 | Perde no fim da carreira | Mantém para sempre |
@@ -105,8 +129,9 @@ O resto do PROMPT continua valendo, inclusive §5.10: nada de decadência, fome 
 | Local de treino (volta para a garagem) | Locais já alcançados ficam registrados (para a árvore e conquistas) |
 | Posição na escada e cinturões da carreira | Recordes (melhor carreira), conquistas, histórico da linhagem |
 
-- Um nó caro da árvore pode permitir **começar já na academia de bairro**, mais tarde.
+- ~~Um nó caro da árvore pode permitir **começar já na academia de bairro**, mais tarde.~~ *(retirado em 2026-11-11: todo discípulo começa na garagem)*
 - A garagem guarda marcas dos mentores anteriores (foto na parede, o saco velho dele): detalhe de narrativa, não sistema.
+- *(2026-11-11)* Corda, esteira e aparelho da arte são recomprados a cada carreira e chegam **numa caixa**. Garagem salva, mentores, fotos e o mural ficam para sempre.
 
 ### Árvore de habilidades (meta-progressão)
 - Comprada com **Legado**, entre carreiras. Ramos sugeridos (conteúdo com o Designer):
@@ -114,6 +139,7 @@ O resto do PROMPT continua valendo, inclusive §5.10: nada de decadência, fome 
   - **Carreira:** mais dinheiro por luta, mais Legado, prévia de luta mais detalhada.
   - **Linhagem:** desbloquear artes, começar com geradores, começar num local melhor, segunda arte (híbridos).
 - Primeiros nós baratos o bastante para a **primeira derrota já comprar algo**. Senão, a primeira derrota vira só castigo.
+- *(2026-11-11)* A árvore vira **um mapa grande que se revela**, no lugar das abas, **escondido atrás de um botão** (Fase 5.4). As ideias do ramo Linhagem se espalham: personalização e mural nas Fases 6b–6c, segunda arte na Fase 9. Ao lado dela, a **árvore do hall**, paga com Honra (Fase 6c).
 
 ### Meta de dificuldade ("não tão fácil")
 - A **primeira carreira** deve terminar em derrota para a maioria dos jogadores, em **10–15 minutos** (derrota cedo custa pouco tempo).
@@ -137,6 +163,7 @@ A cada cinturão, o lutador pode **se mudar** para um lugar melhor dentro da car
 
 - Um local por degrau da escada do PROMPT (amador → regional → nacional → mundial) e mais dois para o fim absurdo. Menos deixa o jogador tempo demais no mesmo cenário; mais custa arte demais.
 - Na prática, os locais 5 e 6 só serão alcançados por discípulos com árvore avançada: o absurdo cresce junto com a linhagem.
+- *(2026-11-11)* Cada liga tem também sua **arena de luta**. O **último adversário da história** (o 1º lutador) fica no topo dos torneios secretos, depois do mundial.
 
 ### Regras da mudança
 - **Libera por cinturão e custa dinheiro.** Decisão boa: "mudo agora ou compro mais geradores?".
@@ -154,11 +181,13 @@ A cada cinturão, o lutador pode **se mudar** para um lugar melhor dentro da car
 - **"Arriscar ou pendurar as luvas":** incremental com a tensão de uma run, sem timer e sem energia.
 - **Arte marcial muda a curva de crescimento**, não só a aparência.
 - **Prestígio com história:** toda carreira encerrada vira o mentor que fala com você.
-- **Rival recorrente** que pode encerrar suas primeiras carreiras e é o chefe final do título mundial.
+- ~~**Rival recorrente** que pode encerrar suas primeiras carreiras e é o chefe final do título mundial.~~ *(2026-11-11)* **Rival recorrente** que despreza a escola e aprende a respeitá-la.
+- *(2026-11-11)* **O último adversário é o seu primeiro lutador**, que continuou treinando longe. Não é vingança: é o primeiro mestre testando o que a linhagem aprendeu.
 
 ## O que nunca faremos
 - Decadência de atributos, fome ou energia que bloqueia o jogador.
-- Timer que força a lutar. Lutar é sempre escolha.
+- ~~Timer que força a lutar. Lutar é sempre escolha.~~ *(trocado em 2026-11-11, decisão do dono)* Luta que começa sem o jogador decidir, ou data que chega sem aviso. No dia, lutar ou passar o posto é sempre escolha dele.
+- Tempo morto longo no late game, ou clique que vira inútil.
 - Derrota sem explicação ou sem recompensa nenhuma.
 - Limite de espaço na sala que impeça comprar algo (limite só de desenho).
 - Lutas decididas por reflexo ou combos de teclado.
@@ -200,4 +229,4 @@ O dono delegou e não pôde testar a Fase 2 nem aprovar o plano da Fase 3. Vale 
 15. A árvore só abre **entre carreiras** (pela tela de fim) e não tem reembolso. As demais decisões estão em `docs/fases/fase4-escopo.md`, "Decisões para o dono revisar".
 
 ## Perguntas abertas para o dono
-Nenhuma bloqueando. Revisar as decisões assumidas acima (Fases 3 e 4) quando puder testar.
+*(2026-11-11)* 4 perguntas sobre a Fase 5.1 (ordem e caixa de aparelho) e a lista de pendências estão em `docs/propostas/feedback-2026-11-11.md`, seção 6.
