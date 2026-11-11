@@ -64,6 +64,9 @@ func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
 	# Quando lutar (Fase 4): "VOLTE A ENFRENTAR ELE QUANDO A PRÉVIA FICAR VERDE". Vazio na derrota por azar.
 	if str(t.get("wait_green", "")) != "":
 		linhas.append({"texto": str(t.wait_green).to_upper(), "cor": UiTema.GR3, "sep": 3})
+	# Fase 5: dica extra (derrota na academia / com arte): mais uma linha na caixa, só se o rodapé ainda couber nos botões.
+	if str(t.get("tip_extra", "")) != "":
+		linhas.append({"texto": str(t.tip_extra).to_upper(), "cor": UiTema.Y1})
 	var altura := 10.0
 	for l in linhas:
 		altura += 11.0 + float(l.get("sep", 0))
@@ -80,8 +83,8 @@ func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
 		y += 11.0
 	var topo := 76.0 + altura + 8.0
 
-	_resumo(f, topo, true)
-	_rodape(f, topo + 78.0, false)
+	var mais := _resumo(f, topo, true)
+	_rodape(f, topo + 78.0 + mais, false, "")
 
 
 # --- Aposentadoria ---
@@ -107,13 +110,13 @@ func _montar_retire(f: Dictionary, t: Dictionary) -> void:
 		# Luvas no meio da janela.
 		var luvas_rect := UiTema.textura_rect(painel, luvas, roundf(320.0 - UiTema.tamanho_quadro(luvas).x / 2.0), 62)
 		luvas_rect.set_meta("ui_pos", "center_h")
-	_resumo(f, 126.0, false)
-	_rodape(f, 126.0 + 78.0, cinturao)
+	var mais_r := _resumo(f, 126.0, false)
+	_rodape(f, 126.0 + 78.0 + mais_r, cinturao, str(t.get("tip_extra", "")))
 
 
 # --- Partes comuns ---
 
-func _resumo(f: Dictionary, y: float, com_retrato: bool) -> void:
+func _resumo(f: Dictionary, y: float, com_retrato: bool) -> float:
 	var s: Dictionary = f.summary
 	var x := 172.0 if com_retrato else 150.0
 	var borda := BORDA_DIR if com_retrato else BORDA_DIR - 20.0  # sem retrato o bloco é recuado 20 px dos dois lados
@@ -133,9 +136,18 @@ func _resumo(f: Dictionary, y: float, com_retrato: bool) -> void:
 		var v := UiTema.rotulo(painel, l[1], l[2], 0, yy)
 		v.position.x = roundf(borda - UiTema.largura_visivel(l[1]))
 		yy += 11.0
+	# Fase 5: a arte da carreira (sum_art), só quando houve uma. Devolve os px a mais que o resumo ocupou.
+	var arte := str(s.get("art", ""))
+	if arte != "":
+		UiTema.rotulo(painel, UiTema.txt("sum_art", "ARTE"), UiTema.G3, x, yy)
+		var nome_arte := GameState.nome_arte(arte).to_upper()
+		var va := UiTema.rotulo(painel, nome_arte, UiTema.P2, 0, yy)
+		va.position.x = roundf(borda - UiTema.largura_visivel(nome_arte))
+		return 11.0
+	return 0.0
 
 
-func _rodape(f: Dictionary, y: float, cinturao: bool) -> void:
+func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> void:
 	divisor(126, y, 388)
 	UiTema.textura_rect(painel, "icon_legacy_16", 130, y + 6)
 	UiTema.rotulo(painel, UiTema.txt("sum_legacy_gain", "LEGADO GANHO"), UiTema.P2, 152, y + 10)
@@ -158,6 +170,9 @@ func _rodape(f: Dictionary, y: float, cinturao: bool) -> void:
 			UiTema.rotulo(painel, UiTema.txt("retire_confirm_bonus", "INCLUI +{n} POR SAIR COM O CINTURÃO", {"n": bonus}),
 				UiTema.Y1, 152, yy)
 			yy += 11.0
+	if dica_extra != "":
+		UiTema.rotulo(painel, dica_extra.to_upper(), UiTema.Y1, 152, yy)
+		yy += 11.0
 	# Dois botões do mesmo tamanho, 4 px entre eles, ocupando a largura útil (130..510): ÁRVORE (gastar o Legado) e NOVA CARREIRA.
 	# Quem não quer comprar nada clica 1 vez em NOVA CARREIRA e já está na garagem.
 	var retire := str(f.kind) == "retire"

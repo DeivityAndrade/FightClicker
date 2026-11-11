@@ -15,6 +15,7 @@ var cartao: CartaoInicio  # "o que você trouxe" (Fase 4): não é janela, não 
 
 var _barra: BarraBaixo
 var _tatica_antes := ""
+var _cartao_depois_da_arte := false  # NOVA CARREIRA com a escolha da arte pendente: o cartão "o que você trouxe" vem depois
 
 
 func _ready() -> void:
@@ -29,6 +30,7 @@ func _ready() -> void:
 	GameState.fim_de_carreira.connect(_ao_fim_de_carreira)
 	GameState.carreira_mudou.connect(_ao_carreira_mudou)
 	GameState.nova_carreira_iniciada.connect(_ao_nova_carreira_iniciada)
+	GameState.escolha_arte_pedida.connect(_ao_escolha_arte_pedida)
 	call_deferred("_checar_pendencias")
 
 
@@ -95,6 +97,14 @@ func _abrir_vitoria(resumo: Dictionary, tocar_som: bool) -> void:
 	_abrir(j)
 	j.abrir_com(resumo, tocar_som)
 	j.continuar_pedido.connect(_fechar_tudo)
+	j.mudar_pedido.connect(_mudar_da_vitoria)
+
+
+## MUDAR pelo botão da vitória do cinturão: volta para a garagem (libera o modal) e muda. A mudança abre a janela de arte
+## (na 1ª vez) por conta própria, pelo sinal `escolha_arte_pedida`.
+func _mudar_da_vitoria() -> void:
+	_fechar_tudo()
+	GameState.mudar()
 
 
 # --- Fim de carreira ---
@@ -130,14 +140,46 @@ func abrir_arvore() -> void:
 # --- Cartão "o que você trouxe" (começo da carreira) ---
 
 func _ao_nova_carreira_iniciada(dados: Dictionary) -> void:
-	if dados.is_empty():
-		return  # sem nós comprados não há o que mostrar
+	# Fase 5: com as artes liberadas, a escolha da arte vem ANTES do cartão (que mostra "ARTE: BOXE"): o cartão espera a janela.
+	_cartao_depois_da_arte = GameState.escolha_arte_pendente()
+	if _cartao_depois_da_arte or dados.is_empty():
+		return  # sem nós comprados (e sem arte) não há o que mostrar
+	_mostrar_cartao(dados)
+
+
+func _mostrar_cartao(dados: Dictionary) -> void:
 	_fechar_cartao()
 	cartao = CartaoInicio.new()
 	add_child(cartao)
 	cartao.abrir_com(dados)
 	cartao.fechou.connect(_ao_cartao_fechou)
 	GameState.definir_modal(true)  # o Metrônomo pausa enquanto o cartão está na tela
+
+
+# --- Escolha da arte (Fase 5) ---
+
+## A janela abre na 1ª chegada à academia, no começo de toda carreira com as artes liberadas e ao reabrir o jogo sem ter
+## escolhido. Não fecha sozinha nem tem X: só o clique numa arte (`escolher_arte`) a fecha.
+func _ao_escolha_arte_pedida(_primeira: bool) -> void:
+	abrir_escolha_arte()
+
+
+func abrir_escolha_arte() -> void:
+	if janela is JanelaArte or tela.visible or not GameState.escolha_arte_pendente():
+		return
+	var j := JanelaArte.new()
+	_abrir(j)
+	j.abrir_com()
+	j.escolheu.connect(_ao_arte_escolhida)
+
+
+func _ao_arte_escolhida(_arte: String) -> void:
+	_fechar()
+	if _cartao_depois_da_arte:
+		_cartao_depois_da_arte = false
+		var dados := GameState.cartao_inicio()  # agora com a arte ("ARTE: BOXE")
+		if not dados.is_empty():
+			_mostrar_cartao(dados)
 
 
 ## Enquanto o cartão está aberto, o clique (em qualquer lugar) só fecha o cartão: não treina nem aperta botão por baixo.
@@ -203,6 +245,8 @@ func _checar_pendencias() -> void:
 		var resumo := GameState.concluir_luta()
 		if bool(resumo.get("win", false)):
 			_abrir_vitoria(resumo, true)
+	if janela == null and not tela.visible and GameState.escolha_arte_pendente():
+		abrir_escolha_arte()  # fechou o jogo sem escolher a arte: a janela abre de novo antes de tudo
 
 
 # --- Janelas ---

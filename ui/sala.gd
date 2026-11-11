@@ -915,7 +915,9 @@ func _ao_aparelho_comprado(id: String) -> void:
 		return
 	var fx_nome := str(m.get("arrive", {}).get("fx", ""))
 	# 4b: os deslocamentos da queda estão no sprite do efeito; Fase 5: no próprio bloco `arrive.drop` do manifest.
-	var drop: Dictionary = m.get("arrive", {}).get("drop", UiTema.sprite(fx_nome).get("drop", {}))
+	# Os aparelhos básicos usam uma referência textual, não um Dictionary inline.
+	var drop_inline = m.get("arrive", {}).get("drop")
+	var drop: Dictionary = drop_inline if drop_inline is Dictionary else UiTema.sprite(fx_nome).get("drop", {})
 	var desloc: Array = drop.get("offsets_y", [0])
 	var passo := 1.0 / maxf(1.0, float(drop.get("fps", 24)))
 	var base: Vector2

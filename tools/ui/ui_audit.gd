@@ -44,6 +44,14 @@ const ESTADOS_TODOS := [
 	"b4_assist_dica", "b4_assist_esperando", "b4_assist_socando", "b4_assist_pulso", "b4_assist_botao",
 	"b4_assist_metronomo", "b4_assist_entradas",
 	"b4_fim_dica_esteira", "b4_fim_dica_corda",
+	# Fase 5
+	"f5_mudar_travado", "f5_mudar_sem_dinheiro", "f5_mudar_pronto", "f5_arte_primeira", "f5_academia_chegada", "f5_academia_boxe",
+	"f5_arte_ultima", "f5_gym_boxe_marca", "f5_gym_boneco_foco", "f5_gym_pera_foco", "f5_gym_pera_clique", "f5_gym_descanso",
+	"f5_garagem_boneco_marca", "f5_garagem_boneco_depois", "f5_garagem_pera_marca", "f5_chegada_pera", "f5_chegada_boneco",
+	"f5_chip_jj_max", "f5_teclas_arte", "f5_loja_reserva", "f5_arvore_abas", "f5_arvore_estilo", "f5_arvore_estilo_dica",
+	"f5_arvore_sem_artes", "f5_dica_aposentar", "f5_escada_fim", "f5_previa_tonhao", "f5_luta_tonhao", "f5_previa_kid",
+	"f5_previa_kid_revanche", "f5_vitoria_cinturao_mudar", "f5_fim_dica_extra", "f5_fim_aposentou_cinturao",
+	"f5_nova_carreira", "f5_nova_carreira_cartao",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -270,6 +278,7 @@ func _rodar() -> void:
 		await _ver("saiu_por_cima_cinturao")
 	await _rodar_fase4()
 	await _rodar_fase4b()
+	await _rodar_fase5()
 	_fechar_cena()
 
 
@@ -850,7 +859,7 @@ func _novo_jogo() -> void:
 	gs.dinheiro = 0.0
 	gs.fama = 0
 	gs.indice_escada = 0
-	gs.permanente = {"legacy_total": 12, "career_number": 2, "careers_finished": 1, "best_wins": 2, "belts_won": 0}
+	gs.permanente = {"legacy_total": 12, "career_number": 2, "careers_finished": 1, "best_wins": 2, "belts_won": 0, "arts_unlocked": [], "last_art": ""}
 	gs.nivel_metronomo = 0
 	gs.modal_aberto = false
 	gs._recalcular_bonus()
@@ -976,12 +985,25 @@ func _coletar(n: Node, lista: Array[Control]) -> void:
 	if n.has_meta("ui_align") and str(n.get_meta("ui_align")) == "ignore":
 		return
 	if n is Control:
+		if _recortado(n):
+			return  # rolado para fora da janela de um pai que recorta (aba TREINO rolada): não aparece, não se audita
 		lista.append(n)
 	elif n is CanvasItem or n is Window:
 		if n != root:
 			return  # Node2D e afins: arte, não interface
 	for c in n.get_children():
 		_coletar(c, lista)
+
+
+## true se algum pai que recorta o conteúdo (clip_contents) não cobre este controle nenhum pouco.
+func _recortado(n: Control) -> bool:
+	var r := _rect(n)
+	var p := n.get_parent()
+	while p != null:
+		if p is Control and p.clip_contents and not _rect(p).intersects(r):
+			return true
+		p = p.get_parent()
+	return false
 
 
 func _rect(n: Control) -> Rect2:
@@ -1382,3 +1404,335 @@ func _achar_luta_com(opp: Dictionary, atr: Dictionary, vitoria: bool, ko: bool, 
 		if (qualquer or bool(res.win) == vitoria) and bool(res.ko) == ko:
 			return {"atr": atr, "k": k}
 	return {}
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5: mudança, academia, janela de arte, aparelhos das artes, reserva da LOJA, aba ESTILO, dica de aposentar
+# ---------------------------------------------------------------------------------------------
+
+## Põe a carreira na academia (cinturão feito, Tonhão na frente), com a arte pedida e as artes liberadas. Antes de _abrir().
+func _academia(arte: String, ids: Array, treino: float, foco: String = "punching_bag", escada: int = 4) -> void:
+	gs.indice_escada = escada
+	gs.cinturao = true
+	gs.local_id = "gym"
+	gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+	gs.permanente["last_art"] = arte
+	gs.arte_id = arte
+	gs.arte_segundos = 0.0
+	gs._atualizar_traco()
+	_com_aparelhos(ids, treino, foco)
+
+
+## Garagem de uma carreira com arte desde o minuto 0 (a partir da 3ª carreira).
+func _garagem_arte(arte: String, ids: Array, treino: float, foco: String = "punching_bag") -> void:
+	gs.local_id = "garage"
+	gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+	gs.permanente["last_art"] = arte
+	gs.arte_id = arte
+	gs._atualizar_traco()
+	_com_aparelhos(ids, treino, foco)
+
+
+func _botao_mudar() -> Button:
+	for b in _cena.get_node("PainelAtributos").find_children("*", "Button", true, false):
+		return b
+	return null
+
+
+func _rodar_fase5() -> void:
+	var nomes: Array = ESTADOS_TODOS.filter(func(n: String) -> bool: return n.begins_with("f5_"))
+	var alguma := false
+	for n in nomes:
+		if _quer(n):
+			alguma = true
+	if not alguma:
+		return
+	var forte := {"strength": 5.0e6, "agility": 5.0e6, "endurance": 5.0e6}
+
+	# --- MUDAR: cartão em cada estado ---
+	if _quer("f5_mudar_travado"):
+		_novo_jogo()
+		gs.indice_escada = 2
+		await _abrir()
+		_estado = "f5_mudar_travado"
+		_exigir(gs.estado_mudanca() == "locked" and _botao_mudar() == null, _estado, "sem cinturão o botão MUDAR não existe")
+		await _ver("f5_mudar_travado")
+	if _quer("f5_mudar_sem_dinheiro"):
+		_novo_jogo()
+		gs.indice_escada = 4
+		gs.cinturao = true
+		gs.dinheiro = 300.0
+		await _abrir()
+		_estado = "f5_mudar_sem_dinheiro"
+		_exigir(gs.estado_mudanca() == "missing" and _botao_mudar() != null and _botao_mudar().disabled, _estado, "MUDAR apagado sem dinheiro")
+		await _ver("f5_mudar_sem_dinheiro")
+	if _quer("f5_mudar_pronto") or _quer("f5_arte_primeira") or _quer("f5_academia_chegada") or _quer("f5_academia_boxe"):
+		_novo_jogo()
+		gs.indice_escada = 4
+		gs.cinturao = true
+		gs.dinheiro = 1000.0
+		await _abrir()
+		_estado = "f5_mudar_pronto"
+		_exigir(gs.estado_mudanca() == "ready" and _botao_mudar() != null and not _botao_mudar().disabled, _estado, "MUDAR aceso com $1.000")
+		_exigir(gs.estado_escada() == "move", _estado, "estado_escada deveria ser move")
+		await _ver("f5_mudar_pronto")
+		var fl: Node = _cena.get_node("Fluxo")
+		_botao_mudar().pressed.emit()
+		await _esperar(0.5)
+		_estado = "f5_mudar_fluxo"
+		_exigir(gs.local_id == "gym" and gs.dinheiro == 0.0, _estado, "MUDAR deveria levar à academia e cobrar $1.000")
+		_exigir(fl.janela != null and fl.janela.has_method("_escolher") and gs.modal_aberto, _estado, "a 1ª chegada deveria abrir a janela de arte")
+		if _quer("f5_arte_primeira"):
+			await _ver("f5_arte_primeira")
+		# nada mais é possível enquanto a escolha está pendente
+		_exigir(gs.clicar().is_empty() and not gs.pode_lutar(), _estado, "com a escolha pendente o clique e a luta ficam travados")
+		fl.janela._escolher("boxing")
+		await _esperar(0.7)
+		_exigir(gs.arte_id == "boxing" and fl.janela == null and not gs.modal_aberto, _estado, "escolher a arte fecha a janela e solta o modal")
+		await _ver("f5_academia_chegada")
+		await _esperar(1.0)
+		await _ver("f5_academia_boxe")
+	if _quer("f5_arte_ultima"):
+		_novo_jogo()
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		gs.permanente["last_art"] = "boxing"
+		gs.permanente["career_number"] = 3
+		await _abrir()
+		await _esperar(0.4)
+		_estado = "f5_arte_ultima"
+		var fj: Node = _cena.get_node("Fluxo").janela
+		_exigir(fj != null and fj.has_method("_escolher"), _estado, "ao abrir com a escolha pendente a janela deveria abrir")
+		await _ver("f5_arte_ultima")
+
+	# --- Academia com cada arte, 4 botões de foco ---
+	if _quer("f5_gym_boxe_marca"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 3000.0)
+		await _abrir()
+		_estado = "f5_gym_boxe_marca"
+		_exigir(gs.estado_aparelho("speed_bag") == "buyable" and gs.estado_aparelho("grappling_dummy") == "absent", _estado, "pera comprável, boneco ausente")
+		_exigir(_marca_visivel("speed_bag") and not _marca_visivel("grappling_dummy"), _estado, "só a marca da pera")
+		_cena._apontar_compra("speed_bag")
+		await _esperar(0.3)
+		await _ver("f5_gym_boxe_marca")
+	if _quer("f5_gym_boneco_foco"):
+		_novo_jogo()
+		_academia("bjj", ["treadmill", "jump_rope", "grappling_dummy"], 3000.0, "grappling_dummy")
+		gs.niveis_melhoria["grappling_dummy"] = 1
+		await _abrir()
+		await _esperar(0.3)
+		_exigir(not _marca_visivel("grappling_dummy") and not _marca_visivel("speed_bag"), "f5_gym_boneco_foco", "sem marcas")
+		await _ver("f5_gym_boneco_foco")
+	if _quer("f5_gym_pera_foco") or _quer("f5_gym_pera_clique"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope", "speed_bag"], 3000.0, "speed_bag")
+		await _abrir()
+		await _esperar(0.3)
+		await _ver("f5_gym_pera_foco")
+		if _quer("f5_gym_pera_clique"):
+			gs.clicar()
+			await _esperar(0.12)
+			await _ver("f5_gym_pera_clique")
+	if _quer("f5_gym_descanso"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope", "speed_bag"], 3000.0, "punching_bag")
+		await _abrir()
+		await _esperar(0.3)
+		await _ver("f5_gym_descanso")
+	if _quer("f5_garagem_boneco_marca"):
+		_novo_jogo()
+		_garagem_arte("bjj", ["treadmill"], 3000.0, "treadmill")
+		await _abrir()
+		_estado = "f5_garagem_boneco_marca"
+		_exigir(_marca_visivel("grappling_dummy") and not _marca_visivel("speed_bag"), _estado, "só a marca do boneco")
+		_cena._apontar_compra("grappling_dummy")
+		await _esperar(0.3)
+		await _ver("f5_garagem_boneco_marca")
+	if _quer("f5_garagem_boneco_depois"):
+		_novo_jogo()
+		_garagem_arte("bjj", [], 0.0)
+		await _abrir()
+		await _ver("f5_garagem_boneco_depois")
+	if _quer("f5_garagem_pera_marca"):
+		_novo_jogo()
+		_garagem_arte("boxing", ["treadmill"], 3000.0, "treadmill")
+		await _abrir()
+		await _ver("f5_garagem_pera_marca")
+	if _quer("f5_chegada_pera"):
+		_novo_jogo()
+		_garagem_arte("boxing", ["treadmill"], 3000.0, "treadmill")
+		await _abrir()
+		var sala: Node = _cena.get_node("Sala")
+		_exigir(gs.comprar_aparelho("speed_bag"), "f5_chegada_pera", "comprar_aparelho(speed_bag) recusou")
+		await _esperar(0.1)
+		_exigir(sala._chegando == "speed_bag", "f5_chegada_pera", "a pera deveria estar chegando")
+		await _ver("f5_chegada_pera")
+		await _esperar(0.9)
+		_exigir(sala._chegando == "" and gs.foco == "speed_bag" and sala._pera.visible, "f5_chegada_pera", "depois da chegada a pera fica no foco")
+	if _quer("f5_chegada_boneco"):
+		_novo_jogo()
+		_garagem_arte("bjj", ["treadmill"], 3000.0, "treadmill")
+		await _abrir()
+		var sala: Node = _cena.get_node("Sala")
+		_exigir(gs.comprar_aparelho("grappling_dummy"), "f5_chegada_boneco", "comprar_aparelho(grappling_dummy) recusou")
+		await _esperar(0.12)
+		await _ver("f5_chegada_boneco")
+		await _esperar(0.6)
+		_exigir(sala._chegando == "" and gs.foco == "grappling_dummy", "f5_chegada_boneco", "depois da chegada o boneco fica no foco")
+	if _quer("f5_chip_jj_max"):
+		_novo_jogo()
+		_academia("bjj", ["treadmill", "jump_rope"], 800.0)
+		gs.arte_segundos = 900.0
+		await _abrir()
+		await _esperar(1.2)
+		_exigir(_cena.get_node("BarraBaixo")._chip.visible, "f5_chip_jj_max", "o chip da arte deveria aparecer")
+		await _ver("f5_chip_jj_max")
+	if _quer("f5_teclas_arte"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope", "speed_bag"], 800.0, "punching_bag")
+		await _abrir()
+		_estado = "f5_teclas_arte"
+		_tecla(KEY_4, true)
+		_tecla(KEY_4, false)
+		await _esperar(0.2)
+		_exigir(gs.foco == "speed_bag", _estado, "a tecla 4 deveria focar a pera")
+		await _ver("f5_teclas_arte")
+
+	# --- LOJA: reserva da mudança ---
+	if _quer("f5_loja_reserva"):
+		_novo_jogo()
+		gs.indice_escada = 4
+		gs.cinturao = true
+		gs.dinheiro = 1100.0
+		await _abrir()
+		_cena.get_node("PainelLoja")._tab["loja"].botao.pressed.emit()
+		await _esperar(0.3)
+		_estado = "f5_loja_reserva"
+		_exigir(gs.reserva_mudanca() > 0.0 and gs.loja_estado(900.0) == "reserve", _estado, "a reserva da mudança deveria recusar o item")
+		await _ver("f5_loja_reserva")
+
+	# --- Árvore: aba ESTILO ---
+	if _quer("f5_arvore_abas") or _quer("f5_arvore_estilo") or _quer("f5_arvore_estilo_dica"):
+		_derrota_pendente(NOS_MISTA, 1500)
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		var j: Node = await _abrir_arvore()
+		_estado = "f5_arvore_abas"
+		_exigir(j._abas.size() == 2, _estado, "com as artes liberadas a árvore deveria ter as 2 abas")
+		await _ver("f5_arvore_abas")
+		j._abas["style"].pressed.emit()
+		await _esperar(0.4)
+		await _ver("f5_arvore_estilo")
+		j.mostrar_dica("style_boxing")
+		await _esperar(0.2)
+		await _ver("f5_arvore_estilo_dica")
+	if _quer("f5_arvore_sem_artes"):
+		_derrota_pendente(NOS_MISTA, 40)
+		var j: Node = await _abrir_arvore()
+		_exigir(j._abas.is_empty(), "f5_arvore_sem_artes", "sem artes liberadas não existe aba ESTILO")
+		await _ver("f5_arvore_sem_artes")
+
+	# --- Dica de aposentar, escada ---
+	if _quer("f5_dica_aposentar"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 800.0)
+		gs.atributos = {"strength": 300.0, "agility": 60.0, "endurance": 200.0}
+		gs.fama = 200
+		await _abrir()
+		gs._perigo_gym = 400.0
+		await _esperar(1.3)
+		_estado = "f5_dica_aposentar"
+		_exigir(bool(gs.dica_aposentar().show), _estado, "a dica deveria estar no ar (perigo_gym 400 s)")
+		await _ver("f5_dica_aposentar")
+	if _quer("f5_escada_fim"):
+		_novo_jogo()
+		_academia("bjj", ["treadmill", "jump_rope"], 800.0, "punching_bag", gs.lutas.adversarios.size())
+		await _abrir()
+		_exigir(gs.estado_escada() == "end", "f5_escada_fim", "escada completa = end")
+		await _ver("f5_escada_fim")
+
+	# --- Prévia e luta com os adversários da academia ---
+	if _quer("f5_previa_tonhao") or _quer("f5_luta_tonhao"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 800.0)
+		gs.atributos = forte.duplicate()
+		await _abrir()
+		var fluxo: Node = _cena.get_node("Fluxo")
+		fluxo.abrir_previa()
+		await _esperar(0.5)
+		_exigir(str(gs.previa().get("art_fight_text", "")) != "", "f5_previa_tonhao", "a prévia deveria trazer o traço da arte")
+		await _ver("f5_previa_tonhao")
+		if _quer("f5_luta_tonhao"):
+			fluxo.janela.lutar_pedido.emit()
+			await _esperar(0.3)
+			await _ver("f5_luta_tonhao")
+	if _quer("f5_previa_kid"):
+		_novo_jogo()
+		_academia("bjj", ["treadmill", "jump_rope"], 800.0, "punching_bag", 5)
+		gs.atributos = forte.duplicate()
+		await _abrir()
+		_cena.get_node("Fluxo").abrir_previa()
+		await _esperar(0.5)
+		await _ver("f5_previa_kid")
+	if _quer("f5_previa_kid_revanche"):
+		_novo_jogo()
+		_com_nos(["body_jab", "career_purse"], 40)
+		_academia("bjj", ["treadmill", "jump_rope"], 800.0, "punching_bag", 5)
+		gs.permanente["revenge_opponent"] = "opp_gym_2"
+		gs.atributos = {"strength": 3.0e5, "agility": 5.0e5, "endurance": 9.0e5}
+		await _abrir()
+		_cena.get_node("Fluxo").abrir_previa()
+		await _esperar(0.5)
+		await _ver("f5_previa_kid_revanche")
+
+	# --- Vitória do cinturão com MUDAR ---
+	if _quer("f5_vitoria_cinturao_mudar"):
+		_novo_jogo()
+		gs.indice_escada = 3
+		gs.fama = 150
+		gs.atributos = {"strength": 5.0e7, "agility": 5.0e7, "endurance": 5.0e7}
+		gs.rng.seed = 7
+		gs.lutar()
+		await _abrir()
+		await _esperar(0.7)
+		await _ver("f5_vitoria_cinturao_mudar")
+
+	# --- Tela de fim: dica extra e ARTE no resumo ---
+	if _quer("f5_fim_dica_extra"):
+		_derrota_pendente([], 12)
+		gs.arte_id = "boxing"
+		gs.fim.summary["art"] = "boxing"
+		gs.fim["opponent"] = "opp_gym_1"
+		await _abrir()
+		await _esperar(0.9)
+		_exigir(str(gs.textos_fim(gs.fim).get("tip_extra", "")) != "", "f5_fim_dica_extra", "textos_fim() sem tip_extra na derrota da academia")
+		await _ver("f5_fim_dica_extra")
+	if _quer("f5_fim_aposentou_cinturao"):
+		_novo_jogo()
+		gs.indice_escada = 4
+		gs.cinturao = true
+		gs.fama = 340
+		gs.aposentar()
+		await _abrir()
+		await _esperar(0.9)
+		_exigir(str(gs.textos_fim(gs.fim).get("tip_extra", "")) != "", "f5_fim_aposentou_cinturao", "tip_move_belt esperada")
+		await _ver("f5_fim_aposentou_cinturao")
+
+	# --- NOVA CARREIRA volta para a garagem; a janela de arte vem antes do cartão ---
+	if _quer("f5_nova_carreira") or _quer("f5_nova_carreira_cartao"):
+		_derrota_pendente(NOS_MISTA, 40)
+		gs.local_id = "gym"
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		gs.permanente["last_art"] = "bjj"
+		await _abrir()
+		await _esperar(0.9)
+		var fl: Node = _cena.get_node("Fluxo")
+		gs.nova_carreira()
+		await _esperar(0.7)
+		_estado = "f5_nova_carreira"
+		_exigir(gs.local_id == "garage" and gs.arte_id == "", _estado, "NOVA CARREIRA volta para a garagem sem arte")
+		_exigir(fl.janela != null and fl.janela.has_method("_escolher") and fl.cartao == null, _estado, "a janela de arte vem antes do cartão")
+		await _ver("f5_nova_carreira")
+		fl.janela._escolher("bjj")
+		await _esperar(0.9)
+		_exigir(fl.janela == null and fl.cartao != null, _estado, "depois da escolha o cartão aparece")
+		await _ver("f5_nova_carreira_cartao")

@@ -5,6 +5,7 @@ extends JanelaBase
 ## nada clicável). O único botão é CONTINUAR, que volta para a garagem.
 
 signal continuar_pedido
+signal mudar_pedido  # Fase 5: MUDAR para a academia direto da vitória do cinturão
 
 var sfx: Sfx
 var _contadores: Array = []  # {rotulo, valor, formato}
@@ -119,12 +120,37 @@ func _montar_cinturao(r: Dictionary) -> void:
 	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
 	# Academia de bairro: aviso, NÃO é botão.
-	fundo_cor(Rect2(166, 236, 308, 36), Color(UiTema.P0, 0.55))
-	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 242)
-	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "ACADEMIA DE BAIRRO LIBERADA (EM BREVE)"), UiTema.Y1, 188, 242, 280)
-	UiTema.rotulo(painel, UiTema.txt("belt_hint", "NÃO HÁ MAIS LUTAS NESTA VERSÃO. APOSENTAR VALE MAIS."), UiTema.G3, 174, 256, 292)
+	fundo_cor(Rect2(166, 232, 308, 42), Color(UiTema.P0, 0.55))
+	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 238)
+	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "ACADEMIA BOA ESQUINA LIBERADA"), UiTema.Y1, 188, 238, 280)
+	UiTema.rotulo(painel, UiTema.txt("belt_hint", "MUDE PARA A ACADEMIA OU APOSENTE COM O CINTURÃO."), UiTema.G3, 174, 252, 292)
+	var mud: Dictionary = GameState.mudanca()
+	var mud_ok := str(mud.get("state", "")) in ["ready", "missing"]
+	if mud_ok:
+		# MUDAR (verde se dá para pagar, apagado com o preço se não) ao lado de CONTINUAR: os dois do mesmo tamanho.
+		var bm := UiTema.botao_estilizado(painel, Rect2(166, 296, 150, 28), "ui_button_move")
+		bm.disabled = str(mud.state) != "ready"
+		_conteudo_mudar(bm, str(mud.button).to_upper(), str(mud.price_text), not bm.disabled)
+		bm.pressed.connect(func() -> void: mudar_pedido.emit())
+		UiTema.alinhar(bm, "center")
+		var bc := botao_texto(Rect2(324, 296, 150, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+		bc.pressed.connect(func() -> void: continuar_pedido.emit())
+		return
 	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
+
+
+## Ícone + "MUDAR" + preço, o grupo centralizado na face do botão.
+func _conteudo_mudar(b: Button, texto: String, preco: String, pronto: bool) -> void:
+	var a := UiTema.area_botao(b)
+	var iw := UiTema.tamanho_quadro("icon_move").x
+	var ih := UiTema.tamanho_quadro("icon_move").y
+	var lt := UiTema.largura_visivel(texto)
+	var total := iw + 4.0 + lt + 8.0 + UiTema.largura_visivel(preco)
+	var x0 := roundf(a.position.x + (a.size.x - total) / 2.0)
+	UiTema.textura_rect(b, "icon_move", x0, UiTema.y_imagem(a, ih))
+	UiTema.rotulo(b, texto, UiTema.Y2 if pronto else UiTema.G1, x0 + iw + 4.0, UiTema.y_texto(a))
+	UiTema.rotulo(b, preco, UiTema.Y1 if pronto else UiTema.R2, x0 + iw + 4.0 + lt + 8.0, UiTema.y_texto(a))
 
 
 # Três ganhos com ícone: dinheiro (y1), fama (p2), Legado em jogo (p2). Os números "sobem" ao abrir.

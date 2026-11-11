@@ -86,7 +86,7 @@ func _ready() -> void:
 	_seta_cima = SetaRolagem.new(true)
 	_seta_baixo = SetaRolagem.new(false)
 	for seta in [_seta_cima, _seta_baixo]:
-		seta.position = Vector2(60, 20 if seta == _seta_cima else 255)
+		seta.position = Vector2(60, 18 if seta == _seta_cima else 266)
 		seta.visible = false
 		UiTema.alinhar(seta, "ignore")  # indicador por cima do conteúdo: posição livre de propósito
 		add_child(seta)
@@ -515,11 +515,11 @@ func atualizar() -> void:
 		if m.is_empty():
 			item.nivel.text = "%d/%d" % [nivel, total]
 			var efeito := {"id": ap.upgrades[total - 1].id, "multiplier": GameState.multiplicador_aparelho(ap.id)}
-			item.efeito.text = GameState.texto_efeito_melhoria(efeito).to_upper()
+			item.efeito.text = _efeito_curto(item, GameState.texto_efeito_melhoria(efeito).to_upper())
 			_maximo(item)
 		else:
 			item.nivel.text = "%d/%d" % [nivel, total]
-			item.efeito.text = GameState.texto_efeito_melhoria(m).to_upper()
+			item.efeito.text = _efeito_curto(item, GameState.texto_efeito_melhoria(m).to_upper())
 			_preco(item, float(m.cost), GameState.pode_comprar_melhoria(ap.id) and not bloqueado)
 	_ajustar_rolagem(existe_arte)
 
@@ -540,6 +540,13 @@ func atualizar() -> void:
 	_alerta_loja.visible = _loja_tem_compra() and _aba != ABA_LOJA
 	if _hover != "":
 		_emitir_info()
+
+
+## Cartão de técnica da arte: a linha do efeito perde o "...: PERA" (113 px não cabem em 92; o nome do aparelho está no ícone e no hover).
+func _efeito_curto(item: Dictionary, texto: String) -> String:
+	if item.tecnica != null and texto.contains(":"):
+		return texto.get_slice(":", 0)
+	return texto
 
 
 ## Aviso do cartão da LOJA: vazio (dá para comprar), a reserva da mudança (curto: cabe em 104 px) ou "Falta dinheiro".

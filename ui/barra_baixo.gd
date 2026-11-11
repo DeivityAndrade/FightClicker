@@ -200,9 +200,7 @@ func _atualizar_chip() -> void:
 	_chip_texto.text = texto
 	_chip_texto.add_theme_color_override("font_color", UiTema.Y1 if max_ else UiTema.P2)
 	_chip_icone.texture = UiTema.textura("art_%s_9" % GameState.arte_id)
-	var w := roundf(UiTema.largura_visivel(texto)) + 21.0  # 3 de borda + 9 do ícone + 3 + texto + 6 de borda direita
-	if int(w) % 2 != 0:
-		w += 1.0
+	var w := roundf(UiTema.largura_visivel(texto)) + 18.0  # 3 de folga + 9 do ícone + 3 + texto + 3 de folga (margens iguais)
 	_chip.size = Vector2(w, 13)
 	_chip_fundo.size = Vector2(w, 13)
 	_chip.position = Vector2(X_CHIP - w, -1)
@@ -307,6 +305,8 @@ func _aplicar_botao(d: Dictionary, foco: String) -> void:
 	var t: Dictionary = GameState.textos_trancado(id)
 	var cor_nome := UiTema.WHITE if estado == "buyable" else (UiTema.G3 if estado == "missing" else UiTema.G1)
 	tr.nome.add_theme_color_override("font_color", cor_nome)
+	if bool(tr.get("estreito", false)):
+		tr.nome.position.y = 2.0 if estado == "locked" else 4.0  # trancado: o nome sobe para caber "DEPOIS DA / ESTEIRA" embaixo
 	tr.cadeado.texture = UiTema.textura(str(m.get("icon_locked_buyable" if estado == "buyable" else "icon_locked", "")))
 	var texto := str(t.get("focus_locked", "")).to_upper()
 	if estado == "locked":
