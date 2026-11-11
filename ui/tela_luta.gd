@@ -372,7 +372,10 @@ func _agendar_evento(e: Dictionary) -> void:
 	var quem := int(e.who)
 	var alvo := int(e.target)
 	var t := float(e.t)
-	var anim := str(e.attack_anim)
+	# Golpe da luta (data/moves.json): usa o sprite do golpe se ele existir; senão, o jab/heavy de sempre.
+	var anim := _anim_do_golpe(quem, e)
+	e["anim_usada"] = anim
+	e["reacao_usada"] = _reacao_do_golpe(alvo, e)
 	var s := UiTema.sprite(_nome(quem, anim))
 	var antes := float(int(s.get("hit_frame", 1))) / maxf(float(s.get("fps", 12.0)), 1.0)
 	# O golpe sai `hit_frame / fps` antes: o contato cai exatamente em `t`.
@@ -386,6 +389,26 @@ func _agendar_evento(e: Dictionary) -> void:
 		_cue(t, func() -> void: _acertou(e))
 
 
+# --- Golpes: sprite do golpe escolhido, com volta ao jab/heavy (e ao `hit`) quando a arte ainda não existe ---
+
+func _existe_anim(i: int, acao: String) -> bool:
+	return not UiTema.sprite(_nome(i, acao)).is_empty()
+
+
+func _anim_do_golpe(quem: int, e: Dictionary) -> String:
+	var ma := str(e.get("move_anim", ""))
+	if ma != "" and _existe_anim(quem, ma):
+		return ma
+	return str(e.attack_anim)
+
+
+func _reacao_do_golpe(alvo: int, e: Dictionary) -> String:
+	var r := str(e.get("defender_move_anim", ""))
+	if r != "" and _existe_anim(alvo, r):
+		return r
+	return str(e.defender_anim)
+
+
 # --- Ações dos lutadores ---
 
 func _tocar(i: int, acao: String) -> void:
@@ -394,7 +417,7 @@ func _tocar(i: int, acao: String) -> void:
 		return
 	var spr: AnimSprite = l.spr
 	spr.definir(_nome(i, acao))
-	spr.z_index = Z_ATACANTE if (acao == "jab" or acao == "heavy") else Z_LUTADOR
+	spr.z_index = Z_ATACANTE if (acao in GameState.golpes.anims_de_ataque()) else Z_LUTADOR
 	_ajustar_sombra(i)
 	var frames := spr.hframes
 	var seq: Array = []
@@ -471,7 +494,7 @@ func _acertou(e: Dictionary) -> void:
 	var tipo := str(e.kind)
 	var forte := tipo == "crit" or tipo == "counter"
 	var bloqueado := bool(e.blocked)
-	var spr_a := UiTema.sprite(_nome(quem, str(e.attack_anim)))
+	var spr_a := UiTema.sprite(_nome(quem, str(e.get("anim_usada", e.attack_anim))))
 	var hp := _vetor(spr_a.get("hit_point", [31, -61]))
 	var base_a: Vector2 = _l[quem].base
 	var contato := base_a + hp
@@ -479,7 +502,7 @@ func _acertou(e: Dictionary) -> void:
 	# Reação de quem apanha (no K.O. sem grogue a queda assume).
 	var ko := bool(e.ko)
 	if not ko or not luta.grogue.is_empty():
-		_tocar(alvo, str(e.defender_anim))
+		_tocar(alvo, str(e.get("reacao_usada", e.defender_anim)))
 		_flash_lutador(alvo)
 	if bloqueado:
 		var sb := UiTema.sprite(_nome(alvo, "block"))

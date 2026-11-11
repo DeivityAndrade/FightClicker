@@ -77,6 +77,7 @@ var dados: TrainingData
 var academia: GymData  # Fase 5: locais e artes (data/locations.json, data/arts.json)
 var lutas: FightData  # adversários, táticas, loja, Legado (data/fights|opponents|shop|career.json)
 var motor: Luta  # simulação da luta
+var golpes: MovesData  # golpes das lutas por estilo (data/moves.json): jogador e adversários usam o mesmo catálogo
 var risco_hud_ativo := true  # testes podem desligar o recálculo periódico do HUD
 var rng := RandomNumberGenerator.new()
 var store: SaveStore
@@ -151,6 +152,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 	local_id = academia.local_padrao
 	lutas = dados_lutas if dados_lutas != null else FightData.carregar()
 	motor = Luta.new(lutas)
+	golpes = MovesData.carregar()
 	store = SaveStore.new(pasta_save)
 	_ajustar_assist()
 	carregar_save()
@@ -1077,6 +1079,12 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	var eventos: Array = []
 	var vmax: Array = res.life_max
 	var n: int = res.events.size()
+	# Golpes (só visual, nunca muda o resultado): cada lado usa os golpes do seu estilo. Jogador = boxe por enquanto;
+	# `liberados` é o gancho para a árvore de habilidades liberar golpes (ids de nós) no futuro.
+	var liberados: Array = []
+	var golpes_lado: Array = [golpes.disponiveis("boxing", liberados), golpes.disponiveis(str(opp.get("style", "boxing")))]
+	var golpe_anterior: Array = ["", ""]
+	var semente_golpes := int(luta.seed)
 	for i in n:
 		var e: Dictionary = res.events[i]
 		var alvo: int = 1 - int(e.who)
@@ -1092,9 +1100,21 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 			kind = "crit"
 		var bloqueou: bool = tipo != "dodge" and bool(def_t.block)
 		var d_anim := "dodge" if tipo == "dodge" else ("block" if bloqueou else "hit")
+		var lado := int(e.who)
+		var golpe_id := ""
+		var golpe_anim := ""
+		var reacao := ""
+		if kind != "dodge":
+			golpe_id = golpes.escolher(golpes_lado[lado], kind, semente_golpes, i, str(golpe_anterior[lado]))
+			if golpe_id != "":
+				golpe_anterior[lado] = golpe_id
+				golpe_anim = str(golpes.golpes[golpe_id].anim)
+				if d_anim == "hit":
+					reacao = str(golpes.golpes[golpe_id].defender_anim)
 		eventos.append({
 			"t": e.t, "who": e.who, "target": alvo, "type": tipo, "counter": e.counter,
 			"kind": kind, "attack_anim": "heavy" if kind == "crit" or kind == "counter" else "jab",
+			"move": golpe_id, "move_anim": golpe_anim, "defender_move_anim": reacao,
 			"defender_anim": d_anim, "blocked": bloqueou,
 			"damage": e.damage, "life_after": e.life_after, "life_pct_after": e.life_after / vmax[alvo],
 			"round": int(floor(float(e.t) / float(c.round_length))) + 1,

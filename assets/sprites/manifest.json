@@ -143,7 +143,10 @@
 				"block": "fight_player_block",
 				"tired": "fight_player_tired",
 				"victory": "fight_player_victory",
-				"ko": "fight_player_ko"
+				"ko": "fight_player_ko",
+				"hook": "fight_player_hook",
+				"uppercut": "fight_player_uppercut",
+				"body_shot": "fight_player_body_shot"
 			},
 			"portrait": "portrait_player",
 			"portrait_frame": "ui_portrait_frame",
@@ -832,18 +835,18 @@
 			"floor_mark": "tape_mark_rope",
 			"ghost": "ghost_rope",
 			"mark_pos": [
-				352,
-				72
+				296,
+				155
 			],
 			"sign": {
 				"frame": "sign_cardboard",
 				"mode": "parede",
-				"top_left": [
-					340,
-					37
+				"top_center": [
+					296,
+					116
 				],
 				"tape": "sign_tape_bit",
-				"note": "Plaquinha colada na parede ACIMA do prego, com a borda esquerda em x 340 (à direita da corrente do saco, x 335) e 2 sign_tape_bit nos cantos de cima. Cresce para a direita. Na parede não cabe 'DEPOIS DA ESTEIRA' numa linha só com o nome: usar 3 linhas (CORDA / DEPOIS DA / ESTEIRA)."
+				"note": "Plaquinha colada na parede ACIMA do prego, centrada em x 296 (à esquerda da corrente do saco, x 335) e 2 sign_tape_bit nos cantos de cima. Na parede não cabe 'DEPOIS DA ESTEIRA' numa linha só com o nome: usar 3 linhas (CORDA / DEPOIS DA / ESTEIRA)."
 			},
 			"icon_locked": "icon_rope_locked",
 			"icon_locked_buyable": "icon_rope_locked_buyable",
@@ -858,8 +861,8 @@
 			"arrive": {
 				"fx": "fx_arrive_sparkle",
 				"fx_pos": [
-					352,
-					72
+					296,
+					155
 				],
 				"sprite": "rope_lN_idle",
 				"drop": "ver sprites.fx_arrive_sparkle.drop"
@@ -1692,8 +1695,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -1714,8 +1717,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -1906,69 +1909,73 @@
 			]
 		},
 		"fighter_rope": {
+			"facing": "direita",
 			"file": "res://assets/sprites/characters/fighter_rope.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
-			"hit_frame": 2
+			}
 		},
 		"rope_l0_swing": {
+			"facing": "direita",
 			"file": "res://assets/sprites/equipment/rope_l0_swing.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"note": "Corda de varal girando, sincronizada quadro a quadro com fighter_rope (desenhar POR CIMA do lutador; no quadro 3 a corda passa atrás e já vem recortada)."
+			}
 		},
 		"rope_l1_swing": {
+			"facing": "direita",
 			"file": "res://assets/sprites/equipment/rope_l1_swing.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"note": "Corda de verdade girando, sincronizada quadro a quadro com fighter_rope (desenhar POR CIMA do lutador; no quadro 3 a corda passa atrás e já vem recortada)."
+			}
 		},
 		"fighter_run": {
 			"file": "res://assets/sprites/characters/fighter_run.png",
@@ -8899,28 +8906,27 @@
 			"note": "Igual a fighter_punch (mesmo quadro, pivô e posições), com a Luva de lona nas mãos."
 		},
 		"fighter_rope_glove_l1": {
+			"facing": "direita",
 			"file": "res://assets/sprites/characters/fighter_rope_glove_l1.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
-			"hit_frame": 2,
-			"note": "Igual a fighter_rope (mesmo quadro, pivô e posições), com a Luva de lona nas mãos."
+			}
 		},
 		"fighter_run_glove_l1": {
 			"file": "res://assets/sprites/characters/fighter_run_glove_l1.png",
@@ -9000,28 +9006,27 @@
 			"note": "Igual a fighter_punch (mesmo quadro, pivô e posições), com a Luva de couro nas mãos."
 		},
 		"fighter_rope_glove_l2": {
+			"facing": "direita",
 			"file": "res://assets/sprites/characters/fighter_rope_glove_l2.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
-			"hit_frame": 2,
-			"note": "Igual a fighter_rope (mesmo quadro, pivô e posições), com a Luva de couro nas mãos."
+			}
 		},
 		"fighter_run_glove_l2": {
 			"file": "res://assets/sprites/characters/fighter_run_glove_l2.png",
@@ -9101,28 +9106,27 @@
 			"note": "Igual a fighter_punch (mesmo quadro, pivô e posições), com a Luva de marca nas mãos."
 		},
 		"fighter_rope_glove_l3": {
+			"facing": "direita",
 			"file": "res://assets/sprites/characters/fighter_rope_glove_l3.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"facing": "direita",
-			"frames_note": "0 corda em cima, 1 corda na frente (agacha), 2 corda embaixo (pés sobem 3 px), 3 aterrissa. Desenhar rope_lN_swing por cima, mesmo quadro e mesmo pivô.",
-			"hit_frame": 2,
-			"note": "Igual a fighter_rope (mesmo quadro, pivô e posições), com a Luva de marca nas mãos."
+			}
 		},
 		"fighter_run_glove_l3": {
 			"file": "res://assets/sprites/characters/fighter_run_glove_l3.png",
@@ -11712,8 +11716,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -11756,8 +11760,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -12112,8 +12116,8 @@
 			"impact_frame": 0,
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"drop": {
@@ -12674,8 +12678,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -12683,25 +12687,27 @@
 			"note": "Corda de PVC vermelha com cabos pretos (academia, nível visual 0), no gancho (mesmo ponto do prego da garagem). Luz dos tubos aplicada."
 		},
 		"rope_l0_swing_gym": {
+			"facing": "direita",
 			"file": "res://assets/sprites/equipment/rope_l0_swing_gym.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"note": "Corda de PVC vermelha com cabos pretos (academia, nível visual 0), em uso: os mesmos quadros do rope_l0_swing recoloridos. Desenhar por cima do fighter_rope, mesmo quadro e pivô."
+			}
 		},
 		"rope_l1_idle_gym": {
 			"file": "res://assets/sprites/equipment/rope_l1_idle_gym.png",
@@ -12717,8 +12723,8 @@
 			],
 			"positions": {
 				"prego": [
-					352,
-					72
+					296,
+					155
 				]
 			},
 			"layer": "frente_do_fundo",
@@ -12726,25 +12732,27 @@
 			"note": "Corda de aço encapada com cabos de madeira (academia, nível visual 1), no gancho (mesmo ponto do prego da garagem). Luz dos tubos aplicada."
 		},
 		"rope_l1_swing_gym": {
+			"facing": "direita",
 			"file": "res://assets/sprites/equipment/rope_l1_swing_gym.png",
+			"fps": 24.0,
 			"frame_size": [
 				48,
-				72
+				80
 			],
-			"frames": 4,
-			"fps": 10.0,
+			"frames": 7,
+			"frames_note": "Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
 			"pivot": [
 				22,
-				67
+				75
 			],
-			"loop": false,
 			"positions": {
 				"foco_corda": [
 					336,
 					272
 				]
-			},
-			"note": "Corda de aço encapada com cabos de madeira (academia, nível visual 1), em uso: os mesmos quadros do rope_l1_swing recoloridos. Desenhar por cima do fighter_rope, mesmo quadro e pivô."
+			}
 		},
 		"speed_bag_l0_idle": {
 			"file": "res://assets/sprites/equipment/speed_bag_l0_idle.png",
@@ -14163,6 +14171,1670 @@
 				0
 			],
 			"note": "Peça 24x24 do nó Peso do tempo (ampulheta sobre a faixa). TRANCADO (arte ainda não desbloqueada): cinza e cadeado."
+		},
+		"fight_player_body_shot": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-60.6309790352127
+					],
+					"hand_front": [
+						13.9259259259259,
+						-57.7037037037037
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						13,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-59
+					],
+					"hand_front": [
+						22,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						31,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						30,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-59.1070628943619
+					],
+					"hand_front": [
+						28.8148148148148,
+						-47.8148148148148
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				31,
+				-46
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_body_shot_glove_l1": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot_glove_l1.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-60.6309790352127
+					],
+					"hand_front": [
+						13.9259259259259,
+						-57.7037037037037
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						13,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-59
+					],
+					"hand_front": [
+						22,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						31,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						30,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-59.1070628943619
+					],
+					"hand_front": [
+						28.8148148148148,
+						-47.8148148148148
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				31,
+				-46
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_body_shot_glove_l2": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot_glove_l2.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-60.6309790352127
+					],
+					"hand_front": [
+						13.9259259259259,
+						-57.7037037037037
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						13,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-59
+					],
+					"hand_front": [
+						22,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						31,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						30,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-59.1070628943619
+					],
+					"hand_front": [
+						28.8148148148148,
+						-47.8148148148148
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				31,
+				-46
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_body_shot_glove_l3": {
+			"action": "body_shot",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_body_shot_glove_l3.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-60.6309790352127
+					],
+					"hand_front": [
+						13.9259259259259,
+						-57.7037037037037
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-60
+					],
+					"hand_front": [
+						13,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-59
+					],
+					"hand_front": [
+						22,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						31,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-58
+					],
+					"hand_front": [
+						30,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-59.1070628943619
+					],
+					"hand_front": [
+						28.8148148148148,
+						-47.8148148148148
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				31,
+				-46
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-61.3690209647873
+					],
+					"hand_front": [
+						13.2592592592593,
+						-58.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						4,
+						-70
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						18,
+						-75
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						28,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						25,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.309790352127,
+						-61.6309790352127
+					],
+					"hand_front": [
+						24.1851851851852,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				28,
+				-72
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook_glove_l1": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook_glove_l1.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-61.3690209647873
+					],
+					"hand_front": [
+						13.2592592592593,
+						-58.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						4,
+						-70
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						18,
+						-75
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						28,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						25,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.309790352127,
+						-61.6309790352127
+					],
+					"hand_front": [
+						24.1851851851852,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				28,
+				-72
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook_glove_l2": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook_glove_l2.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-61.3690209647873
+					],
+					"hand_front": [
+						13.2592592592593,
+						-58.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						4,
+						-70
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						18,
+						-75
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						28,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						25,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.309790352127,
+						-61.6309790352127
+					],
+					"hand_front": [
+						24.1851851851852,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				28,
+				-72
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_hook_glove_l3": {
+			"action": "hook",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_hook_glove_l3.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						8.32118868308569,
+						-61.3690209647873
+					],
+					"hand_front": [
+						13.2592592592593,
+						-58.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						4,
+						-70
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						18,
+						-75
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						28,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-62
+					],
+					"hand_front": [
+						25,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.309790352127,
+						-61.6309790352127
+					],
+					"hand_front": [
+						24.1851851851852,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				28,
+				-72
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						6.4760838591492,
+						-60.6309790352127
+					],
+					"hand_front": [
+						14.3703703703704,
+						-56.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						9,
+						-60
+					],
+					"hand_front": [
+						19,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						25,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						26,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-62.2619580704254
+					],
+					"hand_front": [
+						25.1111111111111,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				25,
+				-66
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut_glove_l1": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut_glove_l1.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						6.4760838591492,
+						-60.6309790352127
+					],
+					"hand_front": [
+						14.3703703703704,
+						-56.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						9,
+						-60
+					],
+					"hand_front": [
+						19,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						25,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						26,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-62.2619580704254
+					],
+					"hand_front": [
+						25.1111111111111,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				25,
+				-66
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut_glove_l2": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut_glove_l2.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						6.4760838591492,
+						-60.6309790352127
+					],
+					"hand_front": [
+						14.3703703703704,
+						-56.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						9,
+						-60
+					],
+					"hand_front": [
+						19,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						25,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						26,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-62.2619580704254
+					],
+					"hand_front": [
+						25.1111111111111,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				25,
+				-66
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fight_player_uppercut_glove_l3": {
+			"action": "uppercut",
+			"facing": "direita",
+			"file": "res://assets/sprites/fight/fight_player_uppercut_glove_l3.png",
+			"fps": 16.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						6.4760838591492,
+						-60.6309790352127
+					],
+					"hand_front": [
+						14.3703703703704,
+						-56.8888888888889
+					]
+				},
+				{
+					"hand_back": [
+						9,
+						-60
+					],
+					"hand_front": [
+						19,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-62
+					],
+					"hand_front": [
+						20,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-63
+					],
+					"hand_front": [
+						25,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						26,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						11.9407693873397,
+						-62.2619580704254
+					],
+					"hand_front": [
+						25.1111111111111,
+						-68.1851851851852
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						14,
+						-58
+					]
+				}
+			],
+			"hit_frame": 4,
+			"hit_point": [
+				25,
+				-66
+			],
+			"loop": false,
+			"pivot": [
+				56,
+				98
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui."
+		},
+		"fighter_hook": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_hook.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_hook_glove_l1": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_hook_glove_l1.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_hook_glove_l2": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_hook_glove_l2.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_hook_glove_l3": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_hook_glove_l3.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_punch_b": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_punch_b.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				227
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_punch_b_glove_l1": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_punch_b_glove_l1.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				227
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_punch_b_glove_l2": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_punch_b_glove_l2.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				227
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_punch_b_glove_l3": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_punch_b_glove_l3.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				323,
+				227
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_uppercut": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_uppercut.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				317,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_uppercut_glove_l1": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_uppercut_glove_l1.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				317,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_uppercut_glove_l2": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_uppercut_glove_l2.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				317,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"fighter_uppercut_glove_l3": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/fighter_uppercut_glove_l3.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"hit_frame": 2,
+			"hit_point": [
+				317,
+				215
+			],
+			"loop": false,
+			"pivot": [
+				22,
+				67
+			],
+			"positions": {
+				"foco_saco": [
+					303,
+					272
+				]
+			},
+			"note": "Golpe do treino (garagem, 3/4), tocado nos quadros 1-3 pela sala; hit_point é absoluto (foco_saco + mão no contato). Gerado de tools/art/golpes.json."
+		},
+		"rope_l0_swing_back": {
+			"facing": "direita",
+			"file": "res://assets/sprites/equipment/rope_l0_swing_back.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"frames_note": "Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			}
+		},
+		"rope_l0_swing_back_gym": {
+			"facing": "direita",
+			"file": "res://assets/sprites/equipment/rope_l0_swing_back_gym.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"frames_note": "Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			}
+		},
+		"rope_l1_swing_back": {
+			"facing": "direita",
+			"file": "res://assets/sprites/equipment/rope_l1_swing_back.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"frames_note": "Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			}
+		},
+		"rope_l1_swing_back_gym": {
+			"facing": "direita",
+			"file": "res://assets/sprites/equipment/rope_l1_swing_back_gym.png",
+			"fps": 24.0,
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"frames_note": "Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.",
+			"hit_frame": 3,
+			"loop": false,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			}
 		}
 	},
 	"fight_layout": {
