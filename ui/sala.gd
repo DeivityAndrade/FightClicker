@@ -42,7 +42,17 @@ var _saco: AnimSprite
 var _corda_prego: AnimSprite
 var _esteira: AnimSprite
 var _lutador: AnimSprite
-var _corda_giro: AnimSprite
+var _corda_giro: AnimSprite  # corda NA FRENTE do lutador (por cima do corpo)
+var _corda_costas: AnimSprite  # corda ATRÁS do lutador (por baixo do corpo)
+# Pular corda: laço de 6 quadros (um giro completo: atrás, acima da cabeça, na frente por cima do corpo, sob os pés,
+# atrás de novo, aterrissa). Enquanto o jogador clica, o laço CONTINUA (a corda nunca para no meio); passado o tempo sem
+# clique, o giro termina e o lutador assenta no quadro 6 (corda frouxa na frente). Sprites: tools/art/golpes.json (rope).
+const CORDA_QUADROS := [0, 1, 2, 3, 4, 5]
+const CORDA_FPS := 24.0
+const CORDA_REPOUSO := 6
+const CORDA_FOLGA_MS := 480  # sem clique por este tempo = a corda assenta
+var _corda_girando := false
+var _corda_ultimo_clique := 0
 var _sombra_lutador: Sprite2D
 var _pessoas: Dictionary = {}  # gerador -> Array[{sprite, sombra, visivel}]
 var _fx_impacto: Array[AnimSprite] = []
@@ -93,6 +103,8 @@ func _ready() -> void:
 	GameState.luva_mudou.connect(_ao_luva)
 	GameState.carreira_mudou.connect(_ao_carreira)
 	GameState.auto_socou.connect(_ao_auto_socou)
+	GameState.evento_dourado.connect(_ao_evento_dourado)
+	GameState.frenesi_mudou.connect(_ao_frenesi_mudou)
 	GameState.metronomo_mudou.connect(_ao_metronomo)
 	GameState.aparelho_comprado.connect(_ao_aparelho_comprado)
 	GameState.economia_mudou.connect(_atualizar_marcas)
@@ -142,6 +154,8 @@ func _montar() -> void:
 	_lutador.position = UiTema.pos("fighter_idle", "foco_saco")
 	_corda_giro = _novo_anim("rope_l0_swing", "foco_corda", 0)
 	_corda_giro.visible = false
+	_corda_costas = _novo_anim("rope_l0_swing_back", "foco_corda", 0)
+	_corda_costas.visible = false
 	# Aparelhos das artes (Fase 5): só são desenhados na carreira da arte e depois de comprados.
 	_pera = _novo_anim("speed_bag_l0_wall", "parede", -40)
 	_pera.visible = false
@@ -224,6 +238,7 @@ func _aplicar_layout() -> void:
 	# Saco: no centro (foco) ou à esquerda. Na academia os aparelhos básicos usam o sprite com sufixo _gym (_n).
 	var nome_saco := _n("bag_l%d_idle" % nb) if foco == SACO else _n("bag_l%d_side" % nb)
 	var chave := "centro" if foco == SACO else "lado_esquerdo"
+	_matar_balanco_saco()
 	_saco.definir(nome_saco)
 	_saco.position = UiTema.pos(nome_saco, chave)
 	_saco.z_index = int(_saco.position.y) + int(UiTema.sprite(nome_saco).get("sort_y_offset", 0))
@@ -237,6 +252,7 @@ func _aplicar_layout() -> void:
 	_corda_prego.position = UiTema.pos(_n("rope_l%d_idle" % nr), "prego")
 	_corda_prego.visible = foco != CORDA and GameState.aparelho_montado(CORDA)  # sem corda: só a marca de fita no prego
 	_corda_giro.visible = false
+	_corda_costas.visible = false
 
 	# Esteira: no centro (foco) ou à direita.
 	var nome_esteira := _n("treadmill_l%d_idle" % ne) if foco == ESTEIRA else _n("treadmill_l%d_side" % ne)
@@ -258,6 +274,7 @@ func _aplicar_layout() -> void:
 func _pose_repouso() -> void:
 	var foco := GameState.foco
 	_corda_giro.visible = false
+	_corda_costas.visible = false
 	match foco:
 		SACO, PERA, BONECO:  # a pera e o boneco usam o fighter_idle/punch no ponto do saco (303,272)
 			_lutador.definir(_f("fighter_idle"))
@@ -265,17 +282,22 @@ func _pose_repouso() -> void:
 			_lutador.z_index = int(_lutador.position.y)
 			_lutador.tocar([0, 1, 2, 3], 4.0, true)
 		CORDA:
-			# Parado segurando a corda: quadro de aterrissagem + corda baixa, mesmo pivô.
+			# Parado segurando a corda: quadro de aterrissagem + corda frouxa na frente, mesmo pivô.
 			_lutador.definir(_f("fighter_rope"))
 			_lutador.position = UiTema.pos("fighter_rope", "foco_corda")
 			_lutador.z_index = int(_lutador.position.y)
-			_lutador.parar(3)
+			_lutador.parar(CORDA_REPOUSO)
 			var nr := GameState.nivel_visual(CORDA)
 			_corda_giro.definir(_n("rope_l%d_swing" % nr))
 			_corda_giro.position = UiTema.pos(_n("rope_l%d_swing" % nr), "foco_corda")
 			_corda_giro.z_index = _lutador.z_index + 1
-			_corda_giro.parar(1)
+			_corda_giro.parar(CORDA_REPOUSO)
 			_corda_giro.visible = true
+			_corda_costas.definir(_n("rope_l%d_swing_back" % nr))
+			_corda_costas.position = UiTema.pos(_n("rope_l%d_swing_back" % nr), "foco_corda")
+			_corda_costas.z_index = _lutador.z_index - 1
+			_corda_costas.parar(CORDA_REPOUSO)
+			_corda_costas.visible = true
 		_:
 			_lutador.definir(_f("fighter_run"))
 			_lutador.position = UiTema.pos("fighter_run", "foco_esteira")
@@ -372,6 +394,16 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _clique_em(p: Vector2) -> void:
+	if _evento_rect.size != Vector2.ZERO and _evento_rect.has_point(p):
+		if GameState.pegar_evento_dourado():
+			_esconder_evento()
+			var n := _pegar_numero()
+			_ordem += 1
+			n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
+			n.iniciar(UiTema.txt("frenzy_start", "FRENESI X{n}!", {"n": int(GameState.FRENESI_MULT)}), UiTema.Y1, true, "", p + Vector2(0, -10), 1.0, 26.0)
+			sfx.compra()
+			_tremer(1, 0.12)
+		return
 	if ALVO.has_point(p):
 		_pos_clique = p
 		GameState.clicar()
@@ -550,11 +582,14 @@ func _reagir(aparelho: String, critico: bool) -> void:
 	var nb := GameState.nivel_visual(SACO)
 	match aparelho:
 		SACO:
-			_lutador.definir(_f("fighter_punch"))
-			_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
+			# Treino variado: jab com as duas mãos e, de vez em quando, uppercut e golpe lateral (COMBO_SACO).
+			var golpe := _proximo_golpe_saco()
+			_lutador.definir(_f(golpe))
+			_tocar_golpe_saco(golpe)
 			_saco.definir(_n("bag_l%d_hit" % nb))
 			_saco.tocar([0, 1, 2, 3], 14.0, false, _saco_repouso)
-			var hp: Array = UiTema.sprite("fighter_punch").get("hit_point", [323, 222])
+			_balancar_saco(golpe, critico)
+			var hp: Array = UiTema.sprite(golpe).get("hit_point", [323, 222])
 			_impacto(Vector2(float(hp[0]), float(hp[1])), critico)
 		PERA:
 			# A pera é bem mais rápida que o saco (5 quadros a 18 fps); o lutador usa o soco normal.
@@ -573,13 +608,10 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_boneco.tocar([0, 1, 2], 12.0, false, _boneco_repouso)
 			_impacto(_ponto_impacto(_boneco.nome_sprite, "grappling_dummy", Vector2(330, 232)), critico)
 		CORDA:
-			var nr := GameState.nivel_visual(CORDA)
-			_lutador.definir(_f("fighter_rope"))
-			_lutador.tocar([1, 2, 3], 14.0, false, _pose_repouso)
-			_corda_giro.definir(_n("rope_l%d_swing" % nr))
-			_corda_giro.visible = true
-			_corda_giro.z_index = _lutador.z_index + 1
-			_corda_giro.tocar([1, 2, 3], 14.0)
+			_corda_ultimo_clique = Time.get_ticks_msec()
+			if not _corda_girando:
+				_corda_girando = true
+				_girar_corda()
 			_poeira(UiTema.pos("fx_dust", "corda"))
 			if critico:
 				_critico_fx(Vector2(336, 232))
@@ -595,6 +627,152 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_poeira(UiTema.pos("fx_dust", "esteira"))
 			if critico:
 				_critico_fx(Vector2(334, 232))
+
+
+## Sequência dos golpes no saco: jab direita, jab esquerda, jab direita, jab esquerda, uppercut, jab direita,
+## jab esquerda, golpe lateral. Só visual (o ganho do clique não muda). Sprites: tools/art/golpes.json (garage).
+const COMBO_SACO := ["fighter_punch", "fighter_punch_b", "fighter_punch", "fighter_punch_b", "fighter_uppercut",
+	"fighter_punch", "fighter_punch_b", "fighter_hook"]
+var _i_combo := 0
+# Evento dourado: o cinturão dourado aparece num ponto sorteado da sala por alguns segundos; clicar liga o FRENESI (x7).
+var _evento_spr: AnimSprite
+var _evento_rect := Rect2()
+var _tween_evento: Tween
+var _tween_ouro: Tween
+var _rotulo_frenesi: Label
+# Reação do saco por golpe: o uppercut o levanta, o golpe lateral o balança para o lado. A corrente acompanha.
+var _tween_saco: Tween
+var _saco_base := Vector2.ZERO
+var _saco_dir := Vector2.ZERO
+var _saco_k := 0.0:
+	set(v):
+		_saco_k = v
+		if _saco != null:
+			_saco.position = _saco_base + _saco_dir * v
+			_corrente.x = _saco_base.x - 1.0 + _saco_dir.x * v * 0.5
+			_corrente.y_fim = _saco_base.y + _saco_dir.y * v
+			_corrente.queue_redraw()
+
+
+## Próximo golpe do combo. Se a arte de algum golpe não existir (manifest mexido), cai no jab de sempre.
+func _proximo_golpe_saco() -> String:
+	var g: String = COMBO_SACO[_i_combo % COMBO_SACO.size()]
+	_i_combo += 1
+	return g if not UiTema.sprite(g).is_empty() else "fighter_punch"
+
+
+## Evento dourado: a luva dourada aparece num ponto sorteado, flutua por alguns segundos e espera o clique.
+func _ao_evento_dourado(duracao: float) -> void:
+	if GameState.modal_aberto:
+		return
+	if _evento_spr == null:
+		_evento_spr = _novo_anim("event_golden_glove", "", 950)
+	var x := _rng.randf_range(AREA.position.x + 50.0, AREA.end.x - 70.0)
+	var y := _rng.randf_range(AREA.position.y + 40.0, AREA.position.y + 150.0)
+	_evento_spr.position = Vector2(x, y)
+	_evento_spr.visible = true
+	_evento_spr.modulate = Color.WHITE
+	_evento_spr.scale = Vector2.ONE
+	_evento_spr.tocar([0, 1, 2], 6.0, true)
+	_evento_rect = Rect2(x - 18.0, y - 18.0, 36.0, 34.0)
+	if _tween_evento != null and _tween_evento.is_valid():
+		_tween_evento.kill()
+	_tween_evento = create_tween().set_loops()  # flutua até sumir
+	_tween_evento.tween_property(_evento_spr, "position:y", y - 3.0, 0.4).set_trans(Tween.TRANS_SINE)
+	_tween_evento.tween_property(_evento_spr, "position:y", y + 3.0, 0.4).set_trans(Tween.TRANS_SINE)
+	sfx.foco()
+
+
+func _esconder_evento() -> void:
+	_evento_rect = Rect2()
+	if _tween_evento != null and _tween_evento.is_valid():
+		_tween_evento.kill()
+	if _evento_spr != null:
+		_evento_spr.visible = false
+
+
+func _ao_frenesi_mudou(restante: float) -> void:
+	if _rotulo_frenesi == null:
+		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(AREA.position.x, AREA.position.y + 2.0, AREA.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
+		_rotulo_frenesi.z_index = 980
+	_rotulo_frenesi.visible = restante > 0.0
+	# Durante o FRENESI o lutador (e as luvas) brilham em dourado, pulsando.
+	if _tween_ouro != null and _tween_ouro.is_valid():
+		_tween_ouro.kill()
+	if restante > 0.0:
+		_tween_ouro = create_tween().set_loops()
+		_tween_ouro.tween_property(_lutador, "modulate", Color(1.5, 1.2, 0.5), 0.25).set_trans(Tween.TRANS_SINE)
+		_tween_ouro.tween_property(_lutador, "modulate", Color(1.15, 1.0, 0.7), 0.25).set_trans(Tween.TRANS_SINE)
+	else:
+		_lutador.modulate = Color.WHITE
+
+
+func _balancar_saco(golpe: String, critico: bool) -> void:
+	var dir := Vector2.ZERO
+	var picos := []
+	match golpe:
+		"fighter_uppercut":
+			dir = Vector2(0, -5)
+			picos = [[1.0, 0.06], [-0.25, 0.13], [0.0, 0.12]]
+		"fighter_hook":
+			dir = Vector2(7, 0)
+			picos = [[1.0, 0.07], [-0.55, 0.13], [0.25, 0.11], [0.0, 0.1]]
+		_:
+			return
+	_matar_balanco_saco()
+	_saco_base = _saco.position
+	_saco_dir = dir * (1.5 if critico else 1.0)
+	_saco_k = 0.0
+	_tween_saco = create_tween()
+	for pico in picos:
+		_tween_saco.tween_property(self, "_saco_k", float(pico[0]), float(pico[1])).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_tween_saco.tween_callback(func() -> void: _saco_k = 0.0)
+
+
+func _matar_balanco_saco() -> void:
+	if _tween_saco != null and _tween_saco.is_valid():
+		_tween_saco.kill()
+		_saco_dir = Vector2.ZERO
+		if _saco != null and _saco_base != Vector2.ZERO:
+			_saco.position = _saco_base
+			_corrente.x = _saco_base.x - 1.0
+			_corrente.y_fim = _saco_base.y
+			_corrente.queue_redraw()
+
+
+## Toca o golpe no lutador. O jab da mão da frente (o original) continua nos quadros 1-3 a 18 fps, como sempre foi. Os
+## golpes novos têm quadros de movimento do corpo todo: tocam inteiros, na velocidade do manifest (contato no quadro 2).
+func _tocar_golpe_saco(golpe: String) -> void:
+	if golpe == "fighter_punch":
+		_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
+		return
+	var sp := UiTema.sprite(golpe)
+	var quadros: Array = range(int(sp.get("frames", 4)))
+	_lutador.tocar(quadros, float(sp.get("fps", 24.0)), false, _pose_repouso)
+
+
+## Um giro completo da corda (corpo + camada da frente + camada de trás, no mesmo ritmo).
+func _girar_corda() -> void:
+	var nr := GameState.nivel_visual(CORDA)
+	_lutador.definir(_f("fighter_rope"))
+	_lutador.tocar(CORDA_QUADROS, CORDA_FPS, false, _fim_giro_corda)
+	_corda_giro.definir(_n("rope_l%d_swing" % nr))
+	_corda_giro.visible = true
+	_corda_giro.z_index = _lutador.z_index + 1
+	_corda_giro.tocar(CORDA_QUADROS, CORDA_FPS)
+	_corda_costas.definir(_n("rope_l%d_swing_back" % nr))
+	_corda_costas.visible = true
+	_corda_costas.z_index = _lutador.z_index - 1
+	_corda_costas.tocar(CORDA_QUADROS, CORDA_FPS)
+
+
+## Fim de um giro: se ainda há cliques recentes, o próximo giro começa na hora (rotação contínua); senão, assenta.
+func _fim_giro_corda() -> void:
+	if GameState.foco == CORDA and Time.get_ticks_msec() - _corda_ultimo_clique < CORDA_FOLGA_MS:
+		_girar_corda()
+		return
+	_corda_girando = false
+	_pose_repouso()
 
 
 func _saco_repouso() -> void:
@@ -915,9 +1093,11 @@ func _ao_aparelho_comprado(id: String) -> void:
 		return
 	var fx_nome := str(m.get("arrive", {}).get("fx", ""))
 	# 4b: os deslocamentos da queda estão no sprite do efeito; Fase 5: no próprio bloco `arrive.drop` do manifest.
-	# Os aparelhos básicos usam uma referência textual, não um Dictionary inline.
-	var drop_inline = m.get("arrive", {}).get("drop")
-	var drop: Dictionary = drop_inline if drop_inline is Dictionary else UiTema.sprite(fx_nome).get("drop", {})
+	var drop_data = m.get("arrive", {}).get("drop", UiTema.sprite(fx_nome).get("drop", {}))
+	# Esteira e corda trazem em `arrive.drop` só um texto ("ver sprites.fx_...drop"): nesse caso vale o `drop` do sprite do efeito.
+	if not drop_data is Dictionary:
+		drop_data = UiTema.sprite(fx_nome).get("drop", {})
+	var drop: Dictionary = drop_data if drop_data is Dictionary else {}
 	var desloc: Array = drop.get("offsets_y", [0])
 	var passo := 1.0 / maxf(1.0, float(drop.get("fps", 24)))
 	var base: Vector2
@@ -1031,6 +1211,10 @@ func _cancelar_chegada() -> void:
 # --- Quadro a quadro ---
 
 func _process(delta: float) -> void:
+	if _evento_rect.size != Vector2.ZERO and (GameState.evento_dourado_restante <= 0.0 or GameState.modal_aberto):
+		_esconder_evento()  # venceu o tempo, alguém pegou ou abriu uma janela/luta
+	if _rotulo_frenesi != null and _rotulo_frenesi.visible:
+		_rotulo_frenesi.text = UiTema.txt("frenzy_label", "FRENESI X{n}  {s}S", {"n": int(GameState.FRENESI_MULT), "s": int(ceil(GameState.frenesi_restante))})
 	# Tremida: pixel inteiro, decai até zero.
 	if _shake_t > 0.0:
 		_shake_t -= delta

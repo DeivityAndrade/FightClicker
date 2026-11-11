@@ -22,7 +22,7 @@ extends SceneTree
 const BASE := Vector2(640, 360)
 const TOL := 1.0
 const PASTA_SAVE := "user://test/ui_audit/"
-const SAIDA_PADRAO := "C:/Users/deivi/AppData/Local/Temp/claude/ui_audit"
+const SAIDA_PADRAO := "user://ui_audit_saida"  # pasta do usuário do Godot (funciona em qualquer PC)
 const CONFIG := "res://data/config.json"
 
 const ESTADOS_TODOS := [
@@ -59,7 +59,7 @@ const NOS_TODOS := ["body_jab", "body_muscle_memory", "body_heavy_hands", "body_
 	"career_scouting", "career_purse_2", "career_crowd", "career_good_loser"]
 
 var gs: Node
-var saida := SAIDA_PADRAO
+var saida := ProjectSettings.globalize_path(SAIDA_PADRAO)
 var pedidos: Array = []
 var estados_feitos := 0
 var problemas: Array[String] = []
@@ -750,9 +750,9 @@ func _rodar_fase4b() -> void:
 			gs.clicar()  # mão mexendo em t=0
 			_tecla(KEY_SHIFT, true)
 			var socos0: int = gs.assist_socos_total
-			await _esperar(2.2)  # clique em t=0: mão parada em 1 s, primeiro soco 1 s depois; o número dura 0,5 s
+			await _esperar(1.4)  # clique em t=0: mão parada em 0,6 s, primeiro soco 0,6 s depois (1,2 s); o número dura 0,5 s
 			_exigir(gs.assistido_estado() == "active", _estado, "deveria estar active: %s (segurando gs=%s faixa=%s modal=%s bloq=%s)" % [gs.assistido_estado(), gs.assistido_segurando(), faixa.segurando(), gs.modal_aberto, gs.acoes_bloqueadas()])
-			_exigir(gs.assist_socos_total > socos0, _estado, "nenhum auto-soco do assistido em 2,2 s")
+			_exigir(gs.assist_socos_total > socos0, _estado, "nenhum auto-soco do assistido em 1,4 s")
 			var vivos := 0
 			for nn in _cena.get_node("Sala")._numeros:
 				if nn.ativo:

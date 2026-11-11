@@ -88,11 +88,11 @@ func _teste_dados() -> void:
 	checar_igual(d.carreira.legacy_per_fame, 2.0, "Legado x10: legacy_per_fame 2.0")
 	checar_igual(d.carreira.belt_legacy_bonus, 100.0, "Legado x10: belt_legacy_bonus 100")
 	checar_igual(d.adversario("opp_fast").prize_money, 800.0, "Dinho paga $800")
-	checar_igual(d.metronomo.levels.size(), 3, "Metrônomo com 3 níveis")
+	checar_igual(d.metronomo.levels.size(), 5, "Metrônomo com 5 níveis")
 	checar_igual([d.metronomo.levels[0].cost, d.metronomo.levels[1].cost, d.metronomo.levels[2].cost], [80.0, 150.0, 300.0],
 		"Metrônomo: $80 / $150 / $300")
 	checar_igual([d.metronomo.levels[0].interval, d.metronomo.levels[1].interval, d.metronomo.levels[2].interval],
-		[2.0, 1.0, 0.7], "Metrônomo: 2.0 / 1.0 / 0.7 s")
+		[1.2, 0.9, 0.65], "Metrônomo: 1.2 / 0.9 / 0.65 s (níveis 1 a 3)")
 	for n in d.arvore:
 		checar(n.name != "" and n.description != "" and n.effect_text != "", "nó %s tem nome, descrição e efeito" % n.id)
 		checar(n.name.length() <= 16 and n.description.length() <= 44, "nó %s respeita os limites de texto" % n.id)
@@ -246,7 +246,7 @@ func _teste_metronomo_loja() -> void:
 	checar_igual(gs.nivel_metronomo, 0, "começa sem Metrônomo")
 	checar_igual(gs.intervalo_metronomo(), 0.0, "sem Metrônomo: intervalo 0")
 	checar_igual(gs.proximo_metronomo().id, "metronome_l1", "o 1º à venda é o nível 1")
-	checar_igual(gs.texto_efeito_metronomo(gs.proximo_metronomo()), "1 SOCO A CADA 2.0 S", "texto do nível 1")
+	checar_igual(gs.texto_efeito_metronomo(gs.proximo_metronomo()), "1 SOCO A CADA 1.2 S", "texto do nível 1")
 	checar(not gs.comprar_metronomo(), "sem dinheiro: recusa")
 	gs.dinheiro = 79.0
 	checar(not gs.comprar_metronomo(), "$79 < $80: recusa")
@@ -255,14 +255,14 @@ func _teste_metronomo_loja() -> void:
 	gs.metronomo_mudou.connect(func(n: int) -> void: niveis.append(n))
 	checar(gs.comprar_metronomo(), "compra o nível 1")
 	checar_igual([gs.nivel_metronomo, gs.dinheiro], [1, 120.0], "nível 1, gastou $80")
-	checar_igual(gs.texto_efeito_metronomo(gs.proximo_metronomo()), "1 SOCO A CADA 1.0 S", "texto do nível 2")
+	checar_igual(gs.texto_efeito_metronomo(gs.proximo_metronomo()), "1 SOCO A CADA 0.9 S", "texto do nível 2")
 	checar(not gs.comprar_metronomo(), "$120 < $150: o nível 2 espera")
-	gs.dinheiro = 450.0
-	checar(gs.comprar_metronomo() and gs.comprar_metronomo(), "compra os níveis 2 e 3")
-	checar_igual([gs.nivel_metronomo, gs.dinheiro], [3, 0.0], "nível 3, gastou 150 + 300")
+	gs.dinheiro = 3150.0
+	checar(gs.comprar_metronomo() and gs.comprar_metronomo() and gs.comprar_metronomo() and gs.comprar_metronomo(), "compra os níveis 2 a 5")
+	checar_igual([gs.nivel_metronomo, gs.dinheiro], [5, 0.0], "nível 5, gastou 150 + 300 + 700 + 2000")
 	checar(gs.proximo_metronomo().is_empty() and not gs.pode_comprar_metronomo(), "linha completa")
-	checar_igual(niveis, [1, 2, 3], "metronomo_mudou emitido a cada compra")
-	checar(gs.socos_por_segundo_metronomo() <= 1.5 and gs.socos_por_segundo_metronomo() > 1.4, "máximo 1,43 soco/s (<= 1,5)")
+	checar_igual(niveis, [1, 2, 3, 4, 5], "metronomo_mudou emitido a cada compra")
+	checar(gs.socos_por_segundo_metronomo() <= 2.5 + 1e-9 and gs.socos_por_segundo_metronomo() > 2.4, "máximo 2,5 socos/s")
 	gs.luta = {"x": 1}
 	gs.dinheiro = 1000.0
 	gs.nivel_metronomo = 0
@@ -400,7 +400,7 @@ func _teste_metronomo_carreira() -> void:
 	checar_igual(g2.nivel_metronomo, 1, "e na carreira seguinte também")
 	# save com nível maior que o máximo é recortado
 	g2.aplicar_save({"career": {"metronome_level": 99}})
-	checar_igual(g2.nivel_metronomo, 3, "nível inválido recortado ao máximo")
+	checar_igual(g2.nivel_metronomo, 5, "nível inválido recortado ao máximo")
 	_liberar(g2)
 
 
@@ -414,14 +414,14 @@ func _teste_ritmo_maximo() -> void:
 		+ '{"id": "m3", "cost": 0, "interval": 1.0}, {"id": "m4", "cost": 5, "interval": 500}]}}')
 	var d := FightData.carregar(FightData.CAMINHO_LUTAS, FightData.CAMINHO_ADVERSARIOS, pasta + "shop.json")
 	checar_igual(d.metronomo.levels.size(), 1, "m2 (não mais rápido), custo 0 e m4 ignorados")
-	checar(d.metronomo.levels[0].interval >= 0.667 - 1e-9, "intervalo 0.1 recortado para >= 0.667")
+	checar(d.metronomo.levels[0].interval >= 0.3 - 1e-9, "intervalo 0.1 recortado para >= 0.3")
 	var gs := _novo("f4_ritmo_jogo", d)
 	gs.nivel_metronomo = 1
 	var n := 0
 	gs.auto_socou.connect(func(_g: float, _c: bool, _a: String, _t: String, _x: String) -> void: n += 1)
 	for i in 100:
 		gs.tick(0.1)  # 10 s
-	checar(n <= 15, "dado errado de intervalo: no máximo 1,5 soco/s (%d socos em 10 s)" % n)
+	checar(n <= 34, "dado errado de intervalo: no máximo ~3,3 socos/s (%d socos em 10 s)" % n)
 	n = 0
 	gs.tick(5.0)
 	checar(n <= 3, "um quadro enorme dá no máximo 3 socos (%d)" % n)

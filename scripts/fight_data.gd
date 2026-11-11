@@ -13,7 +13,7 @@ const CAMINHO_ARVORE := "res://data/skill_tree.json"
 # Tipos de efeito da árvore (Fase 4). Tipo desconhecido: nó ignorado.
 const TIPOS_EFEITO := ["click_bonus", "passive_bonus", "money_bonus", "fame_bonus", "defeat_share_bonus", "metronome_start", "preview_percent", "art_rule_bonus"]
 # Intervalo mínimo do Metrônomo (garante <= 1,5 soco/s mesmo com dado errado) e máximo.
-const METRONOMO_INTERVALO_MIN := 0.667
+const METRONOMO_INTERVALO_MIN := 0.3
 const METRONOMO_INTERVALO_MAX := 60.0
 
 # chave -> [padrão, mínimo, máximo]

@@ -58,7 +58,9 @@ static func sprite(nome: String) -> Dictionary:
 
 static func textura(nome: String) -> Texture2D:
 	if not _texturas.has(nome):
-		_texturas[nome] = load(str(sprite(nome).get("file", ""))) as Texture2D
+		var arquivo := str(sprite(nome).get("file", ""))
+		# Sprite ausente no manifest (ex.: estado _disabled que não foi desenhado): sem textura, sem erro de load("").
+		_texturas[nome] = (load(arquivo) as Texture2D) if arquivo != "" else null
 	return _texturas[nome]
 
 

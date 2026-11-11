@@ -35,6 +35,8 @@ signal metronomo_mudou(nivel: int)  # compra, nova carreira, carga do save
 signal arvore_mudou()  # nó comprado (Legado e skill_nodes mudaram)
 signal nova_carreira_iniciada(cartao: Dictionary)  # só em NOVA CARREIRA (não na carga do save)
 signal aparelho_comprado(aparelho: String)  # Fase 4b: aparelho montado (a UI faz a chegada)
+signal evento_dourado(duracao: float)  # o cinturão dourado aparece na sala: clicar nele liga o FRENESI
+signal frenesi_mudou(restante: float)  # FRENESI ligado (segundos restantes) ou desligado (0)
 signal assistido_mudou(estado: String)  # "off" | "waiting" | "active" | "metronome"
 # --- Fase 5 (contrato: docs/fases/fase5-api.md) ---
 signal local_mudou(local: String)  # MUDAR, NOVA CARREIRA ou carga do save
@@ -63,6 +65,18 @@ var tatica := ""  # última tática escolhida
 var tempo_jogo := 0.0  # segundos de jogo desta carreira
 var dinheiro_ganho := 0.0  # soma dos prêmios da carreira
 var luta: Dictionary = {}  # career.fight: luta decidida e ainda não aplicada ({} = nenhuma)
+# Evento dourado (estilo "biscoito dourado"): de vez em quando um cinturão dourado aparece por alguns segundos; quem clica nele
+# ganha o FRENESI: treino x7 nos CLIQUES e nos auto-socos por 12 s (não multiplica a renda da equipe: só rende para quem clica).
+# Não é salvo (é passageiro) e não conta enquanto uma janela/luta estiver aberta.
+const FRENESI_MULT := 7.0
+const FRENESI_DURACAO := 12.0
+const EVENTO_DURACAO := 7.0
+const EVENTO_ESPERA_MIN := 45.0
+const EVENTO_ESPERA_MAX := 90.0
+var frenesi_restante := 0.0
+var evento_dourado_restante := 0.0  # > 0: o cinturão dourado está na sala esperando o clique
+var _evento_espera := -1.0
+var _rng_evento := RandomNumberGenerator.new()  # próprio: não mexe nos sorteios de crítico (testes determinísticos)
 var nivel_metronomo := 0  # Fase 4: 0 = sem Metrônomo (career.metronome_level)
 var local_id := ""  # Fase 5: career.location ("garage" | "gym")
 var arte_id := ""  # Fase 5: career.art ("" = sem arte)
@@ -77,6 +91,7 @@ var dados: TrainingData
 var academia: GymData  # Fase 5: locais e artes (data/locations.json, data/arts.json)
 var lutas: FightData  # adversários, táticas, loja, Legado (data/fights|opponents|shop|career.json)
 var motor: Luta  # simulação da luta
+var golpes: MovesData  # golpes das lutas por estilo (data/moves.json): jogador e adversários usam o mesmo catálogo
 var risco_hud_ativo := true  # testes podem desligar o recálculo periódico do HUD
 var rng := RandomNumberGenerator.new()
 var store: SaveStore
@@ -151,6 +166,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 	local_id = academia.local_padrao
 	lutas = dados_lutas if dados_lutas != null else FightData.carregar()
 	motor = Luta.new(lutas)
+	golpes = MovesData.carregar()
 	store = SaveStore.new(pasta_save)
 	_ajustar_assist()
 	carregar_save()
@@ -173,6 +189,7 @@ func tick(delta: float) -> void:
 		_tick_metronomo(delta)
 		_tick_assistido(delta)
 		_tick_tempo_morto(delta)
+		_tick_evento_dourado(delta)
 	if autosave_ativo:
 		_tempo_autosave += delta
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
@@ -349,7 +366,7 @@ func _socar(auto: bool) -> Dictionary:
 	var aparelho_id := foco
 	var atributo := atributo_do_aparelho(aparelho_id)
 	var critico := rng.randf() < dados.crit_chance
-	var ganho := (por_auto_soco() if auto else por_clique()) * (dados.crit_multiplier if critico else 1.0)
+	var ganho := (por_auto_soco() if auto else por_clique()) * (dados.crit_multiplier if critico else 1.0) * mult_frenesi()
 	var texto := ""
 	if critico:
 		var textos: Array = dados.aparelho(aparelho_id).crit_texts
@@ -362,6 +379,40 @@ func _socar(auto: bool) -> Dictionary:
 	else:
 		clicou.emit(ganho, critico, aparelho_id, atributo, texto)
 	return info
+
+
+## 7 enquanto o FRENESI está ligado, 1 nos outros casos.
+func mult_frenesi() -> float:
+	return FRENESI_MULT if frenesi_restante > 0.0 else 1.0
+
+
+## O jogador clicou no cinturão dourado: liga o FRENESI. false se não havia cinturão (ou se há janela aberta).
+func pegar_evento_dourado() -> bool:
+	if evento_dourado_restante <= 0.0 or modal_aberto or acoes_bloqueadas():
+		return false
+	evento_dourado_restante = 0.0
+	frenesi_restante = FRENESI_DURACAO
+	frenesi_mudou.emit(frenesi_restante)
+	return true
+
+
+func _tick_evento_dourado(delta: float) -> void:
+	if frenesi_restante > 0.0:
+		frenesi_restante = maxf(0.0, frenesi_restante - delta)
+		if frenesi_restante == 0.0:
+			frenesi_mudou.emit(0.0)
+	if evento_dourado_restante > 0.0:
+		evento_dourado_restante = maxf(0.0, evento_dourado_restante - delta)  # ninguém clicou: o cinturão some
+		return
+	if modal_aberto or acoes_bloqueadas():
+		return  # luta ou janela aberta: o relógio do próximo evento espera
+	if _evento_espera < 0.0:
+		_evento_espera = _rng_evento.randf_range(EVENTO_ESPERA_MIN, EVENTO_ESPERA_MAX)
+	_evento_espera -= delta
+	if _evento_espera <= 0.0:
+		_evento_espera = -1.0
+		evento_dourado_restante = EVENTO_DURACAO
+		evento_dourado.emit(EVENTO_DURACAO)
 
 
 ## Troca o foco (grátis, instantâneo). Retorna false se o aparelho não existe.
@@ -1077,6 +1128,12 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	var eventos: Array = []
 	var vmax: Array = res.life_max
 	var n: int = res.events.size()
+	# Golpes (só visual, nunca muda o resultado): cada lado usa os golpes do seu estilo. Jogador = boxe por enquanto;
+	# `liberados` é o gancho para a árvore de habilidades liberar golpes (ids de nós) no futuro.
+	var liberados: Array = []
+	var golpes_lado: Array = [golpes.disponiveis("boxing", liberados), golpes.disponiveis(str(opp.get("style", "boxing")))]
+	var golpe_anterior: Array = ["", ""]
+	var semente_golpes := int(luta.seed)
 	for i in n:
 		var e: Dictionary = res.events[i]
 		var alvo: int = 1 - int(e.who)
@@ -1092,9 +1149,21 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 			kind = "crit"
 		var bloqueou: bool = tipo != "dodge" and bool(def_t.block)
 		var d_anim := "dodge" if tipo == "dodge" else ("block" if bloqueou else "hit")
+		var lado := int(e.who)
+		var golpe_id := ""
+		var golpe_anim := ""
+		var reacao := ""
+		if kind != "dodge":
+			golpe_id = golpes.escolher(golpes_lado[lado], kind, semente_golpes, i, str(golpe_anterior[lado]))
+			if golpe_id != "":
+				golpe_anterior[lado] = golpe_id
+				golpe_anim = str(golpes.golpes[golpe_id].anim)
+				if d_anim == "hit":
+					reacao = str(golpes.golpes[golpe_id].defender_anim)
 		eventos.append({
 			"t": e.t, "who": e.who, "target": alvo, "type": tipo, "counter": e.counter,
 			"kind": kind, "attack_anim": "heavy" if kind == "crit" or kind == "counter" else "jab",
+			"move": golpe_id, "move_anim": golpe_anim, "defender_move_anim": reacao,
 			"defender_anim": d_anim, "blocked": bloqueou,
 			"damage": e.damage, "life_after": e.life_after, "life_pct_after": e.life_after / vmax[alvo],
 			"round": int(floor(float(e.t) / float(c.round_length))) + 1,
@@ -1273,6 +1342,9 @@ func nova_carreira() -> bool:
 
 
 func _zerar_carreira() -> void:
+	frenesi_restante = 0.0
+	evento_dourado_restante = 0.0
+	_evento_espera = -1.0
 	treino = 0.0
 	atributos = {}
 	for id in dados.atributos:

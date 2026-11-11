@@ -132,6 +132,7 @@ func atualizar() -> void:
 
 	_icone_cinturao.visible = false
 	_caixa.position.x = 4.0
+	_largura_caixa(112.0)
 	_nome.text = UiTema.txt("hud_next_fight", "PRÓXIMA: {nome}", {"nome": str(opp.name)})
 	_nome.add_theme_color_override("font_color", UiTema.WHITE)
 	_marca_area.visible = revanche
@@ -161,6 +162,7 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary) -> void:
 	if estado == "move" and str(mud.get("state", "")) in ["ready", "missing"]:
 		_icone_cinturao.visible = false
 		_caixa.position.x = 4.0
+		_largura_caixa(112.0)
 		_nome.text = UiTema.txt("hud_next_move", "PRÓXIMA: MUDE PARA A ACADEMIA")
 		_nome.add_theme_color_override("font_color", UiTema.Y1)
 		_premio.visible = false
@@ -168,7 +170,9 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary) -> void:
 		_medir()
 		return
 	_icone_cinturao.visible = true
+	# O título recua 12 px com espaços (abaixo) e a caixa mantém 112 px: o texto longo da academia cabe sem sair do painel.
 	_caixa.position.x = 4.0
+	_largura_caixa(112.0)
 	_premio.visible = true
 	# O ícone do cinturão fica à esquerda do título (a caixa mantém os 112 px: o texto longo da academia não sai do painel).
 	var recuo := " ".repeat(int(ceil(12.0 / maxf(1.0, UiTema.largura(" ")))))
@@ -233,6 +237,14 @@ func _conteudo_botao_mudar(b: Button, texto: String, preco: String, pronto: bool
 	UiTema.textura_rect(b, "icon_move", x0, UiTema.y_imagem(a, ih))
 	UiTema.rotulo(b, texto, UiTema.Y2 if pronto else UiTema.G1, x0 + iw + 4.0, UiTema.y_texto(a))
 	UiTema.rotulo(b, preco, UiTema.Y1 if pronto else UiTema.R2, x0 + iw + 4.0 + lt + 8.0, UiTema.y_texto(a))
+
+
+## Largura dos rótulos da caixa. Com a caixa deslocada para dar lugar ao ícone, a largura diminui junto (fim em x=120).
+func _largura_caixa(w: float) -> void:
+	for c: Control in [_nome, _verde, _premio, _dica_ret, _marca_area, _selo_area, _cartao_area]:
+		c.custom_minimum_size.x = w
+		c.size.x = w
+	_caixa.size.x = w  # depois dos filhos: a caixa nunca fica menor que o mínimo deles
 
 
 ## Mede a caixa depois que os rótulos quebraram linha (2 quadros) e avisa o painel.
