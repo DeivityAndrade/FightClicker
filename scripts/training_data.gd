@@ -14,7 +14,8 @@ const ATRIBUTOS: Array[String] = ["strength", "agility", "endurance"]
 const PADRAO_CLIQUE := {"base_training": 1.0, "crit_chance": 0.10, "crit_multiplier": 3.0}
 const PADRAO_FOCO := "punching_bag"
 const PADRAO_EVENTO := {"wait_min": 60.0, "wait_max": 100.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 6.0}
-const PADRAO_ASSIST := {"interval": 3.0, "still_seconds": 1.0, "first_delay": 1.0}
+const PADRAO_CAIXA := {"clicks_to_open": 3, "open_seconds": 1.2, "shake_seconds": 0.15, "idle_wobble_every_seconds": 4.0}
+const PADRAO_ASSIST :={"interval": 3.0, "still_seconds": 1.0, "first_delay": 1.0}
 const PADRAO_APARELHOS := [
 	{"id": "punching_bag", "attribute": "strength", "upgrades": [
 		{"id": "bag_patch", "cost": 300, "multiplier": 3}, {"id": "bag_sand", "cost": 5000, "multiplier": 5}]},
@@ -41,6 +42,15 @@ var golden_wait_max := 90.0
 var golden_visible_seconds := 7.0
 var golden_frenzy_mult := 7.0
 var golden_frenzy_seconds := 12.0
+# Fase 5.1: caixa de equipamento (bloco "box" de training.json)
+var box_clicks_to_open := 3
+var box_open_seconds := 1.2
+var box_shake_px: Array = [1, 2, 3]
+var box_shake_seconds := 0.15
+var box_idle_wobble_every := 4.0
+var box_apparatus := true  # applies_to.apparatus_unlock: false = aparelho novo instantâneo (Fase 5)
+var box_glove := true  # applies_to.glove: false = luva instantânea
+var box_focus_on_open := true
 ## Aparelhos de toda carreira (sem `art`), na ordem do arquivo. É o que a UI de hoje percorre.
 var aparelhos: Array[Dictionary] = []
 ## Fase 5: aparelhos assinatura das artes (com `art`), na ordem do arquivo. Só existem na carreira dessa arte.
@@ -164,6 +174,7 @@ func _ler_treino(dados: Dictionary) -> void:
 	default_focus = foco
 	_ler_assist(dados.get("assist", null))
 	_ler_evento_dourado(dados.get("golden_event", null))
+	_ler_caixa(dados.get("box", null))
 
 
 # Fase 4b: ritmo do modo assistido. O intervalo ainda é comparado com o Metrônomo 1 no GameState.
@@ -411,3 +422,28 @@ static func _num(d: Dictionary, chave: String, padrao: float, minimo: float, max
 static func _txt(d: Dictionary, chave: String, padrao: String) -> String:
 	var v = d.get(chave, null)
 	return v if v is String and not (v as String).is_empty() else padrao
+
+
+# Fase 5.1: caixa de equipamento. Bloco ausente = padrões (caixa ligada para aparelho e luva).
+func _ler_caixa(v: Variant) -> void:
+	var b: Dictionary = v if v is Dictionary else {}
+	if not (v is Dictionary):
+		push_warning("TrainingData: bloco 'box' ausente, usando padrões.")
+	box_clicks_to_open = int(_num(b, "clicks_to_open", PADRAO_CAIXA.clicks_to_open, 1.0, 20.0, "box."))
+	box_open_seconds = _num(b, "open_seconds", PADRAO_CAIXA.open_seconds, 0.1, 5.0, "box.")
+	box_shake_seconds = _num(b, "shake_seconds", PADRAO_CAIXA.shake_seconds, 0.01, 2.0, "box.")
+	box_idle_wobble_every = _num(b, "idle_wobble_every_seconds", PADRAO_CAIXA.idle_wobble_every_seconds, 0.5, 60.0, "box.")
+	box_shake_px = []
+	var px = b.get("shake_px", null)
+	if px is Array:
+		for x in px:
+			if (typeof(x) == TYPE_FLOAT or typeof(x) == TYPE_INT) and is_finite(float(x)) and float(x) >= 0.0:
+				box_shake_px.append(int(x))
+	if box_shake_px.is_empty():
+		box_shake_px = [1, 2, 3]
+	var ap = b.get("applies_to", {})
+	if not (ap is Dictionary):
+		ap = {}
+	box_apparatus = ap.get("apparatus_unlock", true) != false
+	box_glove = ap.get("glove", true) != false
+	box_focus_on_open = b.get("focus_on_open", true) != false

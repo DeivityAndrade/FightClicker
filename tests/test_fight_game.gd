@@ -10,6 +10,8 @@ func _novo(nome: String, pasta: String = "") -> Node:
 	var gs: Node = GameStateScript.new()
 	gs.inicializar(pasta if pasta != "" else pasta_limpa(nome), "res://data/config.json")
 	gs.autosave_ativo = false
+	gs.dados.box_apparatus = false  # Fase 5.1: estes testes cobrem a compra instantânea (a caixa tem teste próprio)
+	gs.dados.box_glove = false
 	gs.risco_hud_ativo = false
 	gs.aparelhos_montados_ids = ["punching_bag", "jump_rope", "treadmill"]  # Fase 4b: os testes antigos usam os 3
 	return gs

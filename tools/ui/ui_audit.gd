@@ -52,6 +52,11 @@ const ESTADOS_TODOS := [
 	"f5_arvore_sem_artes", "f5_dica_aposentar", "f5_escada_fim", "f5_previa_tonhao", "f5_luta_tonhao", "f5_previa_kid",
 	"f5_previa_kid_revanche", "f5_vitoria_cinturao_mudar", "f5_fim_dica_extra", "f5_fim_aposentou_cinturao",
 	"f5_nova_carreira", "f5_nova_carreira_cartao",
+	# Fase 5.1
+	"f51_garagem", "f51_gym", "f51_hover_fama", "f51_hover_legado", "f51_hover_local", "f51_hover_proxima", "f51_hover_teclas",
+	"f51_hover_atributo", "f51_hover_assist", "f51_marcas", "f51_marca_hover", "f51_marca_trancada", "f51_loja_trancado", "f51_hover_foco",
+	"f51_caixa_0", "f51_caixa_hover", "f51_caixa_1", "f51_caixa_2", "f51_caixa_abrindo", "f51_caixa_aberta", "f51_caixas_varias",
+	"f51_caixa_sem_espaco", "f51_caixa_janela", "f51_caixa_luva", "f51_corda_gancho", "f51_caixa_persiste", "f51_anim_saco", "f51_anim_esteira", "f51_previa",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -279,6 +284,7 @@ func _rodar() -> void:
 	await _rodar_fase4()
 	await _rodar_fase4b()
 	await _rodar_fase5()
+	await _rodar_fase51()
 	_fechar_cena()
 
 
@@ -647,38 +653,39 @@ func _rodar_fase4b() -> void:
 		await _esperar(0.1)
 		await _ver("b4_info_aparelho")
 
-	# --- Chegada ---
-	if _quer("b4_chegada_esteira_queda") or _quer("b4_chegada_esteira_poeira"):
-		_novo_jogo()
-		_com_aparelhos([], 600.0)
-		await _abrir()
-		var sala: Node = _cena.get_node("Sala")
-		_exigir(gs.comprar_aparelho("treadmill"), "b4_chegada_esteira", "comprar_aparelho(treadmill) recusou com 600 de Treino")
-		await _esperar(0.03)
-		_exigir(sala._chegando == "treadmill", "b4_chegada_esteira", "a esteira deveria estar caindo")
-		_exigir(_marca_visivel("treadmill"), "b4_chegada_esteira", "a marca só some no quadro de impacto")
-		if _quer("b4_chegada_esteira_queda"):
-			await _ver("b4_chegada_esteira_queda")
-		await _esperar(0.12)
-		_exigir(not _marca_visivel("treadmill"), "b4_chegada_esteira", "a marca deveria ter sumido no impacto")
-		if _quer("b4_chegada_esteira_poeira"):
-			await _ver("b4_chegada_esteira_poeira")
-		await _esperar(0.6)
-		_exigir(sala._chegando == "" and gs.foco == "treadmill" and sala._esteira.visible, "b4_chegada_esteira",
-			"depois da chegada a esteira fica no foco e visível")
-		_exigir(sala._lutador.nome_sprite.begins_with("fighter_run"), "b4_chegada_esteira", "o lutador deveria estar na esteira")
-	if _quer("b4_chegada_corda"):
-		_novo_jogo()
-		_com_aparelhos(["treadmill"], 2000.0, "treadmill")
-		await _abrir()
-		var sala: Node = _cena.get_node("Sala")
-		_exigir(gs.comprar_aparelho("jump_rope"), "b4_chegada_corda", "comprar_aparelho(jump_rope) recusou")
-		await _esperar(0.03)
-		_exigir(sala._chegando == "jump_rope", "b4_chegada_corda", "a corda deveria estar sendo pendurada")
-		await _ver("b4_chegada_corda")
-		await _esperar(0.5)
-		_exigir(sala._chegando == "" and gs.foco == "jump_rope" and not _marca_visivel("jump_rope"), "b4_chegada_corda",
-			"depois da chegada a corda fica no foco e sem marca")
+		# --- Chegada (Fase 5.1: caixa da escola; 3 cliques abrem) ---
+		if _quer("b4_chegada_esteira_queda") or _quer("b4_chegada_esteira_poeira"):
+			_novo_jogo()
+			_com_aparelhos([], 600.0)
+			await _abrir()
+			var sala: Node = _cena.get_node("Sala")
+			_exigir(gs.comprar_aparelho("treadmill"), "b4_chegada_esteira", "comprar_aparelho(treadmill) recusou com 600 de Treino")
+			await _esperar(0.5)
+			_exigir(gs.estado_aparelho("treadmill") == "boxed" and _marca_visivel("treadmill"), "b4_chegada_esteira", "a caixa chega sobre a marca")
+			if _quer("b4_chegada_esteira_queda"):
+				await _ver("b4_chegada_esteira_queda")
+			for i in 3:
+				gs.bater_caixa("treadmill")
+			await _esperar(0.15)
+			if _quer("b4_chegada_esteira_poeira"):
+				await _ver("b4_chegada_esteira_poeira")
+			await _esperar(1.3)
+			_exigir(gs.foco == "treadmill" and sala._esteira.visible and not _marca_visivel("treadmill"), "b4_chegada_esteira",
+				"depois da caixa a esteira fica no foco e visível")
+			_exigir(sala._lutador.nome_sprite.begins_with("fighter_run"), "b4_chegada_esteira", "o lutador deveria estar na esteira")
+		if _quer("b4_chegada_corda"):
+			_novo_jogo()
+			_com_aparelhos(["treadmill"], 2000.0, "treadmill")
+			await _abrir()
+			var sala: Node = _cena.get_node("Sala")
+			_exigir(gs.comprar_aparelho("jump_rope"), "b4_chegada_corda", "comprar_aparelho(jump_rope) recusou")
+			await _esperar(0.5)
+			await _ver("b4_chegada_corda")
+			for i in 3:
+				gs.bater_caixa("jump_rope")
+			await _esperar(1.4)
+			_exigir(gs.foco == "jump_rope" and not _marca_visivel("jump_rope"), "b4_chegada_corda",
+				"depois da caixa a corda fica no foco e sem marca")
 
 	# --- NOVA CARREIRA: a sala volta a ter só o saco ---
 	if _quer("b4_nova_carreira"):
@@ -736,8 +743,15 @@ func _rodar_fase4b() -> void:
 		var faixa: Node = _cena.get_node("FaixaAssistido")
 		if _quer("b4_assist_dica"):
 			_estado = "b4_assist_dica"
-			_exigir(gs.assistido_estado() == "off" and faixa._chip_texto.text == _txt("assist_hint"), _estado, "dica fixa esperada: %s" % faixa._chip_texto.text)
+			# Fase 5.1: sem texto fixo. Parado, só o botão (ícone); depois de 5 s sem clicar aparece a dica curta (3 primeiras vezes).
+			_exigir(gs.assistido_estado() == "off" and not faixa._chip.visible, _estado, "sem a dica de primeira vez o chip não aparece")
+			faixa._ocioso = 5.5
+			await _esperar(0.3)
+			_exigir(faixa._chip.visible and faixa._chip_texto.text == _txt("hint_assist_first"), _estado, "dica curta esperada: %s" % faixa._chip_texto.text)
 			await _ver("b4_assist_dica")
+			faixa._dica_t = 0.01
+			await _esperar(0.2)
+			_exigir(not faixa._chip.visible, _estado, "a dica some sozinha")
 		if _quer("b4_assist_esperando"):
 			_estado = "b4_assist_esperando"
 			gs.clicar()
@@ -1558,34 +1572,38 @@ func _rodar_fase5() -> void:
 		_garagem_arte("boxing", ["treadmill"], 3000.0, "treadmill")
 		await _abrir()
 		await _ver("f5_garagem_pera_marca")
+	# Fase 5.1: a chegada com poeira acabou; comprar gera uma caixa e 3 cliques abrem (detalhes nos estados f51_caixa_*).
 	if _quer("f5_chegada_pera"):
 		_novo_jogo()
 		_garagem_arte("boxing", ["treadmill"], 3000.0, "treadmill")
 		await _abrir()
 		var sala: Node = _cena.get_node("Sala")
-		_exigir(gs.comprar_aparelho("speed_bag"), "f5_chegada_pera", "comprar_aparelho(speed_bag) recusou")
-		await _esperar(0.1)
-		_exigir(sala._chegando == "speed_bag", "f5_chegada_pera", "a pera deveria estar chegando")
+		_exigir(gs.comprar_aparelho("speed_bag") and gs.estado_aparelho("speed_bag") == "boxed", "f5_chegada_pera", "comprar a pera cria a caixa")
+		await _esperar(0.5)
 		await _ver("f5_chegada_pera")
-		await _esperar(0.9)
-		_exigir(sala._chegando == "" and gs.foco == "speed_bag" and sala._pera.visible, "f5_chegada_pera", "depois da chegada a pera fica no foco")
+		for i in 3:
+			gs.bater_caixa("speed_bag")
+		await _esperar(1.4)
+		_exigir(gs.foco == "speed_bag" and sala._pera.visible, "f5_chegada_pera", "depois da caixa a pera fica no foco")
 	if _quer("f5_chegada_boneco"):
 		_novo_jogo()
 		_garagem_arte("bjj", ["treadmill"], 3000.0, "treadmill")
 		await _abrir()
 		var sala: Node = _cena.get_node("Sala")
-		_exigir(gs.comprar_aparelho("grappling_dummy"), "f5_chegada_boneco", "comprar_aparelho(grappling_dummy) recusou")
-		await _esperar(0.12)
+		_exigir(gs.comprar_aparelho("grappling_dummy") and gs.estado_aparelho("grappling_dummy") == "boxed", "f5_chegada_boneco", "comprar o boneco cria a caixa")
+		await _esperar(0.5)
 		await _ver("f5_chegada_boneco")
-		await _esperar(0.6)
-		_exigir(sala._chegando == "" and gs.foco == "grappling_dummy", "f5_chegada_boneco", "depois da chegada o boneco fica no foco")
+		for i in 3:
+			gs.bater_caixa("grappling_dummy")
+		await _esperar(1.4)
+		_exigir(gs.foco == "grappling_dummy", "f5_chegada_boneco", "depois da caixa o boneco fica no foco")
 	if _quer("f5_chip_jj_max"):
 		_novo_jogo()
 		_academia("bjj", ["treadmill", "jump_rope"], 800.0)
 		gs.arte_segundos = 900.0
 		await _abrir()
 		await _esperar(1.2)
-		_exigir(_cena.get_node("BarraBaixo")._chip.visible, "f5_chip_jj_max", "o chip da arte deveria aparecer")
+		_exigir(not _cena.get_node("BarraBaixo")._chip.visible, "f5_chip_jj_max", "Fase 5.1: o chip da arte saiu da tela (vai na dica do local)")
 		await _ver("f5_chip_jj_max")
 	if _quer("f5_teclas_arte"):
 		_novo_jogo()
@@ -1736,3 +1754,265 @@ func _rodar_fase5() -> void:
 		await _esperar(0.9)
 		_exigir(fl.janela == null and fl.cartao != null, _estado, "depois da escolha o cartão aparece")
 		await _ver("f5_nova_carreira_cartao")
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.1: garagem clara (3 niveis de leitura), marcas sem texto, caixa da escola, corda no gancho, previa com respiro
+# ---------------------------------------------------------------------------------------------
+
+## Hover simulado: a dica aparece fixa num ponto (o mouse real do verificador nao esta sobre nada).
+func _dica_em(texto: String, onde: Vector2) -> void:
+	var inst = _dica_inst()
+	inst.ancora_fixa = onde
+	inst.mostrar(texto)
+
+
+func _dica_inst() -> Control:
+	for c in _cena.get_children():
+		if c.get_script() != null and str(c.get_script().resource_path).ends_with("dica.gd"):
+			return c
+	return null
+
+
+func _sem_dica() -> void:
+	var inst = _dica_inst()
+	inst.ancora_fixa = Vector2(-1, -1)
+	inst.esconder()
+
+
+func _rodar_fase51() -> void:
+	var nomes: Array = ESTADOS_TODOS.filter(func(n: String) -> bool: return n.begins_with("f51_"))
+	var alguma := false
+	for n in nomes:
+		if _quer(n):
+			alguma = true
+	if not alguma:
+		return
+
+	# --- Os 3 niveis: garagem e hovers dos itens escondidos ---
+	if _quer("f51_garagem") or _quer("f51_hover_fama") or _quer("f51_hover_legado") or _quer("f51_hover_local") \
+			or _quer("f51_hover_proxima") or _quer("f51_hover_teclas") or _quer("f51_hover_atributo") or _quer("f51_hover_assist"):
+		_novo_jogo()
+		gs.fama = 12
+		gs.dinheiro = 80.0
+		await _abrir()
+		_estado = "f51_garagem"
+		_exigir(not _dica_inst().visible, _estado, "sem hover nao existe dica na tela")
+		await _ver("f51_garagem")
+		var hud: Node = _cena.get_node("Hud")
+		if _quer("f51_hover_fama"):
+			_dica_em(gs.texto_ui("hint_fame") + "\n12", Vector2(520, 24))
+			await _esperar(0.1)
+			await _ver("f51_hover_fama")
+			_sem_dica()
+		if _quer("f51_hover_legado"):
+			_dica_em(gs.texto_ui("hint_legacy") + "\n" + str(gs.legado_em_jogo()), Vector2(480, 24))
+			await _esperar(0.1)
+			await _ver("f51_hover_legado")
+			_sem_dica()
+		if _quer("f51_hover_local"):
+			_dica_em(hud.texto_dica_local(), Vector2(380, 24))
+			await _esperar(0.1)
+			await _ver("f51_hover_local")
+			_sem_dica()
+		if _quer("f51_hover_proxima"):
+			var bloco: Node = _cena.get_node("PainelAtributos").find_children("*", "BlocoProxima", true, false)[0]
+			_dica_em(bloco._texto_premio(), Vector2(20, 130))
+			await _esperar(0.1)
+			await _ver("f51_hover_proxima")
+			_sem_dica()
+		if _quer("f51_hover_teclas"):
+			_dica_em(gs.texto_ui("hint_keys"), Vector2(250, 290))
+			await _esperar(0.1)
+			await _ver("f51_hover_teclas")
+			_sem_dica()
+		if _quer("f51_hover_atributo"):
+			_cena.get_node("PainelAtributos").mostrar_info({"titulo": "Agilidade", "texto": "Esquiva e velocidade.", "extra": "Compre a corda para treinar"})
+			await _esperar(0.1)
+			await _ver("f51_hover_atributo")
+			_cena.get_node("PainelAtributos").mostrar_info({})
+		if _quer("f51_hover_assist"):
+			_dica_em(gs.texto_ui("hint_assist"), Vector2(300, 250))
+			await _esperar(0.1)
+			await _ver("f51_hover_assist")
+			_sem_dica()
+	if _quer("f51_gym"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope", "speed_bag"], 3000.0, "speed_bag")
+		gs.fama = 40
+		gs.dinheiro = 400.0
+		await _abrir()
+		await _esperar(0.3)
+		await _ver("f51_gym")
+
+	# --- Marcas de fita sem texto: normal, acesa (hover) e trancada ---
+	if _quer("f51_marcas") or _quer("f51_marca_hover") or _quer("f51_marca_trancada") or _quer("f51_loja_trancado") or _quer("f51_hover_foco"):
+		_novo_jogo()
+		gs.treino = 700.0
+		await _abrir()
+		_estado = "f51_marcas"
+		var sala: Node = _cena.get_node("Sala")
+		_exigir(sala._marcas["treadmill"].fita.nome_sprite == "tape_mark_treadmill", _estado, "esteira comprável: marca normal")
+		_exigir(sala._marcas["jump_rope"].fita.nome_sprite == "tape_mark_rope_dim" and sala._marcas["jump_rope"].cadeado.visible, _estado,
+			"corda trancada: marca _dim com cadeado")
+		await _ver("f51_marcas")
+		if _quer("f51_marca_hover"):
+			sala._hover_em(Vector2(445, 267))
+			_dica_em(sala._texto_marca("treadmill"), Vector2(430, 200))
+			_exigir(sala._marcas["treadmill"].fita.nome_sprite == "tape_mark_treadmill_hi", "f51_marca_hover", "o mouse acende a marca _hi")
+			await _esperar(0.1)
+			await _ver("f51_marca_hover")
+			sala._sair_hover()
+			_sem_dica()
+		if _quer("f51_marca_trancada"):
+			sala._hover_em(Vector2(296, 166))
+			_dica_em(sala._texto_marca("jump_rope"), Vector2(250, 120))
+			await _esperar(0.1)
+			await _ver("f51_marca_trancada")
+			sala._sair_hover()
+			_sem_dica()
+		if _quer("f51_loja_trancado"):
+			var loja: Node = _cena.get_node("PainelLoja")
+			_dica_em(loja._texto_recolhido("jump_rope"), Vector2(400, 150))
+			await _esperar(0.1)
+			await _ver("f51_loja_trancado")
+			_sem_dica()
+		if _quer("f51_hover_foco"):
+			_dica_em(_cena.get_node("BarraBaixo")._texto_foco("jump_rope"), Vector2(300, 250))
+			await _esperar(0.1)
+			await _ver("f51_hover_foco")
+			_sem_dica()
+
+	# --- A caixa: 0, 1 e 2 cliques, abrindo ---
+	if _quer("f51_caixa_0") or _quer("f51_caixa_1") or _quer("f51_caixa_2") or _quer("f51_caixa_abrindo") or _quer("f51_caixa_hover") \
+			or _quer("f51_caixa_aberta"):
+		_novo_jogo()
+		gs.treino = 3000.0
+		for g in gs.dados.geradores:
+			gs.geradores[g.id] = 0  # sem renda passiva: o saldo de Treino só mexe se o clique da caixa treinar
+		await _abrir()
+		_estado = "f51_caixa_0"
+		var sala: Node = _cena.get_node("Sala")
+		_exigir(gs.comprar_aparelho("treadmill"), _estado, "comprar a esteira deveria criar a caixa")
+		await _esperar(0.6)
+		_exigir(gs.tem_caixa("treadmill") and sala._caixas.has("treadmill") and not gs.aparelho_montado("treadmill"), _estado,
+			"a caixa da esteira deveria estar na sala e o aparelho nao montado")
+		await _ver("f51_caixa_0")
+		var tr0: float = gs.treino
+		if _quer("f51_caixa_hover"):
+			sala._hover_em(Vector2(445, 250))
+			await _esperar(0.1)
+			_exigir(_dica_inst().visible, "f51_caixa_hover", "a caixa da a dica no hover")
+			await _ver("f51_caixa_hover")
+			sala._sair_hover()
+		sala._clique_em(Vector2(445, 250))  # clique de mouse na caixa
+		await _esperar(0.3)
+		_exigir(gs.cliques_faltando("treadmill") == 2 and gs.treino == tr0, "f51_caixa_1", "1 clique: faltam 2 e o clique nao treina")
+		await _ver("f51_caixa_1")
+		sala._clique_em(Vector2(445, 250))
+		await _esperar(0.3)
+		_exigir(gs.cliques_faltando("treadmill") == 1, "f51_caixa_2", "2 cliques: falta 1")
+		await _ver("f51_caixa_2")
+		sala._clique_em(Vector2(445, 250))
+		await _esperar(0.12)
+		_exigir(gs.aparelho_montado("treadmill") and gs.foco == "treadmill" and not gs.tem_caixa("treadmill"), "f51_caixa_abrindo",
+			"3 cliques abrem: aparelho montado e foco nele")
+		await _ver("f51_caixa_abrindo")
+		await _esperar(1.3)
+		_exigir(not sala._caixas.has("treadmill") or not is_instance_valid(sala._caixas["treadmill"]) or sala._caixas["treadmill"].is_queued_for_deletion(),
+			"f51_caixa_aberta", "a caixa vazia some em ate 1,5 s")
+		await _ver("f51_caixa_aberta")
+	if _quer("f51_caixas_varias") or _quer("f51_caixa_luva") or _quer("f51_corda_gancho") or _quer("f51_caixa_sem_espaco") or _quer("f51_caixa_janela"):
+		_novo_jogo()
+		gs.treino = 6000.0
+		gs.dinheiro = 400.0
+		gs.aparelhos_montados_ids = ["punching_bag", "treadmill"]
+		await _abrir()
+		var sala2: Node = _cena.get_node("Sala")
+		_exigir(gs.comprar_aparelho("jump_rope"), "f51_caixas_varias", "comprar a corda")
+		_exigir(gs.comprar_luva(), "f51_caixas_varias", "comprar a luva")
+		await _esperar(0.7)
+		_estado = "f51_caixas_varias"
+		_exigir(gs.caixas().size() == 2 and sala2._caixas.size() == 2, _estado, "duas caixas lado a lado")
+		var r1: Rect2 = sala2._caixas["jump_rope"].area()
+		var r2: Rect2 = sala2._caixas["glove_l1"].area()
+		_exigir(not r1.intersects(r2), _estado, "caixas nao se sobrepoem")
+		var alvo := Rect2(312, 182, 48, 90)
+		_exigir(not r1.grow(8.0).intersects(alvo) and not r2.grow(8.0).intersects(alvo), _estado, "caixas a 8 px ou mais do alvo")
+		await _ver("f51_caixas_varias")
+		if _quer("f51_caixa_sem_espaco"):
+			_tecla(KEY_SPACE, true)
+			_tecla(KEY_SPACE, false)
+			await _esperar(0.2)
+			_exigir(gs.cliques_faltando("jump_rope") == 3 and gs.cliques_faltando("glove_l1") == 3, "f51_caixa_sem_espaco", "Espaco nunca bate em caixa")
+		if _quer("f51_caixa_janela"):
+			sala2.janela_aberta = true
+			sala2._clique_em(sala2._caixas["jump_rope"].area().get_center())
+			_exigir(gs.cliques_faltando("jump_rope") == 3, "f51_caixa_janela", "com janela aberta o clique nao vai para a caixa")
+			sala2.janela_aberta = false
+		if _quer("f51_caixa_luva") or _quer("f51_corda_gancho"):
+			var pl: Vector2 = sala2._caixas["glove_l1"].area().get_center()
+			var pc: Vector2 = sala2._caixas["jump_rope"].area().get_center()
+			for i in 2:
+				sala2._clique_em(pl)
+				await _esperar(0.2)
+			await _ver("f51_caixa_luva")
+			sala2._clique_em(pl)
+			await _esperar(0.25)
+			_exigir(gs.luvas_abertas() == 1 and not gs.tem_caixa("glove_l1"), "f51_caixa_luva", "3 cliques abrem a luva")
+			await _ver("f51_caixa_luva_aberta")
+			for i in 3:
+				sala2._clique_em(pc)
+				await _esperar(0.2)
+			await _esperar(1.4)
+			_exigir(gs.aparelho_montado("jump_rope") and gs.foco == "jump_rope", "f51_corda_gancho", "corda montada e em foco")
+			gs.definir_foco("punching_bag")
+			await _esperar(0.3)
+			_exigir(sala2._corda_prego.visible and sala2._corda_prego.position == Vector2(296, 166), "f51_corda_gancho",
+				"corda pendurada no gancho (296,166): %s" % str(sala2._corda_prego.position))
+			await _ver("f51_corda_gancho")
+	if _quer("f51_caixa_persiste"):
+		_novo_jogo()
+		gs.treino = 3000.0
+		await _abrir()
+		gs.comprar_aparelho("treadmill")
+		gs.bater_caixa("treadmill")
+		gs.bater_caixa("treadmill")
+		await _esperar(0.3)
+		var snap: Dictionary = gs.para_save()
+		await _abrir()  # recarrega a cena
+		gs.aplicar_save(snap.duplicate(true))
+		await _esperar(0.5)
+		_estado = "f51_caixa_persiste"
+		var sala3: Node = _cena.get_node("Sala")
+		_exigir(sala3._caixas.has("treadmill") and sala3._caixas["treadmill"].batidas == 2, _estado, "a caixa com 2 cliques volta igual")
+		await _ver("f51_caixa_persiste")
+
+	# --- As 3 animacoes novas na sala: soco no saco, corrida na esteira, equipe ---
+	if _quer("f51_anim_saco") or _quer("f51_anim_esteira"):
+		_novo_jogo()
+		_com_aparelhos(["treadmill"], 3000.0, "punching_bag")
+		await _abrir()
+		var sala4: Node = _cena.get_node("Sala")
+		if _quer("f51_anim_saco"):
+			for i in 5:
+				gs.clicar()
+				await _esperar(0.09)
+				_exigir(sala4._lutador.nome_sprite.begins_with("fighter_"), "f51_anim_saco", "o lutador toca um golpe do combo: " + sala4._lutador.nome_sprite)
+				if i == 4:
+					await _ver("f51_anim_saco")
+		if _quer("f51_anim_esteira"):
+			gs.definir_foco("treadmill")
+			await _esperar(0.3)
+			gs.clicar()
+			await _esperar(0.15)
+			_exigir(sala4._lutador.nome_sprite.begins_with("fighter_run") and sala4._esteira.esta_tocando(), "f51_anim_esteira", "lutador e esteira correm juntos")
+			await _ver("f51_anim_esteira")
+
+	# --- Previa com respiro ---
+	if _quer("f51_previa"):
+		_novo_jogo()
+		await _abrir()
+		_cena.get_node("Fluxo").abrir_previa()
+		await _esperar(0.6)
+		await _ver("f51_previa")

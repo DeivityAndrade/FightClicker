@@ -17,6 +17,8 @@ const PAL_HEX := {
 	"gr0": "1f3d33", "gr1": "2f6b4a", "gr2": "5aa25a", "gr3": "a6d86a",
 	"st0": "3a4452", "st1": "5a6676", "st2": "7f8c9a", "st3": "a9b4bf",
 	"p0": "4a2f6b", "p1": "7a4fa0", "p2": "b07ad8",
+	# Fase 5.1: rampa só de UI para a moeda Fama (rosa de letreiro). Não usar em cenário.
+	"f0": "7a2a52", "f1": "d4558f", "f2": "f59ac0",
 }
 
 # Rampas: escuro -> claro. Sombra/luz = andar na rampa (paleta fica fechada).
@@ -29,6 +31,7 @@ const RAMPS := [
 	["ink", "gr0", "gr1", "gr2", "gr3", "y2"],
 	["ink", "d1", "st0", "st1", "st2", "st3", "white"],
 	["ink", "p0", "p1", "p2"],
+	["ink", "f0", "f1", "f2"],
 ]
 
 const BAYER := [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]

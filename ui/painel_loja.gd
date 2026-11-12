@@ -39,6 +39,9 @@ var _alerta_loja: Label
 var _t := 0.0
 var _luva_atual: Label
 var _luva_atual_icone: TextureRect
+var _rot_melhorias: Label
+var _div_melhorias: ColorRect
+var _y_melhorias := 0.0
 
 
 func _ready() -> void:
@@ -59,15 +62,16 @@ func _ready() -> void:
 	_aba_loja = _novo_container()
 
 	# --- Aba TREINO ---
-	UiTema.rotulo(_aba_treino, str(ui.get("panel_team", "EQUIPE")).to_upper(), UiTema.G3, 8, 0)
-	_divisor(_aba_treino, 9)
+	UiTema.rotulo(_aba_treino, str(ui.get("panel_team", "EQUIPE")).to_upper(), UiTema.COL_TEXT_1, 8, 0)  # txt_title
+	_divisor(_aba_treino, 9, UiTema.G0)
 	var y := 12.0
 	for g in GameState.dados.geradores:
 		_gens[g.id] = _montar_gerador(g, y)
 		y += PASSO
-	UiTema.rotulo(_aba_treino, str(ui.get("panel_upgrades", "MELHORIAS")).to_upper(), UiTema.G3, 8, y)
-	_divisor(_aba_treino, y + 9)
+	_rot_melhorias = UiTema.rotulo(_aba_treino, str(ui.get("panel_upgrades", "MELHORIAS")).to_upper(), UiTema.COL_TEXT_1, 8, y)
+	_div_melhorias = _divisor(_aba_treino, y + 9, UiTema.G0)
 	y += 12.0
+	_y_melhorias = y - 12.0
 	# Fase 5: os aparelhos das artes (pera, boneco) ocupam o 4º lugar (só um existe por carreira): o cartão de compra
 	# enquanto não chega, as técnicas depois.
 	var y_aparelhos := y
@@ -92,9 +96,9 @@ func _ready() -> void:
 		add_child(seta)
 
 	# --- Aba LOJA ---
-	UiTema.rotulo(_aba_loja, UiTema.txt("shop_title", "LOJA"), UiTema.Y1, 8, 0)
-	_sub_loja = UiTema.rotulo(_aba_loja, UiTema.txt("shop_sub", "Dinheiro de luta, só aqui."), UiTema.G2, 8, 10, 112)
-	_divisor(_aba_loja, 29)
+	UiTema.rotulo(_aba_loja, UiTema.txt("shop_title", "LOJA"), UiTema.COL_TEXT_1, 8, 0)
+	_sub_loja = UiTema.rotulo(_aba_loja, UiTema.txt("shop_sub", "Dinheiro de luta, só aqui."), UiTema.COL_TEXT_2, 8, 10, 112)
+	_divisor(_aba_loja, 29, UiTema.G0)
 	y = 33.0
 	for g in GameState.lutas.geradores_pagos:
 		_pagos[g.id] = _montar_gerador_pago(g, y)
@@ -124,13 +128,14 @@ func _novo_container() -> Control:
 	return c
 
 
-func _divisor(pai: Control, y: float) -> void:
+func _divisor(pai: Control, y: float, cor: Color = UiTema.D2) -> ColorRect:
 	var d := ColorRect.new()
 	d.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	d.color = UiTema.D2
+	d.color = cor
 	d.position = Vector2(8, y)
 	d.size = Vector2(112, 1)
 	pai.add_child(d)
+	return d
 
 
 # --- Abas ---
@@ -141,7 +146,7 @@ func _montar_abas() -> void:
 	var x := 4.0
 	for id in [ABA_TREINO, ABA_LOJA]:
 		var b := UiTema.botao(self, Rect2(x, 3, 58, 14))
-		var r := UiTema.botao_conteudo(b, nomes[id], UiTema.G3, 1, "icon_treino" if id == ABA_TREINO else "icon_money", 3.0)
+		var r := UiTema.botao_conteudo(b, nomes[id], UiTema.COL_TEXT_2, 1, "icon_treino" if id == ABA_TREINO else "icon_money", 3.0)
 		var icone: TextureRect = b.get_meta("icone")
 		var aba_id: String = id
 		b.pressed.connect(func() -> void: _trocar_aba(aba_id))
@@ -160,7 +165,7 @@ func _trocar_aba(nome: String) -> void:
 	for id in _tab:
 		var ativa: bool = id == nome
 		UiTema.aplicar_estilo_botao(_tab[id].botao, "ui_button_pressed" if ativa else "ui_button_normal")
-		_tab[id].rotulo.add_theme_color_override("font_color", UiTema.WHITE if ativa else UiTema.G3)
+		_tab[id].rotulo.add_theme_color_override("font_color", UiTema.COL_TEXT_1 if ativa else UiTema.COL_TEXT_2)
 		# Aba apertada: o botão afunda 1 px (o estilo "pressed" não tem o degrau de baixo), o conteúdo afunda junto.
 		_tab[id].rotulo.position.y = float(_tab[id].y_rotulo) + (1.0 if ativa else 0.0)
 		_tab[id].icone.position.y = float(_tab[id].y_icone) + (1.0 if ativa else 0.0)
@@ -199,9 +204,19 @@ func _botao_compra(cartao: Control, texto: String, y_botao: float, icone_preco: 
 	var a := UiTema.area_botao(b)
 	var esq := UiTema.rotulo(b, texto, UiTema.WHITE, 6, UiTema.y_texto(a))
 	var icone := UiTema.textura_rect(b, icone_preco, 0, UiTema.y_imagem(a, UiTema.tamanho_quadro(icone_preco).y))
-	var preco := UiTema.rotulo(b, "", UiTema.Y1, 0, UiTema.y_texto(a))
+	var preco := UiTema.rotulo(b, "", UiTema.COL_MONEY if icone_preco == "icon_money" else UiTema.COL_TREINO, 0, UiTema.y_texto(a))
 	UiTema.alinhar(b, "left")
-	return {"botao": b, "esq": esq, "icone": icone, "preco": preco, "texto": texto}
+	# Fase 5.1: o item comprável mais barato da aba ganha um contorno claro (col_buyable).
+	var destaque := ReferenceRect.new()
+	destaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	destaque.border_color = UiTema.COL_BUYABLE
+	destaque.border_width = 1.0
+	destaque.editor_only = false
+	destaque.size = b.size
+	destaque.visible = false
+	UiTema.alinhar(destaque, "ignore")
+	b.add_child(destaque)
+	return {"botao": b, "esq": esq, "icone": icone, "preco": preco, "texto": texto, "destaque": destaque, "moeda": icone_preco}
 
 
 func _montar_gerador(g: Dictionary, y: float) -> Dictionary:
@@ -209,8 +224,8 @@ func _montar_gerador(g: Dictionary, y: float) -> Dictionary:
 	var ids: Dictionary = UiTema.manifest().get("by_data_id", {}).get(g.id, {})
 	UiTema.rotulo(c, str(g.get("name", g.id)).to_upper(), UiTema.WHITE, 5, 1, 112)
 	UiTema.textura_rect(c, str(ids.get("icon", "icon_neighbor")), 5, 11)
-	var qtd := UiTema.rotulo(c, "X0", UiTema.Y1, 26, 11)
-	var prod := UiTema.rotulo(c, "", UiTema.GR3, 26, 11)
+	var qtd := UiTema.rotulo(c, "X0", UiTema.COL_TEXT_1, 26, 11)
+	var prod := UiTema.rotulo(c, "", UiTema.COL_TREINO, 26, 11)
 	var parte := _botao_compra(c, str(GameState.dados.ui.get("buy_generator", "CHAMAR")).to_upper(), 28)
 	var item := {"cartao": c, "qtd": qtd, "prod": prod, "pode": false, "tween": null}
 	item.merge(parte)
@@ -225,11 +240,11 @@ func _montar_melhoria(ap: Dictionary, y: float) -> Dictionary:
 	var c := _cartao(_aba_treino, y)
 	var ids: Dictionary = UiTema.manifest().get("by_data_id", {}).get(ap.id, {})
 	var icone_ap := UiTema.textura_rect(c, str(ids.get("icon", "icon_bag")), 5, 3)
-	var nivel := UiTema.rotulo(c, "", UiTema.G2, 4, 17, 18, HORIZONTAL_ALIGNMENT_CENTER)
+	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 4, 17, 18, HORIZONTAL_ALIGNMENT_CENTER)
 	# Aparelho da arte (Fase 5): a linha de cima traz o nome da técnica (Jab duplo, Guarda fechada...), a de baixo o efeito.
 	var da_arte := str(ap.get("art", "")) != ""
 	var nome_tecnica: Label = UiTema.rotulo(c, "", UiTema.WHITE, 26, 2, 92) if da_arte else null
-	var efeito := UiTema.rotulo(c, "", UiTema.GR3, 26, 12 if da_arte else 2, 92)
+	var efeito := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 26, 12 if da_arte else 2, 92)
 	var parte := _botao_compra(c, str(GameState.dados.ui.get("upgrade_button", "MELHORAR")).to_upper(), 28)
 	var item := {"cartao": c, "nivel": nivel, "efeito": efeito, "pode": false, "tween": null, "icone_ap": icone_ap,
 		"tecnica": nome_tecnica}
@@ -269,6 +284,16 @@ func _montar_unlock(ap: Dictionary, y: float) -> Dictionary:
 	parte.botao.pressed.connect(func() -> void: _comprar_aparelho(id))
 	parte.botao.mouse_entered.connect(func() -> void: _sobre("a:" + id))
 	parte.botao.mouse_exited.connect(func() -> void: _sobre(""))
+	# Recolhido (trancado ou na caixa), o cartão vira 1 linha e o detalhe vem na dica de hover.
+	var hov := Control.new()
+	hov.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hov.size = c.size
+	UiTema.alinhar(hov, "ignore")
+	c.add_child(hov)
+	hov.mouse_entered.connect(func() -> void: Dica.pedir(_texto_recolhido(id)))
+	hov.mouse_exited.connect(func() -> void: Dica.limpar())
+	item["hover"] = hov
+	item["colapsado"] = false
 	return item
 
 
@@ -288,9 +313,9 @@ func _montar_gerador_pago(g: Dictionary, y: float) -> Dictionary:
 	var ids: Dictionary = UiTema.manifest().get("by_data_id", {}).get(g.id, {})
 	UiTema.textura_rect(c, str(ids.get("icon", "icon_coach")), 5, 4)
 	UiTema.rotulo(c, str(g.get("name", g.id)).to_upper(), UiTema.WHITE, 26, 3, 92)
-	var qtd := UiTema.rotulo(c, "X0", UiTema.Y1, 26, 12)
-	var efeito := UiTema.rotulo(c, GameState.texto_efeito_loja(g).to_upper(), UiTema.GR3, 26, 21)
-	var aviso := UiTema.rotulo(c, "", UiTema.R2, 10, 31, 104)
+	var qtd := UiTema.rotulo(c, "X0", UiTema.COL_TEXT_1, 26, 12)
+	var efeito := UiTema.rotulo(c, GameState.texto_efeito_loja(g).to_upper(), UiTema.COL_TEXT_2, 26, 21)
+	var aviso := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 10, 31, 104)
 	var parte := _botao_compra(c, UiTema.txt("shop_hire", "CONTRATAR"), 43, "icon_money")
 	var item := {"cartao": c, "qtd": qtd, "efeito": efeito, "aviso": aviso, "pode": false, "tween": null}
 	item.merge(parte)
@@ -305,9 +330,9 @@ func _montar_luva(y: float) -> Dictionary:
 	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
 	var icone := UiTema.textura_rect(c, "icon_glove_l1", 5, 4)
 	var nome := UiTema.rotulo(c, "", UiTema.WHITE, 26, 3, 92)
-	var nivel := UiTema.rotulo(c, "", UiTema.Y1, 26, 12)
-	var efeito := UiTema.rotulo(c, "", UiTema.GR3, 26, 21)
-	var aviso := UiTema.rotulo(c, "", UiTema.R2, 10, 31, 104)
+	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_1, 26, 12)
+	var efeito := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 26, 21)
+	var aviso := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 10, 31, 104)
 	var parte := _botao_compra(c, UiTema.txt("shop_buy", "COMPRAR"), 43, "icon_money")
 	var item := {"cartao": c, "icone_item": icone, "nome": nome, "nivel": nivel, "efeito": efeito, "aviso": aviso,
 		"pode": false, "tween": null}
@@ -324,9 +349,9 @@ func _montar_metronomo(y: float) -> Dictionary:
 	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
 	var icone := UiTema.textura_rect(c, "icon_metronome_l1", 5, 4)
 	var nome := UiTema.rotulo(c, "", UiTema.WHITE, 26, 3, 92)
-	var nivel := UiTema.rotulo(c, "", UiTema.Y1, 26, 12)
-	var efeito := UiTema.rotulo(c, "", UiTema.GR3, 10, 21, 104)
-	var aviso := UiTema.rotulo(c, "", UiTema.R2, 10, 31, 104)
+	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_1, 26, 12)
+	var efeito := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 10, 21, 104)
+	var aviso := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 10, 31, 104)
 	var parte := _botao_compra(c, UiTema.txt("shop_buy", "COMPRAR"), 43, "icon_money")
 	var item := {"cartao": c, "icone_item": icone, "nome": nome, "nivel": nivel, "efeito": efeito, "aviso": aviso,
 		"pode": false, "tween": null}
@@ -521,13 +546,14 @@ func atualizar() -> void:
 			item.nivel.text = "%d/%d" % [nivel, total]
 			item.efeito.text = _efeito_curto(item, GameState.texto_efeito_melhoria(m).to_upper())
 			_preco(item, float(m.cost), GameState.pode_comprar_melhoria(ap.id) and not bloqueado)
+	_reposicionar_treino()
 	_ajustar_rolagem(existe_arte)
 
 	# LOJA (em dinheiro). Fase 5: entre o cinturão e a mudança, o que deixaria menos que o preço da mudança é recusado,
 	# e o cartão diz o motivo (GUARDE $1.00K), nunca só o botão apagado.
 	var reserva := GameState.reserva_mudanca() > 0.0
 	_sub_loja.text = GameState.texto_reserva().to_upper() if reserva else UiTema.txt("shop_sub", "Dinheiro de luta, só aqui.")
-	_sub_loja.add_theme_color_override("font_color", UiTema.Y1 if reserva else UiTema.G2)
+	_sub_loja.add_theme_color_override("font_color", UiTema.COL_MONEY if reserva else UiTema.COL_TEXT_2)
 	for g in GameState.lutas.geradores_pagos:
 		var item: Dictionary = _pagos[g.id]
 		var custo := GameState.custo_gerador_pago(g.id)
@@ -538,6 +564,7 @@ func atualizar() -> void:
 	_atualizar_luva(bloqueado)
 	_atualizar_metronomo(bloqueado)
 	_alerta_loja.visible = _loja_tem_compra() and _aba != ABA_LOJA
+	_destacar_mais_barato()
 	if _hover != "":
 		_emitir_info()
 
@@ -562,7 +589,7 @@ func _aviso_loja(custo: float, pode: bool) -> String:
 
 ## A altura do conteúdo cresce 1 cartão quando o aparelho da arte existe. Reajusta o limite e as setas.
 func _ajustar_rolagem(existe_arte: bool) -> void:
-	_rolagem_max = maxf(0.0, _altura_treino + (PASSO if existe_arte else 0.0) - ALTURA_JANELA + 2.0)
+	_rolagem_max = maxf(0.0, _altura_treino - ALTURA_JANELA + 2.0)
 	_rolar_a(_rolagem)
 
 
@@ -594,21 +621,86 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Cartão de compra: comprável (verde, preço em destaque), sem Treino (apagado, sem aviso de erro) ou depois do anterior.
+## Cartão de compra: comprável (preço em destaque), sem Treino (apagado, sem vermelho), ou RECOLHIDO em 1 linha quando
+## está trancado (depois do anterior) ou esperando na caixa. O detalhe dos recolhidos vem na dica de hover.
 func _atualizar_unlock(ap: Dictionary, estado: String, bloqueado: bool) -> void:
 	var item: Dictionary = _unl[ap.id]
 	var m: Dictionary = item.m
-	var t: Dictionary = GameState.textos_trancado(ap.id)
+	var recolher := estado == "locked" or estado == "boxed"
+	_recolher(item, recolher)
 	item.icone_item.texture = UiTema.textura(str(m.get("icon_locked_buyable" if estado == "buyable" else "icon_locked", "")))
-	item.nome.add_theme_color_override("font_color", UiTema.G1 if estado == "locked" else UiTema.WHITE)
+	item.nome.add_theme_color_override("font_color", UiTema.COL_DISABLED if estado == "locked" else (UiTema.COL_TEXT_2 if recolher or estado == "missing" else UiTema.COL_TEXT_1))
 	UiTema.escurecer(item.cartao, estado != "locked")
-	if estado == "locked":
-		_botao_texto_central(item, str(t.get("after", "")).to_upper(), UiTema.G1)
+	if recolher:
+		item.pode = false
 		return
 	var antes: bool = item.pode
 	_preco(item, float(GameState.desbloqueio(ap.id).cost), estado == "buyable" and not bloqueado)
 	if item.pode and not antes and not _primeira:
 		_piscar_unlock(item)  # acabou de ficar comprável: borda de papelão pisca
+
+
+## Recolhe/expande o cartão de compra do aparelho (1 linha só com o nome, ou o cartão inteiro).
+func _recolher(item: Dictionary, recolher: bool) -> void:
+	item.colapsado = recolher
+	var h := 16.0 if recolher else ALTURA_CARTAO
+	item.cartao.size.y = h
+	item.fundo.size.y = h
+	item.hover.size.y = h
+	item.hover.mouse_filter = Control.MOUSE_FILTER_STOP if recolher else Control.MOUSE_FILTER_IGNORE
+	item.icone_item.visible = not recolher
+	item.atributo.visible = not recolher
+	item.botao.visible = not recolher
+	item.nome.position = Vector2(6, 4) if recolher else Vector2(26, 2)
+
+
+## Dica do cartão recolhido: trancado = hint_locked_item (pede o anterior), na caixa = tape_boxed.
+func _texto_recolhido(id: String) -> String:
+	if GameState.estado_aparelho(id) == "boxed":
+		return GameState.texto_ui("tape_boxed")
+	var req := str(GameState.desbloqueio(id).get("requires", ""))
+	var nome_req := GameState.nome_curto_aparelho(req).to_lower() if req != "" else ""
+	return GameState.preencher(GameState.texto_ui("hint_locked_item"), {"requisito": nome_req})
+
+
+## Empilha os cartões da aba TREINO na ordem do jogo: equipe, depois um cartão por aparelho (inteiro ou recolhido).
+func _reposicionar_treino() -> void:
+	var y := _y_melhorias + 12.0
+	for ap in GameState.dados.todos_aparelhos():
+		var estado := GameState.estado_aparelho(ap.id)
+		var cartao: Control = null
+		if estado == "owned":
+			cartao = _ups[ap.id].cartao
+		elif _unl.has(ap.id) and estado != "absent":
+			cartao = _unl[ap.id].cartao
+		if cartao == null:
+			continue
+		cartao.position.y = y
+		y += cartao.size.y + 1.0
+	_altura_treino = y
+
+
+## O item comprável mais barato de cada aba ganha o contorno col_buyable (os outros, não).
+func _destacar_mais_barato() -> void:
+	var treino: Array = []
+	treino.append_array(_gens.values())
+	for id in _ups:
+		if _ups[id].cartao.visible:
+			treino.append(_ups[id])
+	for id in _unl:
+		if _unl[id].cartao.visible and not _unl[id].colapsado:
+			treino.append(_unl[id])
+	var loja: Array = _pagos.values()
+	loja.append(_luva)
+	loja.append(_metro)
+	for grupo in [treino, loja]:
+		var melhor: Dictionary = {}
+		for it in grupo:
+			it.destaque.visible = false
+			if bool(it.pode) and (melhor.is_empty() or float(it.get("custo", INF)) < float(melhor.get("custo", INF))):
+				melhor = it
+		if not melhor.is_empty():
+			melhor.destaque.visible = true
 
 
 ## Botão apagado com um texto centralizado (ex.: "DEPOIS DA ESTEIRA"): mesmo jeito do "MÁXIMO".
@@ -646,7 +738,8 @@ func _atualizar_luva(bloqueado: bool) -> void:
 	item.efeito.text = GameState.texto_efeito_loja(prox).to_upper()
 	var pode := GameState.pode_comprar_luva()
 	_preco(item, float(prox.cost), pode and not bloqueado, true)
-	item.aviso.text = _aviso_loja(float(prox.cost), pode)
+	# Fase 5.1: a luva anterior ainda está na caixa: a próxima só abre a venda depois de abrir a caixa.
+	item.aviso.text = GameState.texto_ui("shop_glove_boxed").to_upper() if GameState.luva_em_caixa() else _aviso_loja(float(prox.cost), pode)
 
 
 func _atualizar_metronomo(bloqueado: bool) -> void:
@@ -697,8 +790,9 @@ func _preco(item: Dictionary, custo: float, pode: bool, em_dinheiro: bool = fals
 	UiTema.alinhar(item.botao, "left")
 	item.esq.text = item.texto
 	item.esq.reset_size()  # volta à largura do texto (o "MÁXIMO"/"DEPOIS DA..." centralizado alargou o rótulo)
-	item.preco.add_theme_color_override("font_color", UiTema.Y1 if pode else UiTema.R2)
-	item.esq.add_theme_color_override("font_color", UiTema.WHITE if pode else UiTema.G2)
+	item.custo = custo
+	item.preco.add_theme_color_override("font_color", (UiTema.COL_MONEY if em_dinheiro else UiTema.COL_TREINO) if pode else UiTema.COL_TEXT_2)
+	item.esq.add_theme_color_override("font_color", UiTema.COL_TEXT_1 if pode else UiTema.COL_TEXT_2)
 	item.botao.disabled = not pode
 	if pode and not item.pode and not _primeira:
 		_piscar(item, false)

@@ -59,8 +59,9 @@ y 360└────────────────────────
 - Cores fixas de atributo em toda a UI: **Força = vermelho (`r1/r2/r3`)**, **Agilidade = azul
   (`b1/b2/b3`)**, **Resistência = amarelo (`y0/y1`)**, **arte marcial = roxo (`p1/p2`)**,
   treino/renda = verde (`gr2/gr3`), dinheiro = amarelo-ouro (`y1`), Legado = roxo (`p2`).
+  **Fase 5.1:** tokens de cor e de tamanho no §18 (Fama vira rosa `f2`, Resistência fica só em `y0`, preço sem saldo deixa de ser `r2`).
 
-## 3. Paleta (42 cores, fechada)
+## 3. Paleta (45 cores, fechada)
 
 Toda cor do jogo sai desta tabela. Sombra e luz **andam na rampa** (nunca escurecer com
 multiplicação livre). A UI usa a mesma paleta. Fonte da verdade em código: `tools/art/pixel_lib.gd`
@@ -76,7 +77,8 @@ multiplicação livre). A UI usa a mesma paleta. Fonte da verdade em código: `t
 | Azul | `b0 #1f2a44` · `b1 #2f4a78` · `b2 #4d7bb3` · `b3 #8fbbe0` | calção, ringue, céu, Agilidade |
 | Verde | `gr0 #1f3d33` · `gr1 #2f6b4a` · `gr2 #5aa25a` · `gr3 #a6d86a` | barrado da academia, treino/s, "fácil" |
 | Aço | `st0 #3a4452` · `st1 #5a6676` · `st2 #7f8c9a` · `st3 #a9b4bf` | porta de garagem, esteira, metal |
-| Roxo | `p0 #4a2f6b` · `p1 #7a4fa0` · `p2 #b07ad8` | fama, Legado, arte marcial, (locais absurdos) |
+| Roxo | `p0 #4a2f6b` · `p1 #7a4fa0` · `p2 #b07ad8` | Legado, arte marcial, (locais absurdos) |
+| Rosa (só UI, Fase 5.1) | `f0 #7a2a52` · `f1 #d4558f` · `f2 #f59ac0` | Fama. Não usar em cenário nem em personagem (§18) |
 
 - Fundo de tela e contorno: sempre `ink` (preto arroxeado, nunca #000).
 - Locais 5 e 6 (templo, dojo fora da realidade) podem ganhar **uma** rampa nova cada (ex.: dourado
@@ -427,3 +429,125 @@ pera em foco, as 2 chegadas, MUDAR sem dinheiro, aba ESTILO e ícones), `fase5_s
 (hoje é feito de cápsulas), e o lutador precisa de uma pose de grappling por cima dele (Artista de Personagens). A pera pede o couro
 brilhante e o borrão de movimento desenhados à mão. Os ícones de técnica (principalmente Guarda fechada e Esquiva e volta) são os menos
 imediatos em 16 px. As pessoas deveriam ganhar uma versão com a luz fria da academia.
+
+## 18. Fase 5.1 (garagem clara, caixa da escola, corda no gancho)
+
+Gerador: `tools/art/make_sprites_fase51.gd` (rodar como no §12; **acrescenta** ao `manifest.json` e relê o arquivo na hora de gravar).
+**Rodar por último**, depois dos geradores das Fases 2 a 5: ele retoca os dois fundos e corrige as posições da corda.
+`-- --teste=<pasta>/` grava tudo numa pasta de teste, sem tocar no projeto. Nenhuma arte de personagem aqui.
+
+### 18.1 Tokens de hierarquia (nomes iguais aos do `docs/fases/fase5.1-design.md` §3)
+Cópia em dados: `manifest.json → ui_tokens`.
+
+**Cores**
+| Token | Paleta | Hex | Uso |
+|---|---|---|---|
+| `col_treino` | `gr3` | a6d86a | Treino, +/s, por clique, todo preço em Treino |
+| `col_money` | `y1` | f5d26b | Dinheiro e todo preço em $ (sempre com `$` ou a moeda) |
+| `col_fame` | `f2` | f59ac0 | Fama (ícone `icon_fame` já recolorido) |
+| `col_legacy` | `p2` | b07ad8 | Legado em jogo e permanente |
+| `col_text_1` | `white` | f2ece0 | texto principal (níveis 1 e 2) |
+| `col_text_2` | `g2` | 8f8890 | rótulos, "cada", descrições, **preço sem saldo** |
+| `col_disabled` | `g1` | 6b6570 | item trancado (1 linha) |
+| `col_buyable` | `y2` | fff3c4 | contorno de 1 px do comprável mais barato (nunca texto) |
+| `col_strength` / `col_agility` / `col_endurance` / `col_art` | `r2` / `b3` / `y0` / `p1` | — | atributos e arte marcial (já existiam) |
+
+Decisões:
+- **Treino continua verde e Dinheiro continua ouro** (o Designer sugeriu o contrário). O raio verde, o `+/s` verde e a moeda dourada já
+  estão em todos os ícones e na árvore ("verde = dá para comprar com Treino"); trocar custaria refazer ícones sem ganho de leitura.
+- **Fama sai do roxo e ganha uma rampa nova, só de UI: `f0 #7a2a52` · `f1 #d4558f` · `f2 #f59ac0`** (rosa de letreiro). Fama e Legado
+  eram o mesmo `p2`, e o azul sugerido é a Agilidade. A paleta passa de 42 para **45 cores**; a rampa `f` não entra em cenário nem em personagem.
+- **Resistência usa `y0` (âmbar), que já é a cor da barra dela; Dinheiro usa `y1` (ouro claro).** Hoje `ui_tema.cor_atributo("endurance")`
+  devolve `Y1`, igual ao dinheiro: é a única linha de atributo que muda (1 passo na mesma rampa). É o par mais próximo da tabela; se o dono
+  achar perto demais, o plano B é o Dinheiro em `y2`.
+- **Legado (`p2`) e arte marcial (`p1`) seguem na mesma família roxa**, de propósito: os dois são "o que fica". A arte usa `p1` como
+  **fundo** (botão, chip); o Legado usa `p2` como **texto**. Nunca escrever número de arte em `p2`.
+- **Nenhum preço em vermelho.** Sem saldo = `col_text_2` e ícone da moeda em `g1`. Vermelho é só Força, risco e LUTAR.
+- Comprável mais barato: cartão normal + contorno `col_buyable`; pode pulsar alternando com `y1` a 2 fps.
+
+**Tamanhos (no máximo 3, uma fonte só)**
+| Token | Fonte | Uso |
+|---|---|---|
+| `txt_hero` | 5x7 em **2x** (`font_size` 22, 14 px) | saldo de Treino, valor por clique, LUTAR! |
+| `txt_title` | 5x7 em 1x, CAIXA ALTA, `col_text_1`, **filete `g0` de 1 px** embaixo | título de bloco |
+| `txt_body` | 5x7 em 1x, maiúsculas e minúsculas | todo o resto |
+
+O tamanho maior é a **mesma fonte em escala 2x**, não uma segunda fonte: continua na grade, já tem todos os acentos e o BMFont já carrega.
+Uma fonte só de números em 10x14 desenhada à mão (cantos arredondados no 0, 6, 8, 9) deixaria o número-herói mais bonito: fica como pedido
+para um pixel artist, não entra agora. Título e texto têm o mesmo tamanho: a diferença é caixa alta, cor e filete.
+
+### 18.2 Corda no gancho
+- **Gancho em (296,166)** nas duas salas (`layout.rope_hook`): altura do ombro de quem está encostado na parede; a corda vai de y 166 a 206.
+  O desenho original punha o prego em (352,72), perto da viga; o PR do Matheus já tinha descido a posição no manifest para (296,155), mas os
+  fundos não tinham gancho ali e ainda mostravam o prego antigo.
+- `garage_bg` e `gym_bg` foram **retocados** (não regerados): some o prego antigo; entra um prego grosso e torto com 3 riscos de giz
+  (garagem) e uma chapinha de aço com gancho no barrado (academia).
+- `rope_lN_idle(_gym)` regeradas com a luz do ponto novo. `tape_mark_rope`, `ghost_rope`, `fx_arrive_sparkle` e `unlock_jump_rope` seguem o gancho.
+- `rope_lN_swing`, `rope_lN_swing_back` e `fighter_rope` **não foram tocados** (são do `make_golpes_jogador.gd` / Artista de Personagens).
+- Os geradores das Fases 2, 4b e 5 ainda têm o prego em (352,72): se rodarem de novo, rodar o da 5.1 depois.
+
+### 18.3 Marcas sem texto
+A plaquinha de papelão saiu da sala (`sign_cardboard`, `sign_brick`, `sign_tape_bit` ficam no projeto, sem uso). A marca diz sozinha
+**onde** e **o quê**:
+- **Fita** (`tape_mark_<aparelho>`): agora com sombra de 1 px, para ler também na parede creme da academia.
+- **Silhueta riscada** (`ghost_<aparelho>`): contorno tracejado branco e ink + miolo pontilhado, sem cadeado. Lê em bloco cinza, chão
+  escuro, barrado verde e parede clara. É ela que diz qual aparelho falta.
+- Três estados, por sprite (nada de `modulate`):
+  | Estado | Sprites | Quando |
+  |---|---|---|
+  | normal | `tape_mark_X` + `ghost_X` | dá para comprar |
+  | aceso | `tape_mark_X_hi` + `ghost_X` | mouse em cima (a dica abre) ou pulso lento de "dá para comprar" |
+  | trancado | `tape_mark_X_dim` + `ghost_X_dim` + `mark_padlock` | pede outro aparelho antes |
+- Ponto do cadeado: `by_data_id.unlock_*.lock_pos` — corda (296,187), esteira (445,249), pera (436,68), boneco (228,271).
+- Mesmos quadros, pivôs e posições de antes (a da corda desceu com o gancho). Com a caixa esperando, a marca fica embaixo dela.
+
+### 18.4 A caixa da escola
+- **Dois tamanhos**, 4 quadros cada (0 fechada, 1 racha 1, 2 racha 2, 3 aberta): `box_big` (quadro 76x62, pivô 38,58; corpo 52x41) para
+  esteira e boneco; `box_small` (quadro 48x42, pivô 24,38; corpo 28x25) para corda, pera e luvas. Pivô = meio da base, no chão.
+- **Uma arte para os dois locais.** A caixa vem da escola, não do lugar, e **não recebe a luz da sala**: é o objeto novo da cena e tem
+  que saltar ao olho. Sombra de contato já no quadro.
+- Papelão `br3/br2` com tampa `y0`, fita crepe, setas "este lado para cima", carimbo vermelho e **etiqueta branca com o símbolo**.
+  Na sala a etiqueta e o carimbo são **ilegíveis de propósito** (nenhum texto fixo sobre a cena). O texto de verdade aparece na dica de
+  hover, na etiqueta de papel `ui_box_tag` (9-slice) com o carimbo `ui_box_stamp` (9-slice): layout em `by_data_id.box.tag`.
+- **Símbolo da escola: PROVISÓRIO** (`school_symbol_9/16/32`): um frontão de garagem com as ripas do portão, em azul de carimbo. A
+  história diz que o símbolo nasce quando a garagem é salva; quando existir, trocar os 3 arquivos e rodar o gerador (ele também está
+  pintado dentro das caixas).
+- **Lugares** (`layout.box_slots`, iguais na garagem e na academia; seguem a regra do design 1.4, com os tamanhos reais):
+  | Slot | Pivô | Caixa | Observação |
+  |---|---|---|---|
+  | `treadmill` | (445,268) | grande | em cima da marca da esteira |
+  | `jump_rope` | (258,244) | pequena | no pé da parede, embaixo do gancho. **Mudou** do (262,288) proposto: ali a caixa grande do boneco encostava nela |
+  | `art` | (228,283) | grande (boneco) ou pequena (pera) | canto da frente à esquerda |
+  | `glove` | (386,288) | pequena | na frente, à direita do alvo. Era (382,288): 4 px para dar os 8 px de folga |
+  Faixa livre do lutador e do alvo: x 281..362. Ordenar por y do pivô, como as pessoas. O Prof. Nelson (394,280) fica **atrás** da caixa
+  da luva, que cobre as canelas dele.
+- **Parada:** balança 1 px a cada 4 s e pisca o `fx_box_glint` na quina. É isso que chama o clique, sem texto.
+- **Cliques** (`by_data_id.box.clicks`):
+  | Clique | Quadro depois | Tremida (x, 30 fps) | Efeito |
+  |---|---|---|---|
+  | 1 | 1 | -1, 1, -1, 0 | `fx_box_chips_1` (5 lascas, 0,36 s) |
+  | 2 | 2 | -2, 2, -2, 1, 0 | `fx_box_chips_2` (10 lascas + faísca, 0,43 s) |
+  | 3 | 3 | -3, 3, -2, 2, 0 + tela 1 px | `fx_box_burst` (clarão, abas, estrelas, 0,5 s) |
+  Os efeitos têm pivô no **meio de cima da caixa** (pos + `top_center_offset` do sprite).
+- **Abertura: 1,2 s** do 3º clique ao item assentado (limite 1,5 s): tremida 0–0,15 · estouro 0–0,5 · item aparece 0,15–0,6 · caixa
+  aberta some 0,6–0,9 (piscando, sem alpha) · assenta e o foco vai para ele 0,9–1,2. Aparelho de chão sobe de dentro da caixa e pousa;
+  corda, pera e luva aparecem direto no lugar com a animação de pendurar que já existe.
+- Sons: não há som novo. Sugestão com o que existe: `block.wav`, `hit_heavy.wav`, `punch_crit.wav` + `buy.wav`.
+
+### 18.5 Como a UI convive com a sala
+Nenhum texto fixo em cima da cena: saem as plaquinhas, "SEGURE SHIFT", "SEGURAR" e o chip da arte. Na sala só ficam o número do clique
+(efeito) e a dica de hover (painel `d1` com borda `ink`, 1ª linha `col_text_1`, 2ª `col_text_2`).
+Conferência: `mockups/fase51_garagem_antes_depois_x2.png` (proposta de leitura; quem fecha o layout é o UI/UX, pela `alinhamento-ui`).
+
+### 18.6 Mockups
+`fase51_garagem_antes_depois_x2.png` (captura de hoje x os 3 níveis, com a legenda dos tokens), `fase51_caixa_x3.png` (4 estados nos 2
+tamanhos, os 3 efeitos quadro a quadro, etiqueta, símbolo e linha do tempo), `fase51_corda_marcas_x2.png` (garagem e academia com as
+marcas nos 3 estados, a corda no gancho e as caixas nos lugares, com a equipe cheia), `fase51_sprites_x3.png` (folha de contato).
+
+### 18.7 Placeholder / precisa de pixel artist
+- A caixa aguenta retoque: falta textura de papelão (ondulado, amassado de verdade) e os quadros de racha são o mesmo desenho com
+  rasgos por cima; um artista faria a caixa deformar. As lascas são quadradinhos com gravidade: falta rotação desenhada.
+- O "tchan" é uma estrela de 8 pontas e um anel: funciona, mas é o efeito que mais ganha com animação feita à mão.
+- As silhuetas riscadas são o contorno do sprite calculado por código. Servem; à mão ficariam com traço de giz de verdade.
+- O gancho da garagem tem 6 pixels. O símbolo da escola é provisório e depende da história.
+- A cor da Fama (rampa `f`) foi escolhida para separar das outras 7; vale um olhar humano na tela real, ao lado da Força.

@@ -42,6 +42,11 @@ signal assistido_mudou(estado: String)  # "off" | "waiting" | "active" | "metron
 signal local_mudou(local: String)  # MUDAR, NOVA CARREIRA ou carga do save
 signal arte_mudou(arte: String)  # escolha da arte, NOVA CARREIRA ("" = sem arte) ou carga do save
 signal escolha_arte_pedida(primeira: bool)  # a janela de escolha da arte deve abrir (1ª chegada, início de carreira, reabrir o jogo)
+# Fase 5.1: caixa de equipamento
+signal caixa_criada(item: String, tipo: String)  # compra: caixa nova (tipo "apparatus" | "glove")
+signal caixa_batida(item: String, batidas: int)  # cada clique na caixa (1, 2, 3); o 3º vem seguido de caixa_aberta
+signal caixa_aberta(item: String, tipo: String)  # 3º clique: item já aplicado e salvo (a UI só anima)
+signal caixas_mudaram()  # lista de caixas trocada de uma vez (carga do save, NOVA CARREIRA)
 
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
@@ -116,6 +121,7 @@ var _acc_metronomo := 0.0  # tempo acumulado até o próximo auto-soco (não vai
 var auto_socos_total := 0  # depuração/QA: auto-socos dados desde que o jogo abriu
 var assist_socos_total := 0  # QA: auto-socos do modo assistido (também contam em auto_socos_total)
 var aparelhos_montados_ids: Array = []  # career.apparatus_owned, na ordem da compra
+var caixas_lista: Array = []  # Fase 5.1: career.boxes = [{item, kind, hits}], na ordem da compra
 var _segurando := false  # Shift/botão SEGURAR pressionado (não vai para o save)
 var _acc_assist := 0.0
 var _ocioso := 1.0e9  # segundos desde o último clicar() do jogador
@@ -501,7 +507,7 @@ func nome_curto_aparelho(aparelho_id: String) -> String:
 	return str(u.get("name", dados.aparelho(aparelho_id).get("name", aparelho_id)))
 
 
-## "owned" | "buyable" | "missing" | "locked" (inexistente = "locked") | "absent" (aparelho de outra arte: não existe aqui).
+## "owned" | "boxed" (comprado, na caixa) | "buyable" | "missing" | "locked" (inexistente = "locked") | "absent" (aparelho de outra arte: não existe aqui).
 func estado_aparelho(aparelho_id: String) -> String:
 	if dados.aparelho(aparelho_id).is_empty():
 		return "locked"
@@ -509,6 +515,8 @@ func estado_aparelho(aparelho_id: String) -> String:
 		return "absent"
 	if aparelho_montado(aparelho_id):
 		return "owned"
+	if tem_caixa(aparelho_id):
+		return "boxed"  # Fase 5.1: comprado, esperando abrir (não treina, não recebe foco)
 	var u := desbloqueio(aparelho_id)
 	var req := str(u.get("requires", ""))
 	if req != "" and not aparelho_montado(req):
@@ -525,13 +533,27 @@ func comprar_aparelho(aparelho_id: String) -> bool:
 	if not pode_comprar_aparelho(aparelho_id):
 		return false
 	_gastar(float(desbloqueio(aparelho_id).cost))
-	aparelhos_montados_ids.append(aparelho_id)
-	foco = aparelho_id
+	if dados.box_apparatus:
+		# Fase 5.1: chega numa caixa; só monta, foca e treina quando abrir
+		_criar_caixa(aparelho_id, "apparatus")
+		salvar()
+		caixa_criada.emit(aparelho_id, "apparatus")
+		economia_mudou.emit()
+		return true
+	_montar_aparelho(aparelho_id)
 	salvar()
 	aparelho_comprado.emit(aparelho_id)
 	foco_mudou.emit(foco)
 	economia_mudou.emit()
 	return true
+
+
+# Monta o aparelho e (se `focus_on_open`) leva o foco para ele. Não salva nem emite sinais.
+func _montar_aparelho(aparelho_id: String) -> void:
+	if not aparelho_montado(aparelho_id):
+		aparelhos_montados_ids.append(aparelho_id)
+	if dados.box_focus_on_open:
+		foco = aparelho_id
 
 
 ## Textos prontos de um aparelho não montado (vazio se montado). Chaves: price (n TREINO), after (DEPOIS DA X),
@@ -736,7 +758,7 @@ func _array_adversario(opp: Dictionary) -> Array:
 
 func multiplicador_luva() -> float:
 	var m := 1.0
-	for i in mini(nivel_luva, lutas.luvas.size()):
+	for i in mini(luvas_abertas(), lutas.luvas.size()):
 		m *= float(lutas.luvas[i].click_multiplier)
 	return m
 
@@ -744,31 +766,39 @@ func multiplicador_luva() -> float:
 ## Luva equipada: {id, level, name, sprite_suffix, click_multiplier}. Nível 0 = luva velha.
 ## A UI troca cursor, mão da garagem e mão da luta por `sprite_suffix` (ex.: "" ou "_glove_l1").
 func luva_equipada() -> Dictionary:
-	if nivel_luva <= 0 or nivel_luva > lutas.luvas.size():
+	var n := luvas_abertas()
+	if n <= 0 or n > lutas.luvas.size():
 		return lutas.luva_base
-	return lutas.luvas[nivel_luva - 1]
+	return lutas.luvas[n - 1]
 
 
 func sufixo_luva() -> String:
 	return str(luva_equipada().sprite_suffix)
 
 
-## Próxima luva à venda, ou {} se completou a linha.
+## Próxima luva da linha, ou {} se completou. Fase 5.1: com a luva anterior ainda na caixa ela NÃO está à venda
+## (`pode_comprar_luva` é false e `luva_em_caixa()` é true): a UI mostra `shop_glove_boxed`.
 func proxima_luva() -> Dictionary:
 	return {} if nivel_luva >= lutas.luvas.size() else lutas.luvas[nivel_luva]
 
 
 func pode_comprar_luva() -> bool:
 	var l := proxima_luva()
-	return not l.is_empty() and loja_estado(float(l.cost)) == "ok"
+	return not l.is_empty() and not luva_em_caixa() and loja_estado(float(l.cost)) == "ok"
 
 
 func comprar_luva() -> bool:
 	if acoes_bloqueadas() or not pode_comprar_luva():
 		return false
-	_gastar_dinheiro(proxima_luva().cost)
-	nivel_luva += 1
-	luva_mudou.emit(nivel_luva, sufixo_luva())
+	var l := proxima_luva()
+	_gastar_dinheiro(l.cost)
+	nivel_luva += 1  # glove_level conta as luvas COMPRADAS (abertas + a da caixa)
+	if dados.box_glove:
+		_criar_caixa(str(l.id), "glove")
+		salvar()
+		caixa_criada.emit(str(l.id), "glove")
+	else:
+		luva_mudou.emit(nivel_luva, sufixo_luva())
 	economia_mudou.emit()
 	return true
 
@@ -1356,6 +1386,7 @@ func _zerar_carreira() -> void:
 	for id in dados.atributos:
 		atributos[id] = 0.0
 	aparelhos_montados_ids = _aparelhos_iniciais()
+	caixas_lista = []  # Fase 5.1: caixa fechada some com a carreira, sem reembolso
 	foco = dados.default_focus
 	geradores = {}
 	for g in dados.geradores:
@@ -1853,7 +1884,7 @@ func menor_preco_loja() -> float:
 	for g in lutas.geradores_pagos:
 		m = minf(m, custo_gerador_pago(g.id))
 	var l := proxima_luva()
-	if not l.is_empty():
+	if not l.is_empty() and not luva_em_caixa():
 		m = minf(m, float(l.cost))
 	var mt := proximo_metronomo()
 	if not mt.is_empty():
@@ -2113,7 +2144,7 @@ func apagar_save() -> void:
 	avisos_mudaram.emit(avisos)
 
 
-## Campos do estado que vão para o save (v6). Produção e custos não são salvos (vêm de data/).
+## Campos do estado que vão para o save (v7). Produção e custos não são salvos (vêm de data/).
 func para_save() -> Dictionary:
 	return {
 		"career": {
@@ -2122,6 +2153,7 @@ func para_save() -> Dictionary:
 			"art": arte_id,
 			"art_seconds": arte_segundos,
 			"apparatus_owned": aparelhos_montados_ids.duplicate(),
+			"boxes": caixas_lista.duplicate(true),
 			"training": treino,
 			"attributes": atributos.duplicate(),
 			"focus": foco,
@@ -2143,7 +2175,7 @@ func para_save() -> Dictionary:
 	}
 
 
-## Aplica um estado lido do save (formato v6). Campo faltando ou inválido recebe o padrão.
+## Aplica um estado lido do save (formato v7). Campo faltando ou inválido recebe o padrão.
 func aplicar_save(estado: Dictionary) -> void:
 	var c = estado.get("career", {})
 	if not (c is Dictionary):
@@ -2186,6 +2218,7 @@ func aplicar_save(estado: Dictionary) -> void:
 		var q = gp.get(g.id, 0) if gp is Dictionary else 0
 		geradores_pagos[g.id] = _inteiro_valido(q, 1.0e9)
 	nivel_luva = _inteiro_valido(c.get("glove_level", 0), float(lutas.luvas.size()))
+	caixas_lista = _validar_caixas(c.get("boxes", null))
 	dinheiro = _numero_valido(c.get("money", 0.0))
 	fama = _inteiro_valido(c.get("fame", 0), 1.0e15)
 	indice_escada = _inteiro_valido(c.get("ladder_index", 0), float(lutas.adversarios.size()))
@@ -2386,7 +2419,8 @@ func _emitir_tudo(pedir_arte: bool = true) -> void:
 	dinheiro_mudou.emit(dinheiro)
 	fama_mudou.emit(fama)
 	tatica_mudou.emit(tatica)
-	luva_mudou.emit(nivel_luva, sufixo_luva())
+	luva_mudou.emit(luvas_abertas(), sufixo_luva())
+	caixas_mudaram.emit()
 	metronomo_mudou.emit(nivel_metronomo)
 	local_mudou.emit(local_id)
 	arte_mudou.emit(arte_id)
@@ -2422,6 +2456,140 @@ func _pasta_save_inicial() -> String:
 func _horario_local(unix: int) -> String:
 	var bias_s: int = Time.get_time_zone_from_system().get("bias", 0) * 60
 	return Time.get_time_string_from_unix_time(unix + bias_s)
+
+
+# --- Fase 5.1: caixa de equipamento ---
+
+## Caixas fechadas, na ordem da compra: [{item, kind, hits}]. Cópia (mexer nela não muda o jogo).
+func caixas() -> Array:
+	return caixas_lista.duplicate(true)
+
+
+## true se o item (id de aparelho ou de luva) está numa caixa fechada.
+func tem_caixa(item: String) -> bool:
+	return _indice_caixa(item) >= 0
+
+
+## A caixa do item ({item, kind, hits}) ou {} se não há.
+func caixa(item: String) -> Dictionary:
+	var i := _indice_caixa(item)
+	return caixas_lista[i].duplicate() if i >= 0 else {}
+
+
+## Cliques que ainda faltam para abrir a caixa do item (0 se não há caixa).
+func cliques_faltando(item: String) -> int:
+	var i := _indice_caixa(item)
+	return maxi(0, dados.box_clicks_to_open - int(caixas_lista[i].hits)) if i >= 0 else 0
+
+
+## true se há uma luva esperando na caixa (a próxima só fica à venda depois de abrir).
+func luva_em_caixa() -> bool:
+	for b in caixas_lista:
+		if b.kind == "glove":
+			return true
+	return false
+
+
+## Luvas que já valem (abertas): glove_level menos a que está na caixa.
+func luvas_abertas() -> int:
+	return maxi(0, nivel_luva - (1 if luva_em_caixa() else 0))
+
+
+## Um clique na caixa (só o mouse; Espaço nunca chama isto). Soma 1 batida; na última abre.
+## Não treina, não dá crítico e não mexe em `_ocioso`. false se não há caixa ou a janela/luta bloqueia.
+func bater_caixa(item: String) -> bool:
+	var i := _indice_caixa(item)
+	if i < 0 or acoes_bloqueadas():
+		return false
+	caixas_lista[i]["hits"] = int(caixas_lista[i].hits) + 1
+	var batidas := int(caixas_lista[i].hits)
+	caixa_batida.emit(item, batidas)  # inclusive a última (a UI treme 1, 2, 3 px); depois vem caixa_aberta
+	if batidas >= dados.box_clicks_to_open:
+		abrir_caixa(item)
+	return true
+
+
+## Abre a caixa já (o 3º clique chama isto; público para testes). Aplica o item, foca (aparelho) e salva.
+func abrir_caixa(item: String) -> bool:
+	var i := _indice_caixa(item)
+	if i < 0:
+		return false
+	var tipo := str(caixas_lista[i].kind)
+	caixas_lista.remove_at(i)
+	if tipo == "apparatus":
+		_montar_aparelho(item)
+	salvar()
+	caixa_aberta.emit(item, tipo)
+	if tipo == "apparatus":
+		aparelho_comprado.emit(item)
+		foco_mudou.emit(foco)
+	else:
+		luva_mudou.emit(luvas_abertas(), sufixo_luva())
+	economia_mudou.emit()
+	return true
+
+
+func _indice_caixa(item: String) -> int:
+	for i in caixas_lista.size():
+		if caixas_lista[i].item == item:
+			return i
+	return -1
+
+
+func _criar_caixa(item: String, tipo: String) -> void:
+	caixas_lista.append({"item": item, "kind": tipo, "hits": 0})
+
+
+# Lê career.boxes: ausente/inválido = []. Descarta entrada inexistente, repetida, de aparelho já montado ou de
+# outra arte, e luva que não é exatamente a última comprada. Corrige kind pelo item e prende hits em 0..clicks-1.
+func _validar_caixas(v: Variant) -> Array:
+	var r: Array = []
+	if not (v is Array):
+		return r
+	var max_hits := maxi(0, dados.box_clicks_to_open - 1)
+	for x in v:
+		if not (x is Dictionary):
+			_avisar("Caixa salva inválida: ignorada.")
+			continue
+		var item := str(x.get("item", ""))
+		var tipo := ""
+		if not dados.aparelho(item).is_empty():
+			tipo = "apparatus"
+		elif _indice_luva(item) >= 0:
+			tipo = "glove"
+		if tipo == "":
+			_avisar("Caixa de item desconhecido ('%s'): ignorada." % item)
+			continue
+		if _indice_caixa_em(r, item) >= 0:
+			_avisar("Caixa repetida ('%s'): ignorada." % item)
+			continue
+		if tipo == "apparatus":
+			if desbloqueio(item).is_empty() or aparelho_montado(item) or not aparelho_existe(item):
+				_avisar("Caixa de aparelho inválido ('%s'): ignorada." % item)
+				continue
+		elif _indice_luva(item) != nivel_luva - 1:
+			_avisar("Caixa de luva fora de lugar ('%s'): ignorada." % item)
+			continue
+		var h = x.get("hits", 0)
+		var hits := 0
+		if typeof(h) == TYPE_FLOAT or typeof(h) == TYPE_INT:
+			hits = int(clampf(floorf(float(h)) if is_finite(float(h)) else 0.0, 0.0, float(max_hits)))
+		r.append({"item": item, "kind": tipo, "hits": hits})
+	return r
+
+
+func _indice_caixa_em(lista: Array, item: String) -> int:
+	for i in lista.size():
+		if lista[i].item == item:
+			return i
+	return -1
+
+
+func _indice_luva(item: String) -> int:
+	for i in lutas.luvas.size():
+		if str(lutas.luvas[i].id) == item:
+			return i
+	return -1
 
 
 # --- Fase 4b: validações e dica ---

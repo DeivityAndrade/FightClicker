@@ -40,33 +40,40 @@
 	},
 	"garage": {
 		"punch_b": {
-			"_ideia": "Jab com a mão de TRÁS (esquerda na tela) em 6 quadros: 0 recolhe e gira o ombro, 1 o braço cruza o peito por baixo da luva de guarda, 2 CONTATO no saco, 3 passa um pouco, 4-5 volta. Alterna com fighter_punch (mão da frente).",
-			"n": 6, "fps": 24.0, "hit_frame": 2, "hit_hand": "hl", "pivot": [22, 67], "foco_saco": [303, 272], "lag": {"top": 0.1, "tw": 0.1, "head": 0.2, "hl": 0.4, "el": 0.4},
-			"keys": [
-				{"at": 0, "ease": "inout", "hip": [0, -30], "top": [0, -49], "head": [0, -56], "sl": [-8, -46], "sr": [7, -46], "hl": [-8, -47], "hr": [8, -47], "el": [-9, -39], "er": [8, -39], "tw": -0.4, "pl": [-0.3, 1], "pr": [0.3, 1]},
-				{"at": 2, "ease": "in", "hip": [1, -31], "top": [3, -50], "head": [3, -56], "sl": [0, -47], "sr": [9, -47], "hl": [20, -45], "hr": [10, -51], "el": [10, -43.5], "er": [10, -40], "tw": -1.0, "pl": [-0.3, 1], "pr": [0.3, 1]},
-				{"at": 3, "ease": "out", "hip": [1, -31], "top": [3, -50], "head": [3, -56], "sl": [-1, -47], "sr": [9, -47], "hl": [18, -46], "hr": [10, -51], "el": [9, -43], "er": [10, -40], "tw": -0.8, "pl": [-0.3, 1], "pr": [0.3, 1]},
-				{"at": 5, "ease": "inout", "hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47], "hl": [-8, -50], "hr": [10, -51], "el": [-9, -40], "er": [10, -40], "tw": 0.0, "pl": [-0.3, 1], "pr": [0.3, 1]}
+			"_fase51": "Fase 5.1 (Artista de Personagens): os 3 golpes do treino passaram de 4 chaves interpoladas para 6 POSES AUTORAIS, quadro a quadro (lista \"frames\"). Por quê: a interpolação linear de mão e cotovelo mudava o comprimento do braço nos quadros do meio e o corpo quase não participava. Agora cada quadro traz o corpo todo: 0 antecipação (peso atrás, ombro recolhe), 1 o quadril e o tronco saem ANTES da mão, 2 CONTATO (mesma mão, mesmo ponto: hit_point não mudou), 3 acompanhamento (passa do alvo, peso à frente), 4 recolhe, 5 assenta na guarda. Braço de cima 4,5-10 px e antebraço 6,5-10,5 px em todos os quadros (o encurtamento é o braço apontando para a câmera na visão 3/4). Pontas dos pés fixas; só o calcanhar sobe (34ball).",
+			"_ideia": "Direto com a mão de TRÁS (esquerda na tela) em 6 quadros: 0 carrega atrás, 1 o quadril gira e o calcanhar de trás sobe, 2 CONTATO com o braço quase todo esticado e o ombro de trás na frente, 3 passa 1 px do alvo com o peso à frente, 4 recolhe, 5 guarda. Alterna com fighter_punch (mão da frente).",
+			"fps": 24.0, "hit_frame": 2, "hit_hand": "hl", "pivot": [22, 67], "foco_saco": [303, 272],
+			"frames": [
+				{"hip": [-1, -30], "top": [-1, -49], "head": [0, -56], "sl": [-9, -46], "sr": [7, -46], "hl": [-10, -48], "el": [-11, -38.5], "hr": [9, -50], "er": [9, -39.5], "tw": -0.6},
+				{"hip": [1, -30], "top": [2, -49], "head": [2, -56], "sl": [-5, -46.5], "sr": [8, -47], "hl": [1, -47], "el": [-4, -39], "hr": [8, -51], "er": [9, -40.5], "tw": 0.4, "shoel": "34ball"},
+				{"hip": [2, -30], "top": [4, -49.5], "head": [4, -56.5], "sl": [1, -47], "sr": [8, -48.5], "hl": [20, -45], "el": [10.5, -44.5], "hr": [10, -51.5], "er": [10, -41.5], "tw": 1.6, "shoel": "34ball", "kl": [1, 0], "face": "effort"},
+				{"hip": [3, -30], "top": [5, -49], "head": [5, -56], "sl": [2, -46.5], "sr": [8, -48], "hl": [21, -44], "el": [11.5, -43], "hr": [10, -51], "er": [10, -41], "tw": 1.8, "shoel": "34ball", "kl": [1, 0], "face": "effort"},
+				{"hip": [1, -30.5], "top": [3, -49.5], "head": [3, -56], "sl": [-3, -47], "sr": [8, -47.5], "hl": [6, -48], "el": [0, -40], "hr": [9, -51], "er": [10, -40.5], "tw": 0.6, "shoel": "34ball"},
+				{"hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47], "hl": [-8, -49], "el": [-9, -40], "hr": [10, -50], "er": [10, -40], "tw": 0.0}
 			]
 		},
 		"uppercut": {
-			"_ideia": "Uppercut da mão da frente no treino em 6 quadros: 0 agacha e recolhe a luva na cintura, 1 empurra, 2 CONTATO: antebraço na vertical, corpo sobe, 3 segura no alto, 4-5 volta.",
-			"n": 6, "fps": 24.0, "hit_frame": 2, "hit_hand": "hr", "pivot": [22, 67], "foco_saco": [303, 272], "lag": {"top": 0.1, "tw": 0.1, "head": 0.2, "hr": 0.4},
-			"keys": [
-				{"at": 0, "ease": "inout", "hip": [0, -28], "top": [-1, -46], "head": [-1, -53], "sl": [-8, -43], "sr": [7, -43], "hl": [-8, -46], "hr": [9, -39], "tw": 0.0, "pl": [1, 0.5], "pr": [0.6, 0.8], "el": [-9, -36]},
-				{"at": 2, "ease": "in", "hip": [1, -32], "top": [3, -52], "head": [4, -59], "sl": [-5, -49], "sr": [10, -49], "hl": [-7, -52], "hr": [14, -57], "tw": 1.0, "pl": [1, 0.5], "pr": [0.6, 0.8], "el": [-9, -42]},
-				{"at": 3, "ease": "out", "hip": [0, -31], "top": [2, -50], "head": [2, -57], "sl": [-6, -47], "sr": [10, -48], "hl": [-7, -50], "hr": [13, -54], "tw": 0.6, "pl": [1, 0.5], "pr": [0.6, 0.8], "el": [-9, -40]},
-				{"at": 5, "ease": "inout", "hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47], "hl": [-8, -50], "hr": [10, -51], "tw": 0.0, "pl": [1, 0.5], "pr": [0.6, 0.8], "el": [-9, -40]}
+			"_ideia": "Uppercut da mão da frente em 6 quadros: 0 afunda nos joelhos e solta a luva na cintura, 1 as pernas empurram e a luva sobe rente ao corpo, 2 CONTATO com o antebraço na vertical e os dois calcanhares fora do chão, 3 a luva passa 2 px acima e a cabeça vai atrás, 4 desce, 5 guarda.",
+			"fps": 24.0, "hit_frame": 2, "hit_hand": "hr", "pivot": [22, 67], "foco_saco": [303, 272],
+			"frames": [
+				{"hip": [-1, -28], "top": [-1, -46.5], "head": [-1, -53.5], "sl": [-8, -43.5], "sr": [7, -43], "hl": [-8, -47], "el": [-9.5, -36.5], "hr": [11, -36], "er": [4, -37], "tw": -0.5, "kl": [1, 0], "kr": [1, 0]},
+				{"hip": [0, -29], "top": [1, -48], "head": [1, -55], "sl": [-7, -45], "sr": [9, -45], "hl": [-8, -48], "el": [-9, -38], "hr": [13, -44], "er": [9, -38], "tw": 0.4, "kl": [1, 0], "kr": [1, 0]},
+				{"hip": [2, -31], "top": [4, -51], "head": [4, -58], "sl": [-5, -48], "sr": [11, -49], "hl": [-6, -51], "el": [-7.5, -41], "hr": [14, -57], "er": [15.5, -46.5], "tw": 1.0, "shoel": "34ball", "shoer": "34ball", "face": "effort"},
+				{"hip": [2, -31], "top": [4, -51.5], "head": [3, -58.5], "sl": [-5, -48.5], "sr": [11, -50], "hl": [-6, -51], "el": [-7.5, -41], "hr": [13, -59], "er": [15.5, -49], "tw": 1.0, "shoel": "34ball", "shoer": "34ball", "face": "effort"},
+				{"hip": [1, -30], "top": [2, -49.5], "head": [2, -56.5], "sl": [-6, -46.5], "sr": [9, -47.5], "hl": [-7, -49.5], "el": [-8.5, -39.5], "hr": [12, -53], "er": [12, -43], "tw": 0.4},
+				{"hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47], "hl": [-8, -49], "el": [-9, -40], "hr": [10, -50], "er": [10, -40], "tw": 0.0}
 			]
 		},
 		"hook": {
-			"_ideia": "Golpe lateral (gancho) da mão da frente no treino em 6 quadros: 0 recolhe a luva ao peito com o cotovelo aberto e gira o tronco para trás, 1 o braço varre na altura do ombro, 2 CONTATO com o braço quase esticado na horizontal (tronco gira), 3 passa um pouco, 4-5 volta.",
-			"n": 6, "fps": 24.0, "hit_frame": 2, "hit_hand": "hr", "pivot": [22, 67], "foco_saco": [303, 272], "lag": {"top": 0.1, "tw": 0.1, "head": 0.2, "hr": 0.4},
-			"keys": [
-				{"at": 0, "ease": "inout", "hip": [0, -30], "top": [-1, -49], "head": [-1, -56], "sl": [-8, -46], "sr": [6, -46], "hl": [-8, -49], "hr": [11, -52], "tw": -0.5, "pl": [1, 0.5], "pr": [0.7, -0.3], "el": [-9, -39]},
-				{"at": 2, "ease": "in", "hip": [1, -31], "top": [3, -50], "head": [3, -57], "sl": [-5, -47], "sr": [10, -48], "hl": [-7, -50], "hr": [20, -57], "tw": 1.2, "pl": [1, 0.5], "pr": [0.7, -0.3], "el": [-9, -40]},
-				{"at": 3, "ease": "out", "hip": [1, -31], "top": [3, -50], "head": [3, -57], "sl": [-5, -47], "sr": [10, -48], "hl": [-7, -50], "hr": [18, -55], "tw": 1.0, "pl": [1, 0.5], "pr": [0.7, -0.3], "el": [-9, -40]},
-				{"at": 5, "ease": "inout", "hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47], "hl": [-8, -50], "hr": [10, -51], "tw": 0.0, "pl": [1, 0.5], "pr": [0.7, -0.3], "el": [-9, -40]}
+			"_ideia": "Golpe lateral (gancho) da mão da frente em 6 quadros: 0 gira o tronco para trás e abre o cotovelo, 1 o braço varre com o cotovelo subindo, 2 CONTATO com o cotovelo na altura do ombro e o pé da frente girando no calcanhar levantado, 3 a luva atravessa o alvo e o tronco termina de girar, 4 recolhe, 5 guarda.",
+			"fps": 24.0, "hit_frame": 2, "hit_hand": "hr", "pivot": [22, 67], "foco_saco": [303, 272],
+			"frames": [
+				{"hip": [-1, -30], "top": [-1, -49], "head": [0, -56], "sl": [-8, -46], "sr": [6, -46], "hl": [-8, -49], "el": [-9.5, -39], "hr": [8, -49], "er": [12, -43], "tw": -0.8},
+				{"hip": [0, -30], "top": [1, -49], "head": [1, -56], "sl": [-7, -46.5], "sr": [8, -47], "hl": [-8, -50], "el": [-9, -40], "hr": [15, -53], "er": [13.5, -45.5], "tw": 0.3},
+				{"hip": [2, -30.5], "top": [4, -49.5], "head": [3, -56], "sl": [-4, -47], "sr": [10, -48.5], "hl": [-6, -50], "el": [-7, -40], "hr": [20, -57], "er": [15.5, -49.5], "tw": 1.6, "shoer": "34ball", "face": "effort"},
+				{"hip": [2, -30.5], "top": [5, -49.5], "head": [4, -56], "sl": [-3, -47], "sr": [11, -48.5], "hl": [-5, -50], "el": [-6, -40], "hr": [17, -56], "er": [15.5, -48], "tw": 2.0, "shoer": "34ball", "face": "effort"},
+				{"hip": [1, -31], "top": [2, -50], "head": [2, -57], "sl": [-6, -47], "sr": [9, -47], "hl": [-7, -50], "el": [-8, -40], "hr": [13, -53], "er": [12, -43], "tw": 0.5},
+				{"hip": [0, -31], "top": [1, -50], "head": [1, -57], "sl": [-7, -47], "sr": [8, -47], "hl": [-8, -49], "el": [-9, -40], "hr": [10, -50], "er": [10, -40], "tw": 0.0}
 			]
 		}
 	},
@@ -80,8 +87,8 @@
 				{"hip": [0, -34], "top": [1, -52], "head": [1, -59], "sl": [-8, -48], "sr": [8, -48], "hl": [-13, -31], "hr": [13, -31], "toel": [-2, -3], "toer": [7, -3], "shoel": "34ball", "shoer": "34ball", "phi": 75},
 				{"hip": [0, -37], "top": [1, -55], "head": [1, -62], "sl": [-8, -51], "sr": [8, -51], "hl": [-11, -31], "hr": [11, -31], "toel": [-2, -7], "toer": [7, -7], "shoel": "34ball", "shoer": "34ball", "face": "effort", "phi": 180},
 				{"hip": [0, -34], "top": [1, -52], "head": [1, -59], "sl": [-8, -48], "sr": [8, -48], "hl": [-12, -29], "hr": [12, -29], "toel": [-2, -3], "toer": [7, -3], "shoel": "34ball", "shoer": "34ball", "phi": 232},
-				{"hip": [0, -31], "top": [1, -49], "head": [1, -56], "sl": [-8, -45], "sr": [8, -45], "hl": [-12, -25], "hr": [12, -25], "toel": [-2, -1], "toer": [7, -1], "shoel": "34ball", "shoer": "34ball", "phi": 275},
-				{"hip": [0, -30], "top": [1, -48], "head": [1, -55], "sl": [-8, -45], "sr": [8, -45], "hl": [-12, -26], "hr": [12, -26], "slack": 11, "phi": 175}
+				{"hip": [0, -31], "top": [1, -49], "head": [1, -56], "sl": [-8, -45], "sr": [8, -45], "hl": [-12, -25], "hr": [12, -25], "toel": [-2, -1], "toer": [7, -1], "shoel": "34ball", "shoer": "34ball", "phi": 295},
+				{"hip": [0, -30], "top": [1, -48], "head": [1, -55], "sl": [-8, -45], "sr": [8, -45], "hl": [-12, -26], "hr": [12, -26], "rest": true}
 			]
 		}
 	},

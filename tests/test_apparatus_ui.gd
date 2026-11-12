@@ -1,5 +1,5 @@
 extends "res://tests/test_base.gd"
-## Compra real com a sala conectada: valida a animacao, nao apenas o saldo e o save.
+## Compra real com a sala conectada: valida a caixa da escola (Fase 5.1), nao apenas o saldo e o save.
 
 var gs: Node
 
@@ -28,11 +28,17 @@ func _testar_chegadas(local: String, arte: String) -> void:
 	for id in aparelhos:
 		var contexto := "%s/%s/%s" % [local, arte, id]
 		checar(gs.comprar_aparelho(id), contexto + ": compra aceita")
-		checar_igual(sala._chegando, id, contexto + ": animacao de chegada iniciada")
-		checar(sala._tween_chegada != null and sala._tween_chegada.is_valid(), contexto + ": tween ativo")
-		await create_timer(1.1).timeout
-		checar_igual(sala._chegando, "", contexto + ": animacao termina naturalmente")
-		checar_igual(gs.foco, id, contexto + ": foco no aparelho comprado")
+		checar(sala._caixas.has(id), contexto + ": a caixa chegou na sala")
+		checar(sala._marcas[id].fita.visible, contexto + ": a marca fica embaixo da caixa")
+		checar(not gs.aparelho_montado(id), contexto + ": aparelho ainda na caixa")
+		await create_timer(0.4).timeout
+		for i in 3:
+			checar(sala.caixa_liberada(), contexto + ": caixa liberada para clique")
+			sala._clique_em(sala._caixas[id].area().get_center())
+			await create_timer(0.1).timeout
+		await create_timer(1.3).timeout
+		checar(not sala._caixas.has(id), contexto + ": a caixa vazia sumiu")
+		checar_igual(gs.foco, id, contexto + ": foco no aparelho aberto")
 		checar(not sala._marcas[id].fita.visible, contexto + ": marca de compra oculta")
 		checar(not gs.clicar().is_empty(), contexto + ": permite treinar depois da chegada")
 		var saldo: float = gs.treino

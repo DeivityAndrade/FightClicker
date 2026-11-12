@@ -22,8 +22,8 @@ projeto foi continuado por outra ferramenta e o dono quer este jogo começado do
 | QA | `qa-tester` | Testa contra os critérios de aceite, reporta bugs |
 
 ## Modelos (regra do dono, para economizar tokens)
-- **Quem pensa** → Opus 5.5 com raciocínio médio (`model: opus`, `effort: medium`): Diretor de Jogo, Designer de Jogo.
-- **Quem faz arte, animação e cenas** → Fable (`model: fable`, `effort: medium`): Diretor de Arte, Artista de Personagens, Diretor de Cutscenes (pedido do dono em 2026-11-11).
+- **Quem pensa** → Opus 5.5 com raciocínio médio (`model: opus`, `effort: medium`): Diretor de Jogo, Designer de Jogo, Diretor de Arte, Artista de Personagens.
+- **Cutscenes** → Fable (`model: fable`, `effort: medium`): só o Diretor de Cutscenes (pedido do dono em 2026-11-12).
 - **Quem executa** → Sonnet 5.5 (`model: sonnet`): Programador, UI/UX, Roteirista, QA.
 - Ao criar um agente novo, classifique-o num dos dois grupos. Ao chamar um agente, use o tipo dele
   (não `general-purpose`), para valer o modelo do arquivo.

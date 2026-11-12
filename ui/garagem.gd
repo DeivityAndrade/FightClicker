@@ -43,6 +43,7 @@ func _ready() -> void:
 	_cursor.visible = false
 	add_child(_cursor)
 
+	add_child(Dica.new())  # Fase 5.1: dica flutuante do nível 3 (hover)
 	_fluxo.ligar(_barra)
 	# A luva equipada troca o cursor, a mão do lutador na garagem (Sala) e na luta (TelaLuta) pelo mesmo sufixo.
 	GameState.luva_mudou.connect(func(_n: int, _s: String) -> void: _cursor.definir(UiTema.nome_cursor()))
@@ -86,6 +87,7 @@ func _atualizar_tudo() -> void:
 
 
 func _process(_delta: float) -> void:
+	_sala.janela_aberta = _fluxo.ocupado()  # caixa não recebe clique com janela, prévia ou luta por cima
 	_sala.dica_ativa = _barra.dica_ativa()
 	# Sobre a sala: esconde o cursor do sistema e desenha a luva (mesma arte da mão do lutador).
 	var sobre := get_viewport().gui_get_hovered_control() == _sala

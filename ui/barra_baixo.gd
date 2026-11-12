@@ -22,6 +22,7 @@ var _dica: Label
 var _dica_espaco: Label
 var _salvo: Label
 var _botoes: Dictionary = {}  # aparelho -> {botao, sublinhado, estilo}
+var _ajuda: Button
 var _ids_botoes := ""  # aparelhos da carreira que têm botão agora (refaz os botões se a lista mudar)
 var _larg := LARG_BOTAO
 var _passo := PASSO_BOTAO
@@ -50,20 +51,21 @@ func _ready() -> void:
 	UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, 70))
 
 	UiTema.rotulo(self, str(ui.get("per_click", "POR CLIQUE")).to_upper(), UiTema.G2, 8, 8)
-	_por_clique = UiTema.rotulo(self, "+1", UiTema.Y1, 8, 22)
+	_por_clique = UiTema.rotulo(self, "+1", UiTema.COL_TREINO, 8, 22)  # txt_hero
 	_por_clique.scale = Vector2(2, 2)
-	_auto = UiTema.rotulo(self, "", UiTema.GR3, 8, 44)
-	_salvo = UiTema.rotulo(self, "", UiTema.G1, 8, 56, 118)
+	_auto = UiTema.rotulo(self, "", UiTema.COL_TREINO, 8, 44)
+	_salvo = UiTema.rotulo(self, "", UiTema.COL_DISABLED, 8, 56, 118)
 
-	UiTema.rotulo(self, str(ui.get("focus_label", "FOCO DE TREINO")).to_upper(), UiTema.G2, X0 + 2, 3)
-	_f11 = UiTema.rotulo(self, str(ui.get("fullscreen_hint", "F11 TELA CHEIA")).to_upper(), UiTema.G1, X0, 3, 372, HORIZONTAL_ALIGNMENT_RIGHT)
+	UiTema.rotulo(self, str(ui.get("focus_label", "FOCO DE TREINO")).to_upper(), UiTema.COL_TEXT_2, X0 + 2, 3)
+	_f11 = UiTema.rotulo(self, str(ui.get("fullscreen_hint", "F11 TELA CHEIA")).to_upper(), UiTema.COL_DISABLED, X0, 3, 372, HORIZONTAL_ALIGNMENT_RIGHT)
+	_f11.visible = false  # Fase 5.1: as teclas (F11 inclusive) são nível 3: aparecem na dica do "?"
+	_montar_ajuda()
 	_montar_chip()
 	_reconstruir_botoes()
 
 	_dica = UiTema.rotulo(self, "", UiTema.Y1, X0, 56, 378, HORIZONTAL_ALIGNMENT_CENTER)
 	# Lembrete fixo (some enquanto a dica da primeira vez pisca no mesmo lugar): Espaço treina como o clique.
-	_dica_espaco = UiTema.rotulo(self, UiTema.txt("space_hint", "ESPAÇO OU CLIQUE PARA TREINAR"), UiTema.G1, X0, 56, 378,
-		HORIZONTAL_ALIGNMENT_CENTER)
+	_dica_espaco = UiTema.rotulo(self, "", UiTema.P2, X0, 56, 378, HORIZONTAL_ALIGNMENT_CENTER)
 	_montar_lutar()
 	_montar_aposentar()
 
@@ -160,6 +162,8 @@ func _montar_botao(ap: Dictionary, i: int) -> Dictionary:
 	sub.size = Vector2(_larg - 6, 2)
 	add_child(sub)
 	var id: String = ap.id
+	b.mouse_entered.connect(func() -> void: Dica.pedir(_texto_foco(id)))
+	b.mouse_exited.connect(func() -> void: Dica.limpar())
 	b.pressed.connect(func() -> void:
 		if GameState.aparelho_montado(id):
 			GameState.definir_foco(id)
@@ -187,6 +191,9 @@ func _montar_chip() -> void:
 
 
 func _atualizar_chip() -> void:
+	_chip.visible = false  # Fase 5.1: o chip da arte saiu da tela (a arte aparece na dica do nome do local)
+	_f11.visible = false
+	return
 	var texto := GameState.texto_hud_arte().to_upper()
 	var max_ := GameState.arte_no_teto()
 	var chave := "%s|%s|%s" % [GameState.arte_id, texto, max_]
@@ -212,10 +219,39 @@ func _atualizar_dica_foco() -> void:
 	var divisao := GameState.texto_divisao(GameState.foco).to_upper()
 	if divisao != "":
 		_dica_espaco.text = divisao
-		_dica_espaco.add_theme_color_override("font_color", UiTema.P2)
+		_dica_espaco.add_theme_color_override("font_color", UiTema.COL_LEGACY)
 	else:
-		_dica_espaco.text = UiTema.txt("space_hint", "ESPAÇO OU CLIQUE PARA TREINAR")
-		_dica_espaco.add_theme_color_override("font_color", UiTema.G1)
+		_dica_espaco.text = ""  # Fase 5.1: o lembrete do Espaço é nível 3 (dica do "?")
+
+
+## Dica do botão de foco de um aparelho que não está montado (preço, requisito, caixa).
+func _texto_foco(id: String) -> String:
+	var estado := GameState.estado_aparelho(id)
+	if estado == "owned":
+		return ""
+	if estado == "boxed":
+		return GameState.texto_ui("focus_boxed")
+	var u: Dictionary = GameState.desbloqueio(id)
+	var nome := GameState.nome_curto_aparelho(id)
+	var req := str(u.get("requires", ""))
+	var req_nome := GameState.nome_curto_aparelho(req).to_lower() if req != "" else ""
+	var cost := float(u.get("cost", 0.0))
+	match estado:
+		"locked":
+			return GameState.preencher(GameState.texto_ui("tape_locked_box" if GameState.tem_caixa(req) else "tape_locked"), {"nome": nome, "requisito": req_nome})
+		"missing":
+			return GameState.preencher(GameState.texto_ui("tape_short"), {"nome": nome, "n": NumberFormat.fmt(maxf(0.0, cost - GameState.treino))})
+		"buyable":
+			return GameState.preencher(GameState.texto_ui("tape_open"), {"nome": nome, "preco": NumberFormat.fmt(cost)})
+	return ""
+
+
+## "?" pequeno da barra: as teclas (Espaço, Shift, 1 a 4, F11) são nível 3 e aparecem na dica.
+func _montar_ajuda() -> void:
+	_ajuda = UiTema.botao(self, Rect2(X0 + 372.0 - 12.0, 53, 12, 12))
+	UiTema.botao_conteudo(_ajuda, "?", UiTema.COL_TEXT_2, 1)
+	_ajuda.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_keys")))
+	_ajuda.mouse_exited.connect(func() -> void: Dica.limpar())
 
 
 func _montar_lutar() -> void:
@@ -265,13 +301,12 @@ func atualizar() -> void:
 		NumberFormat.fmt(GameState.producao_total())]
 	var estados := ""
 	for id in _botoes:
-		estados += GameState.estado_aparelho(id).left(1)  # o(wned) b(uyable) m(issing) l(ocked)
+		estados += GameState.estado_aparelho(id).left(2) + ","  # o(wned) b(uyable) m(issing) l(ocked)
 	var chave := "%s|%s|%s|%s" % [NumberFormat.fmt(GameState.por_clique()), texto_auto, foco, estados]
 	if chave != _ultimo:
 		_ultimo = chave
 		_por_clique.text = "+%s" % NumberFormat.fmt(GameState.por_clique())
-		_por_clique.add_theme_color_override("font_color",
-			UiTema.cor_atributo(GameState.atributo_do_aparelho(foco)).lerp(UiTema.WHITE, 0.3))
+		_por_clique.add_theme_color_override("font_color", UiTema.COL_TREINO)
 		_auto.text = texto_auto
 		for id in _botoes:
 			_aplicar_botao(_botoes[id], foco)
@@ -288,7 +323,7 @@ func _aplicar_botao(d: Dictionary, foco: String) -> void:
 	var tr: Dictionary = d.trancado
 	for k in ["cadeado", "nome", "moeda", "preco", "depois"]:
 		if tr.has(k):
-			tr[k].visible = not montado and (k in ["cadeado", "nome"] or (k == "depois") == (estado == "locked"))
+			tr[k].visible = not montado and k in ["cadeado", "nome"]  # Fase 5.1: sem preço no botão (o preço vem na dica)
 	if montado or tr.is_empty():
 		var ativo: bool = id == foco
 		var atributo := GameState.atributo_do_aparelho(id)
@@ -303,18 +338,11 @@ func _aplicar_botao(d: Dictionary, foco: String) -> void:
 	d.sub.visible = false
 	var m: Dictionary = tr.m
 	var t: Dictionary = GameState.textos_trancado(id)
-	var cor_nome := UiTema.WHITE if estado == "buyable" else (UiTema.G3 if estado == "missing" else UiTema.G1)
+	var cor_nome := UiTema.COL_TEXT_1 if estado == "buyable" else (UiTema.COL_TEXT_2 if estado in ["missing", "boxed"] else UiTema.COL_DISABLED)
 	tr.nome.add_theme_color_override("font_color", cor_nome)
-	if bool(tr.get("estreito", false)):
-		tr.nome.position.y = 2.0 if estado == "locked" else 4.0  # trancado: o nome sobe para caber "DEPOIS DA / ESTEIRA" embaixo
+	tr.nome.position.y = UiTema.y_texto(UiTema.area_botao(d.botao))  # uma linha só: centrada na altura do botão
 	tr.cadeado.texture = UiTema.textura(str(m.get("icon_locked_buyable" if estado == "buyable" else "icon_locked", "")))
-	var texto := str(t.get("focus_locked", "")).to_upper()
-	if estado == "locked":
-		tr.depois.text = texto
-	else:
-		tr.preco.text = texto
-		tr.preco.add_theme_color_override("font_color", UiTema.Y1 if estado == "buyable" else UiTema.R2)
-	_estilo_trancado(d, estado, false)
+	_estilo_trancado(d, "locked" if estado == "boxed" else estado, false)
 
 
 ## Moldura do botão trancado. O comprável alterna com o quadro de pulso (3 fps) para chamar a atenção.

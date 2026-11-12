@@ -34,6 +34,17 @@ const P1 := Color("7a4fa0")
 const P2 := Color("b07ad8")
 
 const STEEL2 := Color("7f8c9a")  # aço (perfil do Kid Navalha)
+const F2 := Color("f59ac0")  # rosa da Fama (rampa nova f0/f1/f2, só de UI)
+
+# Fase 5.1: tokens de hierarquia (manifest.ui_tokens). Uma cor por moeda, igual em todo lugar. Preço sem saldo = COL_TEXT_2.
+const COL_TREINO := GR3
+const COL_MONEY := Y1
+const COL_FAME := F2
+const COL_LEGACY := P2
+const COL_TEXT_1 := WHITE
+const COL_TEXT_2 := G2
+const COL_DISABLED := G1
+const COL_BUYABLE := Y2
 
 static var _manifest: Dictionary = {}
 static var _fonte: Font
@@ -139,7 +150,7 @@ static func cor_atributo(atributo: String) -> Color:
 		"agility":
 			return B3
 		"endurance":
-			return Y1
+			return Y0  # Fase 5.1: Y1 é a cor do Dinheiro
 	return WHITE
 
 

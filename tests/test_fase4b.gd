@@ -9,6 +9,8 @@ func _novo(nome: String, treino_td: String = TrainingData.CAMINHO_TREINO) -> Nod
 	var gs: Node = GameStateScript.new()
 	gs.inicializar(pasta_limpa(nome), "res://data/config.json", treino_td)
 	gs.autosave_ativo = false
+	gs.dados.box_apparatus = false  # Fase 5.1: estes testes cobrem a compra instantânea (a caixa tem teste próprio)
+	gs.dados.box_glove = false
 	gs.risco_hud_ativo = false
 	return gs
 
