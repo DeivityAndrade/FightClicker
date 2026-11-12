@@ -264,13 +264,20 @@
 	],
 	"box_sender": "DA ESCOLA",
 	"box_to": "PARA O NOVATO",
+	"shop_crew_click_effect": "CLIQUE +{n} (1 S DA EQUIPE)",
+	"golden_crew_hover": "{nome}: +{n} DE TREINO",
+	"golden_crew_toast": "A TORCIDA ENCHEU A BOLSA! +{n}",
+	"golden_crew_name": "Bolsa da torcida",
+	"shop_crew_click_bought": "COMPRADO",
 	"box_label": {
 		"treadmill": "ESTEIRA",
 		"jump_rope": "CORDA",
 		"speed_bag": "PERA",
 		"grappling_dummy": "BONECO",
 		"glove_l1": "LUVA LONA",
-		"glove_l2": "LUVA COURO"
+		"glove_l2": "LUVA COURO",
+		"glove_l3": "LUVA MARCA",
+		"glove_l4": "LUVA TORNEIO"
 	},
 	"box_stamp": {
 		"treadmill": "PESADO",
@@ -278,7 +285,9 @@
 		"speed_bag": "PRA CIMA",
 		"grappling_dummy": "LADO COM CARA",
 		"glove_l1": "PAR",
-		"glove_l2": "NÃO MOLHAR"
+		"glove_l2": "NÃO MOLHAR",
+		"glove_l3": "ETIQUETA INTACTA",
+		"glove_l4": "NÃO EMPRESTAR"
 	},
 	"box_click": ["TOC!", "RACHOU!", "ABRIU!"],
 	"box_arrived": "CHEGOU: {item}!",
@@ -291,7 +300,7 @@
 	"tape_owned": "{nome}\nJá está no lugar.",
 	"tape_short": "{nome}\nFalta treino. Falta {n}.",
 	"focus_boxed": "Na caixa. Abra para treinar.",
-	"shop_glove_boxed": "Abra a caixa da luva antes.",
+	"shop_glove_boxed": "Abra a caixa antes.",
 	"hint_assist": "Segure SHIFT ou este botão\npara treino assistido.",
 	"hint_assist_first": "Dica: segure SHIFT.",
 	"hint_fame": "Fama\nO bairro já ouviu falar de você.",

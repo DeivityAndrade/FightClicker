@@ -5,7 +5,8 @@
 		"crit_multiplier": 3
 	},
 	"assist": { "interval": 1.5, "still_seconds": 0.6, "first_delay": 0.6 },
-	"golden_event": { "wait_min": 60.0, "wait_max": 100.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 6.0 },
+	"golden_event": { "wait_min": 60.0, "wait_max": 100.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 6.0,
+	                  "crew_chance": 0.5, "crew_seconds": 45.0, "crew_floor_clicks": 40, "frenzy_sprite": "event_golden_glove", "crew_sprite": "event_golden_crew" },
 	"box": {
 		"clicks_to_open": 3,
 		"open_seconds": 1.2,
@@ -32,7 +33,7 @@
 			"upgrades": [
 				{ "id": "bag_patch", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Fita nova no saco", "description": "Mais fita, menos areia no chão." },
 				{ "id": "bag_sand", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Areia peneirada", "description": "Soco que volta com juros." },
-				{ "id": "bag_leather", "cost": 400000, "multiplier": 3, "visual_level": 1, "name": "Couro curtido", "description": "Aguenta mais. Devolve mais." },
+				{ "id": "bag_leather", "cost": 250000, "multiplier": 3, "visual_level": 1, "name": "Couro curtido", "description": "Aguenta mais. Devolve mais." },
 				{ "id": "bag_chain", "cost": 4000000, "multiplier": 3, "visual_level": 1, "name": "Corrente de aço", "description": "Quem pendura aqui não pendura mais nada." }
 			]
 		},
@@ -47,7 +48,7 @@
 			"upgrades": [
 				{ "id": "treadmill_oil", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Óleo de cozinha na esteira", "description": "Range menos. Cheira a batata frita." },
 				{ "id": "treadmill_belt", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Correia emendada", "description": "Dá voltas inteiras sem pular." },
-				{ "id": "treadmill_motor", "cost": 400000, "multiplier": 3, "visual_level": 1, "name": "Motor de máquina de lavar", "description": "Barulho de avião. Mas funciona." },
+				{ "id": "treadmill_motor", "cost": 250000, "multiplier": 3, "visual_level": 1, "name": "Motor de máquina de lavar", "description": "Barulho de avião. Mas funciona." },
 				{ "id": "treadmill_incline", "cost": 4000000, "multiplier": 3, "visual_level": 1, "name": "Rampa de palete", "description": "Agora é subida. A vida também." }
 			]
 		},
@@ -62,7 +63,7 @@
 			"upgrades": [
 				{ "id": "rope_laundry", "cost": 300, "multiplier": 3, "visual_level": 1, "name": "Corda sem nó", "description": "Agora só prende duas vezes por minuto." },
 				{ "id": "rope_handles", "cost": 5000, "multiplier": 5, "visual_level": 1, "name": "Cabos de cabo de vassoura", "description": "Pega firme. Serragem inclusa." },
-				{ "id": "rope_beads", "cost": 400000, "multiplier": 3, "visual_level": 1, "name": "Cabo com contas", "description": "Gira quase sozinho." },
+				{ "id": "rope_beads", "cost": 250000, "multiplier": 3, "visual_level": 1, "name": "Cabo com contas", "description": "Gira quase sozinho." },
 				{ "id": "rope_steel", "cost": 4000000, "multiplier": 3, "visual_level": 1, "name": "Cabo de aço", "description": "Não arrebenta. Você, sim." }
 			]
 		},

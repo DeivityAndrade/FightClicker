@@ -372,6 +372,7 @@ const GLOVE_STYLES := {
 	"lona": {"c": "white", "g": "g3"},
 	"couro": {"c": "cream", "g": "br3"},
 	"marca": {"c": "white", "g": "g1"},
+	"campeao": {"c": "white", "g": "g3"},   # L4: azul de competição, punho branco largo, friso dourado
 	"tape": {"c": "g3", "g": "g2"},
 	"worn": {"c": "g3", "g": "g2"},
 	"tape_red": {"c": "g2", "g": "g1", "w": "r2"},   # Brutão: luva preta remendada com fita isolante vermelha
@@ -419,7 +420,7 @@ const SL_34 := [[-0.16, -4.4, 4.8], [-0.04, -5.0, 5.4], [0.15, -4.9, 5.1], [0.32
 ##                          (cinturão de pano na cintura), grease (manchas na roupa), shirt_detail "social"|"zip"
 ##                          (botões+colarinho / zíper do agasalho), shoe_maps {tipo: {rows, toe, ankle, ang}} (calçado
 ##                          próprio: chinelo, bota, tênis de cadarço solto)
-##  luva:                   glove "old"|"lona"|"couro"|"marca"|"tape"|"worn"|"tape_red"|"plain"|"fist"(punho nu)|"none",
+##  luva:                   glove "old"|"lona"|"couro"|"marca"|"campeao"|"tape"|"worn"|"tape_red"|"plain"|"fist"(punho nu)|"none",
 ##                          glove_ramp [r0, r1, r2]
 ##  quimono (Fase 5, opcionais; ausentes = resultado idêntico aos anteriores): shirt_detail "gi" (lapela),
 ##                          neck_v (0..0,3: decote em V), sleeve_add / sleeve_add_fore (manga larga),
@@ -562,6 +563,12 @@ func glove_rows(kind: String, style: String) -> Array:
 				"marca":
 					if body and (i + j == (w + h) / 2 - 1 or i + j == (w + h) / 2):
 						c = "y"
+				"campeao":   # L4 (Fase 5.2): friso dourado entre o corpo e o punho branco + selo dourado no lugar da fita
+					var orig := r[i]
+					if orig in ["t", "T"]:
+						c = "y"
+					elif c in ["M", "L", "D"] and _touches_cuff(src, i, j):
+						c = "y"
 				"tape":
 					if body and (j == 3 or j == 4):
 						c = "w"
@@ -571,6 +578,18 @@ func glove_rows(kind: String, style: String) -> Array:
 			nr += c
 		out.append(nr)
 	return out
+
+## Pixel (i,j) do mapa encosta (4-vizinhos) no punho da luva (c/g)?
+func _touches_cuff(src: Array, i: int, j: int) -> bool:
+	for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+		var x: int = i + d.x
+		var y: int = j + d.y
+		if y < 0 or y >= src.size():
+			continue
+		var r: String = src[y]
+		if x >= 0 and x < r.length() and r[x] in ["c", "g"]:
+			return true
+	return false
 
 ## Escolhe a orientação da luva pela direção do antebraço (cotovelo -> mão). Devolve [tipo, espelho].
 func glove_kind(el: Vector2, hand: Vector2) -> Array:

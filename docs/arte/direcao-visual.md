@@ -551,3 +551,35 @@ marcas nos 3 estados, a corda no gancho e as caixas nos lugares, com a equipe ch
 - As silhuetas riscadas são o contorno do sprite calculado por código. Servem; à mão ficariam com traço de giz de verdade.
 - O gancho da garagem tem 6 pixels. O símbolo da escola é provisório e depende da história.
 - A cor da Fama (rampa `f`) foi escolhida para separar das outras 7; vale um olhar humano na tela real, ao lado da Força.
+
+## 19. Fase 5.2 (Bolsa da torcida, Grito da equipe, caixas da L3/L4)
+Gerado por código a partir do scratchpad do Diretor de Arte (`art52/make52.gd`, rodado com `--path E:/Fightclicker -- --final`);
+o manifest foi relido na hora de gravar e só ganhou as chaves abaixo. A luva L4 (mãos, luta, cursor, `icon_glove_l4`,
+`art_hung_glove_l4`, `equipment/glove_l4`) é do Artista de Personagens.
+
+### 19.1 Bolsa da torcida (`event_golden_crew`)
+- **Mesmo pacote da luva ×7:** quadro 22x21, pivô (11,10), 3 quadros em loop a 6 fps, o mesmo ouro (fora da paleta de cena de
+  propósito: é o evento que salta da sala), o mesmo contorno marrom-escuro e o mesmo brilho em cruz passeando da esquerda para a
+  direita. Aparece, flutua e some do mesmo jeito (sala.gd); só troca o sprite (`training.json → golden_event.crew_sprite`).
+- **Silhueta oposta, para ler de longe:** a luva é um **cogumelo** (cúpula larga em cima, punho reto creme embaixo); a bolsa é uma
+  **pera invertida** (boca franzida em 3 abas e cordão creme em cima, bojo largo embaixo, moeda estampada no meio). O creme do cordão
+  é o mesmo do punho da luva: as duas são da mesma família, mas o creme fica embaixo numa e em cima na outra.
+- `by_data_id.golden_event` junta as duas variantes (`frenzy_sprite`, `crew_sprite`, anim, fps, área de clique).
+
+### 19.2 Grito da equipe (`icon_crew_click`)
+Ícone 16x16 da LOJA (como os outros): megafone **verde** (a cor da equipe nos ícones de Corpo/equipe) gritando para a direita,
+com duas ondas de som amarelas sem contorno. `by_data_id.crew_click.icon`.
+
+### 19.3 Caixas da L3 e da L4
+`by_data_id.box.sprite_by_item` / `slot_by_item`: `glove_l3` e `glove_l4` = `box_small` no slot `glove` (igual L1 e L2; a L3 não
+estava na lista). Etiqueta: `box_label` "LUVA MARCA" / "LUVA TORNEIO" e `box_stamp` "ETIQUETA INTACTA" / "NÃO EMPRESTAR" cabem na
+etiqueta de 104 px do padrão 5.1 (conferido no mockup). Conferência da L3: ícone, cursor, luva pendurada e item já existem no padrão
+atual; faltava só a caixa.
+
+### 19.4 Mockup e placeholder
+`mockups/fase52_bolsa_x3.png`: as duas lado a lado (3 quadros, silhueta, na garagem e na academia em 1x), os ícones da LOJA
+(L3, L4, Grito) e as etiquetas das caixas.
+Precisa de pixel artist: a bolsa pede volume de tecido de verdade (dobras, peso das moedas puxando o fundo) e um brilho desenhado à
+mão; o megafone pede um ângulo de 3/4. Manter 22x21, pivô (11,10) e 3 quadros para trocar só o arquivo.
+Nota para o Roteirista: o toast diz "PASSOU O CHAPÉU", mas o objeto é uma bolsa. Ou o texto fala de bolsa/sacola, ou a arte vira
+chapéu (perde a silhueta oposta à luva; não recomendo).

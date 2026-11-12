@@ -11,8 +11,17 @@
 			{ "id": "glove_l1", "cost": 120, "click_multiplier": 2, "sprite_suffix": "_glove_l1",
 			  "name": "Luva de lona", "description": "Comprada na feira. Ainda cheira a novo." },
 			{ "id": "glove_l2", "cost": 500, "click_multiplier": 2, "sprite_suffix": "_glove_l2",
-			  "name": "Luva de couro", "description": "Costura dupla. Os dedos agradecem." }
+			  "name": "Luva de couro", "description": "Costura dupla. Os dedos agradecem." },
+			{ "id": "glove_l3", "cost": 1200, "click_multiplier": 2, "sprite_suffix": "_glove_l3",
+			  "name": "Luva de marca", "description": "Tem etiqueta e tudo. Parece até de rico." },
+			{ "id": "glove_l4", "cost": 2500, "click_multiplier": 2, "sprite_suffix": "_glove_l4",
+			  "name": "Luva de torneio", "description": "Digna do Tonhão. O bairro pede autógrafo." }
 		]
+	},
+	"crew_click": {
+		"id": "crew_click", "cost": 1500, "crew_share": 1.0, "icon": "icon_crew_click",
+		"name": "Grito da equipe", "description": "Cada clique seu vale 1 s da equipe.",
+		"appears_as": "MEGAFONE NA PRATELEIRA"
 	},
 	"metronome": {
 		"id": "metronome",

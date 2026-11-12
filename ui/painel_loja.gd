@@ -37,6 +37,9 @@ var _aba_loja: Control
 var _tab: Dictionary = {}  # nome -> {botao, rotulo}
 var _alerta_loja: Label
 var _t := 0.0
+var _janela_loja: Control
+var _altura_loja := 0.0
+var _crew: Dictionary = {}  # Grito da equipe (Fase 5.2); {} = a melhoria não existe nos dados
 var _luva_atual: Label
 var _luva_atual_icone: TextureRect
 var _rot_melhorias: Label
@@ -59,7 +62,13 @@ func _ready() -> void:
 	_aba_treino.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_aba_treino.size = Vector2(128, ALTURA_JANELA)
 	_janela_treino.add_child(_aba_treino)
-	_aba_loja = _novo_container()
+	# Fase 5.2: a aba LOJA também rola (5 cartões não cabem em 250 px): mesma janela recortada da aba TREINO.
+	_janela_loja = _novo_container()
+	_janela_loja.clip_contents = true
+	_aba_loja = Control.new()
+	_aba_loja.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_aba_loja.size = Vector2(128, ALTURA_JANELA)  # cresce no fim do _ready (_altura_loja)
+	_janela_loja.add_child(_aba_loja)
 
 	# --- Aba TREINO ---
 	UiTema.rotulo(_aba_treino, str(ui.get("panel_team", "EQUIPE")).to_upper(), UiTema.COL_TEXT_1, 8, 0)  # txt_title
@@ -106,10 +115,18 @@ func _ready() -> void:
 	_luva = _montar_luva(y)
 	y += ALTURA_CARTAO_LOJA + 3.0
 	_metro = _montar_metronomo(y)
-	y += ALTURA_CARTAO_LOJA + 4.0
+	y += ALTURA_CARTAO_LOJA + 3.0
+	if not GameState.lutas.crew_click.is_empty():
+		_crew = _montar_crew(y)
+		y += ALTURA_CARTAO_LOJA + 1.0
 	_luva_atual_icone = UiTema.textura_rect(_aba_loja, "icon_glove_old", 6, y - 1)
 	_luva_atual = UiTema.rotulo(_aba_loja, "", UiTema.G3, 26, y + 3, 96)
+	_altura_loja = y + 18.0
+	_aba_loja.size.y = _altura_loja
 
+	GameState.crew_click_mudou.connect(func(_c: bool) -> void: atualizar())
+	GameState.nova_carreira_iniciada.connect(func(_c: Dictionary) -> void: atualizar())
+	GameState.carregado.connect(func(_s: int) -> void: atualizar())
 	GameState.melhoria_comprada.connect(func(_a: String, _m: String, _n: int) -> void: atualizar())
 	GameState.economia_mudou.connect(atualizar)
 	GameState.luva_mudou.connect(func(_n: int, _s: String) -> void: atualizar())
@@ -161,7 +178,10 @@ func _montar_abas() -> void:
 func _trocar_aba(nome: String) -> void:
 	_aba = nome
 	_janela_treino.visible = nome == ABA_TREINO
-	_aba_loja.visible = nome == ABA_LOJA
+	_janela_loja.visible = nome == ABA_LOJA
+	_rolagem = 0.0
+	_aba_treino.position.y = 0.0
+	_aba_loja.position.y = 0.0
 	for id in _tab:
 		var ativa: bool = id == nome
 		UiTema.aplicar_estilo_botao(_tab[id].botao, "ui_button_pressed" if ativa else "ui_button_normal")
@@ -181,7 +201,7 @@ func _loja_tem_compra() -> bool:
 	for g in GameState.lutas.geradores_pagos:
 		if GameState.pode_comprar_gerador_pago(g.id):
 			return true
-	return GameState.pode_comprar_luva() or GameState.pode_comprar_metronomo()
+	return GameState.pode_comprar_luva() or GameState.pode_comprar_metronomo() or GameState.pode_comprar_crew_click()
 
 
 # --- Montagem dos cartões ---
@@ -239,8 +259,9 @@ func _montar_gerador(g: Dictionary, y: float) -> Dictionary:
 func _montar_melhoria(ap: Dictionary, y: float) -> Dictionary:
 	var c := _cartao(_aba_treino, y)
 	var ids: Dictionary = UiTema.manifest().get("by_data_id", {}).get(ap.id, {})
-	var icone_ap := UiTema.textura_rect(c, str(ids.get("icon", "icon_bag")), 5, 3)
-	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 4, 17, 18, HORIZONTAL_ALIGNMENT_CENTER)
+	# Fase 5.2: ícone 2 px mais alto e o contador "0/4" 1 px abaixo dele (sem encostar no botão) (folga em cima e embaixo, sem encostar no botão).
+	var icone_ap := UiTema.textura_rect(c, str(ids.get("icon", "icon_bag")), 5, 1)
+	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 4, 18, 18, HORIZONTAL_ALIGNMENT_CENTER)
 	# Aparelho da arte (Fase 5): a linha de cima traz o nome da técnica (Jab duplo, Guarda fechada...), a de baixo o efeito.
 	var da_arte := str(ap.get("art", "")) != ""
 	var nome_tecnica: Label = UiTema.rotulo(c, "", UiTema.WHITE, 26, 2, 92) if da_arte else null
@@ -343,6 +364,23 @@ func _montar_luva(y: float) -> Dictionary:
 	return item
 
 
+# Grito da equipe (Fase 5.2, dinheiro): ícone, nome, o efeito (CLIQUE +N (1 S DA EQUIPE), em 2 linhas) e o botão com o preço.
+func _montar_crew(y: float) -> Dictionary:
+	var d: Dictionary = GameState.lutas.crew_click
+	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
+	UiTema.textura_rect(c, str(d.get("icon", "icon_crew_click")), 5, 4)
+	UiTema.rotulo(c, str(d.get("name", "")).to_upper(), UiTema.WHITE, 26, 3, 92)
+	var efeito := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 26, 12, 92)
+	var aviso := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 10, 31, 104)
+	var parte := _botao_compra(c, UiTema.txt("shop_buy", "COMPRAR"), 43, "icon_money")
+	var item := {"cartao": c, "efeito": efeito, "aviso": aviso, "pode": false, "tween": null}
+	item.merge(parte)
+	parte.botao.pressed.connect(_comprar_crew)
+	parte.botao.mouse_entered.connect(func() -> void: _sobre("c"))
+	parte.botao.mouse_exited.connect(func() -> void: _sobre(""))
+	return item
+
+
 # Metrônomo (Fase 4, dinheiro): ícone do nível à venda, nome do nível, X/3, "1 SOCO A CADA 2.0 S" e o botão com o preço.
 # O efeito é largo (98 px), por isso fica embaixo do ícone, na largura toda do cartão.
 func _montar_metronomo(y: float) -> Dictionary:
@@ -367,6 +405,12 @@ func _montar_metronomo(y: float) -> Dictionary:
 func _comprar_metronomo() -> void:
 	if GameState.comprar_metronomo():
 		_piscar(_metro)
+	atualizar()
+
+
+func _comprar_crew() -> void:
+	if GameState.comprar_crew_click():
+		_piscar(_crew)
 	atualizar()
 
 
@@ -446,6 +490,11 @@ func _emitir_info() -> void:
 		else:
 			info_mudou.emit({"titulo": l.get("name", ""), "texto": l.get("description", ""),
 				"extra": GameState.texto_efeito_loja(l)})
+		return
+	if _hover == "c":
+		var cd: Dictionary = GameState.lutas.crew_click
+		info_mudou.emit({"titulo": cd.get("name", ""), "texto": cd.get("description", ""),
+			"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO")) if GameState.crew_click_comprado else GameState.texto_efeito_crew_click()})
 		return
 	if _hover == "m":
 		var def: Dictionary = GameState.proximo_metronomo()
@@ -563,6 +612,7 @@ func atualizar() -> void:
 		item.aviso.text = _aviso_loja(custo, GameState.pode_comprar_gerador_pago(g.id))
 	_atualizar_luva(bloqueado)
 	_atualizar_metronomo(bloqueado)
+	_atualizar_crew(bloqueado)
 	_alerta_loja.visible = _loja_tem_compra() and _aba != ABA_LOJA
 	_destacar_mais_barato()
 	if _hover != "":
@@ -589,15 +639,17 @@ func _aviso_loja(custo: float, pode: bool) -> String:
 
 ## A altura do conteúdo cresce 1 cartão quando o aparelho da arte existe. Reajusta o limite e as setas.
 func _ajustar_rolagem(existe_arte: bool) -> void:
-	_rolagem_max = maxf(0.0, _altura_treino - ALTURA_JANELA + 2.0)
+	var altura := _altura_treino if _aba == ABA_TREINO else _altura_loja
+	_rolagem_max = maxf(0.0, altura - ALTURA_JANELA + 2.0)
 	_rolar_a(_rolagem)
 
 
 func _rolar_a(valor: float) -> void:
 	_rolagem = clampf(roundf(valor), 0.0, _rolagem_max)
-	_aba_treino.position.y = -_rolagem
-	_seta_cima.visible = _rolagem > 0.0 and _aba == ABA_TREINO
-	_seta_baixo.visible = _rolagem < _rolagem_max and _aba == ABA_TREINO
+	var conteudo := _aba_treino if _aba == ABA_TREINO else _aba_loja
+	conteudo.position.y = -_rolagem
+	_seta_cima.visible = _rolagem > 0.0
+	_seta_baixo.visible = _rolagem < _rolagem_max
 
 
 ## Leva o cartão para dentro da janela (clique na marca de fita ou no botão de foco trancado).
@@ -611,7 +663,7 @@ func _rolar_para(cartao: Control) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not (event is InputEventMouseButton) or not event.pressed or _aba != ABA_TREINO or _rolagem_max <= 0.0:
+	if not (event is InputEventMouseButton) or not event.pressed or _rolagem_max <= 0.0:
 		return
 	if event.button_index != MOUSE_BUTTON_WHEEL_UP and event.button_index != MOUSE_BUTTON_WHEEL_DOWN:
 		return
@@ -693,7 +745,19 @@ func _destacar_mais_barato() -> void:
 	var loja: Array = _pagos.values()
 	loja.append(_luva)
 	loja.append(_metro)
+	if not _crew.is_empty():
+		loja.append(_crew)
+	# Fase 5.2: um destaque só. O cartão de aparelho novo já tem a borda de papelão (laranja): quando ele está
+	# comprável, é ele o destaque e o contorno do "mais barato" não aparece em mais nenhum cartão.
+	var aparelho_novo := false
+	for id in _unl:
+		if _unl[id].cartao.visible and not _unl[id].colapsado and bool(_unl[id].pode):
+			aparelho_novo = true
 	for grupo in [treino, loja]:
+		if grupo == treino and aparelho_novo:
+			for it in grupo:
+				it.destaque.visible = false
+			continue
 		var melhor: Dictionary = {}
 		for it in grupo:
 			it.destaque.visible = false
@@ -761,6 +825,21 @@ func _atualizar_metronomo(bloqueado: bool) -> void:
 	var pode := GameState.pode_comprar_metronomo()
 	_preco(item, float(prox.cost), pode and not bloqueado, true)
 	item.aviso.text = _aviso_loja(float(prox.cost), pode)
+
+
+func _atualizar_crew(bloqueado: bool) -> void:
+	if _crew.is_empty():
+		return
+	var item := _crew
+	item.efeito.text = GameState.texto_efeito_crew_click().to_upper()
+	if GameState.crew_click_comprado:
+		item.aviso.text = ""
+		_botao_texto_central(item, UiTema.txt("shop_crew_click_bought", "COMPRADO"), UiTema.GR3)
+		return
+	var custo := float(GameState.lutas.crew_click.cost)
+	var pode := GameState.pode_comprar_crew_click()
+	_preco(item, custo, pode and not bloqueado, true)
+	item.aviso.text = _aviso_loja(custo, pode)
 
 
 func _maximo(item: Dictionary) -> void:

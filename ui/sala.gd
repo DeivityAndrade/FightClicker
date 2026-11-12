@@ -106,6 +106,7 @@ func _ready() -> void:
 	GameState.auto_socou.connect(_ao_auto_socou)
 	GameState.evento_dourado.connect(_ao_evento_dourado)
 	GameState.frenesi_mudou.connect(_ao_frenesi_mudou)
+	GameState.bolsa_paga.connect(_ao_bolsa_paga)
 	GameState.metronomo_mudou.connect(_ao_metronomo)
 	GameState.caixa_criada.connect(_ao_caixa_criada)
 	GameState.caixa_batida.connect(_ao_caixa_batida)
@@ -408,12 +409,14 @@ func _notification(what: int) -> void:
 
 func _clique_em(p: Vector2) -> void:
 	if _evento_rect.size != Vector2.ZERO and _evento_rect.has_point(p):
+		var era_bolsa := _evento_tipo == "crew"
 		if GameState.pegar_evento_dourado():
-			_esconder_evento()
-			var n := _pegar_numero()
-			_ordem += 1
-			n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
-			n.iniciar(UiTema.txt("frenzy_start", "FRENESI X{n}!", {"n": int(GameState.FRENESI_MULT)}), UiTema.Y1, true, "", p + Vector2(0, -10), 1.0, 26.0)
+			_esconder_evento()  # na bolsa, o aviso já saiu pelo sinal bolsa_paga (_ao_bolsa_paga)
+			if not era_bolsa:
+				var n := _pegar_numero()
+				_ordem += 1
+				n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
+				n.iniciar(UiTema.txt("frenzy_start", "FRENESI X{n}!", {"n": int(GameState.FRENESI_MULT)}), UiTema.Y1, true, "", p + Vector2(0, -10), 1.0, 26.0)
 			sfx.compra()
 			_tremer(1, 0.12)
 		return
@@ -492,7 +495,9 @@ func _mostrar_numero(p: Vector2, ganho: float, critico: bool, atributo: String, 
 	# Mais recente por cima; crítico sempre acima dos normais (z fica abaixo do cursor, 4000).
 	n.definir_z(Z_NUMEROS + (1000 if critico else 0) + _ordem % 900)
 	if critico:
-		n.iniciar("+%s %s!" % [NumberFormat.fmt(ganho), nome], UiTema.R3, true, texto, Vector2(x, y - 4.0), 0.85, 34.0)
+		# Fase 5.2: o crítico grande (2x) leva só as 3 primeiras letras do atributo ("+3 RES!"): metade da largura,
+		# sem cobrir a sala. O nome inteiro continua no número normal e a frase de sabor na linha de baixo.
+		n.iniciar("+%s %s!" % [NumberFormat.fmt(ganho), nome.left(3)], UiTema.R3, true, texto, Vector2(x, y - 4.0), 0.85, 34.0)
 	else:
 		n.iniciar("+%s %s" % [NumberFormat.fmt(ganho), nome], UiTema.cor_atributo(atributo).lerp(UiTema.WHITE, 0.55 if atributo == "strength" else 0.25),
 			false, "", Vector2(x, y), 0.55, 30.0)
@@ -653,6 +658,7 @@ var _i_combo := 0
 # Evento dourado: o cinturão dourado aparece num ponto sorteado da sala por alguns segundos; clicar liga o FRENESI (x7).
 var _evento_spr: AnimSprite
 var _evento_rect := Rect2()
+var _evento_tipo := "frenzy"  # Fase 5.2: "frenzy" (luva x7) ou "crew" (bolsa da torcida)
 var _tween_evento: Tween
 var _tween_ouro: Tween
 var _rotulo_frenesi: Label
@@ -681,8 +687,13 @@ func _proximo_golpe_saco() -> String:
 func _ao_evento_dourado(duracao: float) -> void:
 	if GameState.modal_aberto:
 		return
+	# Fase 5.2: o tipo já foi sorteado antes do sinal; o sprite vem dos dados (bolsa da torcida x luva x7).
+	_evento_tipo = GameState.evento_dourado_tipo
+	var sprite_evento: String = GameState.dados.golden_crew_sprite if _evento_tipo == "crew" else GameState.dados.golden_frenzy_sprite
 	if _evento_spr == null:
-		_evento_spr = _novo_anim("event_golden_glove", "", 950)
+		_evento_spr = _novo_anim(sprite_evento, "", 950)
+	else:
+		_evento_spr.definir(sprite_evento)
 	var x := _rng.randf_range(AREA.position.x + 50.0, AREA.end.x - 70.0)
 	var y := _rng.randf_range(AREA.position.y + 40.0, AREA.position.y + 150.0)
 	_evento_spr.position = Vector2(x, y)
@@ -697,6 +708,22 @@ func _ao_evento_dourado(duracao: float) -> void:
 	_tween_evento.tween_property(_evento_spr, "position:y", y - 3.0, 0.4).set_trans(Tween.TRANS_SINE)
 	_tween_evento.tween_property(_evento_spr, "position:y", y + 3.0, 0.4).set_trans(Tween.TRANS_SINE)
 	sfx.foco()
+
+
+## Bolsa da torcida clicada: aviso dourado (tamanho 1x, cabe na sala) subindo do ponto onde ela estava. Sem FRENESI.
+func _ao_bolsa_paga(ganho: float) -> void:
+	var centro := _evento_rect.get_center() if _evento_rect.size != Vector2.ZERO else PONTO_PADRAO
+	var n := _pegar_numero()
+	_ordem += 1
+	n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
+	var x := clampf(centro.x, AREA.position.x + 100.0, AREA.end.x - 100.0)
+	n.iniciar(UiTema.txt("golden_crew_toast", "", {"n": NumberFormat.fmt(ganho)}), UiTema.Y1, false, "", Vector2(x, centro.y - 6.0), 1.5, 24.0)
+
+
+## Dica de hover da bolsa da torcida: quanto ela paga agora. A luva x7 não tem dica.
+func _texto_bolsa() -> String:
+	return UiTema.txt("golden_crew_hover", "", {"nome": UiTema.txt("golden_crew_name", "Bolsa da torcida"),
+		"n": NumberFormat.fmt(GameState.valor_bolsa())})
 
 
 func _esconder_evento() -> void:
@@ -1057,7 +1084,9 @@ func _hover_em(p: Vector2) -> void:
 	var tip := ""
 	var marca := ""
 	var cx := _caixa_em(p)
-	if cx != "":
+	if _evento_rect.size != Vector2.ZERO and _evento_rect.has_point(p) and _evento_tipo == "crew":
+		tip = _texto_bolsa()
+	elif cx != "":
 		tip = _texto_caixa(cx)
 	else:
 		for id in _marcas:

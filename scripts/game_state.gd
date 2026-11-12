@@ -37,6 +37,8 @@ signal nova_carreira_iniciada(cartao: Dictionary)  # só em NOVA CARREIRA (não 
 signal aparelho_comprado(aparelho: String)  # Fase 4b: aparelho montado (a UI faz a chegada)
 signal evento_dourado(duracao: float)  # o cinturão dourado aparece na sala: clicar nele liga o FRENESI
 signal frenesi_mudou(restante: float)  # FRENESI ligado (segundos restantes) ou desligado (0)
+signal bolsa_paga(ganho: float)  # Fase 5.2: a bolsa da torcida foi clicada (treino já somado)
+signal crew_click_mudou(comprado: bool)  # Fase 5.2: Grito da equipe comprado, NOVA CARREIRA ou carga do save
 signal assistido_mudou(estado: String)  # "off" | "waiting" | "active" | "metronome"
 # --- Fase 5 (contrato: docs/fases/fase5-api.md) ---
 signal local_mudou(local: String)  # MUDAR, NOVA CARREIRA ou carga do save
@@ -81,6 +83,8 @@ var EVENTO_ESPERA_MIN := 45.0
 var EVENTO_ESPERA_MAX := 90.0
 var frenesi_restante := 0.0
 var evento_dourado_restante := 0.0  # > 0: o cinturão dourado está na sala esperando o clique
+var evento_dourado_tipo := "frenzy"  # Fase 5.2: "frenzy" (luva x7) | "crew" (bolsa da torcida), sorteado ao aparecer
+var crew_click_comprado := false  # Fase 5.2: career.crew_click (Grito da equipe)
 var _evento_espera := -1.0
 var _rng_evento := RandomNumberGenerator.new()  # próprio: não mexe nos sorteios de crítico (testes determinísticos)
 var nivel_metronomo := 0  # Fase 4: 0 = sem Metrônomo (career.metronome_level)
@@ -237,7 +241,7 @@ func multiplicador_aparelho(aparelho_id: String) -> float:
 
 ## Treino por clique MANUAL normal (sem crítico) com o foco atual: base x aparelho x luva x árvore x local x (1 + Boxe).
 func por_clique() -> float:
-	return _base_soco() * (1.0 + bonus_arte_clique())
+	return _base_soco() * (1.0 + bonus_arte_clique()) + bonus_crew_click()
 
 
 ## Treino por auto-soco (Metrônomo e assistido): igual ao clique, mas sem o bônus do Boxe.
@@ -398,13 +402,56 @@ func mult_frenesi() -> float:
 	return FRENESI_MULT if frenesi_restante > 0.0 else 1.0
 
 
-## O jogador clicou no cinturão dourado: liga o FRENESI. false se não havia cinturão (ou se há janela aberta).
+## O jogador clicou no evento dourado. Tipo "frenzy": liga o FRENESI. Tipo "crew" (bolsa da torcida): paga
+## `valor_bolsa()` de uma vez, sem FRENESI e sem crítico. false se não havia evento (ou se há janela aberta).
 func pegar_evento_dourado() -> bool:
 	if evento_dourado_restante <= 0.0 or modal_aberto or acoes_bloqueadas():
 		return false
 	evento_dourado_restante = 0.0
+	if evento_dourado_tipo == "crew":
+		var ganho := valor_bolsa()
+		_ganhar(ganho)
+		bolsa_paga.emit(ganho)
+		return true
 	frenesi_restante = FRENESI_DURACAO
 	frenesi_mudou.emit(frenesi_restante)
+	return true
+
+
+## Quanto a bolsa da torcida paga agora: max(crew_seconds x renda_sem_mao, crew_floor_clicks x por_clique).
+func valor_bolsa() -> float:
+	return maxf(dados.golden_crew_seconds * renda_sem_mao(), dados.golden_crew_floor_clicks * por_clique())
+
+
+## Treino/s sem a mão: equipe + auto-socos do Metrônomo (sem crítico e sem FRENESI).
+func renda_sem_mao() -> float:
+	return producao_total() + socos_por_segundo_metronomo() * por_auto_soco()
+
+
+## Extra do Grito da equipe em cada clique da mão: crew_share x equipe/s (0 sem a melhoria). Não vale no auto-soco.
+func bonus_crew_click() -> float:
+	if not crew_click_comprado or lutas.crew_click.is_empty():
+		return 0.0
+	return float(lutas.crew_click.crew_share) * producao_total()
+
+
+## "CLIQUE +123 (1 S DA EQUIPE)": o que o Grito da equipe soma agora em cada clique.
+func texto_efeito_crew_click() -> String:
+	return preencher(texto_ui("shop_crew_click_effect", "CLIQUE +{n} (1 S DA EQUIPE)"),
+		{"n": NumberFormat.fmt(float(lutas.crew_click.get("crew_share", 0.0)) * producao_total())})
+
+
+func pode_comprar_crew_click() -> bool:
+	return not lutas.crew_click.is_empty() and not crew_click_comprado and loja_estado(float(lutas.crew_click.cost)) == "ok"
+
+
+func comprar_crew_click() -> bool:
+	if acoes_bloqueadas() or not pode_comprar_crew_click():
+		return false
+	_gastar_dinheiro(float(lutas.crew_click.cost))
+	crew_click_comprado = true
+	crew_click_mudou.emit(true)
+	economia_mudou.emit()
 	return true
 
 
@@ -423,6 +470,7 @@ func _tick_evento_dourado(delta: float) -> void:
 	_evento_espera -= delta
 	if _evento_espera <= 0.0:
 		_evento_espera = -1.0
+		evento_dourado_tipo = "crew" if dados.golden_crew_chance >= 1.0 or (dados.golden_crew_chance > 0.0 and _rng_evento.randf() < dados.golden_crew_chance) else "frenzy"
 		evento_dourado_restante = EVENTO_DURACAO
 		evento_dourado.emit(EVENTO_DURACAO)
 
@@ -1404,6 +1452,7 @@ func _zerar_carreira() -> void:
 	_atualizar_traco()
 	_perigo_gym = 0.0
 	nivel_luva = 0
+	crew_click_comprado = false
 	dinheiro = 0.0
 	fama = 0
 	indice_escada = 0
@@ -1886,6 +1935,8 @@ func menor_preco_loja() -> float:
 	var l := proxima_luva()
 	if not l.is_empty() and not luva_em_caixa():
 		m = minf(m, float(l.cost))
+	if not lutas.crew_click.is_empty() and not crew_click_comprado:
+		m = minf(m, float(lutas.crew_click.cost))
 	var mt := proximo_metronomo()
 	if not mt.is_empty():
 		m = minf(m, float(mt.cost))
@@ -2161,6 +2212,7 @@ func para_save() -> Dictionary:
 			"upgrades": niveis_melhoria.duplicate(),
 			"paid_generators": geradores_pagos.duplicate(),
 			"glove_level": nivel_luva,
+			"crew_click": crew_click_comprado,
 			"money": dinheiro,
 			"fame": fama,
 			"ladder_index": indice_escada,
@@ -2218,6 +2270,7 @@ func aplicar_save(estado: Dictionary) -> void:
 		var q = gp.get(g.id, 0) if gp is Dictionary else 0
 		geradores_pagos[g.id] = _inteiro_valido(q, 1.0e9)
 	nivel_luva = _inteiro_valido(c.get("glove_level", 0), float(lutas.luvas.size()))
+	crew_click_comprado = typeof(c.get("crew_click", false)) == TYPE_BOOL and c.get("crew_click", false) and not lutas.crew_click.is_empty()
 	caixas_lista = _validar_caixas(c.get("boxes", null))
 	dinheiro = _numero_valido(c.get("money", 0.0))
 	fama = _inteiro_valido(c.get("fame", 0), 1.0e15)
@@ -2422,6 +2475,7 @@ func _emitir_tudo(pedir_arte: bool = true) -> void:
 	luva_mudou.emit(luvas_abertas(), sufixo_luva())
 	caixas_mudaram.emit()
 	metronomo_mudou.emit(nivel_metronomo)
+	crew_click_mudou.emit(crew_click_comprado)
 	local_mudou.emit(local_id)
 	arte_mudou.emit(arte_id)
 	_atualizar_estado_assist()

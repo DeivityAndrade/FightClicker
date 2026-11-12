@@ -57,6 +57,10 @@ const ESTADOS_TODOS := [
 	"f51_hover_atributo", "f51_hover_assist", "f51_marcas", "f51_marca_hover", "f51_marca_trancada", "f51_loja_trancado", "f51_hover_foco",
 	"f51_caixa_0", "f51_caixa_hover", "f51_caixa_1", "f51_caixa_2", "f51_caixa_abrindo", "f51_caixa_aberta", "f51_caixas_varias",
 	"f51_caixa_sem_espaco", "f51_caixa_janela", "f51_caixa_luva", "f51_corda_gancho", "f51_caixa_persiste", "f51_anim_saco", "f51_anim_esteira", "f51_previa",
+	# Fase 5.2
+	"f52_loja_l3_compravel", "f52_loja_l4_sem_dinheiro", "f52_loja_l4_na_caixa", "f52_loja_grito_compravel", "f52_loja_grito_sem_dinheiro",
+	"f52_loja_grito_comprado", "f52_loja_grito_hover", "f52_evento_luva", "f52_evento_bolsa", "f52_bolsa_hover", "f52_bolsa_toast",
+	"f52_caixa_l3", "f52_caixa_l4", "f52_l4_sala", "f52_l4_luta", "f52_destaque_unico", "f52_contador", "f52_critico_menor",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -285,6 +289,7 @@ func _rodar() -> void:
 	await _rodar_fase4b()
 	await _rodar_fase5()
 	await _rodar_fase51()
+	await _rodar_fase52()
 	_fechar_cena()
 
 
@@ -2016,3 +2021,177 @@ func _rodar_fase51() -> void:
 		_cena.get_node("Fluxo").abrir_previa()
 		await _esperar(0.6)
 		await _ver("f51_previa")
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.2: luvas L3/L4 e Grito da equipe na LOJA, evento dourado por tipo (luva x7 / bolsa), 3 desvios da 5.1
+# ---------------------------------------------------------------------------------------------
+
+func _abrir_loja(rolar_ate_o_fim: bool = false) -> Node:
+	await _abrir()
+	var painel: Node = _cena.get_node("PainelLoja")
+	painel._tab["loja"].botao.pressed.emit()
+	await _esperar(0.2)
+	if rolar_ate_o_fim:
+		painel._rolar_a(painel._rolagem_max)
+	await _esperar(0.1)
+	return painel
+
+
+func _rodar_fase52() -> void:
+	var alguma := false
+	for n in ESTADOS_TODOS:
+		if str(n).begins_with("f52_") and _quer(n):
+			alguma = true
+	if not alguma:
+		return
+
+	# --- LOJA: L3 comprável, L4 sem dinheiro, L4 com a L3 ainda na caixa ---
+	if _quer("f52_loja_l3_compravel"):
+		_novo_jogo()
+		gs.nivel_luva = 2
+		gs.dinheiro = 1500.0
+		await _abrir_loja()
+		_exigir(gs.pode_comprar_luva() and str(gs.proxima_luva().id) == "glove_l3", "f52_loja_l3_compravel", "a L3 esta a venda")
+		await _ver("f52_loja_l3_compravel")
+	if _quer("f52_loja_l4_sem_dinheiro"):
+		_novo_jogo()
+		gs.nivel_luva = 3
+		gs.dinheiro = 300.0
+		await _abrir_loja()
+		_exigir(str(gs.proxima_luva().id) == "glove_l4" and not gs.pode_comprar_luva(), "f52_loja_l4_sem_dinheiro", "a L4 esta a venda sem dinheiro")
+		await _ver("f52_loja_l4_sem_dinheiro")
+	if _quer("f52_loja_l4_na_caixa") or _quer("f52_caixa_l3"):
+		_novo_jogo()
+		gs.nivel_luva = 2
+		gs.dinheiro = 6000.0
+		await _abrir()
+		_exigir(gs.comprar_luva(), "f52_caixa_l3", "comprar a L3")
+		await _esperar(0.8)
+		_exigir(gs.tem_caixa("glove_l3") and _cena.get_node("Sala")._caixas.has("glove_l3"), "f52_caixa_l3", "a caixa da L3 esta na sala")
+		await _ver("f52_caixa_l3")
+		_cena.get_node("PainelLoja")._tab["loja"].botao.pressed.emit()
+		await _esperar(0.2)
+		_exigir(gs.luva_em_caixa() and not gs.pode_comprar_luva(), "f52_loja_l4_na_caixa", "L4 so depois de abrir a caixa da L3")
+		await _ver("f52_loja_l4_na_caixa")
+	if _quer("f52_caixa_l4"):
+		_novo_jogo()
+		gs.nivel_luva = 3
+		gs.dinheiro = 6000.0
+		await _abrir()
+		_exigir(gs.comprar_luva(), "f52_caixa_l4", "comprar a L4")
+		await _esperar(0.8)
+		_exigir(gs.tem_caixa("glove_l4") and _cena.get_node("Sala")._caixas.has("glove_l4"), "f52_caixa_l4", "a caixa da L4 esta na sala")
+		await _ver("f52_caixa_l4")
+
+	# --- LOJA: Grito da equipe ---
+	if _quer("f52_loja_grito_compravel") or _quer("f52_loja_grito_hover") or _quer("f52_loja_grito_comprado"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.dinheiro = 2000.0
+		var painel: Node = await _abrir_loja(true)
+		_exigir(gs.pode_comprar_crew_click(), "f52_loja_grito_compravel", "o Grito esta comprável")
+		await _ver("f52_loja_grito_compravel")
+		if _quer("f52_loja_grito_hover"):
+			painel._sobre("c")
+			await _esperar(0.1)
+			await _ver("f52_loja_grito_hover")
+			painel._sobre("")
+		painel._comprar_crew()
+		await _esperar(0.5)
+		_exigir(gs.crew_click_comprado and painel._crew.botao.disabled, "f52_loja_grito_comprado", "comprado: botao apagado")
+		await _ver("f52_loja_grito_comprado")
+	if _quer("f52_loja_grito_sem_dinheiro"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.dinheiro = 90.0
+		await _abrir_loja(true)
+		_exigir(not gs.pode_comprar_crew_click(), "f52_loja_grito_sem_dinheiro", "sem dinheiro")
+		await _ver("f52_loja_grito_sem_dinheiro")
+
+	# --- Evento dourado: luva x7 e bolsa da torcida ---
+	if _quer("f52_evento_luva") or _quer("f52_evento_bolsa") or _quer("f52_bolsa_hover") or _quer("f52_bolsa_toast"):
+		for tipo in ["frenzy", "crew"]:
+			var nome_ev := "f52_evento_luva" if tipo == "frenzy" else "f52_evento_bolsa"
+			if not (_quer(nome_ev) or (tipo == "crew" and (_quer("f52_bolsa_hover") or _quer("f52_bolsa_toast")))):
+				continue
+			_novo_jogo()
+			await _abrir()
+			var sala: Node = _cena.get_node("Sala")
+			gs.frenesi_restante = 0.0
+			gs.evento_dourado_tipo = tipo
+			gs.evento_dourado_restante = 10.0
+			gs.evento_dourado.emit(10.0)
+			await _esperar(0.3)
+			var esperado: String = gs.dados.golden_crew_sprite if tipo == "crew" else gs.dados.golden_frenzy_sprite
+			_exigir(sala._evento_spr.nome_sprite == esperado, nome_ev, "sprite do evento: " + sala._evento_spr.nome_sprite)
+			await _ver(nome_ev)
+			var centro: Vector2 = sala._evento_rect.get_center()
+			if tipo == "crew":
+				if _quer("f52_bolsa_hover"):
+					sala._hover_em(centro)
+					await _esperar(0.1)
+					_exigir(_dica_inst().visible, "f52_bolsa_hover", "a bolsa da dica no hover")
+					await _ver("f52_bolsa_hover")
+					sala._sair_hover()
+				var treino0: float = gs.treino
+				sala._clique_em(centro)
+				await _esperar(0.35)
+				_exigir(gs.frenesi_restante <= 0.0 and gs.treino > treino0, "f52_bolsa_toast", "a bolsa paga e nao liga o FRENESI (fren %s treino %s->%s restante %s tipo %s)" % [gs.frenesi_restante, treino0, gs.treino, gs.evento_dourado_restante, gs.evento_dourado_tipo])
+				await _ver("f52_bolsa_toast")
+			else:
+				sala._clique_em(centro)
+				await _esperar(0.2)
+				_exigir(gs.frenesi_restante > 0.0, nome_ev, "a luva x7 liga o FRENESI")
+
+	# --- Luva L4 na sala e na luta ---
+	if _quer("f52_l4_sala"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		await _abrir()
+		var sala5: Node = _cena.get_node("Sala")
+		for i in 3:
+			gs.clicar()
+			await _esperar(0.08)
+		_exigir(str(sala5._lutador.nome_sprite).ends_with("_glove_l4") or gs.sufixo_luva() == "_glove_l4", "f52_l4_sala", "lutador com a L4: " + str(sala5._lutador.nome_sprite))
+		await _ver("f52_l4_sala")
+	if _quer("f52_l4_luta"):
+		var achada := _achar_luta(true, true)
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.atributos = achada.atr
+		await _abrir()
+		gs.rng.seed = int(achada.k)
+		var fluxo: Node = _cena.get_node("Fluxo")
+		fluxo.abrir_previa()
+		await _esperar(0.3)
+		fluxo.janela.lutar_pedido.emit()
+		await _esperar(0.25)
+		fluxo.tela._clock = 5.0
+		await _esperar(0.3)
+		await _ver("f52_l4_luta")
+
+	# --- Os 3 desvios da 5.1 ---
+	if _quer("f52_destaque_unico"):
+		_novo_jogo()
+		gs.treino = 5000.0
+		await _abrir()
+		var loja: Node = _cena.get_node("PainelLoja")
+		var vistos := 0
+		for r in loja.find_children("*", "ReferenceRect", true, false):
+			if (r as Control).is_visible_in_tree():
+				vistos += 1
+		_exigir(vistos <= 1, "f52_destaque_unico", "no maximo 1 contorno de destaque visivel (achei %d)" % vistos)
+		await _ver("f52_destaque_unico")
+	if _quer("f52_contador"):
+		_novo_jogo()
+		await _abrir()
+		await _ver("f52_contador")
+	if _quer("f52_critico_menor"):
+		_novo_jogo()
+		await _abrir()
+		var sala6: Node = _cena.get_node("Sala")
+		sala6._pos_clique = Vector2(336, 232)
+		gs.clicou.emit(1500.0, true, "punching_bag", "endurance", "A ESTEIRA GEMEU!")
+		await _esperar(0.2)
+		await _ver("f52_critico_menor")
