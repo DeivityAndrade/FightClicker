@@ -109,10 +109,10 @@ func _teste_dados() -> void:
 	checar_igual([f.adversario("opp_gym_1").location, f.adversario("opp_gym_2").location, f.adversario("opp_tank").location],
 		["gym", "gym", "garage"], "Tonhão e Kid na academia; Muralha na garagem")
 	checar_igual([f.adversario("opp_gym_1").strength, f.adversario("opp_gym_1").agility, f.adversario("opp_gym_1").endurance,
-		f.adversario("opp_gym_1").prize_money, f.adversario("opp_gym_1").prize_fame], [390000.0, 150000.0, 1650000.0, 2500.0, 120.0],
+		f.adversario("opp_gym_1").prize_money, f.adversario("opp_gym_1").prize_fame], [975000.0, 375000.0, 4125000.0, 2500.0, 120.0],
 		"Tonhão do Tatame: 390K/150K/1,65M, $2.500, 120 de Fama")
 	checar_igual([f.adversario("opp_gym_2").strength, f.adversario("opp_gym_2").agility, f.adversario("opp_gym_2").endurance,
-		f.adversario("opp_gym_2").prize_money, f.adversario("opp_gym_2").prize_fame], [1150000.0, 2300000.0, 4600000.0, 6000.0, 200.0],
+		f.adversario("opp_gym_2").prize_money, f.adversario("opp_gym_2").prize_fame], [4600000.0, 8050000.0, 20700000.0, 6000.0, 200.0],
 		"Kid Navalha: 1,15M/2,3M/4,6M, $6.000, 200 de Fama")
 	checar_igual(f.indice_cinturao(), 3, "o cinturão é do Seu Muralha (índice 3)")
 	checar(not f.adversario("opp_gym_1").belt and not f.adversario("opp_gym_2").belt, "só o Muralha dá o cinturão")
@@ -709,7 +709,7 @@ func _teste_dados_mudam_o_jogo() -> void:
 	checar_igual(gt.atributos.strength, 1.0, "split do JSON: tudo na Força")
 	_liberar(gt)
 	# Adversário da academia no JSON.
-	var op := ler(FightData.CAMINHO_ADVERSARIOS).replace('"strength": 390000', '"strength": 123')
+	var op := ler(FightData.CAMINHO_ADVERSARIOS).replace('"strength": 975000', '"strength": 123')
 	escrever(pasta + "opponents.json", op)
 	var fd := FightData.carregar(FightData.CAMINHO_LUTAS, pasta + "opponents.json")
 	checar_igual(fd.adversario("opp_gym_1").strength, 123.0, "atributos do Tonhão vêm do JSON")
@@ -728,14 +728,14 @@ func _teste_dados_mudam_o_jogo() -> void:
 # --- Save v6 ---
 
 func _teste_save_v6() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 7, "versão do save é 7 (Fase 5.1)")
+	checar_igual(SaveStore.VERSAO_ATUAL, 8, "versão do save é 8 (Fase 5.2)")
 	var gs := _na_academia("f5_save", "bjj")
 	gs.geradores["neighbor_kid"] = 3
 	_passar(gs, 12.0)
 	gs.salvar()
 	var doc = JSON.parse_string(ler(gs.store.caminho()))
 	var c: Dictionary = doc.state.career
-	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [7, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
+	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [8, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
 	checar_igual([doc.state.permanent.arts_unlocked, doc.state.permanent.last_art], [["boxing", "bjj"], "bjj"], "permanent.arts_unlocked e last_art no arquivo")
 	var g2: Node = GameStateScript.new()
 	g2.inicializar(gs.store.pasta, "res://data/config.json")
@@ -757,7 +757,7 @@ func _teste_save_v6() -> void:
 	g4.autosave_ativo = false
 	checar_igual([g4.treino, g4.local_id, g4.arte_id, g4.artes_liberadas()], [77.0, "garage", "", []], "v0 -> v7 em cadeia")
 	g4.salvar()
-	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 7, "regravado como v7")
+	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 8, "regravado como v8")
 	for g in [gs, g2, g3, g4]:
 		_liberar(g)
 

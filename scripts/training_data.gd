@@ -42,6 +42,12 @@ var golden_wait_max := 90.0
 var golden_visible_seconds := 7.0
 var golden_frenzy_mult := 7.0
 var golden_frenzy_seconds := 12.0
+# Fase 5.2: bolsa da torcida (variante do evento dourado). crew_chance 0 = só a luva x7 (jogo da 5.1).
+var golden_crew_chance := 0.0
+var golden_crew_seconds := 45.0
+var golden_crew_floor_clicks := 40.0
+var golden_frenzy_sprite := "event_golden_glove"
+var golden_crew_sprite := "event_golden_crew"
 # Fase 5.1: caixa de equipamento (bloco "box" de training.json)
 var box_clicks_to_open := 3
 var box_open_seconds := 1.2
@@ -197,6 +203,11 @@ func _ler_evento_dourado(v: Variant) -> void:
 	golden_visible_seconds = _num(e, "visible_seconds", PADRAO_EVENTO.visible_seconds, 1.0, 60.0, "golden_event.")
 	golden_frenzy_mult = _num(e, "frenzy_mult", PADRAO_EVENTO.frenzy_mult, 1.0, 1000.0, "golden_event.")
 	golden_frenzy_seconds = _num(e, "frenzy_seconds", PADRAO_EVENTO.frenzy_seconds, 1.0, 600.0, "golden_event.")
+	golden_crew_chance = _num(e, "crew_chance", 0.0, 0.0, 1.0, "golden_event.")
+	golden_crew_seconds = _num(e, "crew_seconds", 45.0, 1.0, 3600.0, "golden_event.")
+	golden_crew_floor_clicks = _num(e, "crew_floor_clicks", 40.0, 0.0, 100000.0, "golden_event.")
+	golden_frenzy_sprite = _txt(e, "frenzy_sprite", "event_golden_glove")
+	golden_crew_sprite = _txt(e, "crew_sprite", "event_golden_crew")
 	if golden_wait_max < golden_wait_min:
 		push_warning("TrainingData: golden_event.wait_max < wait_min; usando os padrões de espera.")
 		golden_wait_min = PADRAO_EVENTO.wait_min

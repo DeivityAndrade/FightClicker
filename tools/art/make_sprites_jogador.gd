@@ -1,6 +1,6 @@
 extends SceneTree
 ## Gera TODAS as folhas do lutador do jogador no padrão novo (personagem_lib.gd), garagem + luta,
-## com as 4 luvas (velha, _glove_l1, _glove_l2, _glove_l3) e o retrato 32x32.
+## com as 5 luvas (velha, _glove_l1, _glove_l2, _glove_l3, _glove_l4) e o retrato 32x32.
 ## Rodar headless a partir de uma pasta temporária com um project.godot vazio (nunca no projeto):
 ##   godot --headless --path <pasta_tmp> --script E:/Fightclicker/tools/art/make_sprites_jogador.gd -- <saida> <antigos>
 ##   <saida>   = pasta onde gravar characters/*.png, fight/*.png e relatorio.txt
@@ -20,6 +20,7 @@ const GLOVES := {
 	"_glove_l1": {"name": "Luva de lona", "style": "lona", "ramp": ["br3", "cream", "white"]},
 	"_glove_l2": {"name": "Luva de couro", "style": "couro", "ramp": ["r0", "br1", "br2"]},
 	"_glove_l3": {"name": "Luva de marca", "style": "marca", "ramp": ["d1", "d2", "g0"]},
+	"_glove_l4": {"name": "Luva de competição", "style": "campeao", "ramp": ["b1", "b2", "b3"]},
 }
 const FIGHT_ACTIONS := ["idle", "jab", "heavy", "hit", "dodge", "block", "tired", "victory", "ko"]
 const GARAGE := ["fighter_idle", "fighter_punch", "fighter_rope", "fighter_run"]
@@ -179,7 +180,11 @@ func garage_poses(id: String) -> Array:
 
 # ================================================================ geração
 func spr(id: String) -> Dictionary:
-	return M.sprites[id]
+	if M.sprites.has(id):
+		return M.sprites[id]
+	# luva nova ainda sem entrada no manifest: mesmas mãos, quadros e pivô da folha sem sufixo
+	var rx := RegEx.create_from_string("_glove_l\\d+$")
+	return M.sprites[rx.sub(id, "")]
 
 func v2(a) -> Vector2:
 	return Vector2(float(a[0]), float(a[1]))
@@ -298,7 +303,7 @@ func contact_sheet(rows: Array, glove_rows: Array) -> void:
 				x += cr.size.x + 3
 			y += cr.size.y * S + 8
 		y += 14
-	L.text(out, "AS 4 LUVAS (velha, lona, couro, marca) - mesmas cores/detalhes da loja e do cursor", 14, y, "y1", 2, "ink")
+	L.text(out, "AS 5 LUVAS (velha, lona, couro, marca, competicao) - mesmas cores/detalhes da loja e do cursor", 14, y, "y1", 2, "ink")
 	y += 30
 	for gr in glove_rows:
 		var cr: Rect2i = gr[2]

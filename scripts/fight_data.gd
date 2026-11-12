@@ -47,6 +47,8 @@ const PADRAO_GERADORES_PAGOS := [
 const PADRAO_LUVAS := [
 	{"id": "glove_l1", "cost": 120, "click_multiplier": 2},
 	{"id": "glove_l2", "cost": 500, "click_multiplier": 2},
+	{"id": "glove_l3", "cost": 1200, "click_multiplier": 2},
+	{"id": "glove_l4", "cost": 2500, "click_multiplier": 2},
 ]
 const PADRAO_CARREIRA := {"legacy_per_fame": 2.0, "belt_legacy_bonus": 100, "defeat_share": 0.5,
 	"retire_share": 1.0, "retire_belt_bonus_share": 0.5}
@@ -68,6 +70,7 @@ var golpes_especial := 5
 var ramos: Array[Dictionary] = []  # {id, name}
 var arvore: Array[Dictionary] = []  # nós válidos, na ordem do arquivo
 var metronomo: Dictionary = {}  # {id, name, description, appears_as, levels: [...]} (levels vazio = sem Metrônomo)
+var crew_click: Dictionary = {}  # Fase 5.2: {id, cost, crew_share, icon, name, description, appears_as} ({} = sem a melhoria)
 
 
 static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios: String = CAMINHO_ADVERSARIOS,
@@ -335,6 +338,7 @@ func _ler_loja(dados: Dictionary) -> void:
 		for item in PADRAO_LUVAS:
 			luvas.append(_montar_luva(item, item.id, luvas.size() + 1, item))
 	_ler_metronomo(dados.get("metronome", {}))
+	_ler_crew_click(dados.get("crew_click", null))
 
 
 func _padrao_luva(id: String) -> Dictionary:
@@ -530,3 +534,26 @@ func _ler_arvore(dados: Dictionary) -> void:
 		if passos > arvore.size():
 			push_warning("FightData: ciclo em 'requires' de '%s': vira vazio." % n.id)
 			n.requires = ""
+
+
+# --- Fase 5.2: Grito da equipe (loja, em $) ---
+
+func _ler_crew_click(v: Variant) -> void:
+	crew_click = {}
+	if v == null:
+		return  # ausente: a melhoria não existe
+	if not (v is Dictionary):
+		push_warning("FightData: bloco 'crew_click' inválido: melhoria desligada.")
+		return
+	var custo = v.get("cost", null)
+	var parte = v.get("crew_share", null)
+	if (typeof(custo) != TYPE_FLOAT and typeof(custo) != TYPE_INT) or not is_finite(float(custo)) or float(custo) <= 0.0:
+		push_warning("FightData: crew_click com custo inválido: melhoria desligada.")
+		return
+	if (typeof(parte) != TYPE_FLOAT and typeof(parte) != TYPE_INT) or not is_finite(float(parte)) \
+			or float(parte) < 0.0 or float(parte) > 100.0:
+		push_warning("FightData: crew_click com crew_share fora de [0, 100]: melhoria desligada.")
+		return
+	crew_click = {"id": TrainingData._txt(v, "id", "crew_click"), "cost": float(custo), "crew_share": float(parte),
+		"icon": TrainingData._txt(v, "icon", ""), "name": TrainingData._txt(v, "name", "Grito da equipe"),
+		"description": TrainingData._txt(v, "description", ""), "appears_as": TrainingData._txt(v, "appears_as", "")}

@@ -186,7 +186,7 @@ func _teste_luva_em_caixa() -> void:
 	checar_igual(gs.foco, foco_antes, "luva não muda o foco")
 	checar(gs.pode_comprar_luva(), "a segunda luva volta à venda")
 	gs.comprar_luva()
-	checar_igual([gs.nivel_luva, gs.luvas_abertas(), gs.proxima_luva().is_empty()], [2, 1, true], "2ª comprada, 1 aberta, linha completa")
+	checar_igual([gs.nivel_luva, gs.luvas_abertas(), gs.proxima_luva().is_empty()], [2, 1, false], "2ª comprada, 1 aberta, ainda há L3 e L4")
 	_liberar(gs)
 
 
@@ -253,7 +253,7 @@ func _teste_nova_carreira() -> void:
 
 
 func _teste_save_v7_e_validacoes() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 7, "versão do save é 7")
+	checar_igual(SaveStore.VERSAO_ATUAL, 8, "versão do save é 8")
 	var gs := _novo("f51_valida")
 	gs.nivel_luva = 1
 	var c := {
@@ -294,7 +294,7 @@ func _teste_migracao_v6() -> void:
 	checar(gs.avisos.is_empty(), "migração sem avisos")
 	gs.salvar()
 	var doc = JSON.parse_string(ler(pasta + "save.json"))
-	checar_igual([int(doc.version), doc.state.career.boxes], [7, []], "regravado como v7 com boxes []")
+	checar_igual([int(doc.version), doc.state.career.boxes], [8, []], "regravado como v8 com boxes []")
 	_liberar(gs)
 	# Cadeia v0 -> v7.
 	var p2 := pasta_limpa("f51_mig0")

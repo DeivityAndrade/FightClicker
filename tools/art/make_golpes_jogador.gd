@@ -1,6 +1,6 @@
 extends SceneTree
 ## Gera os GOLPES do lutador do jogador a partir de tools/art/golpes.json (poses em dados), pelo mesmo esqueleto
-## com IK de make_sprites_jogador.gd (personagem_lib.gd), com as 4 luvas. Não mexe nas folhas existentes.
+## com IK de make_sprites_jogador.gd (personagem_lib.gd), com as 5 luvas (velha, L1 a L4). Não mexe nas folhas existentes.
 ## Para criar ou ajustar um golpe: edite golpes.json e rode de novo (nada de código).
 ## Rodar headless a partir de uma pasta temporária com um project.godot vazio (nunca no projeto):
 ##   godot --headless --path <pasta_tmp> --script <repo>/tools/art/make_golpes_jogador.gd -- <saida> [golpe ...]
@@ -21,6 +21,7 @@ const GLOVES := {
 	"_glove_l1": {"name": "Luva de lona", "style": "lona", "ramp": ["br3", "cream", "white"]},
 	"_glove_l2": {"name": "Luva de couro", "style": "couro", "ramp": ["r0", "br1", "br2"]},
 	"_glove_l3": {"name": "Luva de marca", "style": "marca", "ramp": ["d1", "d2", "g0"]},
+	"_glove_l4": {"name": "Luva de competição", "style": "campeao", "ramp": ["b1", "b2", "b3"]},
 }
 
 var L
