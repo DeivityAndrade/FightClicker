@@ -2,7 +2,7 @@
 name: artista-personagens
 description: Artista de Personagens e Animador (pixel art) do Fightclicker. Use para criar, revisar ou refazer lutadores, adversários e figurantes — anatomia, proporções, silhueta, sombreamento, encaixe das partes do corpo (ombro, cotovelo, quadril, joelho, pescoço, luvas) e animações quadro a quadro (guarda, golpes, esquiva, queda, treino na garagem). Use também quando o dono disser que os personagens estão "pouco humanos", "duros", "encaixe estranho" ou "animação contraditória".
 tools: Read, Glob, Grep, Write, Edit, Bash, PowerShell
-model: fable
+model: opus
 effort: medium
 ---
 

@@ -16,6 +16,7 @@ var _emblema: Control  # "LEGADO: N NÓS" (Fase 4): passar o mouse abre a lista 
 var _emblema_rotulo: Label
 var _emblema_fundo: NinePatchRect
 var _dica_nos: Control
+var _area_local: Control
 
 
 func _ready() -> void:
@@ -25,12 +26,17 @@ func _ready() -> void:
 	var ui: Dictionary = GameState.dados.ui
 	UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, 18))
 
-	_grupos.append(_grupo("icon_treino", str(ui.get("hud_training", "TREINO")).to_upper(), UiTema.WHITE, true))
-	_grupos.append(_grupo("icon_money", UiTema.txt("hud_money", "DINHEIRO"), UiTema.Y1, false))
-	_grupos.append(_grupo("icon_fame", UiTema.txt("hud_fame", "FAMA"), UiTema.P2, false))
-	_grupos.append(_grupo("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, false))
-	_carreira = UiTema.rotulo(self, "", UiTema.G3, 0, 3)
-	_local = UiTema.rotulo(self, str(ui.get("location_name", "")).to_upper(), UiTema.G1, 400, 3, 234,
+	# Fase 5.1: Treino é o número-herói (txt_hero, verde); Dinheiro em dourado; Fama e Legado descem para o nível 3
+	# (só ícone + número pequeno à direita; o texto aparece na dica ao passar o mouse).
+	_grupos.append(_grupo("icon_treino", str(ui.get("hud_training", "TREINO")).to_upper(), UiTema.COL_TREINO, true))
+	_grupos.append(_grupo("icon_money", "", UiTema.COL_MONEY, false))
+	_grupos.append(_grupo("icon_fame", "", UiTema.COL_FAME, false))
+	_grupos.append(_grupo("icon_legacy", "", UiTema.COL_LEGACY, false))
+	_grupos[0].valor.scale = Vector2(2, 2)
+	_grupos[0].valor.position.y = -2.0
+	UiTema.alinhar(_grupos[0].valor, "ignore")  # número-herói em escala 2: o verificador não cobra a caixa do rótulo
+	_carreira = UiTema.rotulo(self, "", UiTema.COL_TEXT_2, 0, 3)
+	_local = UiTema.rotulo(self, str(ui.get("location_name", "")).to_upper(), UiTema.COL_TEXT_2, 400, 3, 234,
 		HORIZONTAL_ALIGNMENT_RIGHT)
 
 	_local.autowrap_mode = TextServer.AUTOWRAP_OFF  # a largura do rótulo acompanha o texto (calculada em _reposicionar)
@@ -48,6 +54,7 @@ func _ready() -> void:
 	_emblema_fundo = UiTema.nine_patch(_emblema, "ui_legacy_nodes_badge", Rect2(0, 0, 60, 11))
 	_emblema_rotulo = UiTema.rotulo(_emblema, "", UiTema.P2, 5, 0)
 
+	_areas_dica()
 	GameState.dinheiro_mudou.connect(_ao_dinheiro)
 	GameState.permanente_mudou.connect(atualizar)
 	GameState.local_mudou.connect(func(_l: String) -> void: atualizar())
@@ -57,9 +64,9 @@ func _ready() -> void:
 func _grupo(icone: String, titulo: String, cor: Color, com_taxa: bool) -> Dictionary:
 	var g := {"cor": cor, "ultimo": ""}
 	g["icone"] = UiTema.textura_rect(self, icone, 0, 4)
-	g["rotulo"] = UiTema.rotulo(self, titulo, UiTema.G3, 0, 3)
-	g["valor"] = UiTema.rotulo(self, "0", cor if not com_taxa else UiTema.WHITE, 0, 3)
-	g["extra"] = UiTema.rotulo(self, "", UiTema.GR3, 0, 3) if com_taxa else null
+	g["rotulo"] = UiTema.rotulo(self, titulo, UiTema.COL_TEXT_2, 0, 3)
+	g["valor"] = UiTema.rotulo(self, "0", cor, 0, 3)
+	g["extra"] = UiTema.rotulo(self, "", UiTema.COL_TREINO, 0, 3) if com_taxa else null
 	return g
 
 
@@ -95,38 +102,91 @@ func atualizar() -> void:
 	_carreira.text = carreira
 	var na_academia := texto_local != ""
 	_local.text = texto_local if na_academia else str(GameState.dados.ui.get("location_name", "")).to_upper()
-	_local.add_theme_color_override("font_color", UiTema.GR3 if na_academia else UiTema.G1)
+	_local.add_theme_color_override("font_color", UiTema.GR3 if na_academia else UiTema.COL_TEXT_2)
 	_reposicionar()
 
 
-# Fila da esquerda para a direita: ícone, título, valor (e a taxa do Treino).
+# Fila da esquerda para a direita: Treino (ícone, rótulo, número-herói, +X/s), Dinheiro (ícone + valor), Carreira e o
+# emblema do Legado permanente. À direita (de fora para dentro): Legado em jogo, Fama (só ícone + número) e o nome do local.
 func _reposicionar() -> void:
 	var x := 6.0
-	for i in _grupos.size():
-		var g: Dictionary = _grupos[i]
-		g.icone.position.x = x
-		x += 12.0
-		g.rotulo.position.x = x
-		x += UiTema.largura(g.rotulo.text) + 5.0
-		g.valor.position.x = x
-		x += UiTema.largura(g.valor.text) + 6.0
-		if g.extra != null:
-			g.extra.position.x = x
-			x += UiTema.largura(g.extra.text)
-		x += FOLGA
+	var t: Dictionary = _grupos[0]
+	t.icone.position.x = x
+	x += 12.0
+	t.rotulo.position.x = x
+	x += UiTema.largura(t.rotulo.text) + 5.0
+	t.valor.position.x = x
+	x += UiTema.largura(t.valor.text) * 2.0 + 6.0
+	t.extra.position.x = x
+	x += UiTema.largura(t.extra.text) + FOLGA
+	var m: Dictionary = _grupos[1]
+	m.icone.position.x = x
+	x += 12.0
+	m.valor.position.x = x
+	x += UiTema.largura(m.valor.text) + FOLGA
 	_carreira.position.x = x + 2.0
 	var fim := _carreira.position.x + UiTema.largura(_carreira.text)
 	if _emblema.visible:
 		_emblema.position.x = fim + 8.0
 		fim = _emblema.position.x + _emblema.size.x
+	# Grupo de nível 3, colado à direita: Fama e Legado em jogo (ícone + número, sem palavras).
+	var xr := 634.0
+	for i in [3, 2]:
+		var g: Dictionary = _grupos[i]
+		var w := UiTema.largura_visivel(g.valor.text)
+		xr -= w
+		g.valor.position.x = xr
+		xr -= 11.0
+		g.icone.position.x = xr
+		var area: Control = g.area
+		area.position = Vector2(xr - 2.0, 0)
+		area.size = Vector2(w + 13.0 + 2.0, 18)
+		xr -= 10.0
 	# O nome do local só aparece se couber (na academia, com o ícone de 9 px + 3 de folga à esquerda do texto).
 	var na_academia := GameState.em_academia()
 	var largura_local := UiTema.largura_visivel(_local.text) + (12.0 if na_academia else 0.0)
-	_local.visible = fim + 8.0 < 640.0 - 6.0 - largura_local
+	_local.visible = fim + 8.0 < xr - largura_local
 	_local_icone.visible = _local.visible and na_academia
-	_local.position.x = roundf(634.0 - UiTema.largura_visivel(_local.text))
+	_local.position.x = roundf(xr + 4.0 - UiTema.largura_visivel(_local.text))
 	_local.size.x = UiTema.largura_visivel(_local.text) + 1.0
 	_local_icone.position.x = _local.position.x - 12.0
+	_area_local.visible = _local.visible
+	_area_local.position = Vector2(_local_icone.position.x if na_academia else _local.position.x - 2.0, 0)
+	_area_local.size = Vector2(xr + 4.0 - _area_local.position.x + 2.0, 18)
+
+
+## Áreas de hover do nível 3: Fama, Legado em jogo e o nome do local (descrição do local + arte da carreira).
+func _areas_dica() -> void:
+	var textos := {2: "hint_fame", 3: "hint_legacy"}
+	for i in [2, 3]:
+		var a := Control.new()
+		a.mouse_filter = Control.MOUSE_FILTER_PASS
+		UiTema.alinhar(a, "ignore")
+		add_child(a)
+		var chave: String = textos[i]
+		var idx: int = i
+		a.mouse_entered.connect(func() -> void: Dica.pedir(_texto_dica(chave, idx)))
+		a.mouse_exited.connect(func() -> void: Dica.limpar())
+		_grupos[i]["area"] = a
+	_area_local = Control.new()
+	_area_local.mouse_filter = Control.MOUSE_FILTER_PASS
+	UiTema.alinhar(_area_local, "ignore")
+	add_child(_area_local)
+	_area_local.mouse_entered.connect(func() -> void: Dica.pedir(texto_dica_local()))
+	_area_local.mouse_exited.connect(func() -> void: Dica.limpar())
+
+
+func _texto_dica(chave: String, i: int) -> String:
+	return "%s\n%s" % [GameState.texto_ui(chave), _grupos[i].valor.text]
+
+
+## Descrição do local (saiu da coluna esquerda) e, com arte, o efeito dela.
+func texto_dica_local() -> String:
+	var amb := str(GameState.local_atual().get("ambience", ""))
+	if amb == "":
+		amb = str(GameState.dados.ui.get("location_ambience", ""))
+	var arte := GameState.texto_hud_arte()
+	return amb + ("\n" + arte if arte != "" else "")
 
 
 ## Lista dos nós ativos (o mesmo cartão do início da carreira), logo abaixo do rótulo. Não cobre o alvo central.
@@ -156,11 +216,11 @@ func _ao_dinheiro(valor: float) -> void:
 		if _tween_dinheiro != null and _tween_dinheiro.is_valid():
 			_tween_dinheiro.kill()
 		var subiu := valor > _ultimo_dinheiro
-		v.add_theme_color_override("font_color", UiTema.Y2 if subiu else UiTema.R3)
+		v.add_theme_color_override("font_color", UiTema.Y2 if subiu else UiTema.G3)
 		v.position.y = 2.0 if subiu else 4.0
 		_tween_dinheiro = create_tween()
 		_tween_dinheiro.set_parallel(true)
 		_tween_dinheiro.tween_property(v, "position:y", 3.0, 0.25)
 		_tween_dinheiro.tween_method(func(t: float) -> void:
-			v.add_theme_color_override("font_color", (UiTema.Y2 if subiu else UiTema.R3).lerp(UiTema.Y1, t)), 0.0, 1.0, 0.5)
+			v.add_theme_color_override("font_color", (UiTema.Y2 if subiu else UiTema.G3).lerp(UiTema.COL_MONEY, t)), 0.0, 1.0, 0.5)
 	_ultimo_dinheiro = valor

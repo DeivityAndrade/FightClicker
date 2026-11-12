@@ -30,6 +30,7 @@ var _icone_cinturao: TextureRect
 var _ultimo := ""
 var _medindo := false
 var _t_dica := 0.0
+var _area_dica: Control
 
 
 func _ready() -> void:
@@ -59,7 +60,7 @@ func _ready() -> void:
 	_selo_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_selo_area.custom_minimum_size = Vector2(112, 13)
 	_caixa.add_child(_selo_area)
-	_verde = UiTema.rotulo(_caixa, UiTema.txt("preview_wait_green", "ESPERE FICAR VERDE"), UiTema.Y1, 0, 0, 112)
+	_verde = UiTema.rotulo(_caixa, UiTema.txt("preview_wait_green", "ESPERE FICAR VERDE"), UiTema.COL_TEXT_2, 0, 0, 112)
 	_verde.visible = false
 	_premio = UiTema.rotulo(_caixa, "", UiTema.G3, 0, 0, 112)
 	_dica_ret = UiTema.rotulo(_caixa, "", UiTema.P2, 0, 0, 112)
@@ -71,6 +72,14 @@ func _ready() -> void:
 	_cartao_area.visible = false
 	_caixa.add_child(_cartao_area)
 
+	# Fase 5.1: o prêmio da luta é nível 3: ao passar o mouse no bloco aparece a dica (continua inteiro na prévia).
+	_area_dica = Control.new()
+	_area_dica.mouse_filter = Control.MOUSE_FILTER_PASS
+	_area_dica.size = Vector2(120, 26)
+	UiTema.alinhar(_area_dica, "ignore")
+	add_child(_area_dica)
+	_area_dica.mouse_entered.connect(func() -> void: Dica.pedir(_texto_premio()))
+	_area_dica.mouse_exited.connect(func() -> void: Dica.limpar())
 	GameState.risco_proxima_mudou.connect(func(_a: String, _r: String) -> void: atualizar())
 	GameState.escada_mudou.connect(atualizar)
 	GameState.carreira_mudou.connect(atualizar)
@@ -126,6 +135,7 @@ func atualizar() -> void:
 	if _cartao != null:
 		_cartao.queue_free()
 		_cartao = null
+	_area_dica.visible = false
 	if opp.is_empty():
 		_mostrar_sem_luta(estado, mud)
 		return
@@ -143,10 +153,9 @@ func atualizar() -> void:
 			_selo.modulate = Color(2.2, 2.2, 2.2)
 			_selo.create_tween().tween_property(_selo, "modulate", Color.WHITE, 0.4)
 	_verde.visible = espere
-	# Prêmio com o bônus da árvore ("SE VENCER: $75 (+50%) + 15 FAMA (+50%)"): o texto vem pronto do GameState.
-	_premio.visible = true
-	_premio.text = GameState.texto_stake_win(opp).to_upper() if not bool(opp.belt) \
-		else UiTema.txt("stake_belt", "SE VENCER: O CINTURÃO AMADOR")
+	# Fase 5.1: o prêmio saiu do bloco (nível 3); ele aparece na dica do bloco e inteiro na prévia.
+	_premio.visible = false
+	_area_dica.visible = true
 	_premio.add_theme_color_override("font_color", UiTema.G3)
 	_dica_ret.visible = texto_dica != ""
 	_dica_ret.text = texto_dica.to_upper()
@@ -164,7 +173,7 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary) -> void:
 		_caixa.position.x = 4.0
 		_largura_caixa(112.0)
 		_nome.text = UiTema.txt("hud_next_move", "PRÓXIMA: MUDE PARA A ACADEMIA")
-		_nome.add_theme_color_override("font_color", UiTema.Y1)
+		_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
 		_premio.visible = false
 		_montar_cartao_mudanca(mud)
 		_medir()
@@ -177,7 +186,7 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary) -> void:
 	# O ícone do cinturão fica à esquerda do título (a caixa mantém os 112 px: o texto longo da academia não sai do painel).
 	var recuo := " ".repeat(int(ceil(12.0 / maxf(1.0, UiTema.largura(" ")))))
 	_nome.text = recuo + UiTema.txt("belt_title", "CINTURÃO AMADOR")
-	_nome.add_theme_color_override("font_color", UiTema.Y1)
+	_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
 	if estado == "end":
 		_premio.text = UiTema.txt("no_more_fights_gym", "VOCÊ VENCEU A ACADEMIA. APOSENTAR VALE MAIS.")
 		_premio.add_theme_color_override("font_color", UiTema.P2)
@@ -215,7 +224,7 @@ func _montar_cartao_mudanca(d: Dictionary) -> void:
 	if pronto:
 		UiTema.rotulo(c, str(d.per_career_text).to_upper(), UiTema.G2, 7, 71, 106)
 	else:
-		UiTema.rotulo(c, UiTema.txt("move_no_money", "Falta dinheiro"), UiTema.R3, 7, 71, 106)
+		UiTema.rotulo(c, UiTema.txt("move_no_money", "Falta dinheiro"), UiTema.COL_TEXT_2, 7, 71, 106)
 	var b := UiTema.botao_estilizado(c, Rect2(7, 92, 106, 26), "ui_button_move")
 	b.disabled = not pronto
 	_conteudo_botao_mudar(b, str(d.button).to_upper(), str(d.price_text), pronto)
@@ -236,7 +245,7 @@ func _conteudo_botao_mudar(b: Button, texto: String, preco: String, pronto: bool
 	var x0 := roundf(a.position.x + (a.size.x - total) / 2.0)
 	UiTema.textura_rect(b, "icon_move", x0, UiTema.y_imagem(a, ih))
 	UiTema.rotulo(b, texto, UiTema.Y2 if pronto else UiTema.G1, x0 + iw + 4.0, UiTema.y_texto(a))
-	UiTema.rotulo(b, preco, UiTema.Y1 if pronto else UiTema.R2, x0 + iw + 4.0 + lt + 8.0, UiTema.y_texto(a))
+	UiTema.rotulo(b, preco, UiTema.COL_MONEY if pronto else UiTema.COL_TEXT_2, x0 + iw + 4.0 + lt + 8.0, UiTema.y_texto(a))
 
 
 ## Largura dos rótulos da caixa. Com a caixa deslocada para dar lugar ao ícone, a largura diminui junto (fim em x=120).
@@ -260,3 +269,14 @@ func _medir() -> void:
 	var h := int(ceil(_caixa.get_combined_minimum_size().y)) + 2
 	size.y = float(h)
 	altura_mudou.emit(h)
+
+
+## Dica do prêmio (hint_prize / hint_prize_belt): o que antes ficava fixo no bloco.
+func _texto_premio() -> String:
+	var opp: Dictionary = GameState.proximo_adversario()
+	if opp.is_empty():
+		return ""
+	if bool(opp.belt):
+		return GameState.texto_ui("hint_prize_belt")
+	return GameState.preencher(GameState.texto_ui("hint_prize"), {"dinheiro": NumberFormat.fmt(GameState.premio_dinheiro(opp)),
+		"fama": NumberFormat.fmt(float(GameState.premio_fama(opp)))})

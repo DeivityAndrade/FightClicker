@@ -1,5 +1,5 @@
 {
-	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd.",
+	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último).",
 	"_como_usar": "Sprite2D/AnimatedSprite2D com centered=false e offset = -pivot; position = posição na sala (coordenadas da tela base 640x360). Ordem de desenho: pelo y dos pés (sort_y = pos.y, ou pos.y + sort_y_offset nos sacos pendurados). Nunca escalar por fator não-inteiro nem rodar.",
 	"base_resolution": [
 		640,
@@ -67,7 +67,30 @@
 			"lutador": "fighter_idle/punch em foco_saco (303,272)",
 			"pera": "—"
 		},
-		"_nota_fase5": "Fase 5: com foco em saco/corda/esteira, a pera fica na parede (speed_bag_lN_wall em 'parede') e o boneco deitado no canto (grappling_dummy_lN_rest em 'canto'). Só existe o aparelho da arte da carreira. Na academia, somar o sufixo _gym ao nome do sprite (bag_l1_idle -> bag_l1_idle_gym); se não existir no manifest, usar o da garagem."
+		"_nota_fase5": "Fase 5: com foco em saco/corda/esteira, a pera fica na parede (speed_bag_lN_wall em 'parede') e o boneco deitado no canto (grappling_dummy_lN_rest em 'canto'). Só existe o aparelho da arte da carreira. Na academia, somar o sufixo _gym ao nome do sprite (bag_l1_idle -> bag_l1_idle_gym); se não existir no manifest, usar o da garagem.",
+		"box_slots": {
+			"treadmill": [
+				445,
+				268
+			],
+			"jump_rope": [
+				258,
+				244
+			],
+			"art": [
+				204,
+				283
+			],
+			"glove": [
+				386,
+				280
+			],
+			"_nota": "Pivô da caixa (meio da base, no chão), igual na garagem e na academia. Fora da faixa do lutador e do alvo (x 281..362) com 8 px de folga; nenhuma caixa encosta na outra. A da corda fica no pé da parede, embaixo do gancho; a da luva na frente, à direita do alvo. Ordenar por y do pivô, como as pessoas."
+		},
+		"rope_hook": [
+			296,
+			166
+		]
 	},
 	"by_data_id": {
 		"_nota": "Ponte entre os ids de data/ (docs/fases/fase2-api.md) e os sprites. N = GameState.nivel_visual(aparelho).",
@@ -497,17 +520,20 @@
 		"money": {
 			"icon": "icon_money",
 			"icon_16": "icon_money_16",
-			"color": "y1"
+			"color": "y1",
+			"token": "col_money"
 		},
 		"fame": {
 			"icon": "icon_fame",
 			"icon_16": "icon_fame_16",
-			"color": "p2"
+			"color": "f2",
+			"token": "col_fame"
 		},
 		"legacy": {
 			"icon": "icon_legacy",
 			"icon_16": "icon_legacy_16",
-			"color": "p2"
+			"color": "p2",
+			"token": "col_legacy"
 		},
 		"belt_amateur": {
 			"icon": "icon_belt_amateur",
@@ -862,7 +888,26 @@
 				"focus_price": "focus_locked_price",
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
-			}
+			},
+			"mark_states": {
+				"normal": "tape_mark_treadmill",
+				"hover_or_pulse": "tape_mark_treadmill_hi",
+				"locked": "tape_mark_treadmill_dim"
+			},
+			"ghost_dim": "ghost_treadmill_dim",
+			"lock": "mark_padlock",
+			"lock_pos": [
+				445,
+				249
+			],
+			"box": {
+				"sprite": "box_big",
+				"pos": [
+					445,
+					268
+				]
+			},
+			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
 		},
 		"unlock_jump_rope": {
 			"apparatus": "jump_rope",
@@ -871,14 +916,14 @@
 			"ghost": "ghost_rope",
 			"mark_pos": [
 				296,
-				155
+				166
 			],
 			"sign": {
 				"frame": "sign_cardboard",
 				"mode": "parede",
 				"top_center": [
 					296,
-					116
+					127
 				],
 				"tape": "sign_tape_bit",
 				"note": "Plaquinha colada na parede ACIMA do prego, centrada em x 296 (à esquerda da corrente do saco, x 335) e 2 sign_tape_bit nos cantos de cima. Na parede não cabe 'DEPOIS DA ESTEIRA' numa linha só com o nome: usar 3 linhas (CORDA / DEPOIS DA / ESTEIRA)."
@@ -897,7 +942,7 @@
 				"fx": "fx_arrive_sparkle",
 				"fx_pos": [
 					296,
-					155
+					166
 				],
 				"sprite": "rope_lN_idle",
 				"drop": "ver sprites.fx_arrive_sparkle.drop"
@@ -908,7 +953,26 @@
 				"focus_price": "focus_locked_price",
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
-			}
+			},
+			"mark_states": {
+				"normal": "tape_mark_rope",
+				"hover_or_pulse": "tape_mark_rope_hi",
+				"locked": "tape_mark_rope_dim"
+			},
+			"ghost_dim": "ghost_rope_dim",
+			"lock": "mark_padlock",
+			"lock_pos": [
+				296,
+				187
+			],
+			"box": {
+				"sprite": "box_small",
+				"pos": [
+					258,
+					244
+				]
+			},
+			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
 		},
 		"focus_locked_layout": {
 			"button_size": [
@@ -1166,7 +1230,7 @@
 						1,
 						0
 					],
-					"fps": 24,
+					"fps": 24.0,
 					"shake_px": 0
 				},
 				"fx": "fx_arrive_sparkle",
@@ -1183,7 +1247,26 @@
 				"focus_price": "focus_locked_price",
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
-			}
+			},
+			"mark_states": {
+				"normal": "tape_mark_speed_bag",
+				"hover_or_pulse": "tape_mark_speed_bag_hi",
+				"locked": "tape_mark_speed_bag_dim"
+			},
+			"ghost_dim": "ghost_speed_bag_dim",
+			"lock": "mark_padlock",
+			"lock_pos": [
+				436,
+				68
+			],
+			"box": {
+				"sprite": "box_small",
+				"pos": [
+					228,
+					283
+				]
+			},
+			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
 		},
 		"unlock_grappling_dummy": {
 			"apparatus": "grappling_dummy",
@@ -1229,7 +1312,7 @@
 						1,
 						0
 					],
-					"fps": 24,
+					"fps": 24.0,
 					"shake_px": 1,
 					"shake_frames": 2
 				},
@@ -1246,7 +1329,26 @@
 				"focus_price": "focus_locked_price",
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
-			}
+			},
+			"mark_states": {
+				"normal": "tape_mark_grappling_dummy",
+				"hover_or_pulse": "tape_mark_grappling_dummy_hi",
+				"locked": "tape_mark_grappling_dummy_dim"
+			},
+			"ghost_dim": "ghost_grappling_dummy_dim",
+			"lock": "mark_padlock",
+			"lock_pos": [
+				228,
+				271
+			],
+			"box": {
+				"sprite": "box_big",
+				"pos": [
+					228,
+					283
+				]
+			},
+			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
 		},
 		"tech_boxing_1": {
 			"icon": "icon_tech_boxing_1",
@@ -1458,6 +1560,170 @@
 		},
 		"focus_4_layout": {
 			"note": "Com o 4º foco, os 4 botões cabem em 372 px (x 134..506): largura 90, passo 94 (134, 228, 322, 416). Texto do botão: linha 1 focus_label[0], linha 2 focus_label[1]; 'JIU-JITSU' tem 53 px e cabe. Quem fecha é o UI/UX (alinhamento-ui)."
+		},
+		"_nota_fase51": "Fase 5.1: caixa da escola (by_data_id.box), marcas sem texto (unlock_*.mark_states / lock_pos), gancho da corda em (296,166) e tokens de cor (ui_tokens na raiz).",
+		"box": {
+			"sprite_by_item": {
+				"treadmill": "box_big",
+				"grappling_dummy": "box_big",
+				"jump_rope": "box_small",
+				"speed_bag": "box_small",
+				"glove_l1": "box_small",
+				"glove_l2": "box_small"
+			},
+			"slot_by_item": {
+				"treadmill": "treadmill",
+				"jump_rope": "jump_rope",
+				"speed_bag": "art",
+				"grappling_dummy": "art",
+				"glove_l1": "glove",
+				"glove_l2": "glove"
+			},
+			"slots": "layout.box_slots",
+			"frame_by_hits": [
+				0,
+				1,
+				2
+			],
+			"idle": {
+				"wobble_x": [
+					1,
+					0,
+					-1,
+					0
+				],
+				"wobble_fps": 12,
+				"every_s": 4.0,
+				"glint": "fx_box_glint",
+				"glint_offset": {
+					"box_big": [
+						20,
+						-38
+					],
+					"box_small": [
+						11,
+						-22
+					]
+				},
+				"note": "Parada: a cada 4 s balança 1 px e toca o fx_box_glint na quina de cima à direita. É o que chama o clique, sem texto."
+			},
+			"clicks": [
+				{
+					"hit": 1,
+					"frame_after": 1,
+					"shake_x": [
+						-1,
+						1,
+						-1,
+						0
+					],
+					"shake_fps": 30,
+					"fx": "fx_box_chips_1",
+					"sfx_sugerido": "block.wav"
+				},
+				{
+					"hit": 2,
+					"frame_after": 2,
+					"shake_x": [
+						-2,
+						2,
+						-2,
+						1,
+						0
+					],
+					"shake_fps": 30,
+					"fx": "fx_box_chips_2",
+					"sfx_sugerido": "hit_heavy.wav"
+				},
+				{
+					"hit": 3,
+					"frame_after": 3,
+					"shake_x": [
+						-3,
+						3,
+						-2,
+						2,
+						0
+					],
+					"shake_fps": 30,
+					"fx": "fx_box_burst",
+					"screen_shake_px": 1,
+					"sfx_sugerido": "punch_crit.wav + buy.wav"
+				}
+			],
+			"fx_pos": "pos da caixa + top_center_offset do sprite (meio de cima da caixa)",
+			"open_timeline_s": {
+				"shake": [
+					0.0,
+					0.15
+				],
+				"burst": [
+					0.0,
+					0.5
+				],
+				"item_appears": [
+					0.15,
+					0.6
+				],
+				"open_box_fades": [
+					0.6,
+					0.9
+				],
+				"settle_and_focus": [
+					0.9,
+					1.2
+				],
+				"total": 1.2,
+				"note": "3º clique: troca para o quadro 3 (aberta) na hora. Aparelho de chão (esteira, boneco): o item nasce dentro da caixa e sobe 8 px e pousa no lugar dele (offsets y -8,-12,-6,0,1,0 a 24 fps), a caixa aberta fica atrás. Aparelho de parede (corda, pera) e luva: o item aparece direto no lugar dele com a animação de pendurar que já existe (fx_arrive_sparkle). Caixa aberta some em 0,3 s piscando (visível/invisível a cada 2 quadros; sem alpha). Total 1,2 s, abaixo do limite de 1,5 s."
+			},
+			"tag": {
+				"frame": "ui_box_tag",
+				"stamp": "ui_box_stamp",
+				"symbol": "school_symbol_16",
+				"text_keys": [
+					"box_sender",
+					"box_to",
+					"box_label",
+					"box_stamp"
+				],
+				"layout_sugerido": {
+					"size": [
+						104,
+						40
+					],
+					"symbol": [
+						6,
+						8
+					],
+					"sender": [
+						26,
+						8
+					],
+					"to": [
+						26,
+						17
+					],
+					"item": [
+						6,
+						28
+					],
+					"stamp_right_bottom": [
+						102,
+						52
+					]
+				},
+				"note": "Etiqueta de papel só na dica de hover da caixa (na sala a etiqueta é ilegível de propósito: nenhum texto fixo sobre a cena). O carimbo passa 12 px da borda de baixo da etiqueta."
+			},
+			"symbol": {
+				"provisional": true,
+				"files": [
+					"school_symbol_9",
+					"school_symbol_16",
+					"school_symbol_32"
+				],
+				"note": "Símbolo da escola PROVISÓRIO. Também está pintado dentro de box_big/box_small (9 e 5 px): ao trocar, rodar o gerador de novo."
+			},
+			"light": "A caixa não tem a luz da sala aplicada (igual na garagem e na academia): é o objeto novo da cena e precisa saltar ao olho."
 		}
 	},
 	"palette_swap_glove": {
@@ -1508,7 +1774,7 @@
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Sala inteira sem aparelhos nem pessoas: paredes, chão, viga, porta, carro com lona, prateleira, pôster, foto, prego da corda, marcas de giz. Luz da lâmpada já aplicada. Tudo o que é sprite fica por cima (ordem por y dos pés)."
+			"note": "Sala inteira sem aparelhos nem pessoas: paredes, chão, viga, porta, carro com lona, prateleira, pôster, foto, gancho da corda em (296,166), marcas de giz. Luz da lâmpada já aplicada. Tudo o que é sprite fica por cima (ordem por y dos pés). Fase 5.1: o prego antigo (352,72) saiu; o gancho da corda fica em (296,166), na altura do ombro."
 		},
 		"floor_shadow": {
 			"file": "res://assets/sprites/garage/floor_shadow.png",
@@ -1731,12 +1997,12 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Corda de varal com nó e prendedor (nível visual 0), pendurada no prego. Aparece quando a corda NÃO está em foco. Pivô = prego. Luz já aplicada."
+			"note": "Corda de varal com nó e prendedor (nível visual 0), pendurada no gancho da parede (296,166: altura do ombro de quem está encostado na parede). Aparece quando a corda NÃO está em foco. Pivô = gancho. Luz já aplicada para este ponto."
 		},
 		"rope_l1_idle": {
 			"file": "res://assets/sprites/equipment/rope_l1_idle.png",
@@ -1753,12 +2019,12 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Corda de verdade, sem nó (nível visual 1: 'Corda sem nó'), pendurada no prego. Aparece quando a corda NÃO está em foco. Pivô = prego. Luz já aplicada."
+			"note": "Corda de verdade, sem nó (nível visual 1), pendurada no gancho da parede (296,166: altura do ombro de quem está encostado na parede). Aparece quando a corda NÃO está em foco. Pivô = gancho. Luz já aplicada para este ponto."
 		},
 		"treadmill_l0_idle": {
 			"file": "res://assets/sprites/equipment/treadmill_l0_idle.png",
@@ -1952,7 +2218,7 @@
 				80
 			],
 			"frames": 7,
-			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadros 0-5 = giro; quadro 6 = repouso (corda a prumo das luvas até o chão, na camada da frente). Fase 5.1: laço da mesma largura nas duas camadas.",
 			"hit_frame": 3,
 			"loop": false,
 			"pivot": [
@@ -8949,7 +9215,7 @@
 				80
 			],
 			"frames": 7,
-			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadros 0-5 = giro; quadro 6 = repouso (corda a prumo das luvas até o chão, na camada da frente). Fase 5.1: laço da mesma largura nas duas camadas.",
 			"hit_frame": 3,
 			"loop": false,
 			"pivot": [
@@ -9049,7 +9315,7 @@
 				80
 			],
 			"frames": 7,
-			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadros 0-5 = giro; quadro 6 = repouso (corda a prumo das luvas até o chão, na camada da frente). Fase 5.1: laço da mesma largura nas duas camadas.",
 			"hit_frame": 3,
 			"loop": false,
 			"pivot": [
@@ -9149,7 +9415,7 @@
 				80
 			],
 			"frames": 7,
-			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.",
+			"frames_note": "6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadros 0-5 = giro; quadro 6 = repouso (corda a prumo das luvas até o chão, na camada da frente). Fase 5.1: laço da mesma largura nas duas camadas.",
 			"hit_frame": 3,
 			"loop": false,
 			"pivot": [
@@ -9807,7 +10073,7 @@
 				0,
 				0
 			],
-			"note": "Fama (estrela) 9x9, cor p2. Número da fama em p2."
+			"note": "Ícone de Fama (estrela) na cor da moeda Fama da Fase 5.1: rosa de letreiro (f1/f2). Era roxo; roxo agora é só Legado e arte marcial."
 		},
 		"icon_fame_16": {
 			"file": "res://assets/sprites/ui/icon_fame_16.png",
@@ -9821,7 +10087,7 @@
 				0,
 				0
 			],
-			"note": "Fama 16x16 (tela de fim e prévia)."
+			"note": "Ícone de Fama (estrela) na cor da moeda Fama da Fase 5.1: rosa de letreiro (f1/f2). Era roxo; roxo agora é só Legado e arte marcial."
 		},
 		"icon_legacy": {
 			"file": "res://assets/sprites/ui/icon_legacy.png",
@@ -11735,7 +12001,7 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 255,
-			"note": "Contorno de fita crepe no chão onde a esteira vai ficar (mesmo pivô e posição da treadmill_lN_side). Desenhar logo depois do garage_bg, antes de pessoas e sacos (é chão). Some na chegada (no quadro de impacto do fx_arrive_dust)."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
 		},
 		"tape_mark_rope": {
 			"file": "res://assets/sprites/garage/tape_mark_rope.png",
@@ -11752,12 +12018,12 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Contorno de fita crepe na parede em volta do prego, como num quadro de ferramentas, com a forma da corda tracejada a caneta. É o 'lugar exato' da corda (ela fica no prego quando não está em foco). Mesmo pivô da rope_lN_idle (o prego). Some na chegada."
+			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
 		},
 		"ghost_treadmill": {
 			"file": "res://assets/sprites/garage/ghost_treadmill.png",
@@ -11779,7 +12045,7 @@
 			},
 			"layer": "chao",
 			"z": -29,
-			"note": "Opcional: sombra pontilhada (dither ink 50%) da esteira com cadeado, por cima da tape_mark_treadmill. Deixa claro QUE aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da esteira (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
 		},
 		"ghost_rope": {
 			"file": "res://assets/sprites/garage/ghost_rope.png",
@@ -11796,12 +12062,12 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"layer": "frente_do_fundo",
 			"z": -39,
-			"note": "Opcional: sombra pontilhada da corda com cadeado, no prego, por cima da tape_mark_rope. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da corda pendurada (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
 		},
 		"sign_cardboard": {
 			"file": "res://assets/sprites/garage/sign_cardboard.png",
@@ -12152,7 +12418,7 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"drop": {
@@ -12390,7 +12656,7 @@
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Academia Boa Esquina inteira, sem aparelhos nem pessoas: parede creme com barrado verde descascado, viga de aço, 2 tubos, nome pintado, espelho trincado com fita, pôsteres desbotados, prateleira (Metrônomo em 240,118), quadro da mensalidade, banco, relógio de round, luvas penduradas, porta, piso de borracha e tatame gasto no canto da frente à esquerda. Luz fria já aplicada. Mesma caixa e mesmos pontos da garage_bg: troca só o fundo."
+			"note": "Academia Boa Esquina inteira, sem aparelhos nem pessoas: parede creme com barrado verde descascado, viga de aço, 2 tubos, nome pintado, espelho trincado com fita, pôsteres desbotados, prateleira (Metrônomo em 240,118), quadro da mensalidade, banco, relógio de round, luvas penduradas, porta, piso de borracha e tatame gasto no canto da frente à esquerda. Luz fria já aplicada. Mesma caixa e mesmos pontos da garage_bg: troca só o fundo. Fase 5.1: o prego antigo (352,72) saiu; o gancho da corda fica em (296,166), na altura do ombro."
 		},
 		"gym_tube": {
 			"file": "res://assets/sprites/gym/gym_tube.png",
@@ -12714,12 +12980,12 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Corda de PVC vermelha com cabos pretos (academia, nível visual 0), no gancho (mesmo ponto do prego da garagem). Luz dos tubos aplicada."
+			"note": "Corda de PVC vermelha com cabos pretos (academia, nível visual 0), no gancho de aço do barrado (mesmo ponto da garagem, 296,166). Luz dos tubos aplicada."
 		},
 		"rope_l0_swing_gym": {
 			"facing": "direita",
@@ -12759,12 +13025,12 @@
 			"positions": {
 				"prego": [
 					296,
-					155
+					166
 				]
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Corda de aço encapada com cabos de madeira (academia, nível visual 1), no gancho (mesmo ponto do prego da garagem). Luz dos tubos aplicada."
+			"note": "Corda de aço encapada com cabos de madeira (academia, nível visual 1), no gancho de aço do barrado (mesmo ponto da garagem, 296,166). Luz dos tubos aplicada."
 		},
 		"rope_l1_swing_gym": {
 			"facing": "direita",
@@ -13217,7 +13483,7 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -41,
-			"note": "Quadro de fita crepe na parede onde a plataforma da pera vai ficar (acima da porta), com a tábua e a gota desenhadas a caneta. Mesmo ponto da speed_bag_lN_wall. Vale na garagem e na academia. Some na chegada."
+			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
 		},
 		"tape_mark_grappling_dummy": {
 			"file": "res://assets/sprites/garage/tape_mark_grappling_dummy.png",
@@ -13240,7 +13506,7 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 266,
-			"note": "Contorno de fita crepe no chão onde o tatame do boneco vai ficar (canto da frente à esquerda). Mesmo pivô e ponto da grappling_dummy_lN_rest. Desenhar logo depois do fundo (é chão). Some na chegada."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
 		},
 		"ghost_speed_bag": {
 			"file": "res://assets/sprites/garage/ghost_speed_bag.png",
@@ -13262,7 +13528,7 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Opcional: sombra pontilhada da plataforma com cadeado, por cima da tape_mark_speed_bag. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da plataforma da pera (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
 		},
 		"ghost_grappling_dummy": {
 			"file": "res://assets/sprites/garage/ghost_grappling_dummy.png",
@@ -13285,7 +13551,7 @@
 			"layer": "chao",
 			"z": -29,
 			"sort_y": 267,
-			"note": "Opcional: sombra pontilhada do boneco deitado com cadeado, por cima da tape_mark_grappling_dummy. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da boneco deitado no tatame (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
 		},
 		"fx_arrive_dust_small": {
 			"file": "res://assets/sprites/garage/fx_arrive_dust_small.png",
@@ -20323,6 +20589,536 @@
 				56,
 				98
 			]
+		},
+		"tape_mark_rope_hi": {
+			"file": "res://assets/sprites/garage/tape_mark_rope_hi.png",
+			"frame_size": [
+				26,
+				48
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				13,
+				2
+			],
+			"positions": {
+				"prego": [
+					296,
+					166
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_rope_dim": {
+			"file": "res://assets/sprites/garage/tape_mark_rope_dim.png",
+			"frame_size": [
+				26,
+				48
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				13,
+				2
+			],
+			"positions": {
+				"prego": [
+					296,
+					166
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_treadmill_hi": {
+			"file": "res://assets/sprites/garage/tape_mark_treadmill_hi.png",
+			"frame_size": [
+				96,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				48,
+				13
+			],
+			"positions": {
+				"lado_direito": [
+					445,
+					267
+				]
+			},
+			"layer": "chao",
+			"z": -30,
+			"sort_y": 255,
+			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_treadmill_dim": {
+			"file": "res://assets/sprites/garage/tape_mark_treadmill_dim.png",
+			"frame_size": [
+				96,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				48,
+				13
+			],
+			"positions": {
+				"lado_direito": [
+					445,
+					267
+				]
+			},
+			"layer": "chao",
+			"z": -30,
+			"sort_y": 255,
+			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_speed_bag_hi": {
+			"file": "res://assets/sprites/garage/tape_mark_speed_bag_hi.png",
+			"frame_size": [
+				56,
+				60
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				28,
+				4
+			],
+			"positions": {
+				"parede": [
+					436,
+					46
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -41,
+			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_speed_bag_dim": {
+			"file": "res://assets/sprites/garage/tape_mark_speed_bag_dim.png",
+			"frame_size": [
+				56,
+				60
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				28,
+				4
+			],
+			"positions": {
+				"parede": [
+					436,
+					46
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -41,
+			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_grappling_dummy_hi": {
+			"file": "res://assets/sprites/garage/tape_mark_grappling_dummy_hi.png",
+			"frame_size": [
+				76,
+				22
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				38,
+				19
+			],
+			"positions": {
+				"canto": [
+					228,
+					283
+				]
+			},
+			"layer": "chao",
+			"z": -30,
+			"sort_y": 266,
+			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"tape_mark_grappling_dummy_dim": {
+			"file": "res://assets/sprites/garage/tape_mark_grappling_dummy_dim.png",
+			"frame_size": [
+				76,
+				22
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				38,
+				19
+			],
+			"positions": {
+				"canto": [
+					228,
+					283
+				]
+			},
+			"layer": "chao",
+			"z": -30,
+			"sort_y": 266,
+			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+		},
+		"ghost_rope_dim": {
+			"file": "res://assets/sprites/garage/ghost_rope_dim.png",
+			"frame_size": [
+				18,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				9,
+				0
+			],
+			"positions": {
+				"prego": [
+					296,
+					166
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -39,
+			"note": "Fase 5.1: silhueta riscada da corda pendurada (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+		},
+		"ghost_treadmill_dim": {
+			"file": "res://assets/sprites/garage/ghost_treadmill_dim.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"lado_direito": [
+					445,
+					267
+				]
+			},
+			"layer": "chao",
+			"z": -29,
+			"note": "Fase 5.1: silhueta riscada da esteira (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+		},
+		"ghost_speed_bag_dim": {
+			"file": "res://assets/sprites/garage/ghost_speed_bag_dim.png",
+			"frame_size": [
+				48,
+				52
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				24,
+				0
+			],
+			"positions": {
+				"parede": [
+					436,
+					46
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 5.1: silhueta riscada da plataforma da pera (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+		},
+		"ghost_grappling_dummy_dim": {
+			"file": "res://assets/sprites/garage/ghost_grappling_dummy_dim.png",
+			"frame_size": [
+				66,
+				30
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				32,
+				27
+			],
+			"positions": {
+				"canto": [
+					228,
+					283
+				]
+			},
+			"layer": "chao",
+			"z": -29,
+			"sort_y": 267,
+			"note": "Fase 5.1: silhueta riscada da boneco deitado no tatame (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+		},
+		"mark_padlock": {
+			"file": "res://assets/sprites/garage/mark_padlock.png",
+			"frame_size": [
+				7,
+				10
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				3,
+				5
+			],
+			"note": "Cadeado cinza 7x10 para a marca TRANCADA (pede outro aparelho antes). Pivô no centro; ponto de cada marca em by_data_id.unlock_*.lock_pos. Não usar na marca que dá para comprar."
+		},
+		"box_big": {
+			"file": "res://assets/sprites/box/box_big.png",
+			"frame_size": [
+				76,
+				62
+			],
+			"frames": 4,
+			"fps": 0.0,
+			"pivot": [
+				38,
+				58
+			],
+			"loop": false,
+			"anim": {
+				"closed": [
+					0
+				],
+				"crack_1": [
+					1
+				],
+				"crack_2": [
+					2
+				],
+				"open": [
+					3
+				]
+			},
+			"body_size": [
+				52,
+				41
+			],
+			"top_center_offset": [
+				0,
+				-41
+			],
+			"click_rect": [
+				-28,
+				-43,
+				56,
+				45
+			],
+			"note": "Caixa de papelão da escola, tamanho GRANDE (esteira e boneco de tatame). Quadros: 0 = fechada, 1 = racha 1 (depois do 1º clique), 2 = racha 2 (depois do 2º), 3 = aberta e vazia (só durante o efeito de abrir). Pivô = meio da base, no chão. Sombra de contato já no quadro. SEM luz da sala aplicada, de propósito: é o objeto novo da cena e precisa saltar ao olho; a mesma arte vale na garagem e na academia. click_rect = área clicável sugerida, relativa ao pivô."
+		},
+		"box_small": {
+			"file": "res://assets/sprites/box/box_small.png",
+			"frame_size": [
+				48,
+				42
+			],
+			"frames": 4,
+			"fps": 0.0,
+			"pivot": [
+				24,
+				38
+			],
+			"loop": false,
+			"anim": {
+				"closed": [
+					0
+				],
+				"crack_1": [
+					1
+				],
+				"crack_2": [
+					2
+				],
+				"open": [
+					3
+				]
+			},
+			"body_size": [
+				28,
+				25
+			],
+			"top_center_offset": [
+				0,
+				-25
+			],
+			"click_rect": [
+				-16,
+				-27,
+				32,
+				29
+			],
+			"note": "Caixa de papelão da escola, tamanho PEQUENA (corda, pera e luvas). Quadros: 0 = fechada, 1 = racha 1 (depois do 1º clique), 2 = racha 2 (depois do 2º), 3 = aberta e vazia (só durante o efeito de abrir). Pivô = meio da base, no chão. Sombra de contato já no quadro. SEM luz da sala aplicada, de propósito: é o objeto novo da cena e precisa saltar ao olho; a mesma arte vale na garagem e na academia. click_rect = área clicável sugerida, relativa ao pivô."
+		},
+		"fx_box_chips_1": {
+			"file": "res://assets/sprites/box/fx_box_chips_1.png",
+			"frame_size": [
+				72,
+				56
+			],
+			"frames": 5,
+			"fps": 14.0,
+			"pivot": [
+				36,
+				40
+			],
+			"loop": false,
+			"note": "1º clique na caixa: 5 lascas de papelão e um risco de impacto. 5 quadros a 14 fps (0,36 s). Pivô = meio de cima da caixa (pos da caixa + top_center_offset do box_*). Por cima da caixa."
+		},
+		"fx_box_chips_2": {
+			"file": "res://assets/sprites/box/fx_box_chips_2.png",
+			"frame_size": [
+				88,
+				64
+			],
+			"frames": 6,
+			"fps": 14.0,
+			"pivot": [
+				44,
+				48
+			],
+			"loop": false,
+			"note": "2º clique: 10 lascas e pedaços de fita, mais altos, e a 1ª faísca saindo da fresta. 6 quadros a 14 fps (0,43 s). Mesmo pivô do fx_box_chips_1."
+		},
+		"fx_box_burst": {
+			"file": "res://assets/sprites/box/fx_box_burst.png",
+			"frame_size": [
+				128,
+				96
+			],
+			"frames": 7,
+			"fps": 14.0,
+			"pivot": [
+				64,
+				72
+			],
+			"loop": false,
+			"impact_frame": 0,
+			"note": "3º clique, o 'tchan': clarão em estrela (quadros 0–1), anel, 4 abas e lascas voando, 7 estrelas. 7 quadros a 14 fps (0,5 s). Mesmo pivô dos fx_box_chips (meio de cima da caixa). Por cima de tudo da sala."
+		},
+		"fx_box_glint": {
+			"file": "res://assets/sprites/box/fx_box_glint.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 4,
+			"fps": 8.0,
+			"pivot": [
+				4,
+				4
+			],
+			"loop": false,
+			"note": "Brilho de espera da caixa fechada: 4 quadros a 8 fps, tocar 1 vez a cada ~2,5 s numa quina de cima (pos da caixa + glint_offset do by_data_id.box). Com mais de uma caixa, defasar."
+		},
+		"school_symbol_9": {
+			"file": "res://assets/sprites/ui/school_symbol_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"provisional": true,
+			"note": "SÍMBOLO DA ESCOLA — PROVISÓRIO (9x9). A história diz que o símbolo nasce quando a garagem é salva; este é só um marcador: frontão de garagem com as ripas do portão, em tinta de carimbo azul (b1 + b2). Trocar o arquivo quando o símbolo de verdade existir; nada mais muda."
+		},
+		"school_symbol_16": {
+			"file": "res://assets/sprites/ui/school_symbol_16.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"provisional": true,
+			"note": "SÍMBOLO DA ESCOLA — PROVISÓRIO (16x16). A história diz que o símbolo nasce quando a garagem é salva; este é só um marcador: frontão de garagem com as ripas do portão, em tinta de carimbo azul (b1 + b2). Trocar o arquivo quando o símbolo de verdade existir; nada mais muda."
+		},
+		"school_symbol_32": {
+			"file": "res://assets/sprites/ui/school_symbol_32.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"provisional": true,
+			"note": "SÍMBOLO DA ESCOLA — PROVISÓRIO (32x32). A história diz que o símbolo nasce quando a garagem é salva; este é só um marcador: frontão de garagem com as ripas do portão, em tinta de carimbo azul (b1 + b2). Trocar o arquivo quando o símbolo de verdade existir; nada mais muda."
+		},
+		"ui_box_tag": {
+			"file": "res://assets/sprites/ui/ui_box_tag.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 5,
+				"right": 4,
+				"bottom": 4
+			},
+			"text_color": "d2",
+			"text_color_secondary": "g1",
+			"text_margin": [
+				6,
+				6,
+				6,
+				5
+			],
+			"note": "Etiqueta de papel da caixa (9-slice) para a dica de hover: símbolo school_symbol_16 à esquerda, box_sender / box_to em g1, nome do item (box_label) em d2. Texto 1x SEM sombra (papel claro)."
+		},
+		"ui_box_stamp": {
+			"file": "res://assets/sprites/ui/ui_box_stamp.png",
+			"frame_size": [
+				14,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 4,
+				"right": 4,
+				"bottom": 4
+			},
+			"text_color": "r2",
+			"text_margin": [
+				5,
+				4,
+				5,
+				4
+			],
+			"note": "Carimbo vermelho (9-slice, miolo transparente) para o texto box_stamp (PESADO, PAR, NÃO MOLHAR...), em r2, 1x, sem sombra, por cima da etiqueta ou do canto dela."
 		}
 	},
 	"fight_layout": {
@@ -20487,5 +21283,94 @@
 			160,
 			24
 		]
+	},
+	"ui_tokens": {
+		"_nota": "Fase 5.1, direcao-visual.md §18. Nomes iguais aos do fase5.1-design.md §3. Valor = nome da cor na paleta (hex ao lado).",
+		"colors": {
+			"col_treino": [
+				"gr3",
+				"a6d86a"
+			],
+			"col_money": [
+				"y1",
+				"f5d26b"
+			],
+			"col_fame": [
+				"f2",
+				"f59ac0"
+			],
+			"col_legacy": [
+				"p2",
+				"b07ad8"
+			],
+			"col_text_1": [
+				"white",
+				"f2ece0"
+			],
+			"col_text_2": [
+				"g2",
+				"8f8890"
+			],
+			"col_disabled": [
+				"g1",
+				"6b6570"
+			],
+			"col_buyable": [
+				"y2",
+				"fff3c4"
+			],
+			"col_strength": [
+				"r2",
+				"d4473a"
+			],
+			"col_agility": [
+				"b3",
+				"8fbbe0"
+			],
+			"col_endurance": [
+				"y0",
+				"e0a040"
+			],
+			"col_art": [
+				"p1",
+				"7a4fa0"
+			],
+			"col_risk_green": [
+				"gr2",
+				"5aa25a"
+			],
+			"col_risk_yellow": [
+				"y0",
+				"e0a040"
+			],
+			"col_risk_red": [
+				"r2",
+				"d4473a"
+			]
+		},
+		"sizes": {
+			"txt_hero": {
+				"font": "fightclicker_5x7",
+				"scale": 2,
+				"font_size": 22
+			},
+			"txt_title": {
+				"font": "fightclicker_5x7",
+				"scale": 1,
+				"font_size": 11,
+				"extra": "caixa alta, col_text_1, filete g0 de 1 px embaixo"
+			},
+			"txt_body": {
+				"font": "fightclicker_5x7",
+				"scale": 1,
+				"font_size": 11
+			}
+		},
+		"new_palette": {
+			"f0": "7a2a52",
+			"f1": "d4558f",
+			"f2": "f59ac0",
+			"note": "Rampa nova, só de UI, para a Fama. Não usar em cenário nem em personagem."
+		}
 	}
 }

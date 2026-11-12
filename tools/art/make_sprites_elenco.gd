@@ -642,52 +642,98 @@ func shifted(p: Dictionary, dy: float, feet: bool) -> Dictionary:
 			q[k] = (q[k] as Vector2) + V(0, dy)
 	return q
 
+## Tira chaves da pose (ex.: "er"/"el" para o IK achar o cotovelo com o comprimento do braço constante).
+func sem(p: Dictionary, chaves: Array) -> Dictionary:
+	for k in chaves:
+		p.erase(k)
+	return p
+
+## Fase 5.1 (top 3 animações): os ciclos da equipe deixaram de ser "a guarda deslocada 1 px". Cada um tem 4 poses autorais
+## com peso (quadril e tronco saem do eixo, joelhos dobram), antecipação e acompanhamento, e braços de comprimento constante
+## (IK sem cotovelo fixo sempre que o braço estica). Continuam 4 quadros, mesmo fps, pivô e posição do manifest.
 func helper_poses(hid: String) -> Array:
 	match hid:
-		"neighbor_1":   # boxe de sombra: guarda, jab, guarda (respira), direto cruzado
+		"neighbor_1":   # boxe de sombra: 0 carrega atrás, 1 JAB com o corpo, 2 esquiva afundando (antecipa), 3 DIRETO girando o quadril
+			return [
+				gpose({"hip": V(-1, -30), "top": V(0, -49), "head": V(0, -56), "sl": V(-8, -46), "sr": V(7, -46),
+					"hl": V(-8, -50), "el": V(-10, -40), "hr": V(9, -51), "er": V(9, -40), "tw": -0.3}),
+				sem(gpose({"hip": V(1, -30), "top": V(3, -49), "head": V(4, -55), "sl": V(-5, -47), "sr": V(10, -48), "face": "effort",
+					"hl": V(-6, -51), "el": V(-8, -41), "hr": V(21, -49), "fs": 0.62, "pr": V(0.2, 1), "shoel": "34ball", "tw": 1.0,
+					"gkr": "", "kl": V(1, 0), "kr": V(1, 0)}), ["er"]),
+				gpose({"hip": V(0, -28.5), "top": V(-1, -47), "head": V(-2, -54), "sl": V(-9, -44), "sr": V(6, -44.5),
+					"hl": V(-10, -47), "el": V(-11, -37), "hr": V(7, -49), "er": V(8, -38), "tw": -0.6, "kl": V(1, 0), "kr": V(1, 0)}),
+				sem(gpose({"hip": V(2, -30), "top": V(4, -49.5), "head": V(4, -56), "sl": V(1, -47), "sr": V(8, -48.5), "face": "effort", "tw": 1.6,
+					"hl": V(20, -46), "pl": V(0, 1), "hr": V(10, -51), "er": V(10, -41.5), "shoel": "34ball", "gkl": "", "kl": V(1, 0)}), ["el"])]
+		"neighbor_2":   # polichinelo: 0 pousa fechado (amassa 1 px), 1 no ar abrindo (braços em V para baixo), 2 pousa aberto com as
+			# mãos batendo em cima da cabeça, 3 no ar fechando (braços em V para cima). Braços esticados de verdade (antes 14 px de 20).
+			var jk := {"gkl": "", "gkr": ""}
+			var f0 := gpose({"hip": V(0, -30), "top": V(1, -49), "head": V(1, -55), "sl": V(-7, -46), "sr": V(8, -46),
+				"hl": V(-10, -27), "hr": V(11, -27), "pl": V(-1, 0.2), "pr": V(1, 0.2), "toel": V(1, 0), "toer": V(8, 0), "kl": V(0.4, 0), "kr": V(0.6, 0)})
+			var f1 := gpose({"hip": V(0, -31.5), "top": V(1, -50.5), "head": V(1, -57), "sl": V(-7, -47.5), "sr": V(8, -47.5),
+				"hl": V(-18, -35), "hr": V(19, -35), "pl": V(-0.3, 1), "pr": V(0.3, 1), "toel": V(-2, -2), "toer": V(11, -2),
+				"shoel": "34ball", "shoer": "34ball", "kl": V(-0.3, 0), "kr": V(0.6, 0)})
+			var f2 := gpose({"hip": V(0, -30), "top": V(1, -49), "head": V(1, -55), "sl": V(-7, -46.5), "sr": V(8, -46.5),
+				"hl": V(-3, -62), "hr": V(5, -62), "pl": V(-1, 0), "pr": V(1, 0), "toel": V(-5, 0), "toer": V(14, 0), "kl": V(-0.3, 0), "kr": V(0.6, 0)})
+			var f3 := gpose({"hip": V(0, -31.5), "top": V(1, -50.5), "head": V(1, -57), "sl": V(-7, -48), "sr": V(8, -48),
+				"hl": V(-18, -60), "hr": V(19, -60), "pl": V(-1, 0.3), "pr": V(1, 0.3), "toel": V(-2, -2), "toer": V(11, -2),
+				"shoel": "34ball", "shoer": "34ball", "kl": V(-0.3, 0), "kr": V(0.6, 0)})
+			var out := []
+			for p in [f0, f1, f2, f3]:
+				(p as Dictionary).merge(jk, true)
+				out.append(sem(p, ["el", "er"]))
+			return out
+		"neighbor_3":   # saltita trocando o peso de perna: 0 pousa no pé de trás (afunda), 1 no ar (luvas atrasam 1 px), 2 pousa no pé da
+			# frente e solta uma finta curta com a mão da frente, 3 no ar de volta
 			var g := gpose({"hl": V(-7, -51), "hr": V(10, -52), "el": V(-9, -41), "er": V(10, -41)})
-			return [g,
-				gpose({"hip": V(1, -31), "top": V(2, -50), "head": V(2, -56), "sl": V(-6, -47), "sr": V(10, -48), "face": "effort",
-					"hl": V(-7, -51), "hr": V(21, -50), "el": V(-8, -41), "er": V(13, -48.5), "shoel": "34ball", "tw": 1.0, "gkr": "side"}),
-				shifted(g, 1.0, false),
-				gpose({"hip": V(1, -31), "top": V(2, -50), "head": V(3, -56), "sl": V(-4, -47), "sr": V(9, -47), "face": "effort", "tw": 1.5,
-					"hl": V(15, -50), "el": V(3, -46), "hr": V(9, -53), "er": V(10, -42), "shoel": "34ball", "gkl": "side"})]
-		"neighbor_2":   # polichinelo: braços embaixo/pés juntos -> braços abertos/pés afastados -> braços em cima
-			var f0 := gpose({"head": V(1, -56), "hl": V(-10, -33), "hr": V(11, -33), "el": V(-10, -40), "er": V(11, -40), "toel": V(1, 0), "toer": V(8, 0), "gkl": "down", "gkr": "down"})
-			var open := {"head": V(1, -56), "hl": V(-17, -51), "hr": V(18, -51), "el": V(-13, -49), "er": V(14, -49), "toel": V(-4, 0), "toer": V(13, 0),
-				"shoel": "34ball", "shoer": "34ball", "gkl": "up", "gkr": "up", "kl": V(-0.3, 0), "kr": V(0.6, 0)}
-			var f1 := shifted(gpose(open), -1.0, true)
-			var upd := open.duplicate()
-			upd.merge({"hl": V(-10, -61), "hr": V(11, -61), "el": V(-10, -54), "er": V(11, -54)}, true)
-			var f2 := shifted(gpose(upd), -1.0, true)
-			return [f0, f1, f2, f1.duplicate()]
-		"neighbor_3":   # saltita na guarda
-			var g := gpose({"hl": V(-7, -51), "hr": V(10, -52), "el": V(-9, -41), "er": V(10, -41)})
-			var up := shifted(g, -1.0, true)
-			up["shoel"] = "34ball"
-			up["shoer"] = "34ball"
-			var low := shifted(g, 1.0, false)
-			low["hr"] = V(12, -53)
-			low["er"] = V(11, -42)
-			return [g, up, g.duplicate(), low]
-		"uncle_1":      # guarda lenta e baixa; no 3º quadro solta um jab devagar
+			var a0 := gpose({"hip": V(-1, -29.5), "top": V(-1, -48.5), "head": V(-1, -55.5), "sl": V(-9, -45.5), "sr": V(6, -45.5),
+				"hl": V(-9, -50), "el": V(-11, -40), "hr": V(8, -51), "er": V(8, -39.5), "kl": V(1, 0), "kr": V(1, 0)})
+			var a1 := shifted(g, -2.0, true)
+			a1.merge({"shoel": "34ball", "shoer": "34ball", "hl": V(-7, -52), "hr": V(10, -53)}, true)
+			var a2 := gpose({"hip": V(1, -29.5), "top": V(3, -48.5), "head": V(3, -55), "sl": V(-5, -45.5), "sr": V(10, -46),
+				"hl": V(-6, -50), "el": V(-7, -40), "hr": V(16, -50), "er": V(12, -42.5), "gkr": "", "tw": 0.6, "kl": V(1, 0), "kr": V(1, 0)})
+			var a3 := shifted(g, -2.0, true)
+			a3.merge({"shoel": "34ball", "shoer": "34ball", "hl": V(-7, -52), "hr": V(11, -53), "er": V(11, -43)}, true)
+			return [a0, a1, a2, a3]
+		"uncle_1":      # guarda lenta e baixa: 0 guarda, 1 senta no pé de trás e recolhe (antecipa), 2 JAB devagar com o corpo indo junto,
+			# 3 recolhe passando do ponto (luvas baixas, bufando)
 			var g := gpose({"hl": V(-7, -47), "hr": V(9, -48), "el": V(-9, -38), "er": V(10, -38), "toel": V(-2, 0), "toer": V(10, 0)})
-			var d1 := shifted(g, 1.0, false)
-			var jab := d1.duplicate()
-			jab.merge({"hr": V(17, -48), "er": V(12, -45), "sr": V(9, -46), "gkr": "side", "tw": 0.6}, true)
-			return [g, d1, jab, g.duplicate()]
-		"uncle_2":      # agachamento lento com as luvas para a frente
-			var g := gpose({"hl": V(5, -45), "hr": V(14, -46), "el": V(-7, -39), "er": V(11, -40), "toel": V(-3, 0), "toer": V(11, 0),
-				"gkl": "side", "gkr": "side", "kl": V(1, 0), "kr": V(1, 0)})
-			return [g, shifted(g, 2.0, false), shifted(g, 4.0, false), shifted(g, 2.0, false)]
-		"coach_1":      # 0 parado, 1 confere o relógio, 2 apita, 3 parado
-			var g := gpose({"hl": V(-2, -38), "el": V(-9, -40), "hr": V(11, -34), "er": V(10, -41), "gkl": "up", "gkr": "down",
+			var ant := gpose({"hip": V(-1, -30), "top": V(-1, -49), "head": V(-1, -56), "sl": V(-9, -46), "sr": V(6, -46),
+				"hl": V(-9, -46), "el": V(-11, -37), "hr": V(7, -46), "er": V(8, -37), "toel": V(-2, 0), "toer": V(10, 0), "tw": -0.4, "kl": V(1, 0), "kr": V(1, 0)})
+			var jab := sem(gpose({"hip": V(1, -30), "top": V(3, -49), "head": V(4, -55.5), "sl": V(-5, -46.5), "sr": V(10, -47),
+				"hl": V(-6, -47), "el": V(-8, -38), "hr": V(18, -48), "fs": 0.56, "pr": V(0.2, 1), "toel": V(-2, 0), "toer": V(10, 0),
+				"gkr": "", "tw": 0.8, "face": "effort", "kl": V(1, 0), "kr": V(1, 0)}), ["er"])
+			var rec := gpose({"hip": V(0, -30.5), "top": V(1, -49.5), "head": V(1, -56), "sl": V(-7, -46.5), "sr": V(8, -46.5),
+				"hl": V(-7, -45), "el": V(-9, -37), "hr": V(11, -46), "er": V(11, -37), "toel": V(-2, 0), "toer": V(10, 0), "face": "tired"})
+			return [g, ant, jab, rec]
+		"uncle_2":      # agachamento de verdade: o quadril vai para TRÁS e desce 7 px, os joelhos vão à frente, o tronco inclina e as
+			# luvas vão à frente para equilibrar; 3 = subida com esforço. (Antes: o corpo inteiro só descia reto 4 px.)
+			var kk := {"toel": V(-3, 0), "toer": V(11, 0), "gkl": "", "gkr": "", "kl": V(1, 0), "kr": V(1, 0)}
+			var s0 := {"hip": V(0, -30.5), "hl": V(4, -44), "el": V(-7, -39), "hr": V(13, -45), "er": V(11, -39.5)}
+			var s1 := {"hip": V(-1, -28), "top": V(1, -47), "head": V(2, -54), "sl": V(-7, -44), "sr": V(8, -44),
+				"hl": V(6, -43), "el": V(-5, -37.5), "hr": V(15, -44), "er": V(12, -37.5)}
+			var s2 := {"hip": V(-3, -24), "top": V(1, -42.5), "head": V(3, -49), "sl": V(-7, -39.5), "sr": V(8, -39.5),
+				"hl": V(9, -40), "el": V(-2, -35), "hr": V(18, -41), "er": V(13, -34.5)}
+			var s3 := {"hip": V(-2, -27), "top": V(1, -46), "head": V(2, -53), "sl": V(-7, -43), "sr": V(8, -43), "face": "effort",
+				"hl": V(7, -43), "el": V(-4, -37), "hr": V(16, -44), "er": V(12, -37)}
+			var out := []
+			for s in [s0, s1, s2, s3]:
+				var p: Dictionary = kk.duplicate()
+				p.merge(s, true)
+				out.append(gpose(p))
+			return out
+		"coach_1":      # 0 parado com o peso numa perna, 1 confere o relógio (cabeça desce), 2 apita (peito à frente, cabeça sobe),
+			# 3 baixa o braço e anota (prancheta sobe 1 px)
+			var g := gpose({"hip": V(-1, -31), "hl": V(-2, -38), "el": V(-9, -40), "hr": V(11, -34), "er": V(10, -41), "gkl": "up", "gkr": "down",
 				"toel": V(-2, 0), "toer": V(9, 0)})
 			var watch := g.duplicate()
-			watch.merge({"hr": V(4, -45), "er": V(11, -40), "gkr": "side"}, true)
+			watch.merge({"head": V(2, -56), "hr": V(4, -45), "er": V(11, -40), "gkr": "side"}, true)
 			var whistle := g.duplicate()
-			whistle.merge({"hr": V(5, -52), "er": V(10, -44), "gkr": "up"}, true)
-			return [g, watch, whistle, shifted(g, 1.0, false)]
+			whistle.merge({"hip": V(0, -31), "top": V(2, -50.5), "head": V(3, -57.5), "sl": V(-6, -47.5), "sr": V(9, -47.5),
+				"hr": V(6, -52), "er": V(11, -44), "gkr": "up", "el": V(-8, -40.5)}, true)
+			var note := g.duplicate()
+			note.merge({"hip": V(-1, -30.5), "top": V(1, -49.5), "head": V(0, -56), "hl": V(-2, -39), "el": V(-9, -40),
+				"hr": V(10, -35), "er": V(11, -41)}, true)
+			return [g, watch, whistle, note]
 	return []
 
 ## Prancheta (na mão esquerda da tela, por baixo dos dedos) e apito (no peito ou na boca).

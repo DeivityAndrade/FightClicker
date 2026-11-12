@@ -12,6 +12,8 @@ var _info_extra: Label
 var _ambientacao := ""
 var _div_info: ColorRect
 var _caixa_info: VBoxContainer
+var _info_vazia := true
+var _cabe_info := true
 
 
 func _ready() -> void:
@@ -20,8 +22,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_meta("ui_margens", "h")  # conteúdo com a mesma margem à esquerda e à direita
 	UiTema.painel(self, "ui_panel", Rect2(0, 0, 128, 272))
-	UiTema.rotulo(self, str(GameState.dados.ui.get("panel_attributes", "ATRIBUTOS")).to_upper(), UiTema.G3, 8, 5)
-	_divisor(16)
+	UiTema.rotulo(self, str(GameState.dados.ui.get("panel_attributes", "ATRIBUTOS")).to_upper(), UiTema.COL_TEXT_1, 8, 5)
+	_divisor(16, UiTema.G0)
 
 	var i := 0
 	for id in GameState.dados.atributos:
@@ -49,7 +51,7 @@ func _ready() -> void:
 		add_child(area)
 
 		UiTema.textura_rect(self, "icon_" + id, 8, y0 + 1)
-		var nome_rotulo := UiTema.rotulo(self, str(info.get("name", id)).to_upper(), cor, 21, y0)
+		var nome_rotulo := UiTema.rotulo(self, str(info.get("name", id)).to_upper(), UiTema.COL_TEXT_2, 21, y0)
 		var valor := UiTema.rotulo(self, "0", UiTema.WHITE, 8, y0, 112, HORIZONTAL_ALIGNMENT_RIGHT)
 
 		var bg := NinePatchRect.new()
@@ -88,9 +90,9 @@ func _ready() -> void:
 	_caixa_info.size = Vector2(112, 79)
 	_caixa_info.add_theme_constant_override("separation", 4)
 	add_child(_caixa_info)
-	_info_titulo = UiTema.rotulo(_caixa_info, "", UiTema.Y1, 0, 0, 112)
+	_info_titulo = UiTema.rotulo(_caixa_info, "", UiTema.COL_TEXT_1, 0, 0, 112)
 	_info_texto = UiTema.rotulo(_caixa_info, "", UiTema.CREAM, 0, 0, 112)
-	_info_extra = UiTema.rotulo(_caixa_info, "", UiTema.GR3, 0, 0, 112)
+	_info_extra = UiTema.rotulo(_caixa_info, "", UiTema.COL_TEXT_2, 0, 0, 112)
 	# Fase 4: o bloco PRÓXIMA cresce com a fita da revanche e a dica do verde; a caixa de informação desce junto.
 	proxima.altura_mudou.connect(_ao_altura_proxima)
 	GameState.local_mudou.connect(func(_l: String) -> void: mostrar_info({}))
@@ -107,9 +109,15 @@ func _ao_altura_proxima(altura: int) -> void:
 	var sobra := 267.0 - (y_div + 4.0)
 	_caixa_info.size.y = maxf(sobra, 0.0)
 	# Fase 5: o cartão da mudança ocupa quase o painel todo; sem espaço para a caixa de informação, ela some (e o divisor).
-	var cabe := sobra >= 20.0
-	_div_info.visible = cabe
-	_caixa_info.visible = cabe
+	_cabe_info = sobra >= 20.0
+	_caixa_info.visible = _cabe_info
+	_ajustar_divisor_info()
+
+
+## O filete da caixa de informação só existe quando há algo para mostrar.
+func _ajustar_divisor_info() -> void:
+	if _div_info != null:
+		_div_info.visible = _cabe_info and not _info_vazia
 
 
 ## "COMPRE A ESTEIRA PARA TREINAR" se o aparelho que treina o atributo ainda não chegou (o atributo continua valendo
@@ -135,10 +143,10 @@ func _aviso_curto(texto: String) -> String:
 	return t
 
 
-func _divisor(y: float) -> ColorRect:
+func _divisor(y: float, cor: Color = UiTema.D2) -> ColorRect:
 	var d := ColorRect.new()
 	d.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	d.color = UiTema.D2
+	d.color = cor
 	d.position = Vector2(8, y)
 	d.size = Vector2(112, 1)
 	add_child(d)
@@ -156,19 +164,20 @@ func _margens_nove(n: NinePatchRect, nome: String) -> void:
 ## Caixa de informação: {} mostra a ambientação do local. Senão {titulo, texto, extra}.
 func mostrar_info(info: Dictionary) -> void:
 	if info.is_empty():
+		# Fase 5.1: a descrição do local saiu daqui (vai na dica do nome do local, no HUD). Sem nada sob o mouse, a caixa fica vazia.
 		_info_titulo.text = ""
-		# Fase 5: a ambientação é a do local atual (garagem ou Academia Boa Esquina).
-		var amb := str(GameState.local_atual().get("ambience", "")).to_upper()
-		_info_texto.text = amb if amb != "" else _ambientacao
-		_info_texto.add_theme_color_override("font_color", UiTema.G2)
+		_info_texto.text = ""
 		_info_extra.text = ""
 	else:
 		_info_titulo.text = str(info.get("titulo", "")).to_upper()
 		_info_texto.text = str(info.get("texto", "")).to_upper()
-		_info_texto.add_theme_color_override("font_color", UiTema.CREAM)
+		_info_texto.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
 		_info_extra.text = str(info.get("extra", "")).to_upper()
 	_info_titulo.visible = _info_titulo.text != ""
 	_info_extra.visible = _info_extra.text != ""
+	_info_texto.visible = _info_texto.text != ""
+	_info_vazia = _info_titulo.text == "" and _info_texto.text == "" and _info_extra.text == ""
+	_ajustar_divisor_info()
 
 
 func atualizar() -> void:
@@ -182,11 +191,12 @@ func atualizar() -> void:
 		l.valor.text = NumberFormat.fmt(v, NumberFormat.TRUNCAR)
 		l.fundo.visible = id == foco_attr
 		# Atributo de aparelho que ainda não chegou: o nome fica apagado (a dica completa vem ao passar o mouse).
-		l.nome.add_theme_color_override("font_color", UiTema.cor_atributo(id) if _aviso_trancado(id) == "" else UiTema.G2)
+		l.nome.add_theme_color_override("font_color", UiTema.COL_TEXT_2 if _aviso_trancado(id) == "" else UiTema.COL_DISABLED)
 		var aviso := _aviso_trancado(id)
-		l.aviso.text = _aviso_curto(aviso)
-		l.aviso.visible = aviso != ""
-		l.bg.visible = aviso == ""
+		# Atributo sem aparelho: só a barra vazia e apagada; o texto "COMPRE A ..." vai para a dica (hover no atributo).
+		l.aviso.visible = false
+		l.bg.visible = true
+		l.bg.modulate = Color(1, 1, 1, 0.45) if aviso != "" else Color.WHITE
 		# Barra = parte do treino total que foi para este atributo.
 		var frac := v / total if total > 0.0 else 0.0
 		var w := roundf(110.0 * frac)

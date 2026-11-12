@@ -3,7 +3,9 @@ extends RefCounted
 ## Grava e lê o save em JSON, com versão, migração, backup e proteção contra corrupção.
 ## A pasta é escolhida na criação: o jogo usa PASTA_REAL, os testes usam user://test/...
 ##
-## Formato atual (versão 6, Fase 5): igual ao v5 mais career.location, career.art, career.art_seconds,
+## Formato atual (versão 7, Fase 5.1): igual ao v6 mais career.boxes (caixas de equipamento fechadas: [{item, kind, hits}]);
+## career.glove_level passa a contar as luvas COMPRADAS (abertas + a que está na caixa).
+## Versão 6 (Fase 5): igual ao v5 mais career.location, career.art, career.art_seconds,
 ## permanent.arts_unlocked, permanent.last_art e ending.summary.art.
 ## Versão 5 (Fase 4b): igual ao v4 mais career.apparatus_owned e ending.reason.unlock_tip.
 ## Versão 4 (Fase 4): igual ao v3 mais career.metronome_level, permanent.skill_nodes e
@@ -14,7 +16,7 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 6
+const VERSAO_ATUAL := 7
 # Fator de conversão do Legado na migração v3 -> v4 (reescala do design; é formato, não balanceamento).
 const ESCALA_LEGADO_V4 := 10
 # Migração v5 -> v6: dinheiro mínimo de quem já tem o cinturão (= preço da mudança na v6). É formato, não lê data/:
@@ -39,6 +41,7 @@ const MIGRACOES := {
 	3: "_migrar_3_para_4",
 	4: "_migrar_4_para_5",
 	5: "_migrar_5_para_6",
+	6: "_migrar_6_para_7",
 }
 
 var pasta: String
@@ -317,6 +320,22 @@ func _migrar_5_para_6(doc: Dictionary) -> Dictionary:
 	perm["arts_unlocked"] = []
 	perm["last_art"] = ""
 	estado["permanent"] = perm
+	novo["state"] = estado
+	return novo
+
+
+# v6 (Fase 5) -> v7 (Fase 5.1): só acrescenta career.boxes = []. Save antigo não vira caixa:
+# o que está em apparatus_owned e glove_level continua montado e valendo.
+func _migrar_6_para_7(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	carreira["boxes"] = []
+	estado["career"] = carreira
 	novo["state"] = estado
 	return novo
 

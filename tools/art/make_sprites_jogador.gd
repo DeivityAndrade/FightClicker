@@ -9,9 +9,9 @@ extends SceneTree
 ## Escreve: <saida>/... e docs/arte/mockups/jogador_completo_x3.png.
 ## O manifest NÃO é alterado: as mãos de cada quadro saem dele e viram alvo do IK.
 
-const ROOT := "E:/Fightclicker/"
-const MANIFEST := ROOT + "assets/sprites/manifest.json"
-const MOCK := ROOT + "docs/arte/mockups/jogador_completo_x3.png"
+var ROOT := OS.get_environment("FIGHTCLICKER_ROOT") if OS.get_environment("FIGHTCLICKER_ROOT") != "" else "E:/Fightclicker/"
+var MANIFEST := ROOT + "assets/sprites/manifest.json"
+var MOCK := ROOT + "docs/arte/mockups/jogador_completo_x3.png"
 const FW := 112
 const FH := 104
 
@@ -106,6 +106,12 @@ func gpose(o := {}) -> Dictionary:
 		p[k] = o[k]
 	return p
 
+## Tira chaves da pose (ex.: "er" para o IK achar o cotovelo com o comprimento do braço constante).
+func _sem(p: Dictionary, chaves: Array) -> Dictionary:
+	for k in chaves:
+		p.erase(k)
+	return p
+
 func garage_poses(id: String) -> Array:
 	match id:
 		"fighter_idle":   # luvas na altura do queixo (boca livre), joelhos participam da respiração
@@ -118,13 +124,18 @@ func garage_poses(id: String) -> Array:
 				out.append(gpose({"hip": V(0, -31 + d), "top": V(1, -50 + d), "head": V(1, -57 + d), "sl": V(-7, -47 + d), "sr": V(8, -47 + d),
 					"hl": V(-8, -50 + g), "hr": V(10, -51 + g), "el": V(-9, -40 + d), "er": V(10, -40 + d)}))
 			return out
-		"fighter_punch":  # 0 guarda, 1 antecipa, 2 CONTATO no saco (hit_point), 3 volta
+		"fighter_punch":  # jab da mão da frente. 0 guarda, 1 antecipa, 2 CONTATO no saco (hit_point), 3 volta. A sala toca 1-2-3.
+			# Fase 5.1: o corpo inteiro participa. 1 = peso no pé de trás, ombro da frente recolhe, tronco gira para trás;
+			# 2 = quadril e tronco avançam 3 px, queixo atrás do ombro, calcanhar de trás sobe (ponta fixa), braço em IK com
+			# encurtamento de 3/4 (fs) em vez de cotovelo fixo (antes: braço de cima com 2 px); 3 = recolhe passando 1 px da guarda.
 			return [gpose(),
-				gpose({"hip": V(0, -30), "top": V(0, -49), "head": V(0, -56), "sl": V(-8, -46), "sr": V(7, -46),
-					"hl": V(-8, -49), "hr": V(8, -47), "el": V(-9, -39), "er": V(8, -39)}),
-				gpose({"hip": V(1, -31), "top": V(2, -50), "head": V(2, -56), "sl": V(-6, -47), "sr": V(10, -48), "face": "effort",
-					"hl": V(-7, -50), "hr": V(20, -50), "el": V(-8, -40), "er": V(13, -48.5), "shoel": "34ball", "tw": 1.0, "gkr": "side"}),
-				gpose({"sr": V(9, -47), "hr": V(15, -50), "er": V(11, -43), "gkr": "diag"})]
+				gpose({"hip": V(-1, -30), "top": V(-1, -49), "head": V(-1, -56), "sl": V(-9, -46), "sr": V(6, -46),
+					"hl": V(-9, -49), "hr": V(7, -48), "el": V(-10, -39), "er": V(8, -39), "tw": -0.5}),
+				_sem(gpose({"hip": V(2, -30), "top": V(4, -49), "head": V(5, -55), "sl": V(-4, -47), "sr": V(11, -48), "face": "effort",
+					"hl": V(-5, -49), "hr": V(20, -50), "el": V(-7, -39.5), "fs": 0.56, "pr": V(0.2, 1), "shoel": "34ball", "tw": 1.2,
+					"gkr": "side", "kl": V(1, 0), "kr": V(1, 0)}), ["er"]),
+				gpose({"hip": V(0, -30), "top": V(1, -49), "head": V(1, -56), "sr": V(9, -47), "hr": V(13, -50), "er": V(11, -42), "gkr": "diag",
+					"hl": V(-8, -49), "el": V(-9, -39)})]
 		"fighter_rope":   # mãos = pontas da corda (rope_lN_swing); 0 corda em cima, 1 agacha, 2 pés sobem 3 px, 3 aterrissa
 			var base := {"sl": V(-8, -46), "sr": V(8, -46), "toel": V(-2, 0), "toer": V(7, 0), "gkl": "", "gkr": "",
 				"pl": V(-1, 0.4), "pr": V(1, 0.4), "kl": V(0.4, 0), "kr": V(0.6, 0)}
@@ -143,15 +154,19 @@ func garage_poses(id: String) -> Array:
 				g.erase("er")
 				f.append(g)
 			return f
-		"fighter_run":    # corrida de boxeador na esteira: guarda solta balançando, passada curta (espelhada no fim)
-			var rb := {"gkl": "up", "gkr": "up", "kl": V(1, -0.2), "kr": V(1, -0.2)}
-			var lo := {"hip": V(1, -30), "top": V(3, -49), "head": V(3, -56), "sl": V(-5, -46), "sr": V(10, -46)}
-			var hi := {"hip": V(1, -32), "top": V(3, -51), "head": V(3, -58), "sl": V(-5, -48), "sr": V(10, -48)}
+		"fighter_run":    # corrida de boxeador na esteira (espelhada no fim). Quadro 0 também é o "parado em cima da esteira".
+			# Fase 5.1: ciclo de 4 poses de verdade. 0 = pé direito CHEGA na frente (corpo baixo, perna de trás empurrando na ponta),
+			# 1 = PASSAGEM (corpo 2 px mais alto, joelho de trás sobe à frente), 2 e 3 = o mesmo com a outra perna. Tronco inclinado
+			# 3 px à frente; os braços bombeiam CONTRA as pernas (antes ficavam parados na guarda, tampando a boca); luvas na
+			# altura do peito, rosto livre. O pé de apoio recua 5 px por quadro, no sentido da lona.
+			var rb := {"gkl": "", "gkr": "", "kl": V(1, -0.2), "kr": V(1, -0.2)}
+			var lo := {"hip": V(1, -29.5), "top": V(4, -48), "head": V(5, -55), "sl": V(-4, -45.5), "sr": V(10, -45)}
+			var hi := {"hip": V(1, -31), "top": V(4, -50), "head": V(5, -57), "sl": V(-4, -47.5), "sr": V(10, -47)}
 			var fr := [
-				[lo, {"toer": V(8, 0), "toel": V(-4, -1), "shoel": "34ball", "hl": V(-6, -48), "hr": V(11, -48), "el": V(-8, -39), "er": V(10, -40)}],
-				[hi, {"toer": V(6, 0), "shoer": "34ball", "toel": V(8, -7), "shoel": "34ball", "hl": V(-7, -51), "hr": V(11, -51), "el": V(-8, -41), "er": V(10, -41)}],
-				[lo, {"toel": V(8, 0), "toer": V(-2, -1), "shoer": "34ball", "hl": V(-7, -49), "hr": V(12, -47), "el": V(-9, -40), "er": V(11, -39)}],
-				[hi, {"toel": V(2, 0), "shoel": "34ball", "toer": V(9, -7), "shoer": "34ball", "hl": V(-7, -51), "hr": V(11, -51), "el": V(-8, -41), "er": V(10, -41)}],
+				[lo, {"toer": V(11, 0), "toel": V(-6, -2), "shoel": "34ball", "hl": V(4, -44), "el": V(-1.5, -38.5), "hr": V(11, -41), "er": V(5.5, -38)}],
+				[hi, {"toer": V(6, 0), "toel": V(7, -8), "shoel": "34ball", "kl": V(1, -0.3), "hl": V(1, -43), "el": V(-5, -38.5), "hr": V(13, -43), "er": V(9, -38.5)}],
+				[lo, {"toel": V(9, 0), "toer": V(-2, -2), "shoer": "34ball", "hl": V(-2, -40), "el": V(-8, -38), "hr": V(15, -45), "er": V(11, -38.5)}],
+				[hi, {"toel": V(4, 0), "toer": V(11, -8), "shoer": "34ball", "kr": V(1, -0.3), "hl": V(2, -43), "el": V(-4, -38.5), "hr": V(12, -43), "er": V(8.5, -38)}],
 			]
 			var f := []
 			for dd in fr:

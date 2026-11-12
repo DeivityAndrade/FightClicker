@@ -6,6 +6,15 @@
 	},
 	"assist": { "interval": 1.5, "still_seconds": 0.6, "first_delay": 0.6 },
 	"golden_event": { "wait_min": 60.0, "wait_max": 100.0, "visible_seconds": 7.0, "frenzy_mult": 7.0, "frenzy_seconds": 6.0 },
+	"box": {
+		"clicks_to_open": 3,
+		"open_seconds": 1.2,
+		"shake_px": [1, 2, 3],
+		"shake_seconds": 0.15,
+		"idle_wobble_every_seconds": 4.0,
+		"applies_to": { "apparatus_unlock": true, "glove": true },
+		"focus_on_open": true
+	},
 	"default_focus": "punching_bag",
 	"attributes": {
 		"strength": { "name": "Força", "hint": "Força: quanto dói o seu soco." },

@@ -123,7 +123,7 @@ func corda_pose(q: Dictionary) -> Dictionary:
 	p["kl"] = Vector2(0.4, 0)
 	p["kr"] = Vector2(0.6, 0)
 	for k in q:
-		if (k as String).begins_with("_") or k in ["phi", "slack", "layer"]:
+		if (k as String).begins_with("_") or k in ["phi", "slack", "layer", "rest", "bulge"]:
 			continue
 		var v: Variant = q[k]
 		p[k] = vec(v) if (v is Array and (v as Array).size() == 2) else v
@@ -133,6 +133,8 @@ func corda_pose(q: Dictionary) -> Dictionary:
 func corda_camada(q: Dictionary) -> String:
 	if q.has("layer"):
 		return str(q.layer)
+	if bool(q.get("rest", false)):
+		return "front"
 	var c := fposmod(float(q.phi), 360.0)
 	return "back" if (c > 190.0 and c < 340.0) else "front"
 
@@ -157,23 +159,43 @@ func corda_sheet(g: Dictionary, rgb: Array, camada: String) -> Image:
 		var hl := ROPE_PIVOT + vec(q.hl)
 		var hr := ROPE_PIVOT + vec(q.hr)
 		var hm := (hl.y + hr.y) * 0.5
-		var apex: float
-		if q.has("slack"):
-			apex = hm + float(q.slack)
-		else:
-			var c := cos(deg_to_rad(float(q.phi)))
-			apex = hm - (37.0 if c > 0.0 else 29.0) * c
-		# Bézier cúbica: o ápice fica em `apex` e a corda abre para os lados (mais atrás do corpo, para aparecer nas laterais).
-		var bul := 6.0 if camada == "back" else 2.0
-		var cy := (8.0 * apex - 2.0 * hm) / 6.0
-		var c1 := Vector2(hl.x - bul, cy)
-		var c2 := Vector2(hr.x + bul, cy)
+		# Fase 5.1: a corda é UM laço só, do mesmo formato nas duas camadas, girando em volta do eixo das mãos:
+		#  - altura do ápice = raio x cos(phi) (37 px para cima, 29 para baixo, como antes);
+		#  - o laço é mais largo que as mãos ("bulge" px a mais de cada lado, no meio da subida), como uma corda de verdade
+		#    girando. Antes a barriga era 6 px atrás e 2 na frente (a corda mudava de largura ao trocar de camada) e, quando
+		#    passava atrás do corpo, ficava escondida atrás das luvas e dos braços: parecia solta das mãos (QA da Fase 5).
+		#  - "rest": true = repouso. A corda não gira: cai a prumo das duas luvas até o chão e descansa na frente dos pés
+		#    (sem barriga). Substitui o "slack" (laço curto e frouxo na altura do joelho, o outro quadro torto).
 		var pts := {}
-		for k in 401:
-			var t := float(k) / 400.0
-			var u := 1.0 - t
-			var pp := hl * (u * u * u) + c1 * (3.0 * u * u * t) + c2 * (3.0 * u * t * t) + hr * (t * t * t)
-			pts[Vector2i(roundi(pp.x), roundi(pp.y))] = true
+		if bool(q.get("rest", false)):
+			var chao := ROPE_PIVOT.y + float(g.get("rest_floor", 1.0))
+			var cx := (hl.x + hr.x) * 0.5
+			var a2 := (hr.x - hl.x) * 0.5
+			var e := 2.0 / float(g.get("rest_n", 4.0))
+			for k in 601:
+				var th := PI * float(k) / 600.0
+				var yy := lerpf(hl.y, hr.y, float(k) / 600.0) + (chao - hm) * pow(absf(sin(th)), e)
+				var xx := cx - a2 * signf(cos(th)) * pow(absf(cos(th)), e)
+				pts[Vector2i(roundi(xx), roundi(yy))] = true
+		else:
+			var apex: float
+			if q.has("slack"):
+				apex = hm + float(q.slack)
+			else:
+				var ang := deg_to_rad(float(q.phi))
+				var c := cos(ang)
+				apex = hm - (float(g.get("r_up", 37.0)) if c > 0.0 else float(g.get("r_down", 29.0))) * c
+			# com a corda quase na horizontal (na frente do peito) a barriga some: senão viram dois ganchos ao lado das luvas
+			var bul := float(q.get("bulge", g.get("bulge", 13.0))) * clampf((absf(apex - hm) - 8.0) / 6.0, 0.0, 1.0)
+			var cx := (hl.x + hr.x) * 0.5
+			var a2 := (hr.x - hl.x) * 0.5
+			for k in 601:
+				var u := float(k) / 600.0
+				var th := PI * u
+				var s := sin(th)
+				var xx := cx - (a2 + bul * s) * signf(cos(th)) * pow(absf(cos(th)), 0.8)
+				var yy := lerpf(hl.y, hr.y, u) + (apex - hm) * s
+				pts[Vector2i(roundi(xx), roundi(yy))] = true
 		var tinta := {}
 		for pt in pts:
 			for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:

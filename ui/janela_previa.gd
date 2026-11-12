@@ -45,11 +45,19 @@ func _montar() -> void:
 	var traco := str(_dados.get("art_fight_text", ""))
 	var ex := (17.0 if revanche else 0.0) + (11.0 if traco != "" else 0.0)
 	var oy := -floorf(ex / 2.0)
-	moldura("ui_window", Rect2(152, 16 + oy, 336, 328 + ex))
-	faixa_titulo("neutral", Rect2(158, 22 + oy, 324, 17), UiTema.txt("preview_title", "PRÓXIMA LUTA"))
+	# Fase 5.1: a janela ganha até 10 px de altura (metade para cada lado) para os blocos respirarem; com a fita da
+	# revanche e a linha da arte juntas, o respiro encolhe para a janela caber na tela (358 px).
+	var folga := int(clampf(30.0 - ex, 0.0, 10.0))
+	var topo := floorf(float(folga) / 2.0)
+	var g1 := floorf(float(folga) * 0.2)  # quem é quem -> atributos
+	var g2 := floorf(float(folga) * 0.3)  # atributos -> risco
+	var g3 := floorf(float(folga) * 0.2)  # risco -> táticas
+	var g4 := floorf(float(folga) * 0.3)  # dica da tática -> o que está em jogo
+	moldura("ui_window", Rect2(152, 16 + oy - topo, 336, 328 + ex + folga))
+	faixa_titulo("neutral", Rect2(158, 22 + oy - topo, 324, 17), UiTema.txt("preview_title", "PRÓXIMA LUTA"))
 
 	# --- Retratos: ELE à esquerda, VOCÊ à direita (espelhado, olha para ele) ---
-	var y := 46.0 + oy
+	var y := 46.0 + oy - topo
 	retrato(str(info_opp.get("portrait", "")), str(info_opp.get("portrait_frame", "ui_portrait_frame")), X0, y, false)
 	UiTema.rotulo(painel, UiTema.txt("preview_him", "ELE"), UiTema.G2, X0 + 42, y + 2)
 	UiTema.rotulo(painel, str(opp.name).to_upper(), UiTema.WHITE, X0 + 42, y + 13)
@@ -76,7 +84,7 @@ func _montar() -> void:
 	UiTema.rotulo_centro(painel, str(opp.description).to_upper(), UiTema.CREAM, 320.0, y)
 
 	# --- Atributos lado a lado ---
-	y += 13.0 + 2.0 * ar
+	y += 13.0 + g1 + 2.0 * ar  # respiro entre quem é quem e os atributos
 	for atr in ATRIBUTOS:
 		_linha_atributo(atr, y)
 		y += 16.0 + ar
@@ -84,7 +92,7 @@ func _montar() -> void:
 	var lead := str(_dados.lead)
 	if lead != "":
 		UiTema.rotulo_centro(painel, UiTema.txt("lead_" + lead), UiTema.R3, 320.0, y)
-	y += 12.0 + 2.0 * ar
+	y += 12.0 + g2 + 2.0 * ar  # respiro antes do risco
 
 	# --- Risco ---
 	UiTema.rotulo(painel, UiTema.txt("risk_label", "RISCO"), UiTema.G3, X0, y + 3)
@@ -96,7 +104,7 @@ func _montar() -> void:
 	# Porcentagem de vitória (só com o nó "Olho clínico"): ao lado do selo, na cor do risco.
 	_percent = UiTema.rotulo(painel, "", UiTema.WHITE, X0, y + 3)
 	_percent.visible = false
-	y += 19.0 + 2.0 * ar
+	y += 19.0 + g3 + 2.0 * ar  # respiro antes das táticas
 
 	# --- Táticas ---
 	UiTema.rotulo(painel, UiTema.txt("tactic_label", "TÁTICA"), UiTema.G3, X0, y)
@@ -107,7 +115,7 @@ func _montar() -> void:
 		x += 107.0
 	y += 22.0 + 2.0 + 13.0 + 4.0  # 4 px de respiro entre a linha de risco e a dica
 	_dica = UiTema.rotulo(painel, "", UiTema.G3, X0, y, X1 - X0, HORIZONTAL_ALIGNMENT_CENTER)
-	y += 14.0 + 2.0 * ar
+	y += 14.0 + g4 + 2.0 * ar  # respiro antes do que está em jogo
 	if traco != "":
 		_linha_traco(str(_dados.get("art", "")), traco, y)
 		y += 11.0
@@ -131,7 +139,7 @@ func _montar() -> void:
 	# --- Botões ---
 	# Dois botões do mesmo tamanho, com 4 px entre eles, ocupando a largura útil da janela.
 	var larg_botao := (X1 - X0 - 4.0) / 2.0
-	var yb := 310.0 + ex + oy
+	var yb := 310.0 + ex + oy + float(folga) - topo
 	var voltar := botao_texto(Rect2(X0, yb, larg_botao, 26), UiTema.txt("back_button", "VOLTAR A TREINAR"))
 	voltar.pressed.connect(func() -> void: voltar_pedido.emit())
 	var lutar := botao_texto(Rect2(X0 + larg_botao + 4.0, yb, larg_botao, 26), UiTema.txt("fight_button", "LUTAR!"),

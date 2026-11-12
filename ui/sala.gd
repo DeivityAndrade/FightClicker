@@ -78,9 +78,10 @@ var _montado := false
 
 # Fase 4b: marcas de fita no lugar dos aparelhos que faltam e a chegada deles.
 var _marcas: Dictionary = {}  # aparelho -> {fita, fantasma, placa, extras, chave, rect, m}
-var _chegando := ""  # aparelho que está caindo/sendo pendurado agora ("" = nenhum)
-var _impactou := false  # a marca já sumiu (quadro de impacto)?
-var _tween_chegada: Tween
+var _marca_hover := ""  # marca de fita sob o mouse (acende a versão _hi)
+var _caixas: Dictionary = {}  # item -> CaixaSala
+var _revelar: Dictionary = {}  # aparelho que acabou de sair da caixa e ainda não "nasceu"
+var janela_aberta := false  # a Garagem avisa: árvore, aposentar, prévia ou luta por cima (a caixa não recebe clique)
 var _fx_poeira_chegada: AnimSprite
 var _fx_brilho_chegada: AnimSprite
 var _fx_poeira_pequena: AnimSprite
@@ -106,14 +107,20 @@ func _ready() -> void:
 	GameState.evento_dourado.connect(_ao_evento_dourado)
 	GameState.frenesi_mudou.connect(_ao_frenesi_mudou)
 	GameState.metronomo_mudou.connect(_ao_metronomo)
-	GameState.aparelho_comprado.connect(_ao_aparelho_comprado)
-	GameState.economia_mudou.connect(_atualizar_marcas)
+	GameState.caixa_criada.connect(_ao_caixa_criada)
+	GameState.caixa_batida.connect(_ao_caixa_batida)
+	GameState.caixa_aberta.connect(_ao_caixa_aberta)
+	GameState.caixas_mudaram.connect(_sincronizar_caixas)
+	GameState.economia_mudou.connect(func() -> void:
+		_sincronizar_caixas()
+		_atualizar_marcas())
 	GameState.local_mudou.connect(_ao_local)
 	GameState.arte_mudou.connect(_ao_arte)
 	_local_anterior = GameState.local_id
 	_aplicar_layout()
 	_atualizar_pessoas(false)
 	_aplicar_metronomo()
+	_sincronizar_caixas()
 	_montado = true
 
 
@@ -227,8 +234,6 @@ func _novo_fx(nome: String) -> AnimSprite:
 # --- Layout por foco e nível visual ---
 
 func _aplicar_layout() -> void:
-	if _chegando != "":
-		return  # o aparelho novo está caindo: a chegada termina com _aplicar_layout()
 	_aplicar_local()
 	var foco := GameState.foco
 	var nb := GameState.nivel_visual(SACO)
@@ -267,6 +272,7 @@ func _aplicar_layout() -> void:
 	_aplicar_arte(PERA, foco)
 	_aplicar_arte(BONECO, foco)
 	_pose_repouso()
+	_esconder_reveladas()
 	_atualizar_marcas()
 
 
@@ -336,7 +342,7 @@ func _aplicar_local() -> void:
 func _aplicar_arte(id: String, foco: String) -> void:
 	var a: AnimSprite = _pera if id == PERA else _boneco
 	var base := "speed_bag" if id == PERA else "grappling_dummy"
-	var existe := GameState.estado_aparelho(id) == "owned" or (_chegando == id)
+	var existe := GameState.estado_aparelho(id) == "owned" or false
 	a.visible = existe
 	if not existe:
 		return
@@ -391,6 +397,13 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_clique_em(event.position + position)
 		accept_event()
+	elif event is InputEventMouseMotion:
+		_hover_em(event.position + position)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_MOUSE_EXIT:
+		_sair_hover()
 
 
 func _clique_em(p: Vector2) -> void:
@@ -407,6 +420,11 @@ func _clique_em(p: Vector2) -> void:
 	if ALVO.has_point(p):
 		_pos_clique = p
 		GameState.clicar()
+		return
+	# Caixa da escola: o clique vai só para a caixa (não treina). Nunca com janela aberta; Espaço nunca chega aqui.
+	var cx := _caixa_em(p)
+	if cx != "":
+		_bater_caixa(cx)
 		return
 	# Clique em aparelho lateral só troca o foco (não gera treino). Fase 5: inclui o aparelho da arte, se existir.
 	for ap in GameState.aparelhos_da_carreira():
@@ -453,7 +471,6 @@ func _area_lateral(id: String) -> Rect2:
 # --- Juice do clique ---
 
 func _ao_clicar(ganho: float, critico: bool, aparelho: String, atributo: String, texto: String) -> void:
-	_terminar_chegada()
 	var p := _pos_clique
 	_pos_clique = PONTO_PADRAO
 	_mostrar_numero(p, ganho, critico, atributo, texto)
@@ -548,7 +565,6 @@ func _ao_metronomo(nivel: int) -> void:
 ## Auto-soco: o mesmo golpe do clique, só que mais leve. O lutador soca (jab com a luva do cursor), o número é curto
 ## e transparente, o som é baixo e a tela NÃO treme.
 func _ao_auto_socou(ganho: float, critico: bool, aparelho: String, atributo: String, _texto: String) -> void:
-	_terminar_chegada()
 	_acc_m = 0.0
 	_socos_m += 1
 	var n := _pegar_numero()
@@ -881,7 +897,6 @@ func _ao_luva(_nivel: int, _sufixo: String) -> void:
 	_lutador.modulate = Color(2.4, 2.4, 2.4)
 	_lutador.create_tween().tween_property(_lutador, "modulate", Color.WHITE, 0.5)
 	_critico_fx(_lutador.position + Vector2(16, -30))
-	_mostrar_texto(_lutador.position + Vector2(0, -74), str(GameState.luva_equipada().get("name", "")).to_upper(), UiTema.Y1)
 
 
 # Nome do sprite do lutador com a luva equipada ("fighter_idle" + "_glove_l1").
@@ -900,11 +915,11 @@ func _ids_geradores() -> Array:
 
 func _ao_carreira() -> void:
 	if _montado:
-		_cancelar_chegada()
 		_chegada_pendente = false
 		_local_anterior = GameState.local_id
 		_aplicar_layout()
 		_atualizar_pessoas(false)
+		_sincronizar_caixas()
 
 
 ## Luz da sala: lâmpada da garagem (crítico: balança; de vez em quando pisca) ou tubo da direita da academia (falha).
@@ -928,7 +943,6 @@ func _ao_local(local: String) -> void:
 	_local_anterior = local
 	if not _montado:
 		return
-	_cancelar_chegada()
 	_aplicar_layout()
 	_atualizar_pessoas(false)
 	if antes != "gym" and local == "gym":
@@ -940,7 +954,6 @@ func _ao_local(local: String) -> void:
 func _ao_arte(arte: String) -> void:
 	if not _montado:
 		return
-	_cancelar_chegada()
 	_aplicar_layout()  # a marca de fita (e a plaquinha) do aparelho da arte aparecem; sem arte, somem
 	if arte != "" and _chegada_pendente:
 		_festa_academia()
@@ -959,13 +972,13 @@ func _festa_academia() -> void:
 	n.iniciar(UiTema.txt("move_arrived", "BEM-VINDO À BOA ESQUINA!"), UiTema.Y1, true, "", Vector2(336, 140), 2.0, 12.0)
 
 
-# --- Fase 4b: marcas de fita, plaquinhas e a chegada dos aparelhos ---
+# --- Fase 5.1: marcas de fita SEM texto, dicas de hover e a caixa da escola ---
 
-## Uma marca de fita (+ sombra pontilhada com cadeado) por aparelho que tem `unlock`. A plaquinha de papelão é
-## montada depois, conforme o texto do estado (`textos_trancado`).
+## Uma marca de fita (+ silhueta tracejada + cadeado quando trancada) por aparelho que tem `unlock`. Sem plaquinha:
+## o detalhe (nome, preço, requisito) vai para a dica de hover (Dica). Estados: normal, _hi (mouse em cima) e _dim + cadeado (trancado).
 func _montar_marcas() -> void:
 	var por_id: Dictionary = UiTema.manifest().get("by_data_id", {})
-	for ap in GameState.dados.todos_aparelhos():  # Fase 5: inclui pera e boneco (só aparecem na carreira da arte)
+	for ap in GameState.dados.todos_aparelhos():  # inclui pera e boneco (só aparecem na carreira da arte)
 		var u: Dictionary = ap.get("unlock", {})
 		if u.is_empty():
 			continue
@@ -980,232 +993,373 @@ func _montar_marcas() -> void:
 		fita.position = pos_marca
 		var fantasma := _novo_anim(nome_fantasma, "", int(UiTema.sprite(nome_fantasma).get("z", -29)))
 		fantasma.position = pos_marca
+		var cadeado := _novo_anim("mark_padlock", "", int(UiTema.sprite(nome_fantasma).get("z", -29)) + 1)
+		var lp: Array = m.get("lock_pos", mp)
+		cadeado.position = Vector2(float(lp[0]), float(lp[1]))
+		cadeado.visible = false
 		var area_fita := Rect2(pos_marca - UiTema.pivo(nome_fita), UiTema.tamanho_quadro(nome_fita))
-		_marcas[str(ap.id)] = {"fita": fita, "fantasma": fantasma, "placa": null, "extras": [], "chave": "",
-			"rect": area_fita, "area_fita": area_fita, "m": m}
+		_marcas[str(ap.id)] = {"fita": fita, "fantasma": fantasma, "cadeado": cadeado, "rect": area_fita,
+			"area_fita": area_fita, "m": m, "estilo": ""}
 	_atualizar_marcas()
 
 
-## Marca visível = aparelho ainda não montado (ou caindo agora, antes do impacto). A plaquinha acompanha o texto.
+## Marca visível = aparelho ainda não montado (com a caixa esperando ela continua embaixo, como o manifest pede).
 func _atualizar_marcas() -> void:
 	for id in _marcas:
 		var d: Dictionary = _marcas[id]
 		var estado := GameState.estado_aparelho(id)  # "absent" (aparelho de outra arte): não desenha nada
-		var mostrar: bool = (estado != "owned" and estado != "absent") or (_chegando == id and not _impactou)
+		var mostrar: bool = estado != "owned" and estado != "absent"
 		d.fita.visible = mostrar
 		d.fantasma.visible = mostrar
-		if mostrar:
-			_montar_placa(id)
+		d.cadeado.visible = mostrar and estado == "locked"
+		if not mostrar:
+			continue
+		var estados: Dictionary = d.m.get("mark_states", {})
+		var nome_fita: String
+		var nome_fantasma := str(d.m.ghost)
+		if estado == "locked":
+			nome_fita = str(estados.get("locked", d.m.floor_mark))
+			nome_fantasma = str(d.m.get("ghost_dim", d.m.ghost))
+		elif _marca_hover == id and estado != "boxed":
+			nome_fita = str(estados.get("hover_or_pulse", d.m.floor_mark))
 		else:
-			_limpar_placa(id)
+			nome_fita = str(estados.get("normal", d.m.floor_mark))
+		var chave := nome_fita + "|" + nome_fantasma
+		if chave != d.estilo:
+			d.estilo = chave
+			d.fita.definir(nome_fita)
+			d.fantasma.definir(nome_fantasma)
 
 
-func _limpar_placa(id: String) -> void:
-	var d: Dictionary = _marcas[id]
-	if d.placa != null and is_instance_valid(d.placa):
-		d.placa.queue_free()
-	for e in d.extras:
-		if is_instance_valid(e):
-			e.queue_free()
-	d.placa = null
-	d.extras = []
-	d.chave = ""
-	d.rect = d.area_fita
+## Texto da dica de hover da marca de fita (nome / preço ou requisito), vindo de ui_texts.json.
+func _texto_marca(id: String) -> String:
+	var estado := GameState.estado_aparelho(id)
+	var u: Dictionary = GameState.desbloqueio(id)
+	var nome := GameState.nome_curto_aparelho(id)
+	var req := str(u.get("requires", ""))
+	var req_nome := GameState.nome_curto_aparelho(req).to_lower() if req != "" else ""
+	var cost := float(u.get("cost", 0.0))
+	match estado:
+		"boxed":
+			return GameState.texto_ui("tape_boxed")
+		"locked":
+			return GameState.preencher(GameState.texto_ui("tape_locked_box" if GameState.tem_caixa(req) else "tape_locked"),
+				{"nome": nome, "requisito": req_nome})
+		"missing":
+			return GameState.preencher(GameState.texto_ui("tape_short"), {"nome": nome, "n": NumberFormat.fmt(maxf(0.0, cost - GameState.treino))})
+		"buyable":
+			return GameState.preencher(GameState.texto_ui("tape_open"), {"nome": nome, "preco": NumberFormat.fmt(cost)})
+	return ""
 
 
-## Plaquinha de papelão: 9-slice do tamanho do texto (margens 5/4/5/5), texto 1x em br0 sem sombra, centrado,
-## uma linha por parte (a fonte não tem travessão: quebra no " — "). No chão fica em pé sobre um tijolo; na parede,
-## colada com dois pedaços de fita acima do prego.
-func _montar_placa(id: String) -> void:
-	var d: Dictionary = _marcas[id]
-	var t: Dictionary = GameState.textos_trancado(id)
-	if t.is_empty():
-		return  # já montado (a chegada está em andamento): fica a plaquinha que estava
-	var texto := str(t.floor_mark).to_upper()
-	if texto == str(d.chave) and d.placa != null:
-		return
-	_limpar_placa(id)
-	d.chave = texto
-	var sinal: Dictionary = d.m.get("sign", {})
-	var parede := str(sinal.get("mode", "chao")) == "parede"
-	var linhas: Array[String] = []
-	var partes := texto.split(" — ", false)
-	if partes.size() >= 2:
-		linhas.append(partes[0].strip_edges())
-		var resto := partes[1].strip_edges()
-		var cortar := resto.rfind(" ")
-		if parede and str(t.after) != "" and cortar > 0:
-			# Na parede não cabe "DEPOIS DA ESTEIRA" numa linha só: 3 linhas (CORDA / DEPOIS DA / ESTEIRA).
-			linhas.append(resto.substr(0, cortar))
-			linhas.append(resto.substr(cortar + 1))
-		else:
-			linhas.append(resto)
+## Mouse se mexeu na sala: marca de fita ou caixa sob ele mostram a dica (e a marca acende).
+func _hover_em(p: Vector2) -> void:
+	var tip := ""
+	var marca := ""
+	var cx := _caixa_em(p)
+	if cx != "":
+		tip = _texto_caixa(cx)
 	else:
-		linhas.append(texto.replace(" — ", " - "))
-	var larg := 0.0
-	for l in linhas:
-		larg = maxf(larg, UiTema.largura_visivel(l))
-	var w := int(ceil(larg)) + 10
-	var h := 4 + linhas.size() * 7 + (linhas.size() - 1) * 2 + 5
-	var raiz := Node2D.new()
-	_mundo.add_child(raiz)
-	UiTema.nine_patch(raiz, "sign_cardboard", Rect2(0, 0, w, h))
-	for i in linhas.size():
-		var rot := UiTema.rotulo(raiz, linhas[i], BR0, 5, 4 + i * 9 - 2, 0, HORIZONTAL_ALIGNMENT_CENTER, false)
-		rot.size = Vector2(w - 10, 12)
-	var extras: Array = []
-	if parede:
-		if sinal.has("top_center"):
-			# Pera (Fase 5): plaquinha centrada em x, logo abaixo da marca (manifest: top_center).
-			var tc: Array = sinal.top_center
-			raiz.position = Vector2(floorf(float(tc[0]) - w / 2.0), float(tc[1]))
-		else:
-			var tl: Array = sinal.get("top_left", [340, 37])
-			raiz.position = Vector2(float(tl[0]), float(tl[1]))
-		raiz.z_index = -20
-		for dx in [2, w - 3]:
-			var fita := _novo_anim(str(sinal.get("tape", "sign_tape_bit")), "", -19)
-			fita.position = raiz.position + Vector2(dx, 1)
-			extras.append(fita)
+		for id in _marcas:
+			var d: Dictionary = _marcas[id]
+			if d.fita.visible and Rect2(d.rect).has_point(p) and GameState.estado_aparelho(id) != "owned":
+				marca = id
+				tip = _texto_marca(id)
+				break
+	if marca != _marca_hover:
+		_marca_hover = marca
+		_atualizar_marcas()
+	if tip != "":
+		Dica.pedir(tip)
 	else:
-		var bc: Array = sinal.get("bottom_center", [445, 257])
-		raiz.position = Vector2(floorf(float(bc[0]) - w / 2.0), float(bc[1]) - h)
-		raiz.z_index = int(bc[1])
-		var tj: Array = sinal.get("brick_pos", bc)
-		var tijolo := _novo_anim(str(sinal.get("brick", "sign_brick")), "", int(bc[1]) + 1)
-		tijolo.position = Vector2(float(tj[0]), float(tj[1]))
-		extras.append(tijolo)
-	d.placa = raiz
-	d.extras = extras
-	d.rect = Rect2(d.area_fita).merge(Rect2(raiz.position, Vector2(w, h)))
+		Dica.limpar()
 
 
-## Aparelho comprado: ele cai (esteira) ou é pendurado (corda), a marca some no quadro de impacto, sai poeira ou
-## brilho, e só depois o layout leva o foco para ele. Um clique durante a queda encerra a chegada na hora.
-func _ao_aparelho_comprado(id: String) -> void:
+func _sair_hover() -> void:
+	if _marca_hover != "":
+		_marca_hover = ""
+		_atualizar_marcas()
+	Dica.limpar()
+
+
+# --- A caixa da escola ---
+
+func _slot_caixa(item: String) -> Vector2:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("box", {})
+	var slot := str(info.get("slot_by_item", {}).get(item, ""))
+	var s: Array = UiTema.manifest().get("layout", {}).get("box_slots", {}).get(slot, [336, 270])
+	return Vector2(float(s[0]), float(s[1]))
+
+
+func _sprite_caixa(item: String) -> String:
+	return str(UiTema.manifest().get("by_data_id", {}).get("box", {}).get("sprite_by_item", {}).get(item, "box_small"))
+
+
+## Cria/atualiza/remove as caixas da sala conforme o GameState (carga do save, nova carreira, compra, abertura).
+func _sincronizar_caixas() -> void:
+	for item in _caixas.keys():
+		if not is_instance_valid(_caixas[item]):
+			_caixas.erase(item)
+	var itens: Dictionary = {}
+	for c in GameState.caixas():
+		itens[str(c.item)] = c
+	for item in _caixas.keys():
+		var cx: CaixaSala = _caixas[item]
+		if not itens.has(item) and not cx.abrindo:
+			cx.queue_free()
+			_caixas.erase(item)
+	for item in itens:
+		if not _caixas.has(item):
+			_criar_caixa(item, int(itens[item].hits), false)
+		else:
+			(_caixas[item] as CaixaSala).definir_batidas(int(itens[item].hits))
+
+
+func _criar_caixa(item: String, hits: int, chegada: bool) -> CaixaSala:
+	var cx := CaixaSala.new()
+	_mundo.add_child(cx)
+	cx.iniciar(item, _sprite_caixa(item), _slot_caixa(item), hits, _caixas.size())
+	_caixas[item] = cx
+	cx.sumiu.connect(func(i: String) -> void:
+		if _caixas.get(i) == cx:
+			_caixas.erase(i))
+	if chegada:
+		cx.cair()
+	return cx
+
+
+## Compra: a caixa cai no slot. Nenhum clique de treino é gasto.
+func _ao_caixa_criada(item: String, _tipo: String) -> void:
 	if not _montado:
 		return
-	_terminar_chegada()
-	var u: Dictionary = GameState.desbloqueio(id)
-	var m: Dictionary = UiTema.manifest().get("by_data_id", {}).get(str(u.get("id", "")), {})
-	var alvo: AnimSprite = _anim_do(id) if id in [ESTEIRA, CORDA, PERA, BONECO] else null
-	if alvo == null or m.is_empty():
+	if _caixas.has(item):
 		return
-	var fx_nome := str(m.get("arrive", {}).get("fx", ""))
-	# 4b: os deslocamentos da queda estão no sprite do efeito; Fase 5: no próprio bloco `arrive.drop` do manifest.
-	var drop_data = m.get("arrive", {}).get("drop", UiTema.sprite(fx_nome).get("drop", {}))
-	# Esteira e corda trazem em `arrive.drop` só um texto ("ver sprites.fx_...drop"): nesse caso vale o `drop` do sprite do efeito.
-	if not drop_data is Dictionary:
-		drop_data = UiTema.sprite(fx_nome).get("drop", {})
-	var drop: Dictionary = drop_data if drop_data is Dictionary else {}
-	var desloc: Array = drop.get("offsets_y", [0])
-	var passo := 1.0 / maxf(1.0, float(drop.get("fps", 24)))
-	var base: Vector2
-	if id == ESTEIRA:
-		var nome := _n("treadmill_l%d_side" % GameState.nivel_visual(ESTEIRA))
-		alvo.definir(nome)
-		alvo.parar(0)
-		base = UiTema.pos(nome, "lado_direito")
-		alvo.z_index = int(base.y)
-	elif id == PERA:
-		var nome := _n("speed_bag_l%d_wall" % GameState.nivel_visual(PERA))  # a plataforma cai presa na parede
-		alvo.definir(nome)
-		alvo.parar(0)
-		base = UiTema.pos(nome, "parede")
-		alvo.z_index = int(UiTema.sprite(nome).get("z", -40))
-	elif id == BONECO:
-		var nome := _n("grappling_dummy_l%d_rest" % GameState.nivel_visual(BONECO))  # o tatame com o boneco cai no canto
-		alvo.definir(nome)
-		alvo.parar(0)
-		base = UiTema.pos(nome, "canto")
-		alvo.z_index = int(UiTema.sprite(nome).get("sort_y", 270))
-	else:
-		var nome := _n("rope_l%d_idle" % GameState.nivel_visual(CORDA))
-		alvo.definir(nome)
-		alvo.parar(0)
-		base = UiTema.pos(nome, "prego")
-	var impacto := 0
-	for i in desloc.size():
-		if float(desloc[i]) >= 0.0:
-			impacto = i
-			break
-	_chegando = id
-	_impactou = false
-	alvo.position = base + Vector2(0, float(desloc[0]))
-	alvo.visible = true
-	var tw := create_tween()
-	_tween_chegada = tw
-	for i in desloc.size():
-		var dy := float(desloc[i])
-		tw.tween_callback(func() -> void: alvo.position = base + Vector2(0, dy))
-		if i == impacto:
-			tw.tween_callback(_impacto_chegada.bind(id, m, int(drop.get("shake_px", 0))))
-		tw.tween_interval(passo)
-	if id == PERA:
-		tw.tween_interval(0.5)  # a pera balança (6 quadros a 12 fps) antes de ir para o foco
-	tw.tween_callback(_terminar_chegada)
-
-
-func _impacto_chegada(id: String, m: Dictionary, tremida: int) -> void:
-	_impactou = true
+	_criar_caixa(item, 0, true)
+	sfx.queda()
 	_atualizar_marcas()
-	var fxp: Array = m.get("arrive", {}).get("fx_pos", [336, 240])
-	var p := Vector2(float(fxp[0]), float(fxp[1]))
-	if id == ESTEIRA:
-		_tocar_chegada(_fx_poeira_chegada, p, 6)
-		_tocar_chegada(_fx_brilho_chegada, Vector2(p.x, 226.0), 5)
-		sfx.queda()
-	elif id == BONECO:
-		_tocar_chegada(_fx_poeira_pequena, p, 6)
-		sfx.queda()
-	elif id == PERA:
-		_tocar_chegada(_fx_brilho_chegada, p, 5)
-		sfx.compra()
-		var swing := _n("speed_bag_l%d_wall_swing" % GameState.nivel_visual(PERA))
-		if not UiTema.sprite(swing).is_empty():
-			_pera.definir(swing)
-			_pera.tocar([0, 1, 2, 3, 4, 5], 12.0, false, func() -> void: _pera.definir(_n("speed_bag_l%d_wall" % GameState.nivel_visual(PERA))))
-	else:
-		_tocar_chegada(_fx_brilho_chegada, p, 5)
-		sfx.compra()
-	if tremida > 0:
-		_tremer(tremida, 0.08)
 
 
-func _tocar_chegada(a: AnimSprite, p: Vector2, quadros: int) -> void:
-	a.position = p
-	a.visible = true
-	var seq: Array = []
-	for i in quadros:
-		seq.append(i)
-	a.tocar(seq, 12.0, false, func() -> void: a.visible = false)
+## Caixa sob o ponto (coordenadas da tela base) ou "".
+func _caixa_em(p: Vector2) -> String:
+	for item in _caixas.keys():
+		if not is_instance_valid(_caixas[item]):
+			_caixas.erase(item)
+	for item in _caixas:
+		var cx: CaixaSala = _caixas[item]
+		if not cx.abrindo and cx.area().has_point(p):
+			return item
+	return ""
 
 
-## Fim da chegada (natural ou por clique): o layout põe o aparelho novo no foco, ele brilha e o letreiro aparece.
-func _terminar_chegada() -> void:
-	if _chegando == "":
+func _texto_caixa(item: String) -> String:
+	var ui: Dictionary = GameState.dados.ui
+	var rotulo := str(ui.get("box_label", {}).get(item, ""))
+	var carimbo := str(ui.get("box_stamp", {}).get(item, ""))
+	var falta := GameState.cliques_faltando(item)
+	var dica := GameState.texto_ui("box_hover_closed") if falta >= GameState.dados.box_clicks_to_open \
+		else GameState.preencher(GameState.texto_ui("box_hover_left"), {"n": falta})
+	return "%s\n%s\n%s" % [rotulo, carimbo, dica]
+
+
+## Janela aberta por cima (árvore, aposentar, prévia, luta...) ou jogo bloqueado: o clique não vai para a caixa.
+func caixa_liberada() -> bool:
+	return not janela_aberta and not GameState.modal_aberto and not GameState.acoes_bloqueadas()
+
+
+func _bater_caixa(item: String) -> void:
+	if not caixa_liberada():
 		return
-	var id := _chegando
-	if _tween_chegada != null and _tween_chegada.is_valid():
-		_tween_chegada.kill()
-	_chegando = ""
-	_impactou = true
+	GameState.bater_caixa(item)
+
+
+func _ao_caixa_batida(item: String, batidas: int) -> void:
+	if not _caixas.has(item):
+		return
+	var cx: CaixaSala = _caixas[item]
+	cx.bater(batidas)
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("box", {})
+	var clique: Dictionary = info.get("clicks", [{}, {}, {}])[clampi(batidas - 1, 0, 2)]
+	var topo := cx.topo()
+	_efeito_caixa(str(clique.get("fx", "")), topo)
+	var frases: Array = GameState.lista_ui("box_click")
+	if batidas - 1 < frases.size():
+		_mostrar_texto(topo + Vector2(0, -6.0 - 10.0 * float(batidas - 1)), str(frases[batidas - 1]).to_upper(), UiTema.Y2)
+	if batidas >= 3:
+		_tremer(1, 0.12)
+		sfx.compra()
+	else:
+		sfx.foco()
+		_tremer(1, 0.05)
+
+
+## Efeito de caixa (lascas, estouro, brilho): sprite avulso que toca uma vez e some.
+func _efeito_caixa(nome: String, p: Vector2) -> void:
+	if nome == "" or UiTema.sprite(nome).is_empty():
+		return
+	var a := _novo_anim(nome, "", Z_FX + 20)
+	a.position = p
+	var n := int(UiTema.sprite(nome).get("frames", 1))
+	var quadros: Array = []
+	for i in n:
+		quadros.append(i)
+	a.tocar(quadros, float(UiTema.sprite(nome).get("fps", 14.0)), false, func() -> void: a.queue_free())
+
+
+## 3º clique: o item já vale no GameState. Estouro, caixa vazia some piscando e o item aparece (≤ 1,2 s no total).
+func _ao_caixa_aberta(item: String, tipo: String) -> void:
+	if not _montado:
+		return
+	var cx: CaixaSala = _caixas.get(item)
+	if cx != null:
+		cx.abrir()
+		# B3: o "ABRIU!" do 3º clique sobe primeiro; o "CHEGOU" entra depois do estouro e mais alto, sem empilhar.
+		var chegou := GameState.preencher(GameState.texto_ui("box_arrived"),
+			{"item": str(GameState.dados.ui.get("box_label", {}).get(item, item))}).to_upper()
+		var topo_chegou := cx.topo() + Vector2(0, -44)
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			if is_inside_tree():
+				_mostrar_texto(topo_chegou, chegou, UiTema.Y1))
+	if tipo == "apparatus":
+		_revelar[item] = true
+		_aplicar_layout()
+		get_tree().create_timer(0.3).timeout.connect(func() -> void: _revelar_item(item))
+	_atualizar_marcas()
+
+
+func _revelar_item(item: String) -> void:
+	if not _revelar.has(item):
+		return
+	_revelar.erase(item)
+	if not is_inside_tree():
+		return
 	_aplicar_layout()
-	var alvo: Node2D = _esteira if id == ESTEIRA else (_lutador if GameState.foco == CORDA else _corda_prego)
-	if id == PERA or id == BONECO:
-		alvo = _anim_do(id)
+	var alvo: Node2D = _anim_do(item)
+	if item == CORDA and GameState.foco == CORDA:
+		alvo = _lutador
 	alvo.modulate = Color(2.5, 2.5, 2.5)
 	alvo.create_tween().tween_property(alvo, "modulate", Color.WHITE, 0.45)
-	var nome := GameState.nome_curto_aparelho(id).to_upper()
-	_mostrar_texto(Vector2(336, 150), UiTema.txt("unlock_arrived", "CHEGOU: {nome}!", {"nome": nome}), UiTema.Y1)
+	_critico_fx(alvo.position + Vector2(0, -10))
+	sfx.compra()
+	var py := alvo.position.y
+	alvo.position.y = py - 8.0
+	alvo.create_tween().tween_property(alvo, "position:y", py, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
-## Novo save ou NOVA CARREIRA no meio da queda: tudo volta ao estado do GameState sem festa.
-func _cancelar_chegada() -> void:
-	if _tween_chegada != null and _tween_chegada.is_valid():
-		_tween_chegada.kill()
-	_chegando = ""
-	_impactou = false
+## Em cada passada do layout, o aparelho que acabou de sair da caixa espera o item "nascer" (0,3 s).
+func _esconder_reveladas() -> void:
+	for item in _revelar:
+		var a: AnimSprite = _anim_do(str(item))
+		a.visible = false
+
+
+## Caixa de equipamento: sprite de 4 quadros (fechada, rachada 1, rachada 2, aberta), espera balançando e brilhando.
+class CaixaSala extends Node2D:
+	signal sumiu(item: String)
+
+	var item := ""
+	var spr: AnimSprite
+	var batidas := 0
+	var abrindo := false
+	var pivo := Vector2.ZERO
+	var _click := Rect2()
+	var _topo := Vector2.ZERO
+	var _glint_offset := Vector2.ZERO
+	var _t := 0.0
+	var _defasagem := 0.0
+	var _shake: Tween
+	var _ocupada := false
+
+	func iniciar(id: String, nome_sprite: String, p: Vector2, hits: int, indice: int) -> void:
+		item = id
+		pivo = p
+		position = p
+		z_index = int(p.y) + 5
+		spr = AnimSprite.new()
+		spr.definir(nome_sprite)
+		add_child(spr)
+		var s := UiTema.sprite(nome_sprite)
+		var cr: Array = s.get("click_rect", [-16, -27, 32, 29])
+		_click = Rect2(p + Vector2(float(cr[0]), float(cr[1])), Vector2(float(cr[2]), float(cr[3])))
+		var tc: Array = s.get("top_center_offset", [0, -25])
+		_topo = p + Vector2(float(tc[0]), float(tc[1]))
+		var go: Dictionary = UiTema.manifest().get("by_data_id", {}).get("box", {}).get("idle", {}).get("glint_offset", {})
+		var g: Array = go.get(nome_sprite, [11, -22])
+		_glint_offset = Vector2(float(g[0]), float(g[1]))
+		_defasagem = float(indice) * 1.3
+		definir_batidas(hits)
+
+	func definir_batidas(n: int) -> void:
+		batidas = n
+		spr.parar(clampi(n, 0, 2))
+
+	func area() -> Rect2:
+		return _click
+
+	func topo() -> Vector2:
+		return _topo
+
+	## Cai de 24 px acima em passos de 1/24 s (chegada da compra).
+	func cair() -> void:
+		_ocupada = true
+		var tw := create_tween()
+		for dy in [-24.0, -12.0, -3.0, 0.0, 1.0, 0.0]:
+			tw.tween_callback(func() -> void: spr.position.y = dy)
+			tw.tween_interval(1.0 / 24.0)
+		tw.tween_callback(func() -> void: _ocupada = false)
+
+	## Tremida e quadro novo: 1º clique 1 px, 2º 2 px, 3º 3 px (lista shake_x do manifest).
+	func bater(n: int) -> void:
+		batidas = n
+		spr.parar(clampi(n, 0, 3))
+		var lista: Array = UiTema.manifest().get("by_data_id", {}).get("box", {}).get("clicks", [{}, {}, {}])
+		var info: Dictionary = lista[clampi(n - 1, 0, 2)]
+		var xs: Array = info.get("shake_x", [-1, 1, 0])
+		var passo := 1.0 / maxf(1.0, float(info.get("shake_fps", 30)))
+		if _shake != null and _shake.is_valid():
+			_shake.kill()
+		_ocupada = true
+		_shake = create_tween()
+		for x in xs:
+			_shake.tween_callback(func() -> void: spr.position = Vector2(float(x), 0.0))
+			_shake.tween_interval(passo)
+		_shake.tween_callback(func() -> void:
+			spr.position = Vector2.ZERO
+			_ocupada = false)
+
+	## Aberta: quadro 3 na hora; depois de 0,6 s some piscando por 0,3 s e a caixa é liberada.
+	func abrir() -> void:
+		abrindo = true
+		spr.parar(3)
+		var tw := create_tween()
+		tw.tween_interval(0.6)
+		for i in 3:
+			tw.tween_callback(func() -> void: spr.visible = false)
+			tw.tween_interval(0.05)
+			tw.tween_callback(func() -> void: spr.visible = true)
+			tw.tween_interval(0.05)
+		tw.tween_callback(func() -> void:
+			sumiu.emit(item)
+			queue_free())
+
+	func _process(delta: float) -> void:
+		if abrindo or _ocupada or spr == null:
+			return
+		_t += delta
+		var fase := fmod(_t + _defasagem, 4.0)
+		if fase < 0.34:  # balança 1 px (4 quadros a 12 fps)
+			var xs := [1, 0, -1, 0]
+			spr.position.x = float(xs[int(fase * 12.0) % 4])
+		else:
+			spr.position.x = 0.0
+		if fase < delta and _t > 0.5:
+			var par := get_parent()
+			if par != null:
+				var a := AnimSprite.new()
+				a.definir("fx_box_glint")
+				a.position = pivo + _glint_offset
+				a.z_index = z_index + 2
+				par.add_child(a)
+				a.tocar([0, 1, 2, 3], 8.0, false, func() -> void: a.queue_free())
 
 
 # --- Quadro a quadro ---
@@ -1377,3 +1531,13 @@ class Seta extends Node2D:
 			draw_rect(Rect2(cx - 6 + i - 1, topo + i * 2 - 1, 13 - 2 * i + 2, 4), UiTema.INK)
 		for i in 6:
 			draw_rect(Rect2(cx - 5 + i, topo + i * 2, 11 - 2 * i, 2), UiTema.Y1)
+
+
+## Efeito de poeira da chegada na academia (quadros 0..n-1 a 12 fps).
+func _tocar_chegada(a: AnimSprite, p: Vector2, quadros: int) -> void:
+	a.position = p
+	a.visible = true
+	var seq: Array = []
+	for i in quadros:
+		seq.append(i)
+	a.tocar(seq, 12.0, false, func() -> void: a.visible = false)

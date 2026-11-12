@@ -30,7 +30,7 @@ A mudanca automatica ja era a regra do robo (muda no mesmo passo do cinturao). O
 
 Rodar (nao ha python no PATH):
   "C:/Program Files/Blender Foundation/Blender 5.2/5.2/python/bin/python.exe" tools/sim/fase5_sim.py [secao ...]
-Secoes: precos, curvas, identidade, b23, carreiras, controle, assistido, tudo (padrao).
+Secoes: precos, curvas, identidade, b23, carreiras, controle, assistido, caixa, tudo (padrao).
 """
 import copy
 import json
@@ -89,6 +89,26 @@ PROPOSTA_5 = {
 CTRL_CAUT = os.environ.get("SIM_CTRL_CAUT", "1") == "1"   # controle: espera o verde contra todos
 RET_GYM = float(os.environ.get("SIM_RET", "480"))   # robo aposenta apos 8 min seguidos no vermelho na academia
 T_MAX5 = 90 * 60
+# Fase 5.1: caixa de equipamento (docs/fases/fase5.1-design.md). Aparelho novo e luva chegam numa caixa que o robo abre
+# com 3 cliques. Enquanto abre, a mao nao treina (os cliques vao para a caixa); Metronomo e equipe seguem.
+# SIM_CAIXA="reacao,cliques,animacao,espera" (s, n, s, s) ou SIM_CAIXA=0 (sem caixa, como na Fase 5).
+#   reacao: tempo ate a mao sair do alvo e ir para a caixa; espera: quanto o jogador deixa a caixa fechada
+#   (clicando o alvo normalmente) antes de abrir. Cps minimo do clique na caixa: 3/s (inclui quem so usa o assistido).
+def _caixa_dos_dados():
+    """Cliques para abrir = data/training.json -> box.clicks_to_open (a animacao do sim, 1.5 s, e pessimista: open_seconds e 1.2)."""
+    try:
+        with open(os.path.join(f2.RAIZ, "data", "training.json"), encoding="utf-8") as fh:
+            b = json.load(fh).get("box", {})
+        n = int(b.get("clicks_to_open", 3))
+        if not (b.get("applies_to", {}).get("apparatus_unlock", True) or b.get("applies_to", {}).get("glove", True)):
+            return "0"
+        return "1.0,%d,%s,0" % (n, max(1.5, float(b.get("open_seconds", 1.2))))
+    except (OSError, ValueError):
+        return "1.0,3,1.5,0"
+
+
+_CX = os.environ.get("SIM_CAIXA", _caixa_dos_dados())
+CAIXA = None if _CX == "0" else dict(zip(("reacao", "cliques", "anim", "espera"), (float(x) for x in _CX.split(","))))
 
 
 def _proposta_dos_dados(R, treino, tree):
@@ -193,6 +213,12 @@ class Carreira5(f4b.Carreira4b):
         self.t_g = {}
         self.morto_pre = 0.0
         self.boxe_f = 1.0
+        # Fase 5.1: caixas (fila; abre uma por vez, na ordem da compra)
+        self.caixas = []                      # [("ap", id) | ("luva", id), t_compra]
+        self.caixa_fim = None                 # instante em que a caixa atual termina de abrir
+        self.luva_fechada = 0                 # luvas compradas ainda na caixa (nao multiplicam)
+        self.n_caixas = 0
+        self.t_caixa_mao = 0.0                # tempo de mao fora do alvo (abrindo caixas)
         if arte:
             self.definir_arte(arte)
 
@@ -266,6 +292,66 @@ class Carreira5(f4b.Carreira4b):
                 return self.sig
         return a
 
+    # --- Fase 5.1: caixa
+    def em_caixa(self, ap):
+        return any(k == "ap" and i == ap for (k, i), _ in self.caixas)
+
+    def proximo_unlock(self):
+        # aparelho na caixa nao e comprado de novo; o "requires" so libera com o anterior MONTADO (caixa aberta)
+        for u in self.unlocks:
+            if u["apparatus"] in self.owned or self.em_caixa(u["apparatus"]):
+                continue
+            if u["requires"] and u["requires"] not in self.owned:
+                continue
+            return u
+        return None
+
+    def mult_luva(self):
+        m = 1.0
+        for i in range(self.luva - self.luva_fechada):
+            m *= self.luvas[i]["click_multiplier"]
+        return m
+
+    def nova_caixa(self, tipo, id_):
+        self.caixas.append(((tipo, id_), self.t))
+        self.n_caixas += 1
+
+    def _caixas_passo(self):
+        """Avanca a fila de caixas; devolve True se a mao esta na caixa neste instante."""
+        if not self.caixas:
+            return False
+        if self.caixa_fim is None:
+            (_, t0) = self.caixas[0]
+            if self.t < t0 + CAIXA["espera"]:
+                return False
+            cps_cx = max(3.0, float(self.cps))
+            self.caixa_fim = self.t + CAIXA["reacao"] + CAIXA["cliques"] / cps_cx + CAIXA["anim"]
+        if self.t + 1e-9 < self.caixa_fim:
+            return True
+        (tipo, id_), _ = self.caixas.pop(0)
+        self.caixa_fim = None
+        if tipo == "ap":
+            self.owned.add(id_)
+            self.t_ap[id_] = self.t
+            self.teste_ap, self.teste_ate = id_, self.t + f4b.TESTE_S
+            self.eventos.append((self.t, "abre " + id_))
+        else:
+            self.luva_fechada -= 1
+            self.eventos.append((self.t, "abre " + id_))
+        return self._caixas_passo()
+
+    def cps_agora(self):
+        c = f4b.Carreira4b.cps_agora(self)
+        if CAIXA and self._caixas_passo():
+            self.t_caixa_mao += self.dt
+            return 0.0
+        return c
+
+    def fren_luta(self, dur):
+        f4b.Carreira4b.fren_luta(self, dur)
+        if self.caixa_fim is not None:
+            self.caixa_fim += dur             # durante a luta ninguem abre caixa
+
     # --- compras
     def tentar_mudar(self):
         if self.cinturao and not self.mudou and not self.belt_ends:
@@ -289,10 +375,13 @@ class Carreira5(f4b.Carreira4b):
             if self.saldo + 1e-9 < u["cost"]:
                 return
             self.saldo -= u["cost"]
-            self.owned.add(u["apparatus"])
-            self.t_ap[u["apparatus"]] = self.t
             self.eventos.append((self.t, u["id"]))
-            self.teste_ap, self.teste_ate = u["apparatus"], self.t + f4b.TESTE_S
+            if CAIXA:
+                self.nova_caixa("ap", u["apparatus"])
+            else:
+                self.owned.add(u["apparatus"])
+                self.t_ap[u["apparatus"]] = self.t
+                self.teste_ap, self.teste_ate = u["apparatus"], self.t + f4b.TESTE_S
         # 1a tecnica: prioridade logo depois do aparelho da arte
         if self.sig and self.sig in self.owned and self.nivel[self.sig] == 0:
             c = float(self.ups[self.sig][0]["cost"])
@@ -354,7 +443,7 @@ class Carreira5(f4b.Carreira4b):
             for g in self.pgens:
                 c = f2.custo_gerador(g, self.pqtd[g["id"]])
                 ops.append((g["production"] * (1 + self.b["passive_bonus"]) * fe / c, "pgen", g["id"], c))
-            if self.luva < len(self.luvas):
+            if self.luva < len(self.luvas) and self.luva_fechada == 0:   # 5.1: a proxima luva so com a anterior aberta
                 L = self.luvas[self.luva]
                 ganho = self.clique_medio() * (L["click_multiplier"] - 1)
                 ops.append((ganho / L["cost"], "luva", L["id"], float(L["cost"])))
@@ -381,6 +470,9 @@ class Carreira5(f4b.Carreira4b):
             elif tipo == "luva":
                 self.luva += 1
                 self.eventos.append((self.t, id_))
+                if CAIXA:
+                    self.luva_fechada += 1
+                    self.nova_caixa("luva", id_)
             else:
                 self.metro += 1
                 self.metro_compras.append(self.t)
@@ -625,6 +717,7 @@ def sequencia(args):
                "t_ap": dict(c.t_ap), "ev": list(c.eventos), "revanche": c.t_revanche, "killer_antes": killer,
                "treino_clique": c.treino_clique, "treino_metro": c.treino_metro, "treino_assist": c.treino_assist,
                "attr_fim": tuple(c.attr), "mudou": c.mudou,
+               "n_caixas": c.n_caixas, "t_caixa_mao": c.t_caixa_mao,
                "lutas": [(l["opp"], l["win"], round(l["p"], 2), round(l["t"])) for l in c.lutas]}
         if c.fim[0] == "derrota":
             _, t, opp, jog, tat = c.fim
@@ -1001,6 +1094,22 @@ def sec_assistido(n):
         print("| %s | %s | %s | %s (%d) | %d | %d |" % (nome, fk(med(kb)), fk(med(kc)), mm(med(tb)), len(tb), g1, g2))
 
 
+def sec_caixa(n, K):
+    """Fase 5.1: quantas caixas por carreira e quanto tempo de mao vai para elas."""
+    perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                     for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+    res = rodar_perfis(perfis, n, K)
+    print("\n## Caixa (Fase 5.1): %s; %d jogadores x %d carreiras" % (os.environ.get("SIM_CAIXA", "1.0,3,1.5,0"), n, K))
+    print("| perfil | caixas por carreira (med; max) | mao na caixa por carreira (med; max) | %% do tempo de carreira (med; max) |")
+    print("|---|---|---|---|")
+    for nome, seqs in res.items():
+        rs = [r for s in seqs for r in s]
+        nc = [r["n_caixas"] for r in rs]
+        tm = [r["t_caixa_mao"] for r in rs]
+        fr = [100.0 * r["t_caixa_mao"] / max(1.0, r["t"]) for r in rs]
+        print("| %s | %s; %d | %.1f s; %.1f s | %.2f%%; %.2f%% |" % (nome, fk(med(nc)), max(nc), med(tm), max(tm), med(fr), max(fr)))
+
+
 def main():
     _init(quieto=False)
     secs = sys.argv[1:] or ["tudo"]
@@ -1021,6 +1130,8 @@ def main():
         sec_assistido(int(os.environ.get("SIM_N_ASS", "12")))
     if tudo or "carreiras" in secs:
         sec_carreiras(n, K)
+    if tudo or "caixa" in secs:
+        sec_caixa(int(os.environ.get("SIM_N_CX", "16")), K)
 
 
 if __name__ == "__main__":
