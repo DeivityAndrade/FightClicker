@@ -11,6 +11,7 @@ extends Control
 @onready var _fluxo: Fluxo = $Fluxo
 @onready var _debug: DebugOverlay = $DebugOverlay
 
+var _botao_mapa: BotaoMapa
 var _cursor: AnimSprite
 var _sujo := true
 var _mouse_escondido := false
@@ -43,6 +44,9 @@ func _ready() -> void:
 	_cursor.visible = false
 	add_child(_cursor)
 
+	_botao_mapa = BotaoMapa.new()  # Fase 5.4: o mapa da árvore fica atrás deste botão (132,22), brilha quando há compra
+	add_child(_botao_mapa)
+	_botao_mapa.pressed.connect(_fluxo.abrir_arvore)
 	add_child(Dica.new())  # Fase 5.1: dica flutuante do nível 3 (hover)
 	add_child(FaixaAviso.new())  # Fase 5.3: faixa de aviso da data (3 dias e 1 dia)
 	_fluxo.ligar(_barra)

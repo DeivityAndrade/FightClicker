@@ -35,7 +35,7 @@ const ESTADOS_TODOS := [
 	# Fase 4
 	"garagem_metronomo", "garagem_loja_metronomo", "garagem_loja_metronomo_max", "garagem_dica_nos", "garagem_revanche",
 	"cartao_inicio", "previa_revanche", "previa_revanche_porcentagem",
-	"arvore_mista", "arvore_vazia", "arvore_completa", "arvore_dica_compravel", "arvore_dica_trancado", "arvore_compra",
+
 	"vitoria_revanche", "fim_derrota_verde", "luta_numeros", "cartao_clique_fecha",
 	# Fase 4b: aparelhos que chegam e treino assistido
 	"b4_inicio_marcas", "b4_esteira_compravel", "b4_corda_compravel", "b4_corda_sem_treino", "b4_tres_aparelhos",
@@ -48,8 +48,8 @@ const ESTADOS_TODOS := [
 	"f5_mudar_travado", "f5_mudar_sem_dinheiro", "f5_mudar_pronto", "f5_arte_primeira", "f5_academia_chegada", "f5_academia_boxe",
 	"f5_arte_ultima", "f5_gym_boxe_marca", "f5_gym_boneco_foco", "f5_gym_pera_foco", "f5_gym_pera_clique", "f5_gym_descanso",
 	"f5_garagem_boneco_marca", "f5_garagem_boneco_depois", "f5_garagem_pera_marca", "f5_chegada_pera", "f5_chegada_boneco",
-	"f5_chip_jj_max", "f5_teclas_arte", "f5_loja_reserva", "f5_arvore_abas", "f5_arvore_estilo", "f5_arvore_estilo_dica",
-	"f5_arvore_sem_artes", "f5_dica_aposentar", "f5_escada_fim", "f5_previa_tonhao", "f5_luta_tonhao", "f5_previa_kid",
+	"f5_chip_jj_max", "f5_teclas_arte", "f5_loja_reserva", 
+	"f5_dica_aposentar", "f5_escada_fim", "f5_previa_tonhao", "f5_luta_tonhao", "f5_previa_kid",
 	"f5_previa_kid_revanche", "f5_vitoria_cinturao_mudar", "f5_fim_dica_extra", "f5_fim_aposentou_cinturao",
 	"f5_nova_carreira", "f5_nova_carreira_cartao",
 	# Fase 5.1
@@ -67,6 +67,11 @@ const ESTADOS_TODOS := [
 	"f53_aviso_nome_longo", "f53_dia_previa", "f53_hud_hoje", "f53_dia_loja_fechada", "f53_dia_passar_confirma", "f53_dia_voltar",
 	"f53_dia_previa_tonhao", "f53_dia_previa_revanche_arte", "f53_fim_campanha_encerrada", "f53_fim_selo_completa", "f53_retrato_l1", "f53_retrato_l2", "f53_retrato_l3",
 	"f53_retrato_l4", "f53_retrato_luta_l4", "f53_loja_grito_sem_rolar",
+	# Fase 5.4: o mapa da árvore grande, o botão da sala e a tela de fim
+	"f54_mapa_inicio", "f54_mapa_meio", "f54_mapa_completo", "f54_mapa_completo_noroeste", "f54_mapa_completo_sudeste",
+	"f54_cartao_compravel", "f54_cartao_sem_legado", "f54_cartao_arte", "f54_cartao_grito_sem_loja", "f54_cartao_comprado",
+	"f54_cartao_ativo", "f54_revelacao", "f54_revelacao_fim", "f54_botao_normal", "f54_botao_brilho", "f54_botao_hover",
+	"f54_botao_gym", "f54_fim_botao", "f54_mapa_do_fim", "f54_fim_volta", "f54_save_antigo",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -297,6 +302,7 @@ func _rodar() -> void:
 	await _rodar_fase51()
 	await _rodar_fase52()
 	await _rodar_fase53()
+	await _rodar_fase54()
 	_fechar_cena()
 
 
@@ -307,6 +313,7 @@ func _rodar() -> void:
 ## Põe nós comprados e Legado no save de teste (recalcula os bônus, como o carregamento faz).
 func _com_nos(ids: Array, legado: int) -> void:
 	gs.permanente["skill_nodes"] = ids.duplicate()
+	gs.nos_ativos_ids = ids.duplicate()  # Fase 5.4: os efeitos vêm da foto da campanha (active_nodes)
 	gs.permanente["legacy_total"] = legado
 	gs._recalcular_bonus()
 
@@ -452,38 +459,6 @@ func _rodar_fase4() -> void:
 		_cena.get_node("Fluxo").abrir_previa()
 		await _esperar(0.5)
 		await _ver("previa_revanche_porcentagem")
-
-	# Árvore
-	if _quer("arvore_mista") or _quer("arvore_dica_compravel") or _quer("arvore_dica_trancado") or _quer("arvore_compra"):
-		_derrota_pendente(NOS_MISTA, 40)
-		var j: Node = await _abrir_arvore()
-		if _quer("arvore_mista"):
-			await _ver("arvore_mista")
-		if _quer("arvore_dica_compravel"):
-			j.mostrar_dica("body_muscle_memory")
-			await _esperar(0.2)
-			await _ver("arvore_dica_compravel")
-		if _quer("arvore_dica_trancado"):
-			j.mostrar_dica("career_good_loser")
-			await _esperar(0.2)
-			await _ver("arvore_dica_trancado")
-		if _quer("arvore_compra"):
-			j._esconder_dica()
-			var antes: int = gs.legado_disponivel()
-			if not gs.comprar_no("body_muscle_memory"):
-				_problema("AUDIT", "estado arvore_compra", "comprar_no(body_muscle_memory) recusou")
-			await _esperar(0.8)
-			if gs.legado_disponivel() != antes - 30:
-				_problema("AUDIT", "estado arvore_compra", "Legado %d depois da compra, esperava %d" % [gs.legado_disponivel(), antes - 30])
-			await _ver("arvore_compra")
-	if _quer("arvore_vazia"):
-		_derrota_pendente([], 0)
-		await _abrir_arvore()
-		await _ver("arvore_vazia")
-	if _quer("arvore_completa"):
-		_derrota_pendente(NOS_TODOS, 0)
-		await _abrir_arvore()
-		await _ver("arvore_completa")
 
 	# Vitória com revanche (o algoz é o 1º adversário; o jogador é forte e vence)
 	if _quer("vitoria_revanche"):
@@ -951,6 +926,7 @@ func _ver(nome: String) -> void:
 	_chaves.clear()
 	await _esperar(0.1)
 	_auditar(_cena)
+	_auditar_mapa()
 	await process_frame
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
@@ -1640,27 +1616,6 @@ func _rodar_fase5() -> void:
 		_estado = "f5_loja_reserva"
 		_exigir(gs.reserva_mudanca() > 0.0 and gs.loja_estado(900.0) == "reserve", _estado, "a reserva da mudança deveria recusar o item")
 		await _ver("f5_loja_reserva")
-
-	# --- Árvore: aba ESTILO ---
-	if _quer("f5_arvore_abas") or _quer("f5_arvore_estilo") or _quer("f5_arvore_estilo_dica"):
-		_derrota_pendente(NOS_MISTA, 1500)
-		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
-		var j: Node = await _abrir_arvore()
-		_estado = "f5_arvore_abas"
-		_exigir(j._abas.size() == 2, _estado, "com as artes liberadas a árvore deveria ter as 2 abas")
-		await _ver("f5_arvore_abas")
-		j._abas["style"].pressed.emit()
-		await _esperar(0.4)
-		await _ver("f5_arvore_estilo")
-		j.mostrar_dica("style_boxing")
-		await _esperar(0.2)
-		await _ver("f5_arvore_estilo_dica")
-	if _quer("f5_arvore_sem_artes"):
-		_derrota_pendente(NOS_MISTA, 40)
-		var j: Node = await _abrir_arvore()
-		_exigir(j._abas.is_empty(), "f5_arvore_sem_artes", "sem artes liberadas não existe aba ESTILO")
-		await _ver("f5_arvore_sem_artes")
-
 	# --- Dica de aposentar, escada ---
 	if _quer("f5_dica_aposentar"):
 		_novo_jogo()
@@ -2440,3 +2395,198 @@ func _rodar_fase53() -> void:
 ## Classe da janela pelo nome (o verificador não pode citar classes da UI: elas dependem do autoload GameState na compilação).
 func _eh(no: Object, classe: String) -> bool:
 	return no != null and no.get_script() != null and str(no.get_script().get_global_name()) == classe
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.4: mapa da árvore grande, botão da sala, cartão do nó, tela de fim e save antigo
+# ---------------------------------------------------------------------------------------------
+
+## O mapa em posição livre (nós, etiquetas, plaquinhas) é ui_align = ignore no verificador genérico: ele mesmo confere o que
+## está dentro (preço cabe na etiqueta, nó não cobre nó, plaquinha não cobre nó, cartão dentro da janela do mapa).
+func _auditar_mapa() -> void:
+	var fl: Node = _cena.get_node_or_null("Fluxo") if _cena != null else null
+	if fl != null and _eh(fl.janela, "JanelaMapa"):
+		for erro in fl.janela.diagnostico():
+			_problema("MAPA", fl.janela, str(erro))
+
+
+func _mapa() -> Node:
+	return _cena.get_node("Fluxo").janela
+
+
+## Nós comprados + Legado + último nó, com a foto da campanha igual (ativos = todos) ou vazia (comprado nesta campanha).
+func _com_nos54(ids: Array, legado: int, ativos: bool = true) -> void:
+	gs.permanente["skill_nodes"] = ids.duplicate()
+	gs.permanente["legacy_total"] = legado
+	gs.permanente["tree_last_node"] = str(ids.back()) if not ids.is_empty() else ""
+	gs.nos_ativos_ids = ids.duplicate() if ativos else []
+	gs._recalcular_bonus()
+
+
+func _todos_os_nos() -> Array:
+	var r: Array = []
+	for n in gs.lutas.arvore:
+		r.append(str(n.id))
+	return r
+
+
+func _meio54() -> Array:
+	return ["body_jab", "career_purse", "body_crew", "body_muscle_memory", "gar_tape", "gar_radio", "camp_poster",
+		"career_scouting", "career_crowd"]
+
+
+func _rodar_fase54() -> void:
+	# --- Mapa: começo, meio e completo ---
+	if _quer("f54_mapa_inicio"):
+		_novo_jogo()
+		_com_nos54([], 30)
+		await _abrir_arvore()
+		_exigir(_mapa() != null and _eh(_mapa(), "JanelaMapa"), "f54_mapa_inicio", "o botão da sala deveria abrir o mapa")
+		await _ver("f54_mapa_inicio")
+	if _quer("f54_mapa_meio"):
+		_novo_jogo()
+		_garagem_arte("boxing", [], 800.0)
+		_com_nos54(_meio54(), 400)
+		await _abrir_arvore()
+		await _ver("f54_mapa_meio")
+	if _quer("f54_mapa_completo") or _quer("f54_mapa_completo_noroeste") or _quer("f54_mapa_completo_sudeste"):
+		_novo_jogo()
+		_garagem_arte("boxing", [], 800.0)
+		gs.crew_click_comprado = true
+		_com_nos54(_todos_os_nos(), 0)
+		var j: Node = await _abrir_arvore()
+		if _quer("f54_mapa_completo"):
+			await _ver("f54_mapa_completo")
+		if _quer("f54_mapa_completo_noroeste"):
+			j.mover_camera(Vector2i(-9999, -9999))
+			await _esperar(0.2)
+			await _ver("f54_mapa_completo_noroeste")
+		if _quer("f54_mapa_completo_sudeste"):
+			j.mover_camera(Vector2i(9999, 9999))
+			await _esperar(0.2)
+			await _ver("f54_mapa_completo_sudeste")
+
+	# --- Cartão do nó em cada estado ---
+	for def in [
+			["f54_cartao_compravel", "gar_rope", 400, true],
+			["f54_cartao_sem_legado", "body_heavy_hands", 100, true],
+			["f54_cartao_arte", "box_counter", 400, true],
+			["f54_cartao_grito_sem_loja", "link_shout", 600, true],
+			["f54_cartao_comprado", "gar_tape", 400, false],
+			["f54_cartao_ativo", "gar_tape", 400, true]]:
+		if not _quer(def[0]):
+			continue
+		_novo_jogo()
+		_garagem_arte("boxing", [], 800.0)
+		var nos := _meio54()
+		if def[1] == "link_shout":
+			nos = nos + ["gar_rope"]
+		_com_nos54(nos, int(def[2]), bool(def[3]))
+		var j: Node = await _abrir_arvore()
+		j.ir_para(str(def[1]))
+		await _esperar(0.2)
+		j.mostrar_cartao(str(def[1]))
+		await _esperar(0.2)
+		_exigir(j.cartao_aberto() == str(def[1]), str(def[0]), "o cartão de %s deveria estar aberto" % str(def[1]))
+		await _ver(str(def[0]))
+
+	# --- Comprar: o nó acende, os vizinhos aparecem, a neblina recua ---
+	if _quer("f54_revelacao") or _quer("f54_revelacao_fim"):
+		_novo_jogo()
+		_com_nos54(["body_jab", "career_purse"], 30)
+		var j: Node = await _abrir_arvore()
+		j.ir_para("gar_tape")
+		await _esperar(0.2)
+		var antes: int = gs.legado_disponivel()
+		j.clicar_no("gar_tape")
+		await _esperar(0.12)
+		_exigir(gs.legado_disponivel() == antes - 15 and gs.estado_mapa("gar_tape") == "owned", "f54_revelacao",
+			"clicar no nó à vista deveria comprar (Legado %d -> %d)" % [antes, gs.legado_disponivel()])
+		await _ver("f54_revelacao")
+		await _esperar(1.1)
+		_exigir("gar_rope" in j.nos_desenhados() and "gar_radio" in j.nos_desenhados(), "f54_revelacao_fim", "os vizinhos deveriam ter aparecido")
+		_exigir(j.fog_nivel_em("gar_rope") == 0, "f54_revelacao_fim", "a neblina deveria ter recuado em volta do nó novo")
+		await _ver("f54_revelacao_fim")
+
+	# --- Botão da sala: normal, brilhando, com dica, na academia ---
+	if _quer("f54_botao_normal"):
+		_novo_jogo()
+		_com_nos54([], 0)
+		await _abrir()
+		var b: Node = _cena.get_node("BotaoMapa")
+		_estado = "f54_botao_normal"
+		_exigir(not gs.ha_no_compravel() and not b.brilhando(), _estado, "sem nó à vista que o Legado pague o botão fica quieto")
+		await _ver("f54_botao_normal")
+	if _quer("f54_botao_brilho") or _quer("f54_botao_hover"):
+		_novo_jogo()
+		_com_nos54([], 30)
+		await _abrir()
+		var b: Node = _cena.get_node("BotaoMapa")
+		_estado = "f54_botao_brilho"
+		_exigir(gs.ha_no_compravel() and b.brilhando(), _estado, "com nó à vista que o Legado paga o botão brilha")
+		if _quer("f54_botao_brilho"):
+			await _ver("f54_botao_brilho")
+		if _quer("f54_botao_hover"):
+			_dica_em(b.texto_dica(), Vector2(143, 33))
+			await _esperar(0.2)
+			await _ver("f54_botao_hover")
+			_sem_dica()
+	if _quer("f54_botao_gym"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill"], 800.0)
+		_com_nos54(["body_jab"], 20)
+		await _abrir()
+		var b: Node = _cena.get_node("BotaoMapa")
+		_exigir(b.position == Vector2(132, 22) and b.size == Vector2(22, 22), "f54_botao_gym", "botão em (132,22) 22x22")
+		await _ver("f54_botao_gym")
+
+	# --- Tela de fim: o botão ÁRVORE com o ícone, o mapa por ele e a volta ---
+	if _quer("f54_fim_botao") or _quer("f54_mapa_do_fim") or _quer("f54_fim_volta"):
+		_derrota_pendente([], 30)
+		_com_nos54([], 30)
+		gs.fim["legacy_total"] = 30
+		await _abrir()
+		await _esperar(0.9)
+		var fl: Node = _cena.get_node("Fluxo")
+		if _quer("f54_fim_botao"):
+			await _ver("f54_fim_botao")
+		if _quer("f54_mapa_do_fim") or _quer("f54_fim_volta"):
+			fl.janela.arvore_pedido.emit()
+			await _esperar(0.5)
+			_exigir(_eh(fl.janela, "JanelaMapa"), "f54_mapa_do_fim", "o botão ÁRVORE do fim deveria abrir o mesmo mapa")
+			if _quer("f54_mapa_do_fim"):
+				await _ver("f54_mapa_do_fim")
+			if _quer("f54_fim_volta"):
+				fl.janela.clicar_no("body_jab")
+				await _esperar(1.0)
+				fl.janela.fechar_pedido.emit()
+				await _esperar(0.9)
+				_exigir(_eh(fl.janela, "JanelaFim") and gs.tem_fim_pendente(), "f54_fim_volta", "fechar o mapa volta para a tela de fim")
+				await _ver("f54_fim_volta")
+
+	# --- Save antigo (v9, os 12 nós de sempre): abre com eles comprados no centro e os vizinhos à vista ---
+	if _quer("f54_save_antigo"):
+		_fechar_cena()
+		gs.definir_assistido(false)
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PASTA_SAVE))
+		var velhos := ["body_jab", "body_muscle_memory", "body_heavy_hands", "body_crew", "body_crew_2", "career_purse",
+			"career_scouting", "career_purse_2", "career_crowd", "career_good_loser", "style_boxing", "style_bjj"]
+		var doc := {"version": 9, "saved_at_unix": 1730000000, "state": {"career": {"training": 5.0, "art": "boxing"},
+			"permanent": {"legacy_total": 60, "career_number": 4, "skill_nodes": velhos, "arts_unlocked": ["boxing", "bjj"], "last_art": "boxing"},
+			"ending": null}}
+		var f := FileAccess.open(PASTA_SAVE + "save.json", FileAccess.WRITE)
+		f.store_string(JSON.stringify(doc))
+		f.close()
+		gs.inicializar(PASTA_SAVE, CONFIG)
+		gs.autosave_ativo = false
+		_exigir(gs.estado_mapa("body_jab") == "owned" and gs.estado_mapa("style_boxing") == "owned" and gs.legado_disponivel() == 60,
+			"f54_save_antigo", "migração: nós e Legado iguais")
+		_exigir(gs.estado_mapa("gar_tape") == "visible" and gs.estado_mapa("box_counter") == "visible", "f54_save_antigo",
+			"migração: os vizinhos dos nós antigos abrem à vista")
+		await _abrir()
+		var fl: Node = _cena.get_node("Fluxo")
+		fl.abrir_arvore()
+		await _esperar(0.5)
+		_exigir(_eh(fl.janela, "JanelaMapa"), "f54_save_antigo", "o mapa deveria abrir com o save migrado")
+		await _ver("f54_save_antigo")
+		gs.apagar_save()

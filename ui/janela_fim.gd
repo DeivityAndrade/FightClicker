@@ -21,9 +21,11 @@ var _legado_total: Label
 var _ganho := 0
 var _contar := false
 var _total := 0
+var _reabrindo := false  # voltando do mapa da árvore: mostra os valores finais, sem contar de novo
 
 
-func abrir_com(fim: Dictionary, tocar_som: bool) -> void:
+func abrir_com(fim: Dictionary, tocar_som: bool, reabrindo: bool = false) -> void:
+	_reabrindo = reabrindo
 	sfx = Sfx.new()
 	add_child(sfx)
 	var retire := str(fim.kind) == "retire"
@@ -160,7 +162,7 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 	_ganho = int(f.legacy_gained)
 	_total = int(f.legacy_total)
 	# Ganhos pequenos (< 5) já aparecem no valor final; só os maiores contam de 0 até o valor.
-	_contar = _ganho >= 5
+	_contar = _ganho >= 5 and not _reabrindo
 	_posicionar_ganho("+%d" % (0 if _contar else _ganho))
 	var yy := y + 28.0
 	UiTema.rotulo(painel, UiTema.txt("sum_legacy_total", "LEGADO TOTAL"), UiTema.WHITE, 152, yy)
@@ -180,13 +182,11 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 	# Dois botões do mesmo tamanho, 4 px entre eles, ocupando a largura útil (130..510): ÁRVORE (gastar o Legado) e NOVA CARREIRA.
 	# Quem não quer comprar nada clica 1 vez em NOVA CARREIRA e já está na garagem.
 	var retire := str(f.kind) == "retire"
-	_arvore_chamando = false
-	for n in GameState.arvore_nos():
-		if str(n.state) == "buyable":
-			_arvore_chamando = true
-			break
-	_botao_arvore = botao_texto(Rect2(130, 286, 188, 32), UiTema.txt("tree_button", "ÁRVORE"),
-		UiTema.Y1 if _arvore_chamando else UiTema.WHITE, "ui_button_normal", 2)
+	_arvore_chamando = GameState.ha_no_compravel()
+	# O mesmo desenho das duas portas do mapa: o ícone da árvore (cortiça) à esquerda do texto, o grupo centralizado.
+	_botao_arvore = UiTema.botao(painel, Rect2(130, 286, 188, 32))
+	UiTema.botao_conteudo(_botao_arvore, UiTema.txt("tree_button", "ÁRVORE"), UiTema.Y1 if _arvore_chamando else UiTema.WHITE, 2,
+		"icon_skill_map", 5.0)
 	_botao_arvore.pressed.connect(func() -> void: arvore_pedido.emit())
 	var b := botao_texto(Rect2(322, 286, 188, 32), UiTema.txt("new_career_button", "NOVA CAMPANHA"),
 		UiTema.P2 if retire else UiTema.WHITE, "ui_button_normal", 2, "ui_button_retire" if retire else "")

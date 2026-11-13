@@ -253,7 +253,7 @@ func _teste_nova_carreira() -> void:
 
 
 func _teste_save_v7_e_validacoes() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 9, "versão do save é 8")
+	checar_igual(SaveStore.VERSAO_ATUAL, 10, "versão do save é 8")
 	var gs := _novo("f51_valida")
 	gs.nivel_luva = 1
 	var c := {
@@ -294,7 +294,7 @@ func _teste_migracao_v6() -> void:
 	checar(gs.avisos.is_empty(), "migração sem avisos")
 	gs.salvar()
 	var doc = JSON.parse_string(ler(pasta + "save.json"))
-	checar_igual([int(doc.version), doc.state.career.boxes], [9, []], "regravado como v9 com boxes []")
+	checar_igual([int(doc.version), doc.state.career.boxes], [10, []], "regravado como v10 com boxes []")
 	_liberar(gs)
 	# Cadeia v0 -> v7.
 	var p2 := pasta_limpa("f51_mig0")

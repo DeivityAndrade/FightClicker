@@ -64,19 +64,19 @@ func rodar_testes() -> void:
 
 func _teste_dados() -> void:
 	var d := FightData.carregar()
-	checar_igual(d.arvore.size(), 12, "12 nós na árvore (10 + 2 de ESTILO)")
+	checar_igual(d.arvore.size(), 39, "39 nós no mapa (12 antigos + 27 novos)")
 	var total := 0
 	var ramos := {}
 	var barato_por_ramo := {}
 	var ate40 := {}
-	for n in d.arvore:
+	for n in d.arvore.filter(func(x): return x.branch != ""):  # os 12 antigos (a 5.4 testa os novos)
 		total += int(n.cost)
 		ramos[n.branch] = true
 		if int(n.cost) <= 10:
 			barato_por_ramo[n.branch] = true
 		if int(n.cost) <= 40:
 			ate40[n.branch] = true
-	checar_igual(total, 3175 + 2400, "custo total 5.575 (3.175 + 2 x 1.200 do ESTILO)")
+	checar_igual(total, 3175 - 200 + 2400, "custo total dos 12 antigos 5.375 (5.4 baixou 2 preços em 100)")
 	checar_igual(ramos.keys().size(), 3, "três ramos (Corpo, Carreira, Estilo)")
 	checar(ramos.has("body") and ramos.has("career") and ramos.has("style"), "ramos body, career e style")
 	checar(not d.no_da_arvore("body_muscle_memory").is_empty() and not d.no_da_arvore("career_scouting").is_empty(),
@@ -147,7 +147,7 @@ func _teste_compra_de_no() -> void:
 func _teste_efeito_de_cada_no() -> void:
 	var d := FightData.carregar()
 	for n in d.arvore:
-		if n.requires_art != "":
+		if n.requires_art != "" or n.branch == "":  # novos nós: test_fase54.gd
 			continue  # nós ESTILO (valem só com a arte): cobertos em test_fase5.gd
 		var gs := _novo("f4_efeito_" + n.id)
 		gs.geradores["neighbor_kid"] = 10
@@ -722,7 +722,7 @@ func _teste_cartao_e_resumo() -> void:
 	gs.nova_carreira()
 	checar_igual(cartoes.size(), 1, "nova_carreira_iniciada emitido uma vez")
 	var c: Dictionary = cartoes[0]
-	checar_igual(c.title, "CAMPANHA 2 — O QUE VOCÊ TROUXE:", "título do cartão")
+	checar_igual(c.title, "CAMPANHA 2: O QUE VOCÊ TROUXE", "título do cartão")
 	checar_igual(c.nodes.size(), 2, "uma linha por nó")
 	checar_igual(c.nodes[0].effect_text, "+100% TREINO POR CLIQUE", "efeito do jab em número")
 	checar_igual(c.nodes[1].effect_text, "+50% DINHEIRO POR VITÓRIA", "efeito da bolsa em número")

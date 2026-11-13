@@ -112,8 +112,8 @@ func _teste_dados() -> void:
 		f.adversario("opp_gym_1").prize_money, f.adversario("opp_gym_1").prize_fame], [975000.0, 375000.0, 4125000.0, 2500.0, 120.0],
 		"Tonhão do Tatame: 390K/150K/1,65M, $2.500, 120 de Fama")
 	checar_igual([f.adversario("opp_gym_2").strength, f.adversario("opp_gym_2").agility, f.adversario("opp_gym_2").endurance,
-		f.adversario("opp_gym_2").prize_money, f.adversario("opp_gym_2").prize_fame], [4600000.0, 8050000.0, 20700000.0, 6000.0, 200.0],
-		"Kid Navalha: 1,15M/2,3M/4,6M, $6.000, 200 de Fama")
+		f.adversario("opp_gym_2").prize_money, f.adversario("opp_gym_2").prize_fame], [6900000.0, 12075000.0, 31050000.0, 6000.0, 200.0],
+		"Kid Navalha (x1,5 na 5.4): 1,725M/3,02M/7,76M, $6.000, 200 de Fama")
 	checar_igual(f.indice_cinturao(), 3, "o cinturão é do Seu Muralha (índice 3)")
 	checar(not f.adversario("opp_gym_1").belt and not f.adversario("opp_gym_2").belt, "só o Muralha dá o cinturão")
 	checar_igual(f.calendario.retire_hint_days, 3, "dica de passar o posto com 3 dias")
@@ -408,6 +408,7 @@ func _teste_jiu_jitsu() -> void:
 	# Com o nó ESTILO: começa em 30%, 18/min, teto 150%.
 	var g3 := _com_arte("f5_jj_estilo", "bjj")
 	g3.permanente["skill_nodes"] = ["style_bjj"]
+	g3.nos_ativos_ids = ["style_bjj"]
 	g3._recalcular_bonus()
 	g3.geradores["neighbor_kid"] = 100
 	for caso in [[0.0, 1.0 + 1.5 * _bjj(rj, 0.0)], [240.0, 1.0 + 1.5 * _bjj(rj, 240.0)], [t_teto, 1.0 + 1.5 * float(rj.cap)], [3600.0, 1.0 + 1.5 * float(rj.cap)]]:
@@ -419,6 +420,7 @@ func _teste_jiu_jitsu() -> void:
 	checar(absf(g4.producao_total() - 100.0 * 2.0 * (1.0 + _bjj(rj, 0.0))) < 1e-9, "academia + Jiu-jitsu: 2 x 1,2")
 	# Jiu-jitsu não corta o clique nem a árvore: soma.
 	g4.permanente["skill_nodes"] = ["body_crew"]
+	g4.nos_ativos_ids = ["body_crew"]
 	g4._recalcular_bonus()
 	checar(absf(g4.producao_total() - 100.0 * 1.5 * 2.0 * (1.0 + _bjj(rj, 0.0))) < 1e-9, "árvore x local x Jiu-jitsu")
 	for g in [gs, g2, g3, g4]:
@@ -629,6 +631,7 @@ func _teste_estilo() -> void:
 	# O nó do Boxe não afeta quem joga de Jiu-jitsu.
 	var g2 := _com_arte("f5_estilo_bjj", "bjj")
 	g2.permanente["skill_nodes"] = ["style_boxing"]
+	g2.nos_ativos_ids = ["style_boxing"]
 	g2._recalcular_bonus()
 	g2.arte_segundos = 0.0
 	checar_igual(g2.bonus_arte_equipe(), float(g2.academia.arte("bjj").rule.start), "nó do Boxe não muda o Jiu-jitsu")
@@ -729,14 +732,14 @@ func _teste_dados_mudam_o_jogo() -> void:
 # --- Save v6 ---
 
 func _teste_save_v6() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 9, "versão do save é 9 (Fase 5.3)")
+	checar_igual(SaveStore.VERSAO_ATUAL, 10, "versão do save é 9 (Fase 5.3)")
 	var gs := _na_academia("f5_save", "bjj")
 	gs.geradores["neighbor_kid"] = 3
 	_passar(gs, 12.0)
 	gs.salvar()
 	var doc = JSON.parse_string(ler(gs.store.caminho()))
 	var c: Dictionary = doc.state.career
-	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [9, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
+	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [10, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
 	checar_igual([doc.state.permanent.arts_unlocked, doc.state.permanent.last_art], [["boxing", "bjj"], "bjj"], "permanent.arts_unlocked e last_art no arquivo")
 	var g2: Node = GameStateScript.new()
 	g2.inicializar(gs.store.pasta, "res://data/config.json")
@@ -758,7 +761,7 @@ func _teste_save_v6() -> void:
 	g4.autosave_ativo = false
 	checar_igual([g4.treino, g4.local_id, g4.arte_id, g4.artes_liberadas()], [77.0, "garage", "", []], "v0 -> v7 em cadeia")
 	g4.salvar()
-	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 9, "regravado como v9")
+	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 10, "regravado como v9")
 	for g in [gs, g2, g3, g4]:
 		_liberar(g)
 
