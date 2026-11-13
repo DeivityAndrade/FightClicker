@@ -158,28 +158,46 @@ func _ao_fim_de_carreira(fim: Dictionary) -> void:
 	_abrir_fim(fim)
 
 
-func _abrir_fim(fim: Dictionary) -> void:
+func _abrir_fim(fim: Dictionary, reabrindo: bool = false) -> void:
 	if janela is JanelaFim:
 		return
 	if janela != null:
 		_fechar()
 	var j := JanelaFim.new()
 	_abrir(j)
-	# Som: a derrota já tocou durante a luta; na aposentadoria e ao reabrir o jogo toca ao abrir.
-	j.abrir_com(fim, str(fim.kind) == "retire" or not tela.visible)
+	# Som: a derrota já tocou durante a luta; na aposentadoria e ao reabrir o jogo toca ao abrir. Voltando do mapa: sem som.
+	j.abrir_com(fim, not reabrindo and (str(fim.kind) == "retire" or not tela.visible), reabrindo)
 	j.nova_carreira_pedido.connect(func() -> void: GameState.nova_carreira())
 	j.arvore_pedido.connect(abrir_arvore)
 
 
-# --- Árvore de habilidades (Fase 4): só entre carreiras, pelo botão ÁRVORE da tela de fim ---
+# --- Árvore grande (Fase 5.4): o mapa abre pelo botão da sala (qualquer hora) e pelo botão ÁRVORE da tela de fim ---
 
 func abrir_arvore() -> void:
-	if not GameState.arvore_aberta():
+	if not GameState.pode_abrir_arvore():
 		return
-	var j := JanelaArvore.new()
+	# Depois de uma derrota a arena continua visível por baixo da tela de fim: a tela de fim ainda pode abrir o mapa.
+	if tela.visible and not (janela is JanelaFim):
+		return
+	if janela != null and not (janela is JanelaFim):
+		return  # só a tela de fim cede o lugar ao mapa; prévia, vitória e confirmações não
+	var j := JanelaMapa.new()
 	_abrir(j)
+	Dica.limpar()
 	j.abrir_com()
-	j.nova_carreira_pedido.connect(func() -> void: GameState.nova_carreira())
+	j.fechar_pedido.connect(_fechar_mapa)
+
+
+## Fecha o mapa (X ou Esc). Quem veio da tela de fim volta para ela (já com o Legado gasto); da sala volta para a sala.
+func _fechar_mapa() -> void:
+	if not (janela is JanelaMapa):
+		return
+	if GameState.tem_fim_pendente():
+		janela.queue_free()
+		janela = null
+		_abrir_fim(GameState.fim, true)
+	else:
+		_fechar()
 
 
 # --- Cartão "o que você trouxe" (começo da carreira) ---
@@ -273,8 +291,10 @@ func abrir_aposentar() -> void:
 func _ao_carreira_mudou() -> void:
 	if tela.visible and tela.ativa and GameState.luta.is_empty():
 		tela.encerrar()  # o estado foi trocado (ex.: RECARREGAR da depuração)
-	if (janela is JanelaFim or janela is JanelaArvore) and not GameState.tem_fim_pendente():
+	if janela is JanelaFim and not GameState.tem_fim_pendente():
 		_fechar_tudo()  # NOVA CARREIRA: volta para a garagem
+	elif janela is JanelaMapa and not GameState.pode_abrir_arvore():
+		_fechar_tudo()  # o estado trocou por baixo (ex.: RECARREGAR da depuração) e o mapa não pode mais ficar aberto
 	elif janela == null and not tela.visible:
 		_checar_pendencias()
 
@@ -340,4 +360,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif janela is JanelaAposentar:
 			_fechar()
+			get_viewport().set_input_as_handled()
+		elif janela is JanelaMapa:
+			_fechar_mapa()
 			get_viewport().set_input_as_handled()

@@ -33,6 +33,7 @@ signal permanente_mudou()
 signal auto_socou(ganho: float, critico: bool, aparelho: String, atributo: String, texto_critico: String)
 signal metronomo_mudou(nivel: int)  # compra, nova carreira, carga do save
 signal arvore_mudou()  # nó comprado (Legado e skill_nodes mudaram)
+signal no_revelado(ids: Array)  # Fase 5.4: nós que ficaram à vista com a última compra (a UI anima)
 signal nova_carreira_iniciada(cartao: Dictionary)  # só em NOVA CARREIRA (não na carga do save)
 signal aparelho_comprado(aparelho: String)  # Fase 4b: aparelho montado (a UI faz a chegada)
 signal evento_dourado(duracao: float)  # o cinturão dourado aparece na sala: clicar nele liga o FRENESI
@@ -151,6 +152,7 @@ var _aviso_feito := {"warn": false, "sound": false}
 var _dia_chegou_emitido := false
 var _sala_antes := true
 var _estilo: Dictionary = {}  # Fase 5: arte -> soma dos nós ESTILO comprados (art_rule_bonus)
+var nos_ativos_ids: Array = []  # Fase 5.4: foto dos nós que valem NESTA campanha (career.active_nodes)
 
 
 func _ready() -> void:
@@ -281,7 +283,7 @@ func _alvo_relogio() -> float:
 func _prep_do_indice(i: int) -> int:
 	if i < 0 or i >= lutas.adversarios.size():
 		return 14
-	return int(lutas.adversarios[i].get("prep_days", 14))
+	return int(lutas.adversarios[i].get("prep_days", 14)) + int(_b("prep_days_bonus"))
 
 
 ## Data da próxima luta contada a partir do dia de hoje (-1 se a escada acabou).
@@ -575,13 +577,18 @@ func renda_sem_mao() -> float:
 func bonus_crew_click() -> float:
 	if not crew_click_comprado or lutas.crew_click.is_empty():
 		return 0.0
-	return float(lutas.crew_click.crew_share) * producao_total()
+	return crew_share_efetivo() * producao_total()
+
+
+## Segundos da equipe por clique com o Grito: loja + nó "Grito mais alto" (Fase 5.4).
+func crew_share_efetivo() -> float:
+	return float(lutas.crew_click.get("crew_share", 0.0)) + _b("crew_click_bonus")
 
 
 ## "CLIQUE +123 (1 S DA EQUIPE)": o que o Grito da equipe soma agora em cada clique.
 func texto_efeito_crew_click() -> String:
 	return preencher(texto_ui("shop_crew_click_effect", "CLIQUE +{n} (1 S DA EQUIPE)"),
-		{"n": NumberFormat.fmt(float(lutas.crew_click.get("crew_share", 0.0)) * producao_total())})
+		{"n": NumberFormat.fmt(crew_share_efetivo() * producao_total())})
 
 
 func pode_comprar_crew_click() -> bool:
@@ -917,7 +924,12 @@ func legado_em_jogo() -> int:
 
 ## Legado que a derrota daria agora.
 func legado_se_perder() -> int:
-	return int(floor(legado_em_jogo() * parte_derrota() + 1.0e-9))
+	return _com_bonus_legado(int(floor(legado_em_jogo() * parte_derrota() + 1.0e-9)))
+
+
+## Fase 5.4: Legado ganho = floor(base x (1 + nó "Caderno do velho")). Vale em qualquer fim de campanha.
+func _com_bonus_legado(base: int) -> int:
+	return int(floor(base * (1.0 + _b("legacy_bonus")) + 1.0e-9))
 
 
 ## Fração do pote que a derrota leva: `defeat_share` + bônus da árvore, sempre abaixo de `retire_share`.
@@ -936,8 +948,9 @@ func previa_aposentar() -> Dictionary:
 	var pote := legado_em_jogo()
 	var base := int(floor(pote * c.retire_share + 1.0e-9))
 	var bonus := int(floor(pote * c.retire_belt_bonus_share + 1.0e-9)) if cinturao else 0
-	return {"pote": pote, "base": base, "bonus": bonus, "total": base + bonus, "cinturao": cinturao,
-		"zero": base + bonus == 0}
+	var total := _com_bonus_legado(base + bonus)
+	return {"pote": pote, "base": base, "bonus": bonus, "total": total, "cinturao": cinturao,
+		"notebook": total - (base + bonus), "zero": base + bonus == 0}
 
 
 func _atributos_array() -> Array:
@@ -1532,6 +1545,7 @@ func aposentar() -> Dictionary:
 # Soma o Legado e os recordes, cria `fim` e salva, tudo num único save.
 func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> void:
 	var ganho := legado_se_perder() if tipo == "defeat" else int(previa_aposentar().total)
+	var caderno := ganho - (int(floor(legado_em_jogo() * parte_derrota() + 1.0e-9)) if tipo == "defeat" else int(previa_aposentar().total) - int(previa_aposentar().notebook))
 	permanente["legacy_total"] = int(permanente.legacy_total) + ganho
 	# Revanche: a derrota marca quem venceu; a aposentadoria limpa a marca (mesmo save do Legado).
 	permanente["revenge_opponent"] = str(snap.get("opponent", "")) if tipo == "defeat" else ""
@@ -1543,7 +1557,7 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 	if tipo == "defeat":
 		motivo_fim["unlock_tip"] = _aparelho_da_dica(motivo)
 	fim = {
-		"kind": tipo, "career_number": numero_carreira(), "legacy_gained": ganho,
+		"kind": tipo, "career_number": numero_carreira(), "legacy_gained": ganho, "legacy_notebook": caderno,
 		"legacy_total": int(permanente.legacy_total),
 		"opponent": str(snap.get("opponent", "")), "tactic": str(snap.get("tactic", tatica)),
 		"seed": int(snap.get("seed", 0)), "player": snap.get("player", {}).duplicate(),
@@ -1561,11 +1575,14 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 func nova_carreira() -> bool:
 	if fim.is_empty():
 		return false
+	# Fase 5.4: a foto dos nós (o que vale nesta campanha) é tirada aqui, ANTES de zerar (a data usa "+1 dia").
+	nos_ativos_ids = permanente.get("skill_nodes", []).duplicate()
+	arte_id = ""
+	_recalcular_bonus()
 	_zerar_carreira()
 	permanente["career_number"] = int(permanente.career_number) + 1
 	fim = {}
-	# Os bônus da árvore passam a valer aqui (e a Memória muscular devolve o Metrônomo nível 1).
-	_recalcular_bonus()
+	_aplicar_inicio_da_arvore()
 	nivel_metronomo = mini(int(_b("metronome_start")), metronomo_niveis())
 	salvar()
 	_tempo_autosave = 0.0
@@ -1628,10 +1645,11 @@ func _zerar_carreira() -> void:
 
 # --- Fase 4: árvore de habilidades ---
 
-# Soma, por tipo, dos efeitos dos nós comprados (aditivo dentro do tipo; ver design §3.5).
+# Soma, por tipo, dos efeitos dos nós ATIVOS da campanha (aditivo dentro do tipo; ver design §3.5).
+# Fase 5.4: lê `nos_ativos_ids` (a foto), nunca `skill_nodes`; nó com `requires_art` só vale jogando aquela arte.
 func _recalcular_bonus() -> void:
-	var ids: Array = permanente.get("skill_nodes", [])
-	_bonus = bonus_de(ids)
+	var ids: Array = nos_ativos_ids
+	_bonus = bonus_de(ids, arte_id)
 	# Fase 5: nós ESTILO valem só para a arte deles (`requires_art`).
 	_estilo = {}
 	for id in ids:
@@ -1640,9 +1658,10 @@ func _recalcular_bonus() -> void:
 			_estilo[n.requires_art] = float(_estilo.get(n.requires_art, 0.0)) + float(n.effect_value)
 
 
-## Bônus (por tipo de efeito) de uma lista de ids de nós. Tipos: click_bonus, passive_bonus, money_bonus, fame_bonus,
-## defeat_share_bonus (somas), metronome_start (maior valor), preview_percent (maior valor).
-func bonus_de(ids: Array) -> Dictionary:
+## Bônus (por tipo de efeito) de uma lista de ids de nós. Tipos: somas (click, passive, money, fame, defeat_share,
+## crew_click, gym_training, art_fight, legacy, prep_days, art_rule) e maior valor (metronome_start, preview_percent,
+## rope_installed). `arte` "*" = sem filtro de arte; senão só entram nós sem `requires_art` ou da arte dada.
+func bonus_de(ids: Array, arte: String = "*") -> Dictionary:
 	var b := {}
 	for t in FightData.TIPOS_EFEITO:
 		b[t] = 0.0
@@ -1650,12 +1669,27 @@ func bonus_de(ids: Array) -> Dictionary:
 		var n: Dictionary = lutas.no_da_arvore(str(id))
 		if n.is_empty():
 			continue
+		if arte != "*" and n.requires_art != "" and n.requires_art != arte:
+			continue
 		var t: String = n.effect_type
-		if t == "metronome_start" or t == "preview_percent":
+		if t == "start_generator":
+			continue  # lido por _aplicar_inicio_da_arvore
+		if t == "metronome_start" or t == "preview_percent" or t == "rope_installed":
 			b[t] = maxf(float(b[t]), float(n.effect_value))
 		else:
 			b[t] = float(b[t]) + float(n.effect_value)
 	return b
+
+
+## Efeitos que agem no começo da campanha (depois de zerar): corda montada e geradores de saída.
+func _aplicar_inicio_da_arvore() -> void:
+	if _b("rope_installed") > 0.0 and not dados.aparelho("jump_rope").is_empty() and not aparelho_montado("jump_rope"):
+		aparelhos_montados_ids.append("jump_rope")  # sem caixa e sem foco novo
+	for id in nos_ativos_ids:
+		var n: Dictionary = lutas.no_da_arvore(str(id))
+		if n.is_empty() or n.effect_type != "start_generator" or not geradores.has(n.effect_target):
+			continue
+		geradores[n.effect_target] = maxi(int(geradores[n.effect_target]), int(n.effect_value))
 
 
 func _b(tipo: String) -> float:
@@ -1679,19 +1713,44 @@ func legado_disponivel() -> int:
 	return int(permanente.get("legacy_total", 0))
 
 
-## Estado de um nó para a tela: "owned" (comprado), "buyable" (comprável), "missing" (falta Legado) ou
-## "locked" (trancado pelo nó anterior). Id inexistente: "".
+## Estado de um nó para a tela ANTIGA (abas): "owned", "buyable", "missing" (falta Legado) ou "locked" (escondido no mapa).
+## Id inexistente: "". O mapa novo usa `estado_mapa`.
 func estado_no(id: String) -> String:
+	var e := estado_mapa(id)
+	if e == "" or e == "owned":
+		return e
+	if e == "hidden":
+		return "locked"
+	return "buyable" if legado_disponivel() >= int(lutas.no_da_arvore(id).cost) else "missing"
+
+
+## Fase 5.4: estado de um nó no mapa: "owned" (comprado), "visible" (à vista: raiz ou vizinho de comprado, trava aberta)
+## ou "hidden". Calculado de skill_nodes + travas (não vai para o save). Id inexistente: "".
+func estado_mapa(id: String) -> String:
 	var n: Dictionary = lutas.no_da_arvore(id)
 	if n.is_empty():
 		return ""
 	if tem_no(id):
 		return "owned"
-	if n.requires != "" and not tem_no(n.requires):
-		return "locked"
-	if n.requires_art != "" and not (n.requires_art in artes_liberadas()):
-		return "locked"  # Fase 5: nó ESTILO pede a arte liberada
-	return "buyable" if legado_disponivel() >= int(n.cost) else "missing"
+	if not trava_aberta(str(n.lock)):
+		return "hidden"
+	if n.root:
+		return "visible"
+	for v in n.neighbors:
+		if tem_no(str(v)):
+			return "visible"
+	return "hidden"
+
+
+## Trava de região/nó: "" sempre; "gym" com alguma arte liberada (um discípulo já chegou à academia); "art:<id>" com a arte liberada.
+func trava_aberta(trava: String) -> bool:
+	if trava == "":
+		return true
+	if trava == "gym":
+		return not permanente.get("arts_unlocked", []).is_empty()
+	if trava.begins_with("art:"):
+		return trava.substr(4) in permanente.get("arts_unlocked", [])
+	return false
 
 
 ## Lista de nós na ordem do arquivo. Cada item: {id, branch, branch_name, requires, requires_name, cost, name,
@@ -1731,37 +1790,130 @@ func texto_efeito_no(n: Dictionary) -> String:
 	return preencher(str(n.get("effect_text", "")), {"pct": int(round(100.0 * v)), "n": vn})
 
 
-## A árvore só abre/compra com a tela de fim pendente (entre carreiras).
+## Fase 5.4: a árvore abre em qualquer momento, menos na luta, no dia da luta, na escolha da arte e com caixa
+## no meio da abertura (já tem batida). Com a tela de fim pendente abre sempre.
+func pode_abrir_arvore() -> bool:
+	if not luta.is_empty():
+		return false
+	if not fim.is_empty():
+		return true
+	if no_dia_da_luta() or escolha_arte_pendente():
+		return false
+	for b in caixas_lista:
+		if int(b.hits) > 0:
+			return false
+	return true
+
+
+## Compat: "a árvore está aberta" (mesma regra de `pode_abrir_arvore`).
 func arvore_aberta() -> bool:
-	return not fim.is_empty()
+	return pode_abrir_arvore()
 
 
+## À vista, com Legado para pagar e mapa aberto.
 func pode_comprar_no(id: String) -> bool:
-	return arvore_aberta() and estado_no(id) == "buyable"
+	return pode_abrir_arvore() and pode_pagar_no(id)
 
 
-## Compra o nó: desconta o Legado exato, grava o nó e salva (um save só). Recusa (nada muda) sem tela de fim pendente,
-## nó já comprado, anterior não comprado ou Legado insuficiente. Os bônus valem a partir da NOVA CARREIRA.
+## Igual a `pode_comprar_no`, sem olhar se o mapa está aberto (o brilho do botão usa isto).
+func pode_pagar_no(id: String) -> bool:
+	return estado_mapa(id) == "visible" and legado_disponivel() >= int(lutas.no_da_arvore(id).cost)
+
+
+## true se existe nó à vista que o Legado paga: o botão da sala brilha (mesmo com o mapa fechado).
+func ha_no_compravel() -> bool:
+	for n in lutas.arvore:
+		if pode_pagar_no(n.id):
+			return true
+	return false
+
+
+## Quantos nós à vista o Legado paga agora ("{n} NÓS PARA COMPRAR").
+func nos_compraveis() -> int:
+	var c := 0
+	for n in lutas.arvore:
+		if pode_pagar_no(n.id):
+			c += 1
+	return c
+
+
+func _ids_a_vista() -> Array:
+	var r: Array = []
+	for n in lutas.arvore:
+		if estado_mapa(n.id) != "hidden":
+			r.append(n.id)
+	return r
+
+
+## Compra o nó: desconta o Legado exato, grava o nó e salva (um save só). Recusa (nada muda) com o mapa fechado,
+## nó já comprado, escondido ou Legado insuficiente. Os bônus valem a partir da PRÓXIMA campanha (`nos_ativos_ids`).
 func comprar_no(id: String) -> bool:
 	if not pode_comprar_no(id):
 		return false
 	var n: Dictionary = lutas.no_da_arvore(id)
+	var antes := _ids_a_vista()
 	permanente["legacy_total"] = maxi(0, int(permanente.legacy_total) - int(n.cost))
 	var nos: Array = permanente.get("skill_nodes", [])
 	nos.append(id)
 	permanente["skill_nodes"] = nos
+	permanente["tree_last_node"] = id
 	# O `fim` pendente mostra o Legado total: mantém igual ao disponível.
-	fim["legacy_total"] = int(permanente.legacy_total)
+	if not fim.is_empty():
+		fim["legacy_total"] = int(permanente.legacy_total)
+	var novos: Array = []
+	for x in _ids_a_vista():
+		if not (x in antes):
+			novos.append(x)
 	salvar()
 	arvore_mudou.emit()
 	permanente_mudou.emit()
+	if not novos.is_empty():
+		no_revelado.emit(novos)
 	return true
+
+
+## Nós que valem na campanha atual (a foto de `career.active_nodes`).
+func nos_ativos() -> Array:
+	return nos_ativos_ids.duplicate()
+
+
+## Mapa inteiro para a UI (o `docs/fases/fase5.4-api.md` descreve cada chave). A UI desenha só o que não é "hidden".
+func arvore_mapa() -> Array:
+	var lista: Array = []
+	for n in lutas.arvore:
+		if n.region == "" or lutas.regiao(n.region).is_empty():
+			continue  # nó antigo sem região (arquivo v1)
+		var estado := estado_mapa(n.id)
+		var item: Dictionary = n.duplicate(true)
+		item["state"] = estado
+		item["region_name"] = str(lutas.regiao(n.region).get("name", ""))
+		item["effect_text"] = texto_efeito_no(n)
+		item["can_buy"] = pode_comprar_no(n.id)
+		item["affordable"] = pode_pagar_no(n.id)
+		item["missing"] = maxi(0, int(n.cost) - legado_disponivel()) if estado == "visible" else 0
+		item["active"] = n.id in nos_ativos_ids
+		item["next_campaign"] = estado == "owned" and not (n.id in nos_ativos_ids)  # etiqueta VALE NA PRÓXIMA CAMPANHA
+		item["needs_shout"] = n.effect_type == "crew_click_bonus" and not crew_click_comprado
+		item["art_only_text"] = preencher(texto_ui("tree_style_art_only", "SÓ VALE JOGANDO DE {nome}"),
+			{"nome": str(academia.arte(n.requires_art).get("name", "")).to_upper()}) if n.requires_art != "" else ""
+		lista.append(item)
+	return lista
+
+
+## Dados gerais do mapa: {unit_px, regions: [{id, name, icon, lock, open}], last_node, legacy, open, can_buy_count}.
+func arvore_mapa_info() -> Dictionary:
+	var regs: Array = []
+	for r in lutas.regioes:
+		regs.append({"id": r.id, "name": r.name, "icon": r.icon, "lock": r.lock, "open": trava_aberta(str(r.lock))})
+	var ultimo := str(permanente.get("tree_last_node", ""))
+	return {"unit_px": float(lutas.mapa_arvore.get("unit_px", 40.0)), "regions": regs, "last_node": ultimo,
+		"legacy": legado_disponivel(), "open": pode_abrir_arvore(), "can_buy_count": nos_compraveis()}
 
 
 ## Lista dos nós ativos (ordem da compra): [{id, name, effect_text, icon}]. Cartão de início e resumo da garagem.
 func resumo_legado() -> Dictionary:
 	var itens: Array = []
-	for id in permanente.get("skill_nodes", []):
+	for id in nos_ativos_ids:
 		var n: Dictionary = lutas.no_da_arvore(str(id))
 		if not n.is_empty():
 			itens.append({"id": n.id, "name": n.name, "effect_text": texto_efeito_no(n), "icon": n.icon})
@@ -1784,7 +1936,10 @@ func cartao_inicio() -> Dictionary:
 
 ## Multiplicador global de treino do local atual (garagem 1,0; academia 2,0), lido de data/locations.json.
 func mult_local() -> float:
-	return float(academia.local(local_id).get("training_mult", 1.0))
+	var m := float(academia.local(local_id).get("training_mult", 1.0))
+	if m != 1.0:
+		m *= 1.0 + _b("gym_training_bonus")  # Fase 5.4: Ventilador novo (só fora da garagem)
+	return m
 
 
 ## Local atual: {id, name, ambience, training_mult, apparatus_suffix, ...}. O sufixo vai nos sprites dos aparelhos básicos.
@@ -1953,6 +2108,7 @@ func escolher_arte(id: String) -> bool:
 	arte_id = id
 	arte_segundos = 0.0
 	permanente["last_art"] = id
+	_recalcular_bonus()  # Fase 5.4: nós da arte passam a valer
 	_atualizar_traco()
 	_chave_melhor = ""
 	salvar()
@@ -2033,11 +2189,16 @@ func texto_traco_luta(id: String) -> String:
 	if a.is_empty():
 		return ""
 	var f: Dictionary = a.fight
+	var extra := 0.0  # Fase 5.4: nós ativos da arte (Contragolpe / Base firme), valem também na janela de escolha
+	for nid in nos_ativos_ids:
+		var n: Dictionary = lutas.no_da_arvore(str(nid))
+		if not n.is_empty() and n.effect_type == "art_fight_bonus" and n.requires_art == id:
+			extra += float(n.effect_value)
 	var pct := 0
 	if absf(float(f.damage_mult) - 1.0) > 1.0e-9:
-		pct = int(round(absf(float(f.damage_mult) - 1.0) * 100.0))
+		pct = int(round((float(f.damage_mult) * (1.0 + extra) - 1.0) * 100.0))
 	elif absf(float(f.taken_mult) - 1.0) > 1.0e-9:
-		pct = int(round(absf(1.0 - float(f.taken_mult)) * 100.0))
+		pct = int(round((1.0 - float(f.taken_mult) * maxf(0.0, 1.0 - extra)) * 100.0))
 	return preencher(str(a.fight_text), {"pct": pct})
 
 
@@ -2055,7 +2216,14 @@ func texto_divisao(aparelho_id: String) -> String:
 # O traço de luta da arte entra na tática do jogador (luta e prévia usam a mesma função, no motor).
 func _atualizar_traco() -> void:
 	var f: Dictionary = academia.arte(arte_id).get("fight", {})
-	motor.traco = {"damage_mult": float(f.get("damage_mult", 1.0)), "taken_mult": float(f.get("taken_mult", 1.0))}
+	var dano := float(f.get("damage_mult", 1.0))
+	var recebido := float(f.get("taken_mult", 1.0))
+	var extra := _b("art_fight_bonus")  # Fase 5.4: Contragolpe / Base firme (só da arte jogada)
+	if dano != 1.0:
+		dano *= 1.0 + extra
+	if recebido != 1.0:
+		recebido *= maxf(0.0, 1.0 - extra)
+	motor.traco = {"damage_mult": dano, "taken_mult": recebido}
 
 
 ## Tática do jogador já com o traço da arte (cópia). Útil para testes e para a UI mostrar números.
@@ -2377,6 +2545,7 @@ func para_save() -> Dictionary:
 			"play_seconds": tempo_jogo,
 			"campaign_seconds": segundos_campanha,
 			"fight_day": fight_day,
+			"active_nodes": nos_ativos_ids.duplicate(),
 			"money_earned": dinheiro_ganho,
 			"fight": luta.duplicate(true) if not luta.is_empty() else null,
 		},
@@ -2454,7 +2623,9 @@ func aplicar_save(estado: Dictionary) -> void:
 	_dia_anterior = dia_campanha()
 	_aviso_data_chave = -2
 	_dia_chegou_emitido = false
+	nos_ativos_ids = _validar_ativos(c.get("active_nodes", null))
 	_recalcular_bonus()
+	_atualizar_traco()
 	nivel_metronomo = _inteiro_valido(c.get("metronome_level", 0), float(metronomo_niveis()))
 	_acc_metronomo = 0.0
 	_acc_assist = _assist_primeiro()
@@ -2498,7 +2669,7 @@ func _validar_luta(v: Variant) -> Dictionary:
 
 func _validar_permanente(v: Variant) -> Dictionary:
 	var p: Dictionary = v if v is Dictionary else {}
-	return {
+	var r := {
 		"legacy_total": _inteiro_valido(p.get("legacy_total", 0), 1.0e15),
 		"career_number": maxi(1, _inteiro_valido(p.get("career_number", 1), 1.0e9)),
 		"careers_finished": _inteiro_valido(p.get("careers_finished", 0), 1.0e9),
@@ -2509,6 +2680,8 @@ func _validar_permanente(v: Variant) -> Dictionary:
 		"arts_unlocked": _validar_artes_liberadas(p.get("arts_unlocked", [])),
 		"last_art": _validar_arte_id(p.get("last_art", "")),
 	}
+	r["tree_last_node"] = _validar_ultimo_no(p.get("tree_last_node", ""), r.skill_nodes)  # Fase 5.4
+	return r
 
 
 # Nós salvos: ignora id inexistente ou repetido e nó cujo `requires` não está na lista (com aviso).
@@ -2555,6 +2728,7 @@ func _validar_fim(v: Variant) -> Dictionary:
 	return {
 		"kind": str(v.kind), "career_number": maxi(1, _inteiro_valido(v.get("career_number", 1), 1.0e9)),
 		"legacy_gained": _inteiro_valido(v.get("legacy_gained", 0), 1.0e15),
+		"legacy_notebook": _inteiro_valido(v.get("legacy_notebook", 0), 1.0e15),
 		"legacy_total": _inteiro_valido(v.get("legacy_total", 0), 1.0e15),
 		"opponent": str(v.get("opponent", "")), "tactic": str(v.get("tactic", "")),
 		"seed": _inteiro_valido(v.get("seed", 0), 4294967295.0),
@@ -2898,3 +3072,24 @@ func _validar_artes_liberadas(v: Variant) -> Array:
 func _validar_arte_id(v: Variant) -> String:
 	var id := str(v) if v is String else ""
 	return id if not academia.arte(id).is_empty() else ""
+
+
+# Fase 5.4: último nó comprado (centro do mapa). Id desconhecido ou não comprado volta para o último de skill_nodes ("" se não há).
+func _validar_ultimo_no(v: Variant, nos: Array) -> String:
+	var id := str(v) if v is String else ""
+	if id != "" and id in nos:
+		return id
+	return str(nos[-1]) if not nos.is_empty() else ""
+
+
+# Fase 5.4: career.active_nodes. Ausente (save antigo) = cópia de skill_nodes; senão só ids conhecidos, comprados e sem repetição.
+func _validar_ativos(v: Variant) -> Array:
+	var nos: Array = permanente.get("skill_nodes", [])
+	if not (v is Array):
+		return nos.duplicate()
+	var r: Array = []
+	for x in v:
+		var id := str(x)
+		if id in nos and not (id in r) and not lutas.no_da_arvore(id).is_empty():
+			r.append(id)
+	return r

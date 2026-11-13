@@ -1,5 +1,5 @@
 {
-	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último). Fase 5.2 (Diretor de Arte): event_golden_crew, icon_crew_click, caixa da L3/L4 (gerador no scratchpad do Diretor de Arte; ver direcao-visual.md §19). Fase 5.3 (Diretor de Arte): calendário da campanha (folhinha, plaquinhas, faixas de aviso, selo do dia, PASSAR O POSTO, campanha completa) e retrato da luta por luva (direcao-visual.md §20).",
+	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último). Fase 5.2 (Diretor de Arte): event_golden_crew, icon_crew_click, caixa da L3/L4 (gerador no scratchpad do Diretor de Arte; ver direcao-visual.md §19). Fase 5.3 (Diretor de Arte): calendário da campanha (folhinha, plaquinhas, faixas de aviso, selo do dia, PASSAR O POSTO, campanha completa) e retrato da luta por luva (direcao-visual.md §20). Fase 5.4 (Diretor de Arte): mapa da árvore grande (materiais por região, neblina, nós pequeno/marco/ligação por estado, linhas, botão da sala, revelação) — direcao-visual.md §21.",
 	"_como_usar": "Sprite2D/AnimatedSprite2D com centered=false e offset = -pivot; position = posição na sala (coordenadas da tela base 640x360). Ordem de desenho: pelo y dos pés (sort_y = pos.y, ou pos.y + sort_y_offset nos sacos pendurados). Nunca escalar por fator não-inteiro nem rodar.",
 	"base_resolution": [
 		640,
@@ -1624,7 +1624,7 @@
 					-1,
 					0
 				],
-				"wobble_fps": 12,
+				"wobble_fps": 12.0,
 				"every_s": 4,
 				"glint": "fx_box_glint",
 				"glint_offset": {
@@ -1649,7 +1649,7 @@
 						-1,
 						0
 					],
-					"shake_fps": 30,
+					"shake_fps": 30.0,
 					"fx": "fx_box_chips_1",
 					"sfx_sugerido": "block.wav"
 				},
@@ -1663,7 +1663,7 @@
 						1,
 						0
 					],
-					"shake_fps": 30,
+					"shake_fps": 30.0,
 					"fx": "fx_box_chips_2",
 					"sfx_sugerido": "hit_heavy.wav"
 				},
@@ -1677,7 +1677,7 @@
 						2,
 						0
 					],
-					"shake_fps": 30,
+					"shake_fps": 30.0,
 					"fx": "fx_box_burst",
 					"screen_shake_px": 1,
 					"sfx_sugerido": "punch_crit.wav + buy.wav"
@@ -1935,7 +1935,432 @@
 			"text_color_disabled": "g1",
 			"note": "PASSAR O POSTO na prévia do dia: botão de contorno (ação secundária, menos peso que o LUTAR! vermelho), mesmo 9-slice dos botões da Fase 2. Na sala, fora do dia, o botão roxo de sempre (retire_button) só troca o texto; sugestão: trocar também o ícone para icon_pass_post."
 		},
-		"_nota_fase53_arte": "Fase 5.3 (Diretor de Arte): campaign_calendar, pass_post_button, player_portrait (retrato por luva)."
+		"_nota_fase53_arte": "Fase 5.3 (Diretor de Arte): campaign_calendar, pass_post_button, player_portrait (retrato por luva).",
+		"skill_map": {
+			"screen": {
+				"frame": "ui_map_frame",
+				"frame_rect": [
+					0,
+					0,
+					640,
+					360
+				],
+				"topbar": "ui_map_topbar",
+				"topbar_rect": [
+					5,
+					5,
+					630,
+					20
+				],
+				"viewport_rect": [
+					5,
+					26,
+					630,
+					329
+				],
+				"viewport_edge": "ui_map_viewport_edge",
+				"viewport_edge_rect": [
+					4,
+					25,
+					632,
+					331
+				],
+				"title_icon": "icon_skill_map",
+				"title_icon_pos": [
+					9,
+					7
+				],
+				"title_text_pos": [
+					29,
+					11
+				],
+				"title_color": "col_text_1",
+				"hint_text_pos": "título + 12 px (y 11)",
+				"hint_color": "col_text_2",
+				"legacy_icon": "icon_legacy_16",
+				"legacy_text_right": 610,
+				"legacy_text_y": 8,
+				"legacy_size": "txt_hero",
+				"legacy_color": "col_legacy",
+				"close": {
+					"normal": "ui_map_close_normal",
+					"hover": "ui_map_close_hover",
+					"pressed": "ui_map_close_pressed",
+					"pos": [
+						616,
+						7
+					]
+				},
+				"note": "Tela cheia por cima da sala (base 640x360). Moldura de madeira 9-slice, barra do topo com título, dica de navegação, Legado em txt_hero (o número herói desta tela) e o X. O mapa fica recortado em viewport_rect; a viewport_edge (9-slice de miolo vazio) vai por cima dele. Arrastar e roda do mouse movem a câmera em pixel inteiro; sem zoom. Esc e o X fecham."
+			},
+			"world": {
+				"cell": 8,
+				"region_radius": 44,
+				"tiles": {
+					"center": "map_tile_center",
+					"garage": "map_tile_garage",
+					"gym": "map_tile_gym",
+					"boxing": "map_tile_boxing",
+					"bjj": "map_tile_bjj",
+					"campaign": "map_tile_campaign",
+					"wall": "map_tile_wall"
+				},
+				"tile_size": 32,
+				"rule": "Fundo pintado UMA vez ao abrir (Image do tamanho do mundo): para cada célula de 8x8, procurar o nó mais perto até region_radius px. Nó de região -> ladrilho dela; nó de ligação -> xadrez das duas regiões do par (célula (cx+cy)%2); nó do centro -> map_tile_center; nada perto -> map_tile_wall. Copiar do ladrilho a área (x%32, y%32, 8, 8) para ele emendar. Região trancada (Academia antes de algum discípulo chegar lá; arte não liberada) conta como parede. Costura: 1 px ink na borda entre células de materiais diferentes (do lado que não é parede), 1 px de luz (rampa +1) logo abaixo da costura de cima e 1 px de sombra ink na parede embaixo do recorte. Referência em tools/art/make_sprites_fase54.gd: region_grid() e paint_regions().",
+				"spacing": "Distância mínima entre centros: 40 px (nó pequeno), 52 px (marco). Assim a etiqueta de preço e o anel não se tocam.",
+				"note": "Os materiais dizem a região sem texto: cortiça = centro (os 12 de sempre), concreto = Garagem, azulejo verde = Academia, lona vermelha = Boxe, tatame azul = Jiu-jitsu, feltro roxo = Campanha. A parede escura é o que sobra."
+			},
+			"fog": {
+				"tiles": {
+					"25": "map_fog_25",
+					"50": "map_fog_50",
+					"75": "map_fog_75",
+					"100": "map_fog_100"
+				},
+				"levels_by_distance": [
+					[
+						40,
+						0
+					],
+					[
+						48,
+						25
+					],
+					[
+						56,
+						50
+					],
+					[
+						64,
+						75
+					],
+					[
+						9999,
+						100
+					]
+				],
+				"rule": "Camada por cima do fundo e das linhas, por baixo dos nós. Para cada célula de 8x8: distância até o nó revelado (comprado ou à vista) mais perto -> nível pela tabela (menor que 40 px = sem neblina). Desenhar a área (x%32, y%32, 8, 8) do ladrilho do nível. Nó escondido não é desenhado: a neblina e a linha apagada que entra nela já dizem 'tem mais coisa ali'.",
+				"reveal_anim": "Quando um nó fica à vista: as células em volta descem um nível a cada 0,1 s (100 -> 75 -> 50 -> 25 -> 0 = 0,4 s), sem alpha. Junto, fx_map_reveal toca uma vez no centro do nó (6 quadros a 12 fps = 0,5 s) e o nó aparece no quadro 2 do fx, já no estado certo.",
+				"note": "Neblina = ink com nuvens d1/d2, em dither Bayer (nada de transparência parcial)."
+			},
+			"node": {
+				"small": {
+					"size": [
+						24,
+						24
+					],
+					"pivot": [
+						12,
+						12
+					],
+					"icon_offset": [
+						-8,
+						-8
+					],
+					"owned_by_tone": {
+						"red": "map_node_s_owned_red",
+						"gold": "map_node_s_owned_gold",
+						"purple": "map_node_s_owned_purple",
+						"chalk": "map_node_s_owned_chalk",
+						"green": "map_node_s_owned_green",
+						"blue": "map_node_s_owned_blue"
+					},
+					"buyable": "map_node_s_buyable",
+					"missing": "map_node_s_missing",
+					"hidden": "map_node_s_hidden",
+					"hover": "map_node_s_hover"
+				},
+				"big": {
+					"size": [
+						38,
+						38
+					],
+					"pivot": [
+						19,
+						19
+					],
+					"icon_offset": [
+						-8,
+						-8
+					],
+					"owned_by_tone": {
+						"red": "map_node_b_owned_red",
+						"gold": "map_node_b_owned_gold",
+						"purple": "map_node_b_owned_purple",
+						"chalk": "map_node_b_owned_chalk",
+						"green": "map_node_b_owned_green",
+						"blue": "map_node_b_owned_blue"
+					},
+					"buyable": "map_node_b_buyable",
+					"missing": "map_node_b_missing",
+					"hidden": "map_node_b_hidden",
+					"hover": "map_node_b_hover"
+				},
+				"link": {
+					"size": [
+						28,
+						24
+					],
+					"pivot": [
+						14,
+						12
+					],
+					"icon_offset": [
+						-8,
+						-8
+					],
+					"owned_by_pair": "map_node_link_owned_<a>_<b> (a e b na ordem de region_order)",
+					"buyable": "map_node_l_buyable",
+					"missing": "map_node_l_missing",
+					"hidden": "map_node_l_hidden",
+					"hover": "map_node_l_hover"
+				},
+				"region_order": [
+					"garage",
+					"gym",
+					"boxing",
+					"bjj",
+					"campaign"
+				],
+				"tone_by_branch_or_region": {
+					"body": "red",
+					"career": "gold",
+					"style": "purple",
+					"garage": "chalk",
+					"gym": "green",
+					"boxing": "red",
+					"bjj": "blue",
+					"campaign": "gold"
+				},
+				"veil": "map_node_veil",
+				"veil_offset": [
+					-8,
+					-8
+				],
+				"buyable_fps": 2.0,
+				"rule": "Ordem: frame do estado -> ícone 16x16 no centro (pivô + icon_offset) -> se 'missing', map_node_veil por cima do ícone -> hover por cima de tudo. Comprado = anel na cor do ramo/região + tachinha dourada no canto (pregado no quadro). À vista e o Legado paga = anel ouro claro piscando 2 quadros a 2 fps (col_buyable). À vista sem Legado = anel escuro, ícone com véu pontilhado; o preço fica em col_text_2. Escondido = não desenhar (o 'hidden' com '?' é só o quadro 0 da revelação e a opção de 'espiar' se o Designer quiser).",
+				"price_tag": {
+					"ok": "ui_map_price_ok",
+					"missing": "ui_map_price_missing",
+					"height": 11,
+					"gap_below_node": 1,
+					"icon": "icon_legacy",
+					"icon_offset": [
+						2,
+						1
+					],
+					"text_offset": [
+						12,
+						2
+					],
+					"text_color_ok": "col_legacy",
+					"text_color_missing": "col_text_2",
+					"note": "Etiqueta 9-slice centrada embaixo de cada nó À VISTA (não nos comprados). Largura = 12 + texto + 5."
+				}
+			},
+			"lines": {
+				"lit": {
+					"when": "os dois nós comprados",
+					"core": [
+						"p2",
+						"p1"
+					],
+					"shadow": "ink",
+					"spark": "white",
+					"spark_every": 8,
+					"spark_fps": 8.0
+				},
+				"open": {
+					"when": "os dois à vista ou comprados (pelo menos um ainda não comprado)",
+					"core": [
+						"g2"
+					],
+					"shadow": "ink"
+				},
+				"dim": {
+					"when": "um lado escondido",
+					"core": [
+						"g0"
+					],
+					"dash": [
+						2,
+						2
+					],
+					"under_fog": true
+				},
+				"rule": "Linha reta de centro a centro, em pixels de Bresenham (draw_rect 1x1 por ponto; nada de Line2D com antialias nem textura girada). Se |dx| >= |dy| a 2ª camada vai 1 px para baixo, senão 1 px para a direita. Acesa: p2 na linha, p1 na 2ª camada, ink na 3ª, um pixel branco a cada 8 que anda 1 px por quadro a 8 fps (o 'Legado correndo'). À vista: g2 + sombra ink. Apagada: g0 tracejada 2/2, sem sombra, desenhada ANTES da neblina (some aos poucos dentro dela). Desenhar as linhas antes dos nós.",
+				"reference": "tools/art/make_sprites_fase54.gd: draw_link()"
+			},
+			"region_label": {
+				"sprites": {
+					"garage": "ui_map_region_label_garage",
+					"gym": "ui_map_region_label_gym",
+					"boxing": "ui_map_region_label_boxing",
+					"bjj": "ui_map_region_label_bjj",
+					"campaign": "ui_map_region_label_campaign"
+				},
+				"height": 13,
+				"icon": "icon_region_<região>_9",
+				"icon_offset": [
+					5,
+					2
+				],
+				"text_offset": [
+					17,
+					3
+				],
+				"text_color": "col_text_1",
+				"rule": "Aparece quando o 1º nó da região fica à vista, no mundo (anda com o mapa), uns 30-40 px acima do 1º nó da região, sem cobrir nó. Largura = 21 + texto. Sem plaquinha para o centro (os 12 já se explicam pela cortiça)."
+			},
+			"region_icons": {
+				"garage": "icon_region_garage",
+				"gym": "icon_region_gym",
+				"boxing": "icon_region_boxing",
+				"bjj": "icon_region_bjj",
+				"campaign": "icon_region_campaign"
+			},
+			"card": {
+				"panel": "ui_map_card",
+				"next_strip": "ui_map_card_next",
+				"next_icon": "icon_calendar",
+				"next_text_color": "col_text_1",
+				"lines": [
+					"nome col_text_1",
+					"efeito na cor do tipo (Treino gr3, dinheiro y1, Fama f2, Legado p2, arte p1)",
+					"preço: icon_legacy + número col_legacy (col_text_2 sem saldo)"
+				],
+				"rule": "Cartão ao passar o mouse: 9-slice d1; a faixa roxa de baixo (1 px dentro da borda) diz 'VALE NA PRÓXIMA CAMPANHA' com a folhinha. Abre à direita do nó (ou à esquerda se não couber), sempre inteiro dentro da viewport_rect."
+			},
+			"icon_by_effect": {
+				"click_bonus": "skill_body_jab",
+				"passive_bonus": "skill_body_crew",
+				"money_bonus": "skill_career_purse",
+				"fame_bonus": "skill_career_crowd",
+				"preview_percent": "skill_career_scouting",
+				"defeat_share_bonus": "skill_career_good_loser",
+				"metronome_start": "skill_body_muscle_memory",
+				"art_rule_bonus": {
+					"boxing": "skill_style_boxing",
+					"bjj": "skill_style_bjj"
+				},
+				"art_fight_bonus": {
+					"boxing": "skill_counter_punch",
+					"bjj": "skill_firm_base"
+				},
+				"legacy_bonus": "skill_coach_notebook",
+				"rope_installed": "skill_rope_ready",
+				"prep_days_bonus": "skill_prep_day",
+				"crew_click_bonus": "skill_shout_loud",
+				"start_generator": "skill_crew_regulars",
+				"gym_training_bonus": "skill_standing_fan",
+				"equipment_bonus": "ícone da LOJA do aparelho (icon_bag, icon_rope, icon_treadmill, icon_speed_bag, icon_grappling_dummy)",
+				"_nota": "Reserva por tipo de efeito (objeto = escolher pela requires_art do nó). Tipos com os nomes reais do skill_tree.json v2. Quem manda é icon_by_node."
+			},
+			"icon_by_node": {
+				"body_jab": "skill_body_jab",
+				"body_muscle_memory": "skill_body_muscle_memory",
+				"body_heavy_hands": "skill_body_heavy_hands",
+				"body_crew": "skill_body_crew",
+				"body_crew_2": "skill_body_crew_2",
+				"career_purse": "skill_career_purse",
+				"career_scouting": "skill_career_scouting",
+				"career_purse_2": "skill_career_purse_2",
+				"career_crowd": "skill_career_crowd",
+				"career_good_loser": "skill_career_good_loser",
+				"style_boxing": "skill_style_boxing",
+				"style_bjj": "skill_style_bjj",
+				"gar_tape": "skill_body_jab",
+				"gar_radio": "skill_body_crew",
+				"gar_rope": "skill_rope_ready",
+				"gar_metro": "skill_home_metronome",
+				"gar_crew_start": "skill_crew_regulars",
+				"gar_shoes": "skill_body_jab",
+				"camp_poster": "skill_career_purse",
+				"camp_sponsor": "skill_career_crowd",
+				"camp_diary": "skill_coach_notebook",
+				"camp_extra_day": "skill_prep_day",
+				"gym_membership": "skill_career_purse",
+				"gym_mirror": "skill_body_jab",
+				"gym_league": "skill_career_crowd",
+				"gym_fan": "skill_standing_fan",
+				"gym_partner": "skill_body_crew",
+				"box_wraps": "skill_style_boxing",
+				"box_counter": "skill_counter_punch",
+				"box_footwork": "skill_body_jab",
+				"box_bell": "skill_style_boxing",
+				"bjj_knot": "skill_style_bjj",
+				"bjj_guard": "skill_firm_base",
+				"bjj_breath": "skill_body_crew",
+				"bjj_patience": "skill_style_bjj",
+				"link_shout": "skill_shout_loud",
+				"link_mat": "skill_body_crew",
+				"link_mirror": "skill_body_jab",
+				"link_ring": "skill_career_purse"
+			},
+			"icon_rule": "Ícone 16x16 de um nó do mapa: icon_by_node[id] -> senão icon_by_effect[effect.type] (objeto: pela requires_art) -> senão o campo icon do nó. icon_by_node cobre os 39 nós do skill_tree.json v2: os 12 do centro com os skill_body_*/skill_career_*/skill_style_* de sempre, os pequenos novos com o ícone do tipo, os 6 marcos da 2ª passada com ícone próprio e as ligações com o ícone do tipo dentro da peça de ligação. O campo icon do JSON ainda aponta para icon_region_*/icon_legacy_16 nesses 6 marcos (dado do Designer); pela regra acima o manifest ganha.",
+			"milestone_icons": {
+				"gar_metro": "skill_home_metronome",
+				"gar_crew_start": "skill_crew_regulars",
+				"camp_diary": "skill_coach_notebook",
+				"gym_fan": "skill_standing_fan",
+				"box_counter": "skill_counter_punch",
+				"bjj_guard": "skill_firm_base"
+			},
+			"map_check": {
+				"pairs": 741,
+				"min_px": 56.6,
+				"min_pair": [
+					"body_heavy_hands",
+					"gar_rope"
+				],
+				"spacing_fails": [],
+				"line_under_node": [
+					"linha gar_radio-link_mat passa a 11 px do centro de body_crew_2",
+					"linha gar_rope-link_shout passa a 11 px do centro de body_heavy_hands"
+				],
+				"line_under_ids": [
+					"body_crew_2",
+					"body_heavy_hands"
+				],
+				"label_overlaps": [],
+				"world_px": [
+					928,
+					768
+				]
+			},
+			"room_button": {
+				"normal": "ui_map_button_normal",
+				"hover": "ui_map_button_hover",
+				"pressed": "ui_map_button_pressed",
+				"glow": "ui_map_button_glow",
+				"glow_fps": 2.0,
+				"rect": [
+					132,
+					22,
+					22,
+					22
+				],
+				"tooltip": "dica padrão (d1): 'ÁRVORE' + 2ª linha col_text_2 com quantos nós dá para comprar",
+				"note": "Canto de cima à esquerda da sala, na parede lateral (garagem e academia), longe do alvo (x 281..362) e das faixas de aviso (centradas em x 320). Sem compra possível: normal, sem animação. Com nó à vista que o Legado paga: alterna glow 0/1 a 2 fps (borda ouro, faísca no canto). Sem alpha, sem tremer, sem som. Plano B se o dono não achar o botão: mesma peça com texto 'ÁRVORE' no fim da coluna da esquerda, (7,264) 116x22."
+			},
+			"fx": {
+				"reveal": {
+					"sprite": "fx_map_reveal",
+					"fps": 12.0,
+					"loop": false,
+					"pivot": "centro do nó"
+				},
+				"buy": {
+					"sprite": "fx_map_buy",
+					"fps": 12.0,
+					"loop": false,
+					"pivot": "centro do nó",
+					"order": "compra: fx_map_buy no nó (0,42 s) e o anel troca para comprado no quadro 1; no quadro 2 começam as revelações dos vizinhos (fx_map_reveal + neblina recuando), todas juntas. Total até o último vizinho assentar: ~0,6 s; cada revelação dura 0,5 s."
+				}
+			},
+			"_nota": "Fase 5.4 (Diretor de Arte), direcao-visual.md §21. Posições em 1x (base 640x360). Posições, vizinhos e ids são do Designer (data/skill_tree.json, map.unit_px). Mockups: fase54_mapa_x2.png (peças) e fase54_mapa_real_x2.png (mapa real, 2ª passada)."
+		},
+		"_nota_fase54_arte": "Fase 5.4 (Diretor de Arte): skill_map (mapa da árvore grande). direcao-visual.md §21."
 	},
 	"palette_swap_glove": {
 		"r0": "#5a1a22",
@@ -23420,6 +23845,1323 @@
 			],
 			"facing": "direita",
 			"note": "Retrato 32x32 do jogador com a luva glove_l4 (Fase 5.3, B1). Mesmo recorte, fundo e virada do portrait_player; escolha pela luva equipada (by_data_id.player_portrait)."
+		},
+		"map_tile_wall": {
+			"file": "res://assets/sprites/ui/map/map_tile_wall.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Parede escura da escola (reboco d1): o que sobra entre as regiões. Ver by_data_id.skill_map.world."
+		},
+		"map_tile_center": {
+			"file": "res://assets/sprites/ui/map/map_tile_center.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Cortiça (br1/br2/br0): o quadro do centro, onde ficam os 12 nós de sempre. Ver by_data_id.skill_map.world."
+		},
+		"map_tile_garage": {
+			"file": "res://assets/sprites/ui/map/map_tile_garage.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Concreto em blocos 16x8 (g0/g1/d2): região Garagem. Ver by_data_id.skill_map.world."
+		},
+		"map_tile_gym": {
+			"file": "res://assets/sprites/ui/map/map_tile_gym.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Azulejo verde 8x8 (gr1/gr0/gr2), o barrado da academia: região Academia. Ver by_data_id.skill_map.world."
+		},
+		"map_tile_boxing": {
+			"file": "res://assets/sprites/ui/map/map_tile_boxing.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Lona do ringue (r0/r1): região Boxe. Ver by_data_id.skill_map.world."
+		},
+		"map_tile_bjj": {
+			"file": "res://assets/sprites/ui/map/map_tile_bjj.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Tatame azul em placas 16x16 (b1/b0/b2): região Jiu-jitsu. Ver by_data_id.skill_map.world."
+		},
+		"map_tile_campaign": {
+			"file": "res://assets/sprites/ui/map/map_tile_campaign.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Ladrilho 32x32 que emenda nos 4 lados (Fase 5.4). Feltro roxo do mural das campanhas (p0/p1): região Campanha. Ver by_data_id.skill_map.world."
+		},
+		"map_fog_25": {
+			"file": "res://assets/sprites/ui/map/map_fog_25.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Neblina 25% (Bayer 4x4, ink com nuvens d1/d2), ladrilho 32x32. Ver by_data_id.skill_map.fog."
+		},
+		"map_fog_50": {
+			"file": "res://assets/sprites/ui/map/map_fog_50.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Neblina 50% (Bayer 4x4, ink com nuvens d1/d2), ladrilho 32x32. Ver by_data_id.skill_map.fog."
+		},
+		"map_fog_75": {
+			"file": "res://assets/sprites/ui/map/map_fog_75.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Neblina 75% (Bayer 4x4, ink com nuvens d1/d2), ladrilho 32x32. Ver by_data_id.skill_map.fog."
+		},
+		"map_fog_100": {
+			"file": "res://assets/sprites/ui/map/map_fog_100.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"tileable": true,
+			"note": "Neblina 100% (Bayer 4x4, ink com nuvens d1/d2), ladrilho 32x32. Ver by_data_id.skill_map.fog."
+		},
+		"map_node_s_owned_red": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_red.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno COMPRADO, anel red (r2/r3), miolo d2, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_b_owned_red": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_red.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO comprado, anel duplo red com 4 pontas, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_s_owned_gold": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_gold.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno COMPRADO, anel gold (y0/y1), miolo d2, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_b_owned_gold": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_gold.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO comprado, anel duplo gold com 4 pontas, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_s_owned_purple": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_purple.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno COMPRADO, anel purple (p1/p2), miolo d2, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_b_owned_purple": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_purple.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO comprado, anel duplo purple com 4 pontas, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_s_owned_chalk": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_chalk.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno COMPRADO, anel chalk (g3/white), miolo d2, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_b_owned_chalk": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_chalk.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO comprado, anel duplo chalk com 4 pontas, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_s_owned_green": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_green.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno COMPRADO, anel green (gr2/gr3), miolo d2, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_b_owned_green": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_green.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO comprado, anel duplo green com 4 pontas, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_s_owned_blue": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_blue.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno COMPRADO, anel blue (b2/b3), miolo d2, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_b_owned_blue": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_blue.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO comprado, anel duplo blue com 4 pontas, tachinha dourada. Ícone 16x16 no centro."
+		},
+		"map_node_s_buyable": {
+			"file": "res://assets/sprites/ui/map/map_node_s_buyable.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 2,
+			"fps": 2.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno À VISTA que o Legado paga: anel ouro claro (col_buyable), 2 quadros a 2 fps."
+		},
+		"map_node_s_missing": {
+			"file": "res://assets/sprites/ui/map/map_node_s_missing.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno À VISTA sem Legado: anel escuro, miolo ink. Pôr map_node_veil por cima do ícone."
+		},
+		"map_node_s_hidden": {
+			"file": "res://assets/sprites/ui/map/map_node_s_hidden.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Nó pequeno ESCONDIDO ('?'): quadro de partida da revelação. No mapa parado o escondido não é desenhado."
+		},
+		"map_node_s_hover": {
+			"file": "res://assets/sprites/ui/map/map_node_s_hover.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Contorno branco do nó pequeno (mouse em cima), por cima do frame."
+		},
+		"map_node_b_buyable": {
+			"file": "res://assets/sprites/ui/map/map_node_b_buyable.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 2,
+			"fps": 2.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO à vista que o Legado paga: 2 quadros a 2 fps."
+		},
+		"map_node_b_missing": {
+			"file": "res://assets/sprites/ui/map/map_node_b_missing.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO à vista sem Legado. map_node_veil por cima do ícone."
+		},
+		"map_node_b_hidden": {
+			"file": "res://assets/sprites/ui/map/map_node_b_hidden.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "MARCO escondido ('?'), quadro de partida da revelação."
+		},
+		"map_node_b_hover": {
+			"file": "res://assets/sprites/ui/map/map_node_b_hover.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "Contorno branco do marco (mouse em cima)."
+		},
+		"map_node_l_buyable": {
+			"file": "res://assets/sprites/ui/map/map_node_l_buyable.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 2,
+			"fps": 2.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Nó de LIGAÇÃO à vista que o Legado paga (2 quadros a 2 fps). Os elos dos lados dizem 'liga duas regiões'."
+		},
+		"map_node_l_missing": {
+			"file": "res://assets/sprites/ui/map/map_node_l_missing.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Nó de ligação à vista sem Legado. map_node_veil por cima do ícone."
+		},
+		"map_node_l_hidden": {
+			"file": "res://assets/sprites/ui/map/map_node_l_hidden.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação escondida ('?'), quadro de partida da revelação."
+		},
+		"map_node_l_hover": {
+			"file": "res://assets/sprites/ui/map/map_node_l_hover.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Contorno branco da ligação (mouse em cima)."
+		},
+		"map_node_link_owned_garage_gym": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_garage_gym.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA garage + gym: anel cortado na diagonal (metade de cima/esquerda garage, de baixo/direita gym), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_garage_boxing": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_garage_boxing.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA garage + boxing: anel cortado na diagonal (metade de cima/esquerda garage, de baixo/direita boxing), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_garage_bjj": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_garage_bjj.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA garage + bjj: anel cortado na diagonal (metade de cima/esquerda garage, de baixo/direita bjj), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_garage_campaign": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_garage_campaign.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA garage + campaign: anel cortado na diagonal (metade de cima/esquerda garage, de baixo/direita campaign), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_gym_boxing": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_gym_boxing.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA gym + boxing: anel cortado na diagonal (metade de cima/esquerda gym, de baixo/direita boxing), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_gym_bjj": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_gym_bjj.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA gym + bjj: anel cortado na diagonal (metade de cima/esquerda gym, de baixo/direita bjj), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_gym_campaign": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_gym_campaign.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA gym + campaign: anel cortado na diagonal (metade de cima/esquerda gym, de baixo/direita campaign), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_boxing_bjj": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_boxing_bjj.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA boxing + bjj: anel cortado na diagonal (metade de cima/esquerda boxing, de baixo/direita bjj), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_boxing_campaign": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_boxing_campaign.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA boxing + campaign: anel cortado na diagonal (metade de cima/esquerda boxing, de baixo/direita campaign), elos nas duas cores, tachinha."
+		},
+		"map_node_link_owned_bjj_campaign": {
+			"file": "res://assets/sprites/ui/map/map_node_link_owned_bjj_campaign.png",
+			"frame_size": [
+				28,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				14,
+				12
+			],
+			"note": "Ligação COMPRADA bjj + campaign: anel cortado na diagonal (metade de cima/esquerda bjj, de baixo/direita campaign), elos nas duas cores, tachinha."
+		},
+		"map_node_veil": {
+			"file": "res://assets/sprites/ui/map/map_node_veil.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				8,
+				8
+			],
+			"note": "Véu pontilhado (37% ink, Bayer 6/16) por cima do ícone do nó sem Legado. Pivô no centro do ícone."
+		},
+		"ui_map_frame": {
+			"file": "res://assets/sprites/ui/map/ui_map_frame.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 5,
+				"right": 5,
+				"bottom": 5
+			},
+			"note": "Moldura 9-slice do mapa em tela cheia (640x360): quadro de madeira com pregos, miolo vazio. Por cima do mapa."
+		},
+		"ui_map_topbar": {
+			"file": "res://assets/sprites/ui/map/ui_map_topbar.png",
+			"frame_size": [
+				16,
+				20
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 1,
+				"top": 1,
+				"right": 1,
+				"bottom": 2
+			},
+			"note": "Barra do topo do mapa (9-slice, 630x20 em (5,5)): título, dica de navegação, Legado em txt_hero e o X."
+		},
+		"ui_map_viewport_edge": {
+			"file": "res://assets/sprites/ui/map/ui_map_viewport_edge.png",
+			"frame_size": [
+				8,
+				8
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 1,
+				"bottom": 1
+			},
+			"note": "Borda da janela do mapa (9-slice, miolo vazio): 1 px ink + sombra pontilhada em cima e à esquerda (o mapa parece rebaixado dentro do quadro)."
+		},
+		"ui_map_close_normal": {
+			"file": "res://assets/sprites/ui/map/ui_map_close_normal.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão X 16x16 do mapa (normal). Em (616,7)."
+		},
+		"ui_map_close_hover": {
+			"file": "res://assets/sprites/ui/map/ui_map_close_hover.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão X 16x16 do mapa (hover). Em (616,7)."
+		},
+		"ui_map_close_pressed": {
+			"file": "res://assets/sprites/ui/map/ui_map_close_pressed.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão X 16x16 do mapa (pressed). Em (616,7)."
+		},
+		"ui_map_region_label_garage": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_garage.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Plaquinha 9-slice do nome da região garage (13 px de altura), faixa à esquerda na cor do anel. Ícone icon_region_garage_9 em (5,2), texto 1x col_text_1 em (17,3)."
+		},
+		"ui_map_region_label_gym": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_gym.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Plaquinha 9-slice do nome da região gym (13 px de altura), faixa à esquerda na cor do anel. Ícone icon_region_gym_9 em (5,2), texto 1x col_text_1 em (17,3)."
+		},
+		"ui_map_region_label_boxing": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_boxing.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Plaquinha 9-slice do nome da região boxing (13 px de altura), faixa à esquerda na cor do anel. Ícone icon_region_boxing_9 em (5,2), texto 1x col_text_1 em (17,3)."
+		},
+		"ui_map_region_label_bjj": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_bjj.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Plaquinha 9-slice do nome da região bjj (13 px de altura), faixa à esquerda na cor do anel. Ícone icon_region_bjj_9 em (5,2), texto 1x col_text_1 em (17,3)."
+		},
+		"ui_map_region_label_campaign": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_campaign.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Plaquinha 9-slice do nome da região campaign (13 px de altura), faixa à esquerda na cor do anel. Ícone icon_region_campaign_9 em (5,2), texto 1x col_text_1 em (17,3)."
+		},
+		"ui_map_price_ok": {
+			"file": "res://assets/sprites/ui/map/ui_map_price_ok.png",
+			"frame_size": [
+				12,
+				11
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 1
+			},
+			"note": "Etiqueta de preço embaixo do nó à vista que o Legado paga: fundo p0, número col_legacy (p2), icon_legacy em (2,1)."
+		},
+		"ui_map_price_missing": {
+			"file": "res://assets/sprites/ui/map/ui_map_price_missing.png",
+			"frame_size": [
+				12,
+				11
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 1
+			},
+			"note": "Etiqueta de preço do nó à vista sem Legado: fundo d1, número col_text_2 (nunca vermelho)."
+		},
+		"ui_map_card": {
+			"file": "res://assets/sprites/ui/map/ui_map_card.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Cartão do nó (9-slice d1, igual à dica). Linhas: nome, efeito, preço; embaixo a faixa ui_map_card_next."
+		},
+		"ui_map_card_next": {
+			"file": "res://assets/sprites/ui/map/ui_map_card_next.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 1,
+				"top": 1,
+				"right": 1,
+				"bottom": 1
+			},
+			"note": "Faixa roxa 'VALE NA PRÓXIMA CAMPANHA' no pé do cartão: icon_calendar em (3,1), texto 1x col_text_1 em (17,3)."
+		},
+		"fx_map_reveal": {
+			"file": "res://assets/sprites/ui/map/fx_map_reveal.png",
+			"frame_size": [
+				40,
+				40
+			],
+			"frames": 6,
+			"fps": 12.0,
+			"pivot": [
+				20,
+				20
+			],
+			"loop": false,
+			"note": "Revelação de um nó (6 quadros, 12 fps = 0,5 s): a nuvem com '?' se abre em fiapos e sobram 4 faíscas. Pivô no centro do nó; o nó aparece por baixo a partir do quadro 2."
+		},
+		"fx_map_buy": {
+			"file": "res://assets/sprites/ui/map/fx_map_buy.png",
+			"frame_size": [
+				40,
+				40
+			],
+			"frames": 5,
+			"fps": 12.0,
+			"pivot": [
+				20,
+				20
+			],
+			"loop": false,
+			"note": "Compra de um nó (5 quadros, 12 fps = 0,42 s): clarão branco no formato do nó, anel ouro abrindo, faíscas. Pivô no centro do nó."
+		},
+		"ui_map_button_normal": {
+			"file": "res://assets/sprites/ui/ui_map_button_normal.png",
+			"frame_size": [
+				22,
+				22
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão da árvore na sala (22x22, normal), em (132,22). Ver by_data_id.skill_map.room_button."
+		},
+		"ui_map_button_hover": {
+			"file": "res://assets/sprites/ui/ui_map_button_hover.png",
+			"frame_size": [
+				22,
+				22
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão da árvore na sala (22x22, hover), em (132,22). Ver by_data_id.skill_map.room_button."
+		},
+		"ui_map_button_pressed": {
+			"file": "res://assets/sprites/ui/ui_map_button_pressed.png",
+			"frame_size": [
+				22,
+				22
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão da árvore na sala (22x22, pressed), em (132,22). Ver by_data_id.skill_map.room_button."
+		},
+		"ui_map_button_glow": {
+			"file": "res://assets/sprites/ui/ui_map_button_glow.png",
+			"frame_size": [
+				22,
+				22
+			],
+			"frames": 2,
+			"fps": 2.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Botão da árvore com BRILHO (há nó à vista que o Legado paga): borda ouro y2/y1 e faísca trocando de canto, 2 quadros a 2 fps. Mesmo lugar do normal."
+		},
+		"icon_skill_map": {
+			"file": "res://assets/sprites/ui/icon_skill_map.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 da árvore/mapa: quadro de cortiça com 3 tachinhas ligadas por barbante. Botão da sala, título do mapa, botão ÁRVORE da tela de fim."
+		},
+		"icon_skill_map_9": {
+			"file": "res://assets/sprites/ui/icon_skill_map_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 9x9 da árvore/mapa, em linha com texto 1x (dicas)."
+		},
+		"icon_region_garage": {
+			"file": "res://assets/sprites/ui/icon_region_garage.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 da região garage do mapa. Também é o ícone provisório dos marcos da região até a 2ª passada."
+		},
+		"icon_region_garage_9": {
+			"file": "res://assets/sprites/ui/icon_region_garage_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 9x9 da região garage (plaquinha do nome da região)."
+		},
+		"icon_region_gym": {
+			"file": "res://assets/sprites/ui/icon_region_gym.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 da região gym do mapa. Também é o ícone provisório dos marcos da região até a 2ª passada."
+		},
+		"icon_region_gym_9": {
+			"file": "res://assets/sprites/ui/icon_region_gym_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 9x9 da região gym (plaquinha do nome da região)."
+		},
+		"icon_region_boxing": {
+			"file": "res://assets/sprites/ui/icon_region_boxing.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 da região boxing do mapa. Também é o ícone provisório dos marcos da região até a 2ª passada."
+		},
+		"icon_region_boxing_9": {
+			"file": "res://assets/sprites/ui/icon_region_boxing_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 9x9 da região boxing (plaquinha do nome da região)."
+		},
+		"icon_region_bjj": {
+			"file": "res://assets/sprites/ui/icon_region_bjj.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 da região bjj do mapa. Também é o ícone provisório dos marcos da região até a 2ª passada."
+		},
+		"icon_region_bjj_9": {
+			"file": "res://assets/sprites/ui/icon_region_bjj_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 9x9 da região bjj (plaquinha do nome da região)."
+		},
+		"icon_region_campaign": {
+			"file": "res://assets/sprites/ui/icon_region_campaign.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 da região campaign do mapa. Também é o ícone provisório dos marcos da região até a 2ª passada."
+		},
+		"icon_region_campaign_9": {
+			"file": "res://assets/sprites/ui/icon_region_campaign_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 9x9 da região campaign (plaquinha do nome da região)."
+		},
+		"skill_rope_ready": {
+			"file": "res://assets/sprites/ui/skill_rope_ready.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 do nó 'Corda montada': a corda já pendurada no prego, com brilho de pronta."
+		},
+		"skill_prep_day": {
+			"file": "res://assets/sprites/ui/skill_prep_day.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 do nó '+1 dia de preparo': folhinha com '+1'."
+		},
+		"skill_shout_loud": {
+			"file": "res://assets/sprites/ui/skill_shout_loud.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 do nó 'Grito mais alto': o megafone verde do Grito, maior e com 3 ondas."
+		},
+		"skill_home_metronome": {
+			"file": "res://assets/sprites/ui/skill_home_metronome.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de MARCO (Fase 5.4, 2ª passada). gar_metro 'Pêndulo de casa': metrônomo de madeira em cima de um tijolo. Dentro da peça 38x38 do marco (pivô 19,19 + icon_offset -8,-8)."
+		},
+		"skill_crew_regulars": {
+			"file": "res://assets/sprites/ui/skill_crew_regulars.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de MARCO (Fase 5.4, 2ª passada). gar_crew_start 'Turma de sempre': três chinelos (azul, verde, vermelho) na porta da garagem. Dentro da peça 38x38 do marco (pivô 19,19 + icon_offset -8,-8)."
+		},
+		"skill_coach_notebook": {
+			"file": "res://assets/sprites/ui/skill_coach_notebook.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de MARCO (Fase 5.4, 2ª passada). camp_diary 'Caderno do velho': caderno de capa dura roxa com elástico e fitinha. Dentro da peça 38x38 do marco (pivô 19,19 + icon_offset -8,-8)."
+		},
+		"skill_standing_fan": {
+			"file": "res://assets/sprites/ui/skill_standing_fan.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de MARCO (Fase 5.4, 2ª passada). gym_fan 'Ventilador novo': ventilador de coluna com grade e pás. Dentro da peça 38x38 do marco (pivô 19,19 + icon_offset -8,-8)."
+		},
+		"skill_counter_punch": {
+			"file": "res://assets/sprites/ui/skill_counter_punch.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de MARCO (Fase 5.4, 2ª passada). box_counter 'Contragolpe': luva vermelha com seta curva voltando. Dentro da peça 38x38 do marco (pivô 19,19 + icon_offset -8,-8)."
+		},
+		"skill_firm_base": {
+			"file": "res://assets/sprites/ui/skill_firm_base.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de MARCO (Fase 5.4, 2ª passada). bjj_guard 'Base firme': pernas de kimono em base larga, pés firmes no tatame. Dentro da peça 38x38 do marco (pivô 19,19 + icon_offset -8,-8)."
 		}
 	},
 	"fight_layout": {

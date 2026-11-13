@@ -19,7 +19,7 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 9
+const VERSAO_ATUAL := 10
 # Fator de conversão do Legado na migração v3 -> v4 (reescala do design; é formato, não balanceamento).
 const ESCALA_LEGADO_V4 := 10
 # Migração v5 -> v6: dinheiro mínimo de quem já tem o cinturão (= preço da mudança na v6). É formato, não lê data/:
@@ -47,6 +47,7 @@ const MIGRACOES := {
 	6: "_migrar_6_para_7",
 	7: "_migrar_7_para_8",
 	8: "_migrar_8_para_9",
+	9: "_migrar_9_para_10",
 }
 
 var pasta: String
@@ -419,5 +420,29 @@ func _migrar_8_para_9(doc: Dictionary) -> Dictionary:
 	carreira["campaign_seconds"] = 0.0
 	carreira["fight_day"] = 0
 	estado["career"] = carreira
+	novo["state"] = estado
+	return novo
+
+
+# v9 (Fase 5.3) -> v10 (Fase 5.4): árvore grande. skill_nodes e Legado ficam iguais (sem reembolso);
+# career.active_nodes = os nós que a campanha atual já tinha (todos os comprados); permanent.tree_last_node = o último.
+func _migrar_9_para_10(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	var perm = estado.get("permanent", {})
+	if not (perm is Dictionary):
+		perm = {}
+	var nos = perm.get("skill_nodes", [])
+	if not (nos is Array):
+		nos = []
+	carreira["active_nodes"] = nos.duplicate()
+	perm["tree_last_node"] = str(nos[-1]) if not nos.is_empty() else ""
+	estado["career"] = carreira
+	estado["permanent"] = perm
 	novo["state"] = estado
 	return novo

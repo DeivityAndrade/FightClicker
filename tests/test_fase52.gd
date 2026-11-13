@@ -137,13 +137,13 @@ func _teste_grito() -> void:
 
 
 func _teste_save_v8() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 9, "versão do save é 8")
+	checar_igual(SaveStore.VERSAO_ATUAL, 10, "versão do save é 8")
 	var pasta := pasta_limpa("f52_save")
 	var gs := _reabrir(pasta)
 	gs.crew_click_comprado = true
 	gs.salvar()
 	var doc = JSON.parse_string(ler(pasta + "save.json"))
-	checar_igual([int(doc.version), doc.state.career.crew_click], [9, true], "gravado v8 com crew_click")
+	checar_igual([int(doc.version), doc.state.career.crew_click], [10, true], "gravado v8 com crew_click")
 	_liberar(gs)
 	var g2 := _reabrir(pasta)
 	checar(g2.crew_click_comprado, "recarrega crew_click")
@@ -159,5 +159,5 @@ func _teste_save_v8() -> void:
 	checar_igual([g3.treino, g3.nivel_luva, g3.crew_click_comprado], [55.0, 2, false], "v7 -> v8: nada se perde, Grito não comprado")
 	checar(g3.avisos.is_empty(), "migração sem avisos")
 	g3.salvar()
-	checar_igual(int(JSON.parse_string(ler(p2 + "save.json")).version), 9, "regravado como v9")
+	checar_igual(int(JSON.parse_string(ler(p2 + "save.json")).version), 10, "regravado como v9")
 	_liberar(g3)

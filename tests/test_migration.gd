@@ -89,7 +89,7 @@ func _teste_v2_abre_como_carreira_1() -> void:
 	checar_igual(gs.nivel_melhoria("punching_bag"), 2, "v2: melhoria do saco mantida")
 	checar_igual(gs.nivel_melhoria("treadmill"), 1, "v2: melhoria da esteira mantida")
 	checar_igual(gs.numero_carreira(), 1, "v2 vira a Carreira 1")
-	checar_igual(gs.permanente, {"legacy_total": 0, "career_number": 1, "careers_finished": 0, "best_wins": 0, "belts_won": 0, "skill_nodes": [], "revenge_opponent": "", "arts_unlocked": [], "last_art": ""},
+	checar_igual(gs.permanente, {"legacy_total": 0, "career_number": 1, "careers_finished": 0, "best_wins": 0, "belts_won": 0, "skill_nodes": [], "tree_last_node": "", "revenge_opponent": "", "arts_unlocked": [], "last_art": ""},
 		"bloco permanente zerado (sem nós, sem algoz, sem artes)")
 	checar_igual([gs.dinheiro, gs.fama, gs.indice_escada, gs.cinturao, gs.nivel_luva, gs.tempo_jogo],
 		[0.0, 0, 0, false, 0, 0.0], "campos novos no padrão")

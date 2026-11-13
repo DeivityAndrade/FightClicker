@@ -635,3 +635,113 @@ O `portrait_player` regerado saiu idêntico ao arquivo de antes.
 - O círculo de caneta é uma elipse com espessura variável; à mão ficaria com traço de marcador (começo e fim sobrepostos).
 - O selo da campanha (roseta) e o `icon_pass_post` (luva → estrela) pedem desenho à mão; manter 40x44 e 16x16.
 - Números da folhinha usam a fonte 5x7; uma fonte de calendário (números condensados) ficaria melhor e é o mesmo pedido da §18.1.
+
+## 21. Fase 5.4 (árvore grande: o mapa que se revela)
+Gerador: `tools/art/make_sprites_fase54.gd` (rodar de uma pasta temporária com `project.godot` vazio; `-- --final` grava no projeto e só
+acrescenta chaves ao manifest, relendo o arquivo na hora). Mockup: `mockups/fase54_mapa_x2.png`. Dados para a UI e o Programador:
+`manifest.json → by_data_id.skill_map` (tela, regras de pintura, neblina, linhas, estados, posições). Peças do mapa em `assets/sprites/ui/map/`.
+
+### 21.1 Ideia visual
+**O quadro de avisos da escola.** No meio, um quadro de **cortiça** com os 12 nós de sempre. Em volta, cada região é um **pedaço de
+material pregado na parede**: concreto (Garagem), azulejo verde (Academia), lona vermelha do ringue (Boxe), tatame azul (Jiu-jitsu) e
+feltro roxo do mural (Campanha). O que sobra é a parede escura. Nó comprado = **plaquinha pregada com tachinha dourada**; linha acesa =
+o **Legado correndo** (roxo, com um pixel branco andando). O resto fica sob **neblina** (ink com nuvem d1 em dither), que recua quando o
+nó aparece. Nenhuma região precisa de texto para ser reconhecida: o material diz.
+
+### 21.2 Tela (640x360, por cima da sala)
+| Peça | Sprite | Lugar |
+|---|---|---|
+| Moldura de madeira com pregos (9-slice) | `ui_map_frame` | (0,0) 640x360 |
+| Barra do topo | `ui_map_topbar` | (5,5) 630x20 |
+| Título | `icon_skill_map` + texto `col_text_1` | ícone (9,7), texto (29,11) |
+| Dica "arraste ou use a roda" | texto `col_text_2` | 12 px depois do título, y 11 |
+| **Legado** (o número herói desta tela) | `icon_legacy_16` + `txt_hero` `col_legacy` | texto termina em x 610, y 8 |
+| Fechar | `ui_map_close_normal/hover/pressed` | (616,7) 16x16 |
+| Janela do mapa | recorte | (5,26) 630x329 |
+| Borda rebaixada (miolo vazio) | `ui_map_viewport_edge` | (4,25) 632x331, por cima do mapa |
+
+Ordem de desenho do mapa: fundo pintado → linhas → neblina → nós → plaquinhas de região e preços → efeitos → cartão.
+
+### 21.3 Fundo e regiões
+- Ladrilhos 32x32 que emendam: `map_tile_wall|center|garage|gym|boxing|bjj|campaign`.
+- **Pintura por células de 8x8, feita uma vez ao abrir**: cada célula pega a região do nó mais perto até 44 px; nó de ligação pinta
+  xadrez das duas regiões; nada perto = parede. Região trancada (Academia antes do 1º discípulo lá; arte não liberada) = parede.
+  Costura de 1 px ink entre materiais, 1 px de luz no topo do recorte e 1 px de sombra na parede embaixo. O recorte sai em degraus de
+  8 px, de propósito: parece pedaço cortado e pregado. Código de referência: `region_grid()` / `paint_regions()` no gerador.
+- Distância mínima entre centros: **40 px** (nó pequeno) e **52 px** (marco). Pedido ao Designer ao escolher as posições.
+
+### 21.4 Nós (3 tamanhos, 4 estados)
+| | Pequeno 24x24 (pivô 12,12) | Marco 38x38 (pivô 19,19) | Ligação 28x24 (pivô 14,12) |
+|---|---|---|---|
+| Comprado | `map_node_s_owned_<tom>` | `map_node_b_owned_<tom>` | `map_node_link_owned_<a>_<b>` |
+| À vista, Legado paga | `map_node_s_buyable` (2 quadros, 2 fps) | `map_node_b_buyable` | `map_node_l_buyable` |
+| À vista, sem Legado | `map_node_s_missing` + `map_node_veil` | `map_node_b_missing` + véu | `map_node_l_missing` + véu |
+| Escondido | não desenha (`_hidden` com "?" = quadro de partida da revelação) | `map_node_b_hidden` | `map_node_l_hidden` |
+| Mouse em cima | `map_node_s_hover` | `map_node_b_hover` | `map_node_l_hover` |
+
+- Forma: **octógono** (plaquinha), diferente dos quadrados da árvore antiga. O marco tem anel duplo e 4 pontas; a ligação tem elos dos
+  dois lados e, comprada, o anel cortado na diagonal com as cores das duas regiões (`<a>_<b>` na ordem garage, gym, boxing, bjj, campaign).
+- Ícone 16x16 sempre no centro (pivô −8,−8). Comprado leva a tachinha dourada no canto de cima à direita.
+- **Tom do anel** (`tone_by_branch_or_region`): Corpo e Boxe = vermelho (`r2/r3`, o Boxe herda a luva); Campanha (ramo e região) = ouro
+  (`y0/y1`); Estilo = roxo (`p1/p2`); Garagem = giz (`g3/white`); Academia = verde (`gr2/gr3`); Jiu-jitsu = azul (`b2/b3`).
+  O fundo diz a região, o anel diz o ramo: o ouro da Campanha em cima do feltro roxo tem contraste de sobra.
+- À vista que o Legado paga = anel `col_buyable` piscando (mesma regra da 5.1). Sem Legado = anel escuro e véu pontilhado no ícone
+  (ainda dá para ler o que é). **Preço**: etiqueta 9-slice embaixo de cada nó à vista, `ui_map_price_ok` (p0, número `col_legacy`) ou
+  `ui_map_price_missing` (d1, número `col_text_2`). Nunca vermelho. Comprado não mostra preço.
+
+### 21.5 Linhas
+Retas de centro a centro em **pixels de Bresenham** (nada de Line2D com antialias nem textura girada):
+
+| Estado | Quando | Desenho |
+|---|---|---|
+| Acesa | os dois comprados | 2 px (`p2` + `p1`) + sombra ink; 1 pixel branco a cada 8, andando 1 px por quadro a 8 fps |
+| À vista | os dois revelados, pelo menos um não comprado | 1 px `g2` + sombra ink |
+| Apagada | um lado escondido | 1 px `g0` tracejado 2/2, **antes da neblina** (some aos poucos dentro dela: diz "tem mais ali") |
+
+### 21.6 Neblina e revelação
+- `map_fog_25|50|75|100` (32x32, Bayer). Por célula de 8x8, pela distância ao nó revelado mais perto: < 40 px limpa; 40–48 = 25%;
+  48–56 = 50%; 56–64 = 75%; além = 100%.
+- **Revelar (≤ 0,5 s):** as células em volta do nó novo descem um nível a cada 0,1 s (0,4 s no total) e `fx_map_reveal` (40x40,
+  6 quadros, 12 fps) toca no centro: a nuvem com "?" se abre em fiapos e ficam 4 faíscas. O nó aparece no quadro 2.
+- **Comprar:** `fx_map_buy` (40x40, 5 quadros, 12 fps): clarão no formato do nó, anel ouro abrindo, faíscas. O anel vira "comprado" no
+  quadro 1; no quadro 2 começam as revelações dos vizinhos, todas juntas. Sem alpha e sem som novo (reaproveitar `buy.wav`).
+
+### 21.7 Plaquinhas de região e cartão
+- `ui_map_region_label_<região>` (9-slice, 13 px, faixa na cor do anel) + `icon_region_<região>_9` + nome 1x. Aparece quando o 1º
+  nó da região fica à vista, uns 30–40 px acima dele, no mundo (anda com o mapa). O centro não tem plaquinha.
+- Cartão: `ui_map_card` (d1, igual à dica) com nome / efeito na cor do tipo / preço, e no pé a faixa roxa `ui_map_card_next` com
+  `icon_calendar` e "VALE NA PRÓXIMA CAMPANHA". Abre ao lado do nó, sempre inteiro dentro da janela do mapa.
+
+### 21.8 Botão da sala
+- `ui_map_button_normal|hover|pressed` 22x22 com `icon_skill_map` (cortiça com 3 tachinhas e barbante). **Lugar: (132,22)**, canto de
+  cima à esquerda da sala, na parede lateral (igual na garagem e na academia). Fica longe do alvo (x 281..362), das faixas de aviso
+  (centradas em x 320, y 22) e da faixa do assistido (y 273..290). O `debug_overlay` também usa (134,24), mas só aparece em debug.
+- Brilho: `ui_map_button_glow` (2 quadros a 2 fps, borda ouro + faísca trocando de canto) **só** quando há nó à vista que o Legado
+  paga. Sem compra: peça normal, parada. A hierarquia da 5.1 não muda: é nível 3, sem texto fixo e sem número.
+- Dica (hover) padrão: "ÁRVORE" + 2ª linha `col_text_2` com quantos nós dá para comprar.
+- Plano B, se o dono não achar o botão: a mesma ação como botão com texto "ÁRVORE" no fim da coluna da esquerda, (7,264) 116x22.
+- Na tela de fim, o botão ÁRVORE pode ganhar `icon_skill_map` à esquerda do texto, para as duas portas terem o mesmo desenho.
+
+### 21.9 Ícones
+- **Regiões:** `icon_region_garage|gym|boxing|bjj|campaign` (16x16) e `_9` (9x9): fachada com portão de aço, halter no azulejo,
+  canto do ringue com 3 cordas, nó da faixa no tatame, folhinha com estrela. Também são o ícone **provisório dos marcos** da região.
+- **Nós novos:** `skill_rope_ready` (corda montada: corda pendurada no prego, com brilho), `skill_prep_day` (+1 dia: folhinha com
+  "+1"), `skill_shout_loud` (Grito mais alto: o megafone do Grito, maior, com 3 ondas).
+- **Nós pequenos usam o ícone do tipo de efeito** (`by_data_id.skill_map.icon_by_effect`), reaproveitando os 12 atuais e os ícones da
+  LOJA dos aparelhos. Os nomes dos tipos novos ali são sugestão; vale o que o Designer puser no `skill_tree.json`.
+- **2ª passada (feita):** os 6 marcos do `fase5.4-design.md` §9 têm ícone próprio 16x16 em `assets/sprites/ui/`:
+  `skill_home_metronome` (gar_metro), `skill_crew_regulars` (gar_crew_start), `skill_coach_notebook` (camp_diary),
+  `skill_standing_fan` (gym_fan), `skill_counter_punch` (box_counter), `skill_firm_base` (bjj_guard).
+- **Qual ícone cada nó usa:** `skill_map.icon_by_node` (os 39 nós do `skill_tree.json` v2) manda; depois `icon_by_effect`
+  (com os nomes reais dos tipos; `art_rule_bonus`/`art_fight_bonus` escolhem pela `requires_art`); por último o campo `icon` do nó.
+- **Mapa real conferido** (`mockups/fase54_mapa_real_x2.png`, `skill_map.map_check`): 741 pares, menor distância 57 px, nenhum
+  abaixo de 40/52; plaquinhas de região não cobrem nó. Ressalva: as linhas `gar_radio–link_mat` e `gar_rope–link_shout` passam a
+  11 px do centro de `body_crew_2` e `body_heavy_hands` (parecem ligadas a eles). Proposta ao Designer: `link_mat` (-6,4) e
+  `link_shout` (-6,-4) (folga de 40 px; painel B do mockup).
+
+### 21.10 Placeholder / precisa de pixel artist
+- Os ladrilhos são ruído por código: um artista faria cortiça com furos de tachinha, concreto com manchas e tatame com costura.
+  A neblina repete a cada 32 px; à mão, ladrilhos de 64 com nuvens desenhadas ficariam bem melhores.
+- A borda das regiões em degraus de 8 px é proposital, mas um recorte desenhado (papel rasgado, lona com bainha) daria mais vida.
+- `fx_map_reveal` e `fx_map_buy` são anéis e pontos calculados; são os efeitos que mais ganham com animação feita à mão.
+- O ícone da corda montada é o mais fraco em 16 px. Manter os tamanhos (24/38/28, ícone 16, ladrilho 32) para trocar só os arquivos.

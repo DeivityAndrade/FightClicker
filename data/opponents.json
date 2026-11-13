@@ -17,6 +17,6 @@
 		  "strength": 975000, "agility": 375000, "endurance": 4125000, "prize_money": 2500, "prize_fame": 120, "prep_days": 24, "belt": false, "profile": "RESISTENTE" },
 		{ "id": "opp_gym_2", "location": "gym", "name": "Kid Navalha", "description": "Campeão da casa. Corta o ar e a conversa.",
 		  "entry": "Eu vi você chegar de chinelo.", "wins_line": "Volta quando a garagem te soltar.", "loses_line": "Amanhã cedo. Você e eu. De novo.",
-		  "strength": 4600000, "agility": 8050000, "endurance": 20700000, "prize_money": 6000, "prize_fame": 200, "prep_days": 16, "belt": false, "profile": "RÁPIDO" }
+		  "strength": 6900000, "agility": 12075000, "endurance": 31050000, "prize_money": 6000, "prize_fame": 200, "prep_days": 16, "belt": false, "profile": "RÁPIDO" }
 	]
 }
