@@ -37,6 +37,10 @@ clique com a equipe (shop.json -> crew_click), robo que so luta no VERDE contra 
 e a secao f52 (Kid por arte, tempo morto, 'proxima coisa', clique no fim do conteudo, cinturao Boxe x Jiu-jitsu).
 Alavancas: SIM_LUVAS_NOVAS="c3,m3,c4,m4", SIM_BOLSA="chance,segundos,piso", SIM_TORCIDA="custo,fracao",
 SIM_STYLE="boxe,jj" (value dos nos ESTILO), SIM_N52 (jogadores por perfil da f52).
+
+Fase 5.3 (docs/fases/fase5.3-design.md): calendario (data/career.json -> calendar, data/opponents.json -> prep_days),
+relogio so na sala (a equipe nao treina na luta), robo novo (antes da data so luta no VERDE; no dia luta no amarelo/verde
+e passa o posto no vermelho). Secoes b23c (23b com 2.000) e f53. Alavancas: SIM_CAL=0, SIM_CAL_SPD, SIM_PREP, SIM_ANTES, SIM_DIA.
 """
 import copy
 import json
@@ -151,6 +155,39 @@ def _f52_dos_dados():
 
 F52 = _f52_dos_dados()
 DUDU_VERDE = os.environ.get("SIM_DUDU_VERDE", "1") == "1"
+
+
+# ---------------------------------------------------------------- Fase 5.3 (docs/fases/fase5.3-design.md): calendario
+# data/career.json -> calendar.seconds_per_day; data/opponents.json -> prep_days (dias depois da luta anterior; o 1o conta
+# do inicio da carreira). O relogio da campanha (self.clk) so anda na sala: nao anda na luta (e a equipe tambem nao treina
+# na luta). Robo novo (SIM_CAL_ROBO):
+#   antes da data: olha a previa a cada 30 s e so luta no VERDE (>= easy_min);
+#   no dia: luta se a chance >= even_min (amarelo/verde); no vermelho passa o posto se o pote > 0 (senao luta).
+#   SIM_DIA=luta -> no dia sempre luta (variante). SIM_ANTES=amarelo -> antes da data luta no amarelo (robo da 5.2).
+# SIM_CAL=0 desliga (jogo da 5.2). SIM_CAL_SPD="30" troca os segundos por dia; SIM_PREP="d1,d2,d3,d4,d5,d6" as folgas.
+def _cal_dos_dados():
+    cfg = {"on": False, "spd": 0.0, "prep": {}}
+    try:
+        with open(os.path.join(f2.RAIZ, "data", "career.json"), encoding="utf-8") as fh:
+            cal = json.load(fh).get("calendar", {})
+        with open(os.path.join(f2.RAIZ, "data", "opponents.json"), encoding="utf-8") as fh:
+            opps = json.load(fh)["opponents"]
+        cfg["spd"] = float(cal.get("seconds_per_day", 0.0))
+        cfg["prep"] = {o["id"]: int(o["prep_days"]) for o in opps if "prep_days" in o}
+        ids = [o["id"] for o in opps]
+    except (OSError, ValueError, KeyError):
+        ids = ["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2"]
+    if os.environ.get("SIM_CAL_SPD"):
+        cfg["spd"] = float(os.environ["SIM_CAL_SPD"])
+    if os.environ.get("SIM_PREP"):
+        cfg["prep"] = dict(zip(ids, (int(x) for x in os.environ["SIM_PREP"].split(","))))
+    cfg["on"] = cfg["spd"] > 0 and len(cfg["prep"]) >= len(ids) and os.environ.get("SIM_CAL", "1") == "1"
+    return cfg
+
+
+CAL = _cal_dos_dados()
+CAL_DIA = os.environ.get("SIM_DIA", "passa")       # vermelho no dia: "passa" (passa o posto se o pote > 0) ou "luta"
+CAL_ANTES = os.environ.get("SIM_ANTES", "verde")   # antes da data: "verde" ou "amarelo"
 
 
 def _luvas_novas(shop):
@@ -298,8 +335,27 @@ class Carreira5(f4b.Carreira4b):
         self.snap_kid = None
         self.snap_fim = None
         self.t_l3 = None
+        # Fase 5.3: calendario
+        self.clk = 0.0                        # relogio da campanha (s de sala)
+        self.dia_ult = 0                      # dia da ultima luta (0 = inicio da carreira)
+        self.reg53 = []                       # por luta: (opp, no_dia, cor, dias_desde_a_anterior, venceu)
+        self.amostra_d = []                   # a cada 30 s de sala: segundos ate a data (para a medida do AFK)
+        self._prox_amostra = 0.0
         if arte:
             self.definir_arte(arte)
+
+    # --- Fase 5.3: calendario
+    def dia(self):
+        return int(math.floor(self.clk / CAL["spd"] + 1e-9))
+
+    def data_prox(self):
+        """Dia da proxima luta (None sem proxima luta com data, ex.: antes da mudanca ou depois do Kid)."""
+        if self.vitorias >= len(self.R.opp):
+            return None
+        o = self.R.opp[self.vitorias]
+        if o.get("location") == "gym" and not self.mudou:
+            return None
+        return self.dia_ult + CAL["prep"][o["id"]]
 
     # --- arte
     def definir_arte(self, arte):
@@ -482,7 +538,8 @@ class Carreira5(f4b.Carreira4b):
         return c
 
     def fren_luta(self, dur):
-        f4b.Carreira4b.fren_luta(self, dur)
+        if not CAL["on"]:                     # 5.3: na luta o relogio para; o FRENESI tambem espera
+            f4b.Carreira4b.fren_luta(self, dur)
         if self.caixa_fim is not None:
             self.caixa_fim += dur             # durante a luta ninguem abre caixa
 
@@ -637,6 +694,8 @@ class Carreira5(f4b.Carreira4b):
         if self.belt_ends and self.cinturao:
             self.perigoso = False
             return
+        if CAL["on"]:
+            return self._talvez_lutar_cal(o)
         if self.t - self.ult_check_t < self.olhar:
             return
         self.ult_check_t = self.t
@@ -700,6 +759,72 @@ class Carreira5(f4b.Carreira4b):
             self.fim = ("derrota", self.t, o["id"], jog, tat)
             self.eventos.append((self.t, "PERDE " + o["id"]))
 
+    def _talvez_lutar_cal(self, o):
+        """Fase 5.3: robo com calendario. Antes da data: olha a cada 30 s e luta no VERDE. No dia: decide na hora."""
+        data = self.data_prox()
+        no_dia = data is not None and self.dia() >= data
+        if not no_dia and self.t - self.ult_check_t < self.olhar:
+            return
+        self.ult_check_t = self.t
+        jog = tuple(self.attr)
+        adv = self.adv()
+        even = self.R.risk["even_min"]
+        easy = self.R.risk["easy_min"]
+        verde = any(self.R.passa(jog, adv, t, 100, easy) for t in self.R.tac_ids)
+        amarelo = verde or any(self.R.passa(jog, adv, t, 100, even) for t in self.R.tac_ids)
+        self.perigoso = not amarelo
+        cor = "verde" if verde else ("amarelo" if amarelo else "vermelho")
+        if not no_dia:
+            if CAL_ANTES == "amarelo":
+                cc = self.cauteloso_contra
+                killer = (o["id"] in cc) if isinstance(cc, (set, frozenset, list, tuple)) else (cc == o["id"])
+                if (DUDU_VERDE and self.vitorias == 0) or (self.cauteloso_gym and o.get("location") == "gym"):
+                    killer = True
+                ok = verde if killer else amarelo
+            else:
+                ok = verde
+            if not ok:
+                return
+        elif not amarelo and CAL_DIA == "passa" and self.pote() > 0:
+            self.reg53.append((o["id"], True, cor, data - self.dia_ult, None))
+            self.fechar_trechos()
+            self.fim = ("passou", self.t, o["id"], jog, None)
+            self.eventos.append((self.t, "PASSA " + o["id"]))
+            return
+        self.e_revanche = o["id"] == getattr(self, "ultimo_algoz", None)
+        tat, ps = self.R.melhor_tatica(jog, adv, 100)
+        p = ps[tat]
+        r = self.R.lutar(jog, adv, tat, self.rng.randrange(1 << 31))
+        dur = 5.0 + self.R.tela(r)
+        self.lutas.append({"t": self.t, "opp": o["id"], "p": p, "tat": tat, "win": r["win"], "attr": jog,
+                           "tela": self.R.tela(r)})
+        self.reg53.append((o["id"], no_dia, cor, self.dia() - self.dia_ult, r["win"]))
+        self.dia_ult = self.dia()
+        self.t += dur                          # a luta leva tempo de jogo, mas o relogio e a equipe param
+        self.fechar_trechos()
+        if r["win"]:
+            self.vitorias += 1
+            self.t_ult_vit = self.t
+            ganho = o["prize_money"] * (1 + self.b["money_bonus"])
+            self.dinheiro += ganho
+            self.dinheiro_total += ganho
+            self.fama += int(math.floor(o["prize_fame"] * (1 + self.b["fame_bonus"]) + 0.5))
+            if self.e_revanche:
+                self.t_revanche = self.t
+            self.eventos.append((self.t, "VENCE " + o["id"]))
+            if o.get("belt"):
+                self.cinturao = True
+                self.t_belt = self.t
+            if o.get("location") == "gym":
+                self.t_g[o["id"]] = self.t
+                if self.vitorias >= len(self.R.opp):
+                    self.snap_kid = self.foto52()
+                    self.fim = ("topo", self.t)
+            self.perigoso = False
+        else:
+            self.fim = ("derrota", self.t, o["id"], jog, tat)
+            self.eventos.append((self.t, "PERDE " + o["id"]))
+
     def foto52(self):
         """Medida de late game: (valor de 1 clique, renda sem a mao/s, mao/s, equipe/s, Metronomo/s, luvas abertas, cc)."""
         a = self.foco()
@@ -752,12 +877,19 @@ class Carreira5(f4b.Carreira4b):
             self.somar(a, g)
             self.tempo_foco[a] += dt
             self.t += dt
+            if CAL["on"]:
+                self.clk += dt
+                if self.clk >= self._prox_amostra:
+                    self._prox_amostra += 30.0
+                    dp = self.data_prox()
+                    if dp is not None:
+                        self.amostra_d.append(max(0.0, dp * CAL["spd"] - self.clk))
             ap = getattr(self, "aposenta_vermelho", None)
             if ap and self.perigoso and self.verm >= ap and self.pote() > 0:
                 self.fechar_trechos()
                 self.fim = ("aposentou", self.t)
                 break
-            if self.mudou and self.perigoso and self.verm >= self.ret_gym:
+            if self.mudou and self.perigoso and self.verm >= self.ret_gym and not CAL["on"]:
                 self.fechar_trechos()
                 self.fim = ("aposentou", self.t)
                 break
@@ -894,7 +1026,8 @@ def sequencia(args):
                 vit_t[e[6:]] = t
         t_ini = t_acum
         t_acum += c.fim[1] + f4.OVERHEAD
-        rec = {"k": k, "fim": c.fim[0], "t": c.fim[1], "opp": c.fim[2] if c.fim[0] == "derrota" else None,
+        rec = {"k": k, "fim": c.fim[0], "t": c.fim[1], "opp": c.fim[2] if c.fim[0] in ("derrota", "passou") else None,
+               "reg53": list(c.reg53), "amostra_d": c.amostra_d, "clk": c.clk, "dia_fim": (c.dia() if CAL["on"] else None),
                "arte": c.arte, "primeira_chegada": primeira, "t_belt": c.t_belt, "t_move": c.t_move,
                "t_g": dict(c.t_g), "vit_t": vit_t, "morto": c.morto_total(), "morto_gym": c.morto_gym(),
                "verm": c.verm_max, "ganho": ganho, "nos_antes": len(comprados), "t_ini": t_ini, "t_fim": t_acum,
@@ -906,9 +1039,11 @@ def sequencia(args):
                "n_bolsas": c.n_bolsas, "n_fren": c.n_luvas, "treino_bolsa": c.treino_bolsa, "treino_cc": c.treino_cc,
                "morto_pre": (c.morto_pre if c.mudou else c.morto_max),
                "lutas": [(l["opp"], l["win"], round(l["p"], 2), round(l["t"])) for l in c.lutas]}
-        if c.fim[0] == "derrota":
+        if c.fim[0] in ("derrota", "passou"):       # 5.3: passar o posto no vermelho ensina o robo como uma derrota
             _, t, opp, jog, tat = c.fim
             o = next(x for x in R.opp if x["id"] == opp)
+            if tat is None:
+                tat = c.R.melhor_tatica(jog, (o["strength"], o["agility"], o["endurance"]), 100)[0]
             attr, _, _ = c.R.motivo(jog, (o["strength"], o["agility"], o["endurance"]), tat, 100)
             dica = attr
             killer = opp
@@ -1297,11 +1432,12 @@ def sec_caixa(n, K):
         print("| %s | %s; %d | %.1f s; %.1f s | %.2f%%; %.2f%% |" % (nome, fk(med(nc)), max(nc), med(tm), max(tm), med(fr), max(fr)))
 
 
-def sec_52(n, K):
+def sec_52(n, K, res=None):
     """Fase 5.2: Kid por arte, tempo morto (carreira 1 e academia), 'proxima coisa' e o valor do clique no fim."""
-    perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
-                     for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
-    res = rodar_perfis(perfis, n, K)
+    if res is None:
+        perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                         for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+        res = rodar_perfis(perfis, n, K)
     print("\n## Fase 5.2 (%d jogadores x %d carreiras)" % (n, K))
     print("### Kid e regressoes")
     print("| perfil | Kid: carreiras depois da chegada (med; p10-p90) | Kid em <=1 / <=2 depois | Kid na carreira da chegada | cinturao: carreira (med) | arvore fecha (med; p10-p90) | L3 depois de mudar (med; p90) |")
@@ -1362,6 +1498,116 @@ def sec_52(n, K):
             100 * med([x["treino_bolsa"] / max(1.0, sum(x["attr_fim"])) for x in sn])))
 
 
+# ---------------------------------------------------------------- Fase 5.3
+OPP_CURTO = {"opp_warmup": "Dudu", "opp_strong": "Brutao", "opp_fast": "Dinho", "opp_tank": "Muralha",
+             "opp_gym_1": "Tonhao", "opp_gym_2": "Kid"}
+
+
+def sec_b23_53(n):
+    """23b com o calendario: cinturao na 1a carreira, mais cedo, p1, quantos antes de 19:30/20:00, fim da carreira 1."""
+    perfis = filtra([{"nome": "5/s", "cps": 5}, {"nome": "4/s", "cps": 4}, {"nome": "3/s", "cps": 3}])
+    res = rodar_perfis(perfis, n, 1)
+    print("\n## 23b com calendario (%d jogadores; dia %gs; folgas %s; robo antes=%s, vermelho no dia=%s)" % (
+        n, CAL["spd"], [CAL["prep"].get(k) for k in OPP_CURTO], CAL_ANTES, CAL_DIA))
+    print("| perfil | cinturao na 1a | mais cedo | p1 | antes de 19:30 | antes de 20:00 | fim da carreira 1 (med; p10-p90) | 1a derrota (med) | passou o posto na carreira 1 | derrotas no Dudu |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        c1 = sorted(s[0]["t_belt"] for s in seqs if s[0]["t_belt"])
+        fim = [s[0]["t"] for s in seqs if not s[0]["t_belt"]]
+        d1 = [s[0]["t"] for s in seqs if s[0]["fim"] == "derrota" and not s[0]["t_belt"]]
+        pas = sum(1 for s in seqs if s[0]["fim"] == "passou")
+        dud = sum(1 for s in seqs if s[0]["opp"] == "opp_warmup" and s[0]["fim"] == "derrota")
+        p1 = c1[max(0, int(math.ceil(0.01 * len(seqs))) - 1)] if len(c1) >= max(1, int(math.ceil(0.01 * len(seqs)))) else None
+        print("| %s | %.1f%% | %s | %s | %d | %d (%.2f%%) | %s (%s-%s) | %s | %d | %d |" % (
+            nome, 100.0 * len(c1) / len(seqs), mm(c1[0]) if c1 else "-", mm(p1) if p1 else "-",
+            sum(1 for x in c1 if x < 1170), sum(1 for x in c1 if x < 1200), 100.0 * sum(1 for x in c1 if x < 1200) / len(seqs),
+            mm(med(fim)), mm(pct(fim, .1)), mm(pct(fim, .9)), mm(med(d1)) if d1 else "-", pas, dud))
+    return res
+
+
+def tabela_dia(res):
+    """Por perfil: lutas antes da data x no dia (e a cor no dia), por adversario; passar o posto; medida do AFK."""
+    print("\n### Lutas antes da data x no dia (todas as carreiras)")
+    print("| perfil | lutas | antes da data | no dia | no dia: verde / amarelo / vermelho | vermelho no dia / lutas | passou o posto (no dia) | derrotas no dia / derrotas |")
+    print("|---|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        regs = [g for s in seqs for r in s for g in r["reg53"]]
+        if not regs:
+            continue
+        nd = [g for g in regs if g[1]]
+        cor = {c: sum(1 for g in nd if g[2] == c) for c in ("verde", "amarelo", "vermelho")}
+        der = [g for g in regs if g[4] is False]
+        print("| %s | %d | %.0f%% | %.0f%% | %d / %d / %d | %.1f%% | %d | %d / %d |" % (
+            nome, len(regs), 100.0 * (len(regs) - len(nd)) / len(regs), 100.0 * len(nd) / len(regs),
+            cor["verde"], cor["amarelo"], cor["vermelho"], 100.0 * cor["vermelho"] / len(regs),
+            sum(1 for g in regs if g[4] is None), sum(1 for g in der if g[1]), len(der)))
+    print("\n### Por adversario: %% no dia; dias usados (med; p90) / folga")
+    cab = list(OPP_CURTO)
+    print("| perfil | " + " | ".join(OPP_CURTO[k] for k in cab) + " |")
+    print("|---|" + "---|" * len(cab))
+    for nome, seqs in res.items():
+        regs = [g for s in seqs for r in s for g in r["reg53"]]
+        cel = []
+        for k in cab:
+            gs = [g for g in regs if g[0] == k]
+            if not gs:
+                cel.append("-")
+                continue
+            d = [g[3] for g in gs if not g[1]]
+            cel.append("%.0f%% no dia (verm %.0f%%); %s; %s / %d" % (
+                100.0 * sum(1 for g in gs if g[1]) / len(gs), 100.0 * sum(1 for g in gs if g[1] and g[2] == "vermelho") / len(gs),
+                fk(med(d)) if d else "-", fk(pct(d, .9)) if d else "-", CAL["prep"][k]))
+        print("| %s | %s |" % (nome, " | ".join(cel)))
+    print("\n### Academia na carreira da 1a chegada: dias ate lutar (med; p25; p75; p90) e %% no dia / no dia no vermelho / vitorias")
+    print("| perfil | Tonhao | Kid |")
+    print("|---|---|---|")
+    for nome, seqs in res.items():
+        cel = []
+        for k in ("opp_gym_1", "opp_gym_2"):
+            gs = [g for s in seqs for r in s if r["primeira_chegada"] for g in r["reg53"] if g[0] == k]
+            if not gs:
+                cel.append("-")
+                continue
+            d = [g[3] for g in gs]
+            cel.append("%s; %s; %s; %s | %.0f%% / %.0f%% / venceu %.0f%% (n=%d)" % (
+                fk(med(d)), fk(pct(d, .25)), fk(pct(d, .75)), fk(pct(d, .9)),
+                100.0 * sum(1 for g in gs if g[1]) / len(gs), 100.0 * sum(1 for g in gs if g[1] and g[2] == "vermelho") / len(gs),
+                100.0 * sum(1 for g in gs if g[4]) / len(gs), len(gs)))
+        print("| %s | %s |" % (nome, " | ".join(cel)))
+    print("\n### AFK: jogo aberto e parado L minutos num momento qualquer da campanha (a equipe so treina ate o dia)")
+    print("| perfil | tempo ate a data (med; p10) | perde em 10 min AFK (med de minutos; %% do tempo) | 30 min | 60 min | dias da campanha (med; p90) |")
+    print("|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        D = [d for s in seqs for r in s for d in r["amostra_d"]]
+        if not D:
+            continue
+        cel = []
+        for L in (600, 1800, 3600):
+            perdas = [max(0.0, L - d) for d in D]
+            cel.append("%.1f min; %.0f%%" % (sum(perdas) / len(perdas) / 60.0, 100.0 * sum(perdas) / len(perdas) / L))
+        dias = [r["dia_fim"] for s in seqs for r in s if r["dia_fim"] is not None]
+        print("| %s | %s; %s | %s | %s | %s | %s; %s |" % (nome, mm(med(D)), mm(pct(D, .1)), cel[0], cel[1], cel[2],
+                                                          fk(med(dias)), fk(pct(dias, .9))))
+
+
+def sec_53(n, K):
+    perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                     for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+    res = rodar_perfis(perfis, n, K)
+    print("\n## Fase 5.3: calendario (dia %gs; folgas %s; robo antes=%s, vermelho no dia=%s; %d x %d)" % (
+        CAL["spd"], [CAL["prep"].get(k) for k in OPP_CURTO], CAL_ANTES, CAL_DIA, n, K))
+    tabela_dia(res)
+    sec_52(n, K, res)
+    print("\n### Carreira 1: como acaba")
+    for nome, seqs in res.items():
+        fins = {}
+        for s in seqs:
+            r = s[0]
+            kk = r["fim"] + ((" " + OPP_CURTO.get(r["opp"], "")) if r["opp"] else "")
+            fins[kk] = fins.get(kk, 0) + 1
+        print("- %s: %s" % (nome, ", ".join("%s %d" % kv for kv in sorted(fins.items()))))
+
+
 def main():
     _init(quieto=False)
     secs = sys.argv[1:] or ["tudo"]
@@ -1386,6 +1632,10 @@ def main():
         sec_caixa(int(os.environ.get("SIM_N_CX", "16")), K)
     if tudo or "f52" in secs:
         sec_52(int(os.environ.get("SIM_N52", "48")), K)
+    if tudo or "b23c" in secs:
+        sec_b23_53(int(os.environ.get("SIM_N_23B", "2000")))
+    if tudo or "f53" in secs:
+        sec_53(int(os.environ.get("SIM_N52", "48")), K)
 
 
 if __name__ == "__main__":

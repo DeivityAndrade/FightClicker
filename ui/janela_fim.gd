@@ -95,6 +95,10 @@ func _montar_retire(f: Dictionary, t: Dictionary) -> void:
 	UiTema.rotulo_centro(painel, str(t.support).to_upper(), UiTema.P2, 320.0, 48.0)
 	var cinturao := int(f.summary.get("belts", 0)) > 0
 	var luvas := UiTema.nome_luvas_penduradas()
+	if GameState.campanha_completa():
+		# Passou o posto depois de vencer o Kid: o selo da campanha completa fica preso no canto da moldura (como a folhinha do dia).
+		var selo := UiTema.textura_rect(painel, "seal_campaign_complete", 108.0, 4.0)
+		selo.name = "SeloCampanha"
 	if cinturao:
 		# Luvas e cinturão lado a lado, o par centralizado na janela (o AnimSprite é desenhado a partir do pivô).
 		var larg_luvas := UiTema.tamanho_quadro(luvas).x
@@ -121,8 +125,8 @@ func _resumo(f: Dictionary, y: float, com_retrato: bool) -> float:
 	var x := 172.0 if com_retrato else 150.0
 	var borda := BORDA_DIR if com_retrato else BORDA_DIR - 20.0  # sem retrato o bloco é recuado 20 px dos dois lados
 	if com_retrato:
-		retrato("portrait_player", "ui_portrait_frame", 130, y + 2, false)
-	UiTema.rotulo(painel, UiTema.txt("sum_title", "RESUMO DA CARREIRA {n}", {"n": int(f.career_number)}), UiTema.CREAM, x, y)
+		retrato(UiTema.nome_retrato_jogador(), "ui_portrait_frame", 130, y + 2, false)
+	UiTema.rotulo(painel, UiTema.txt("sum_title", "RESUMO DA CAMPANHA {n}", {"n": int(f.career_number)}), UiTema.CREAM, x, y)
 	var linhas := [
 		[UiTema.txt("sum_wins", "VITÓRIAS"), str(int(s.wins)), UiTema.WHITE],
 		[UiTema.txt("sum_belts", "CINTURÕES"), str(int(s.belts)), UiTema.WHITE],
@@ -184,7 +188,7 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 	_botao_arvore = botao_texto(Rect2(130, 286, 188, 32), UiTema.txt("tree_button", "ÁRVORE"),
 		UiTema.Y1 if _arvore_chamando else UiTema.WHITE, "ui_button_normal", 2)
 	_botao_arvore.pressed.connect(func() -> void: arvore_pedido.emit())
-	var b := botao_texto(Rect2(322, 286, 188, 32), UiTema.txt("new_career_button", "NOVA CARREIRA"),
+	var b := botao_texto(Rect2(322, 286, 188, 32), UiTema.txt("new_career_button", "NOVA CAMPANHA"),
 		UiTema.P2 if retire else UiTema.WHITE, "ui_button_normal", 2, "ui_button_retire" if retire else "")
 	b.pressed.connect(func() -> void: nova_carreira_pedido.emit())
 

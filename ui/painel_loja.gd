@@ -112,13 +112,15 @@ func _ready() -> void:
 	for g in GameState.lutas.geradores_pagos:
 		_pagos[g.id] = _montar_gerador_pago(g, y)
 		y += ALTURA_CARTAO_LOJA + 3.0
+	# Fase 5.3 (pendência da 5.2): o Grito da equipe sobe para logo depois do Prof. Nelson, visível sem rolar a aba
+	# (antes era o 4º cartão, fora dos 250 px da janela).
+	if not GameState.lutas.crew_click.is_empty():
+		_crew = _montar_crew(y)
+		y += ALTURA_CARTAO_LOJA + 3.0
 	_luva = _montar_luva(y)
 	y += ALTURA_CARTAO_LOJA + 3.0
 	_metro = _montar_metronomo(y)
-	y += ALTURA_CARTAO_LOJA + 3.0
-	if not GameState.lutas.crew_click.is_empty():
-		_crew = _montar_crew(y)
-		y += ALTURA_CARTAO_LOJA + 1.0
+	y += ALTURA_CARTAO_LOJA + 1.0
 	_luva_atual_icone = UiTema.textura_rect(_aba_loja, "icon_glove_old", 6, y - 1)
 	_luva_atual = UiTema.rotulo(_aba_loja, "", UiTema.G3, 26, y + 3, 96)
 	_altura_loja = y + 18.0
@@ -129,6 +131,8 @@ func _ready() -> void:
 	GameState.carregado.connect(func(_s: int) -> void: atualizar())
 	GameState.melhoria_comprada.connect(func(_a: String, _m: String, _n: int) -> void: atualizar())
 	GameState.economia_mudou.connect(atualizar)
+	GameState.dia_da_luta_chegou.connect(atualizar)
+	GameState.sala_ativa_mudou.connect(func(_a: bool) -> void: atualizar())
 	GameState.luva_mudou.connect(func(_n: int, _s: String) -> void: atualizar())
 	GameState.metronomo_mudou.connect(func(_n: int) -> void: atualizar())
 	_trocar_aba(ABA_TREINO)
@@ -614,9 +618,23 @@ func atualizar() -> void:
 	_atualizar_metronomo(bloqueado)
 	_atualizar_crew(bloqueado)
 	_alerta_loja.visible = _loja_tem_compra() and _aba != ABA_LOJA
+	_fechar_no_dia()
 	_destacar_mais_barato()
 	if _hover != "":
 		_emitir_info()
+
+
+## No dia da luta a LOJA e o TREINO fecham (compra e abas bloqueadas, conteúdo apagado): o dia só tem LUTAR e PASSAR O POSTO.
+## A aba LOJA volta para a TREINO para não ficar uma aba "aberta" apagada; nada se perde, abre de novo depois da luta.
+func _fechar_no_dia() -> void:
+	var dia := GameState.no_dia_da_luta()
+	for id in _tab:
+		_tab[id].botao.disabled = dia
+	var cor := Color(0.55, 0.53, 0.6) if dia else Color.WHITE
+	_janela_treino.modulate = cor
+	_janela_loja.modulate = cor
+	if dia and _aba == ABA_LOJA:
+		_trocar_aba(ABA_TREINO)
 
 
 ## Cartão de técnica da arte: a linha do efeito perde o "...: PERA" (113 px não cabem em 92; o nome do aparelho está no ícone e no hover).

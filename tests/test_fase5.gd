@@ -116,7 +116,7 @@ func _teste_dados() -> void:
 		"Kid Navalha: 1,15M/2,3M/4,6M, $6.000, 200 de Fama")
 	checar_igual(f.indice_cinturao(), 3, "o cinturão é do Seu Muralha (índice 3)")
 	checar(not f.adversario("opp_gym_1").belt and not f.adversario("opp_gym_2").belt, "só o Muralha dá o cinturão")
-	checar_igual(f.carreira.gym_retire_hint_seconds, 300.0, "dica de aposentar aos 300 s")
+	checar_igual(f.calendario.retire_hint_days, 3, "dica de passar o posto com 3 dias")
 	checar_igual(f.ramo("style").requires_arts_unlocked, true, "ramo ESTILO só com artes liberadas")
 	for id in ["style_boxing", "style_bjj"]:
 		var n := f.no_da_arvore(id)
@@ -125,7 +125,7 @@ func _teste_dados() -> void:
 		checar(n.name.length() <= 16 and n.description.length() <= 44, "%s respeita os limites de texto" % id)
 	var gs := _novo("f5_textos_dados")
 	for chave in ["move_title", "move_button", "move_price", "move_effect", "move_keeps", "move_reserve", "move_reserve_short",
-			"move_arrived", "hud_next_move", "hud_location_mult", "no_more_fights_gym", "gym_retire_hint", "art_title", "art_sub_first",
+			"move_arrived", "hud_next_move", "hud_location_mult", "no_more_fights_gym", "retire_hint", "art_title", "art_sub_first",
 			"art_sub_career", "art_choose", "art_whole_career", "art_last", "hud_art_boxing", "hud_art_bjj", "hud_art_bjj_max",
 			"focus_split", "career_card_art", "tree_branch_style", "tree_short_style_boxing", "tree_short_style_bjj",
 			"tree_style_art_only", "belt_unlock", "belt_hint"]:
@@ -316,7 +316,7 @@ func _teste_escolha_e_nova_carreira() -> void:
 	checar_igual(gs.nivel_melhoria("speed_bag"), 0, "técnicas zeram")
 	checar(gs.escolha_arte_pendente() and not gs.escolha_arte_primeira(), "da 2ª carreira em diante a escolha vem no início")
 	checar_igual(pedidos, [false], "sinal escolha_arte_pedida(false)")
-	checar_igual(gs.subtitulo_escolha_arte(), "CARREIRA 2: ESCOLHA A ARTE", "subtítulo da carreira")
+	checar_igual(gs.subtitulo_escolha_arte(), "CAMPANHA 2: ESCOLHA A ARTE", "subtítulo da carreira")
 	var c: Array = gs.artes_para_escolha()
 	checar_igual([c[0].last, c[1].last, c[0].last_text], [true, false, "ÚLTIMA: BOXE"], "a última arte vem marcada")
 	checar_igual(gs.artes_liberadas(), ["boxing", "bjj"], "as artes ficam liberadas para sempre")
@@ -436,13 +436,13 @@ func _teste_aparelho_da_arte() -> void:
 		"com Boxe: a pera é o 4º aparelho")
 	checar_igual([gs.estado_aparelho("speed_bag"), gs.estado_aparelho("grappling_dummy")], ["locked", "absent"], "pera trancada pela esteira; boneco ausente")
 	checar_igual(gs.textos_trancado("grappling_dummy"), {}, "aparelho da outra arte não tem textos")
-	checar_igual(gs.textos_trancado("speed_bag").floor_mark, "PERA — DEPOIS DA ESTEIRA", "plaquinha antes da esteira")
+	checar_igual(gs.textos_trancado("speed_bag").floor_mark, "PERA, DEPOIS DA ESTEIRA", "plaquinha antes da esteira")
 	gs.treino = 100000.0
 	checar(not gs.comprar_aparelho("speed_bag"), "pede a esteira")
 	checar(gs.comprar_aparelho("treadmill"), "compra a esteira")
 	gs.treino = 3000.0
 	checar_igual(gs.estado_aparelho("speed_bag"), "buyable", "pera comprável depois da esteira")
-	checar_igual(gs.textos_trancado("speed_bag").floor_mark, "PERA — 2.50K TREINO", "plaquinha com o preço")
+	checar_igual(gs.textos_trancado("speed_bag").floor_mark, "PERA, 2.50K TREINO", "plaquinha com o preço")
 	checar(not gs.comprar_aparelho("grappling_dummy"), "o boneco não existe na carreira de Boxe")
 	var comprados: Array = []
 	gs.aparelho_comprado.connect(func(a): comprados.append(a))
@@ -641,24 +641,25 @@ func _teste_dica_de_aposentar() -> void:
 	gs.risco_hud_ativo = true
 	gs.atributos = {"strength": 100.0, "agility": 100.0, "endurance": 100.0}  # nada contra o Tonhão: PERIGOSO
 	gs.fama = 100
-	checar(not gs.dica_aposentar().show, "no começo a dica não aparece")
-	_passar(gs, 120.0)
-	checar(not gs.dica_aposentar().show, "aos 2 min ainda não")
-	_passar(gs, 190.0)
+	gs.atualizar_risco_hud()
+	checar(not gs.dica_aposentar().show, "longe da data a dica não aparece")
+	# Fase 5.3: a dica vem com Faltam <= 3 dias, no vermelho, com Legado > 0 (academia e garagem)
+	gs.segundos_campanha = float(gs.fight_day - 5) * gs._segundos_por_dia()
+	checar(not gs.dica_aposentar().show, "faltando 4 dias ainda não")
+	gs.segundos_campanha = float(gs.fight_day - 4) * gs._segundos_por_dia()
 	var d: Dictionary = gs.dica_aposentar()
-	checar(d.show and d.seconds >= 300.0, "depois de 5 min PERIGOSO a dica aparece")
+	checar(d.show, "faltando 3 dias, no vermelho: a dica aparece")
 	checar_igual(d.legacy, int(gs.previa_aposentar().total), "usa o mesmo cálculo de Legado da confirmação")
-	checar_igual(d.text, "APOSENTAR AGORA LEVA %d DE LEGADO" % d.legacy, "texto da dica")
-	# Ficar forte zera a contagem.
+	checar_igual(d.text, "PASSAR O POSTO AGORA LEVA %d DE LEGADO" % d.legacy, "texto da dica")
+	gs.fama = 0
+	gs.cinturao = false
+	checar(not gs.dica_aposentar().show, "pote 0: sem dica")
+	gs.fama = 100
+	gs.cinturao = true
+	# Ficar forte (verde) apaga a dica.
 	gs.atributos = {"strength": 1.0e9, "agility": 1.0e9, "endurance": 1.0e9}
-	_passar(gs, 3.0)
-	checar(not gs.dica_aposentar().show, "sair do PERIGOSO apaga a dica")
-	# Na garagem não há dica.
-	var g2 := _novo("f5_dica_garagem")
-	g2.risco_hud_ativo = true
-	_passar(g2, 400.0)
-	checar(not g2.dica_aposentar().show, "na garagem a dica não existe")
-	_liberar(g2)
+	gs.atualizar_risco_hud()
+	checar(not gs.dica_aposentar().show, "sair do vermelho apaga a dica")
 	_liberar(gs)
 
 
@@ -728,14 +729,14 @@ func _teste_dados_mudam_o_jogo() -> void:
 # --- Save v6 ---
 
 func _teste_save_v6() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 8, "versão do save é 8 (Fase 5.2)")
+	checar_igual(SaveStore.VERSAO_ATUAL, 9, "versão do save é 9 (Fase 5.3)")
 	var gs := _na_academia("f5_save", "bjj")
 	gs.geradores["neighbor_kid"] = 3
 	_passar(gs, 12.0)
 	gs.salvar()
 	var doc = JSON.parse_string(ler(gs.store.caminho()))
 	var c: Dictionary = doc.state.career
-	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [8, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
+	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [9, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
 	checar_igual([doc.state.permanent.arts_unlocked, doc.state.permanent.last_art], [["boxing", "bjj"], "bjj"], "permanent.arts_unlocked e last_art no arquivo")
 	var g2: Node = GameStateScript.new()
 	g2.inicializar(gs.store.pasta, "res://data/config.json")
@@ -757,7 +758,7 @@ func _teste_save_v6() -> void:
 	g4.autosave_ativo = false
 	checar_igual([g4.treino, g4.local_id, g4.arte_id, g4.artes_liberadas()], [77.0, "garage", "", []], "v0 -> v7 em cadeia")
 	g4.salvar()
-	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 8, "regravado como v8")
+	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 9, "regravado como v9")
 	for g in [gs, g2, g3, g4]:
 		_liberar(g)
 
@@ -860,7 +861,7 @@ func _teste_textos() -> void:
 	var g := _com_cinturao("f5_textos_mudanca")
 	m = g.mudanca()
 	checar_igual([m.title, m.effect_text, m.keeps_text, m.per_career_text, m.state], ["ACADEMIA BOA ESQUINA", "TREINO x2 / 2 LUTAS DA CASA",
-		"TUDO O QUE VOCÊ COMPROU VAI JUNTO", "VALE ATÉ O FIM DESTA CARREIRA", "ready"], "textos da mudança")
+		"TUDO O QUE VOCÊ COMPROU VAI JUNTO", "VALE ATÉ O FIM DESTA CAMPANHA", "ready"], "textos da mudança")
 	checar_igual(g.info_proxima().move, true, "bloco PRÓXIMA sabe que precisa mudar")
 	checar_igual(g.texto_ui("hud_next_move"), "PRÓXIMA: MUDE PARA A ACADEMIA", "texto do HUD antes de mudar")
 	# Dicas extras de fim.

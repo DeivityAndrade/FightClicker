@@ -3,7 +3,9 @@ extends RefCounted
 ## Grava e lê o save em JSON, com versão, migração, backup e proteção contra corrupção.
 ## A pasta é escolhida na criação: o jogo usa PASTA_REAL, os testes usam user://test/...
 ##
-## Formato atual (versão 8, Fase 5.2): igual ao v7 mais career.crew_click (Grito da equipe comprado, bool).
+## Formato atual (versão 9, Fase 5.3): igual ao v8 mais career.campaign_seconds (relógio da campanha, float) e
+## career.fight_day (dia da próxima luta; -1 = sem próxima luta).
+## Versão 8 (Fase 5.2): igual ao v7 mais career.crew_click (Grito da equipe comprado, bool).
 ## Versão 7 (Fase 5.1): igual ao v6 mais career.boxes (caixas de equipamento fechadas: [{item, kind, hits}]);
 ## career.glove_level passa a contar as luvas COMPRADAS (abertas + a que está na caixa).
 ## Versão 6 (Fase 5): igual ao v5 mais career.location, career.art, career.art_seconds,
@@ -17,7 +19,7 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 8
+const VERSAO_ATUAL := 9
 # Fator de conversão do Legado na migração v3 -> v4 (reescala do design; é formato, não balanceamento).
 const ESCALA_LEGADO_V4 := 10
 # Migração v5 -> v6: dinheiro mínimo de quem já tem o cinturão (= preço da mudança na v6). É formato, não lê data/:
@@ -44,6 +46,7 @@ const MIGRACOES := {
 	5: "_migrar_5_para_6",
 	6: "_migrar_6_para_7",
 	7: "_migrar_7_para_8",
+	8: "_migrar_8_para_9",
 }
 
 var pasta: String
@@ -397,6 +400,24 @@ func _migrar_7_para_8(doc: Dictionary) -> Dictionary:
 	if not (carreira is Dictionary):
 		carreira = {}
 	carreira["crew_click"] = false
+	estado["career"] = carreira
+	novo["state"] = estado
+	return novo
+
+
+# v8 (Fase 5.2) -> v9 (Fase 5.3): a campanha começa no Dia 1 (campaign_seconds = 0). A migração não lê data/,
+# então fight_day = 0 ("recalcular"): o GameState põe a folga cheia do próximo adversário a partir do Dia 1,
+# ou -1 se a escada já está completa (Kid vencido). Nada mais muda.
+func _migrar_8_para_9(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	carreira["campaign_seconds"] = 0.0
+	carreira["fight_day"] = 0
 	estado["career"] = carreira
 	novo["state"] = estado
 	return novo

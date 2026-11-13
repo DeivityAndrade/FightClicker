@@ -61,6 +61,12 @@ const ESTADOS_TODOS := [
 	"f52_loja_l3_compravel", "f52_loja_l4_sem_dinheiro", "f52_loja_l4_na_caixa", "f52_loja_grito_compravel", "f52_loja_grito_sem_dinheiro",
 	"f52_loja_grito_comprado", "f52_loja_grito_hover", "f52_evento_luva", "f52_evento_bolsa", "f52_bolsa_hover", "f52_bolsa_toast",
 	"f52_caixa_l3", "f52_caixa_l4", "f52_l4_sala", "f52_l4_luta", "f52_destaque_unico", "f52_contador", "f52_critico_menor",
+	# Fase 5.3
+	"f53_hud_facil", "f53_hud_equilibrado", "f53_hud_perigoso", "f53_hud_12_dias", "f53_hud_1_dia", "f53_hud_nome_longo", "f53_hud_dia_virou",
+	"f53_hud_completa", "f53_dica_posto", "f53_dica_posto_curta", "f53_aviso_3_dias", "f53_aviso_1_dia_a", "f53_aviso_1_dia_b",
+	"f53_aviso_nome_longo", "f53_dia_previa", "f53_hud_hoje", "f53_dia_loja_fechada", "f53_dia_passar_confirma", "f53_dia_voltar",
+	"f53_dia_previa_tonhao", "f53_dia_previa_revanche_arte", "f53_fim_campanha_encerrada", "f53_fim_selo_completa", "f53_retrato_l1", "f53_retrato_l2", "f53_retrato_l3",
+	"f53_retrato_l4", "f53_retrato_luta_l4", "f53_loja_grito_sem_rolar",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -290,6 +296,7 @@ func _rodar() -> void:
 	await _rodar_fase5()
 	await _rodar_fase51()
 	await _rodar_fase52()
+	await _rodar_fase53()
 	_fechar_cena()
 
 
@@ -1661,7 +1668,7 @@ func _rodar_fase5() -> void:
 		gs.atributos = {"strength": 300.0, "agility": 60.0, "endurance": 200.0}
 		gs.fama = 200
 		await _abrir()
-		gs._perigo_gym = 400.0
+		gs.segundos_campanha = float(gs.fight_day - 3) * gs._segundos_por_dia()  # Fase 5.3: faltam 2 dias
 		await _esperar(1.3)
 		_estado = "f5_dica_aposentar"
 		_exigir(bool(gs.dica_aposentar().show), _estado, "a dica deveria estar no ar (perigo_gym 400 s)")
@@ -2195,3 +2202,241 @@ func _rodar_fase52() -> void:
 		gs.clicou.emit(1500.0, true, "punching_bag", "endurance", "A ESTEIRA GEMEU!")
 		await _esperar(0.2)
 		await _ver("f52_critico_menor")
+
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.3: calendário da campanha (folhinha no HUD, faixas de aviso, prévia do dia, PASSAR O POSTO, retrato por luva)
+# ---------------------------------------------------------------------------------------------
+
+## Garagem com a data da próxima luta daqui a `dias` dias e o risco do HUD forçado (o recálculo periódico fica desligado).
+## `idx` escolhe o adversário (0 Dudu, 1 Brutão...). Chamar ANTES de `_abrir()`.
+func _calendario53(dias: int, risco: String, idx: int = 0) -> void:
+	_novo_jogo()
+	gs.indice_escada = idx
+	gs.risco_hud_ativo = false
+	var spd: float = gs._segundos_por_dia()
+	gs.fight_day = 30
+	gs.segundos_campanha = float(30 - dias - 1) * spd + 1.0
+	gs._definir_risco_hud(str(gs.proximo_adversario().id), risco)
+
+
+func _rodar_fase53() -> void:
+	var alguma := false
+	for n in ESTADOS_TODOS:
+		if str(n).begins_with("f53_") and _quer(n):
+			alguma = true
+	if not alguma:
+		return
+	var fl: Node
+
+	# --- HUD: a folhinha em cada cor de risco, 12 dias (a linha mais larga), 1 dia, nome longo ---
+	for par in [["f53_hud_facil", 11, "easy"], ["f53_hud_equilibrado", 5, "even"], ["f53_hud_perigoso", 4, "hard"],
+			["f53_hud_12_dias", 12, "easy"], ["f53_hud_1_dia", 1, "hard"]]:
+		if _quer(par[0]):
+			_calendario53(par[1], par[2])
+			await _abrir()
+			_exigir(gs.dias_para_luta() == par[1], par[0], "dias para a luta %d" % gs.dias_para_luta())
+			await _ver(par[0])
+	if _quer("f53_hud_nome_longo"):
+		_calendario53(8, "even", 1)  # Brutão do Posto: o nome passa da linha 2 e é abreviado
+		await _abrir()
+		await _ver("f53_hud_nome_longo")
+	if _quer("f53_hud_dia_virou"):
+		_calendario53(6, "easy")
+		await _abrir()
+		gs.dia_mudou.emit(gs.dia_campanha())
+		await _esperar(0.12)  # a folha arrancada no meio da animação
+		await _ver("f53_hud_dia_virou")
+	if _quer("f53_hud_completa"):
+		_novo_jogo()
+		_academia("bjj", ["treadmill", "jump_rope"], 800.0, "punching_bag", gs.lutas.adversarios.size())
+		await _abrir()
+		_exigir(gs.campanha_completa(), "f53_hud_completa", "campanha completa")
+		await _ver("f53_hud_completa")
+
+	# --- Dica de passar o posto (<= 3 dias, vermelho, pote > 0): versão longa e versão curta ---
+	if _quer("f53_dica_posto"):
+		_calendario53(2, "hard")
+		gs.fama = 200
+		await _abrir()
+		_exigir(bool(gs.dica_aposentar().show), "f53_dica_posto", "a dica deveria estar no ar")
+		await _ver("f53_dica_posto")
+	if _quer("f53_dica_posto_curta"):
+		_calendario53(2, "hard")
+		gs.fama = 200000
+		await _abrir()
+		_exigir(bool(gs.dica_aposentar().show), "f53_dica_posto_curta", "a dica deveria estar no ar")
+		await _ver("f53_dica_posto_curta")
+
+	# --- Faixas de aviso: 3 dias (calma) e 1 dia (urgente, 2 quadros) ---
+	if _quer("f53_aviso_3_dias"):
+		_calendario53(3, "even")
+		await _abrir()
+		gs.aviso_data.emit(3)
+		await _esperar(0.45)
+		var faixa3: Control = _cena.find_children("*", "FaixaAviso", true, false)[0]
+		_exigir(faixa3.visible and not faixa3.urgente, "f53_aviso_3_dias", "faixa de 3 dias visível e calma")
+		await _ver("f53_aviso_3_dias")
+	if _quer("f53_aviso_1_dia_a") or _quer("f53_aviso_1_dia_b"):
+		_calendario53(1, "hard")
+		await _abrir()
+		gs.aviso_data.emit(1)
+		await _esperar(0.3)
+		var faixa1: Control = _cena.find_children("*", "FaixaAviso", true, false)[0]
+		_exigir(faixa1.visible and faixa1.urgente, "f53_aviso_1_dia_a", "faixa de 1 dia visível e urgente")
+		await _ver("f53_aviso_1_dia_a")
+		await _esperar(0.5)  # 2 fps: o outro quadro
+		await _ver("f53_aviso_1_dia_b")
+		faixa1.esconder()
+	if _quer("f53_aviso_nome_longo"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 800.0)
+		gs.risco_hud_ativo = false
+		gs.fight_day = 30
+		gs.segundos_campanha = 28.0 * gs._segundos_por_dia() + 1.0
+		await _abrir()
+		gs.aviso_data.emit(1)  # Tonhão do Tatame: o nome mais longo
+		await _esperar(0.3)
+		await _ver("f53_aviso_nome_longo")
+
+	# --- O dia da luta: a prévia abre sozinha, sem X nem Esc; PASSAR O POSTO pede confirmação e VOLTAR devolve a prévia ---
+	if _quer("f53_dia_previa") or _quer("f53_hud_hoje") or _quer("f53_dia_loja_fechada") or _quer("f53_dia_passar_confirma") \
+			or _quer("f53_dia_voltar"):
+		_calendario53(0, "hard")
+		gs.fama = 200
+		await _abrir()
+		fl = _cena.get_node("Fluxo")
+		# A LOJA aberta antes do dia fecha (a aba volta para o TREINO).
+		_cena.get_node("PainelLoja")._trocar_aba("loja")
+		await _esperar(0.9)
+		_exigir(gs.no_dia_da_luta() and not gs.sala_ativa(), "f53_dia_previa", "no dia a sala está parada")
+		_exigir(_eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta, "f53_dia_previa", "a prévia do dia abriu sozinha")
+		if _eh(fl.janela, "JanelaPrevia"):
+			await _ver("f53_dia_previa")
+			# Esc não fecha a prévia do dia.
+			var esc := InputEventKey.new()
+			esc.keycode = KEY_ESCAPE
+			esc.pressed = true
+			fl._unhandled_key_input(esc)
+			await _esperar(0.2)
+			_exigir(_eh(fl.janela, "JanelaPrevia"), "f53_dia_previa", "Esc não pode fechar a prévia do dia")
+			# A folhinha do HUD (hoje) e a LOJA fechada, com a prévia escondida só para a captura.
+			fl.janela.visible = false
+			var loja: Node = _cena.get_node("PainelLoja")
+			_exigir(loja._tab["loja"].botao.disabled and loja._aba == "treino", "f53_dia_loja_fechada", "LOJA fechada no dia")
+			await _ver("f53_hud_hoje")
+			fl.janela.visible = true
+			if _quer("f53_dia_passar_confirma") or _quer("f53_dia_voltar"):
+				fl.janela.passar_pedido.emit()
+				await _esperar(0.4)
+				_exigir(_eh(fl.janela, "JanelaAposentar"), "f53_dia_passar_confirma", "PASSAR O POSTO abre a confirmação")
+				await _ver("f53_dia_passar_confirma")
+				if _eh(fl.janela, "JanelaAposentar"):
+					fl.janela.cancelou.emit()  # VOLTAR
+					await _esperar(0.5)
+					_exigir(_eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta, "f53_dia_voltar", "VOLTAR devolve a prévia do dia")
+					await _ver("f53_dia_voltar")
+	# B1 da QA 5.3: dia da luta + fita da revanche + linha da arte (janela mais alta): a folhinha "HOJE" não pode tocar o retrato.
+	if _quer("f53_dia_previa_revanche_arte"):
+		_calendario53(0, "hard")
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		gs.permanente["last_art"] = "boxing"
+		gs.arte_id = "boxing"
+		gs._atualizar_traco()
+		gs.permanente["revenge_opponent"] = str(gs.proximo_adversario().id)
+		gs.fama = 200
+		await _abrir()
+		fl = _cena.get_node("Fluxo")
+		await _esperar(0.9)
+		var ok_prev: bool = _eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta
+		_exigir(ok_prev, "f53_dia_previa_revanche_arte", "a prévia do dia abriu")
+		if ok_prev:
+			_exigir(bool(gs.previa().get("revenge", false)) and str(gs.previa().get("art_fight_text", "")) != "",
+				"f53_dia_previa_revanche_arte", "o estado deveria ter revanche e traço da arte")
+			var folhinha: Control = null
+			var quadros: Array = []
+			for n in fl.janela.find_children("*", "TextureRect", true, false):
+				var tr: TextureRect = n as TextureRect
+				if tr.get_child_count() > 0 and tr.get_node_or_null("Cabecalho") != null:
+					folhinha = tr
+				elif tr.texture != null and tr.get_child_count() == 1 and tr.get_child(0) is TextureRect \
+						and tr.size.x >= 30.0 and tr.size.x <= 40.0 and tr.size.y >= 30.0 and tr.size.y <= 40.0:
+					quadros.append(tr)
+			_exigir(folhinha != null and quadros.size() == 2, "f53_dia_previa_revanche_arte", "achou a folhinha e os 2 retratos")
+			if folhinha != null:
+				for q in quadros:
+					_exigir(not folhinha.get_global_rect().intersects(q.get_global_rect()), "f53_dia_previa_revanche_arte",
+						"a folhinha HOJE toca o retrato %s" % str(q.get_global_rect()))
+		await _ver("f53_dia_previa_revanche_arte")
+	if _quer("f53_dia_previa_tonhao"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 800.0)
+		gs.risco_hud_ativo = false
+		gs.fight_day = 40
+		gs.segundos_campanha = 39.0 * gs._segundos_por_dia()
+		await _abrir()
+		fl = _cena.get_node("Fluxo")
+		await _esperar(0.9)
+		_exigir(_eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta, "f53_dia_previa_tonhao", "a prévia do dia abriu")
+		await _ver("f53_dia_previa_tonhao")
+
+	# --- Fim de campanha: derrota (CAMPANHA ENCERRADA / NOVA CAMPANHA) e passar o posto depois do Kid (selo) ---
+	if _quer("f53_fim_campanha_encerrada"):
+		_derrota_pendente([], 12)
+		await _abrir()
+		await _esperar(0.9)
+		await _ver("f53_fim_campanha_encerrada")
+	if _quer("f53_fim_selo_completa"):
+		_novo_jogo()
+		gs.indice_escada = gs.lutas.adversarios.size()
+		gs.cinturao = true
+		gs.fama = 340
+		gs.aposentar()
+		await _abrir()
+		await _esperar(0.9)
+		await _ver("f53_fim_selo_completa")
+
+	# --- Retrato do jogador com a luva equipada (L1 a L4) na prévia, e L4 no topo da luta ---
+	for n in [1, 2, 3, 4]:
+		var nome_r := "f53_retrato_l%d" % n
+		if _quer(nome_r):
+			_novo_jogo()
+			gs.nivel_luva = n
+			await _abrir()
+			_exigir(("portrait_player" + gs.sufixo_luva()) == "portrait_player_glove_l%d" % n, nome_r, "retrato da luva L%d: %s" % [n, ("portrait_player" + gs.sufixo_luva())])
+			_cena.get_node("Fluxo").abrir_previa()
+			await _esperar(0.4)
+			await _ver(nome_r)
+	if _quer("f53_retrato_luta_l4"):
+		var achada53 := _achar_luta(true, true)
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.atributos = achada53.atr
+		await _abrir()
+		gs.rng.seed = int(achada53.k)
+		fl = _cena.get_node("Fluxo")
+		fl.abrir_previa()
+		await _esperar(0.3)
+		fl.janela.lutar_pedido.emit()
+		await _esperar(0.5)
+		await _ver("f53_retrato_luta_l4")
+
+	# --- Grito da equipe visível na LOJA sem rolar ---
+	if _quer("f53_loja_grito_sem_rolar"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.dinheiro = 2000.0
+		var painel53: Node = await _abrir_loja(false)
+		var janela_loja: Control = painel53._janela_loja
+		var cartao: Control = painel53._crew.cartao
+		var dentro: bool = cartao.get_global_rect().end.y <= janela_loja.get_global_rect().end.y + 0.01 \
+			and cartao.get_global_rect().position.y >= janela_loja.get_global_rect().position.y - 0.01
+		_exigir(dentro and gs.pode_comprar_crew_click(), "f53_loja_grito_sem_rolar", "o cartão do Grito inteiro à vista, sem rolar")
+		await _ver("f53_loja_grito_sem_rolar")
+	gs.risco_hud_ativo = true
+
+
+## Classe da janela pelo nome (o verificador não pode citar classes da UI: elas dependem do autoload GameState na compilação).
+func _eh(no: Object, classe: String) -> bool:
+	return no != null and no.get_script() != null and str(no.get_script().get_global_name()) == classe

@@ -64,6 +64,7 @@ var luva_id := "glove_shop"
 var luva_base: Dictionary = {}
 var luvas: Array[Dictionary] = []
 var carreira: Dictionary = {}
+var calendario: Dictionary = {}  # Fase 5.3: career.json -> calendar (seconds_per_day 0 = sem calendário)
 # Visual: golpes seguidos para encher a barra de ESPECIAL (fights.json -> presentation.special_hits)
 var golpes_especial := 5
 # Fase 4
@@ -282,6 +283,7 @@ func _montar_adversario(item: Dictionary, id: String, pad: Dictionary) -> Dictio
 	var a := {"id": id}
 	for chave in ["strength", "agility", "endurance", "prize_money", "prize_fame"]:
 		a[chave] = TrainingData._num(item, chave, float(pad.get(chave, 0)), 0.0, 1.0e300, id + ".")
+	a["prep_days"] = int(TrainingData._num(item, "prep_days", 14.0, 1.0, 999.0, id + "."))  # Fase 5.3: folga em dias
 	a["belt"] = item.get("belt", false) == true
 	a["location"] = TrainingData._txt(item, "location", "garage")  # Fase 5: onde ele luta; ausente = garagem
 	for chave in ["name", "description", "profile", "entry", "wins_line", "loses_line"]:
@@ -400,11 +402,30 @@ func _ler_carreira(dados: Dictionary) -> void:
 		# Fase 5: segundos de PERIGOSO na academia até aparecer a dica "APOSENTAR AGORA LEVA {n} DE LEGADO"
 		"gym_retire_hint_seconds": TrainingData._num(dados, "gym_retire_hint_seconds", 300.0, 0.0, 1.0e6, "career."),
 	}
+	_ler_calendario(dados.get("calendar", null))
 	# Regra "aposentar rende mais que perder" não pode quebrar por dado.
 	if carreira.defeat_share >= carreira.retire_share:
 		push_warning("FightData: defeat_share deve ser < retire_share; usando 0.5 / 1.0.")
 		carreira.defeat_share = 0.5
 		carreira.retire_share = 1.0
+
+
+# Fase 5.3: calendário da campanha. Bloco ausente = sem calendário (jogo da 5.2).
+func _ler_calendario(v: Variant) -> void:
+	var b: Dictionary = v if v is Dictionary else {}
+	var spd := 0.0
+	if v is Dictionary:
+		spd = TrainingData._num(b, "seconds_per_day", 0.0, 0.0, 3600.0, "calendar.")
+		if spd > 0.0 and spd < 5.0:
+			push_warning("FightData: calendar.seconds_per_day fora de 5-3600; calendário desligado.")
+			spd = 0.0
+	calendario = {
+		"seconds_per_day": spd,
+		"warn_days": int(TrainingData._num(b, "warn_days", 3.0, 0.0, 30.0, "calendar.")),
+		"warn_sound_days": int(TrainingData._num(b, "warn_sound_days", 1.0, 0.0, 30.0, "calendar.")),
+		"retire_hint_days": int(TrainingData._num(b, "retire_hint_days", 3.0, 0.0, 30.0, "calendar.")),
+		"offline_stops_at_fight_day": b.get("offline_stops_at_fight_day", true) != false,
+	}
 
 
 # --- Fase 4: Metrônomo (loja) ---

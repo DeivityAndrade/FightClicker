@@ -44,6 +44,7 @@ func _ready() -> void:
 	add_child(_cursor)
 
 	add_child(Dica.new())  # Fase 5.1: dica flutuante do nível 3 (hover)
+	add_child(FaixaAviso.new())  # Fase 5.3: faixa de aviso da data (3 dias e 1 dia)
 	_fluxo.ligar(_barra)
 	# A luva equipada troca o cursor, a mão do lutador na garagem (Sala) e na luta (TelaLuta) pelo mesmo sufixo.
 	GameState.luva_mudou.connect(func(_n: int, _s: String) -> void: _cursor.definir(UiTema.nome_cursor()))

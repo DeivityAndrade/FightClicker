@@ -2,21 +2,21 @@
 	"opponents": [
 		{ "id": "opp_warmup", "name": "Dudu Alongado", "description": "Alonga mais do que luta. Bom pra começar.",
 		  "entry": "Tô só esquentando. Pode vir.", "wins_line": "Foi aquecimento pra mim. Foi mal.", "loses_line": "Eu ainda nem tinha alongado o ombro.",
-		  "strength": 1200, "agility": 100, "endurance": 800, "prize_money": 50, "prize_fame": 10, "belt": false, "profile": "EQUILIBRADO" },
+		  "strength": 1200, "agility": 100, "endurance": 800, "prize_money": 50, "prize_fame": 10, "prep_days": 12, "belt": false, "profile": "EQUILIBRADO" },
 		{ "id": "opp_strong", "name": "Brutão do Posto", "description": "Carrega botijão no braço. Derruba parede.",
 		  "entry": "Carrego botijão. Você é mais leve.", "wins_line": "Foi só um empurrãozinho.", "loses_line": "Alguém anota a placa desse soco.",
-		  "strength": 27000, "agility": 1400, "endurance": 5400, "prize_money": 150, "prize_fame": 30, "belt": false, "profile": "FORTE" },
+		  "strength": 27000, "agility": 1400, "endurance": 5400, "prize_money": 150, "prize_fame": 30, "prep_days": 13, "belt": false, "profile": "FORTE" },
 		{ "id": "opp_fast", "name": "Dinho Pulga", "description": "Você pisca e ele já bateu. Duas vezes.",
 		  "entry": "Se piscar, perde. Já perdeu.", "wins_line": "Nem vi você cair. Sério.", "loses_line": "Tropecei. Conta como tropeço.",
-		  "strength": 28000, "agility": 154000, "endurance": 8400, "prize_money": 800, "prize_fame": 60, "belt": false, "profile": "RÁPIDO" },
+		  "strength": 28000, "agility": 154000, "endurance": 8400, "prize_money": 800, "prize_fame": 60, "prep_days": 10, "belt": false, "profile": "RÁPIDO" },
 		{ "id": "opp_tank", "name": "Seu Muralha", "description": "Dono do cinturão. Não cai, só cansa.",
 		  "entry": "O cinturão é meu há onze anos.", "wins_line": "O cinturão fica. Eu também.", "loses_line": "Onze anos. Pode levar. Pesa.",
-		  "strength": 82000, "agility": 61000, "endurance": 515000, "prize_money": 2500, "prize_fame": 100, "belt": true, "profile": "RESISTENTE" },
+		  "strength": 82000, "agility": 61000, "endurance": 515000, "prize_money": 2500, "prize_fame": 100, "prep_days": 16, "belt": true, "profile": "RESISTENTE" },
 		{ "id": "opp_gym_1", "location": "gym", "name": "Tonhão do Tatame", "description": "Faixa roxa de cor duvidosa. Pesa e não sai.",
 		  "entry": "Aqui o tatame é meu. Fica à vontade.", "wins_line": "Bem-vindo à academia. Paga a mensalidade.", "loses_line": "Tá bom, pode ficar. Cuidado com o espelho.",
-		  "strength": 975000, "agility": 375000, "endurance": 4125000, "prize_money": 2500, "prize_fame": 120, "belt": false, "profile": "RESISTENTE" },
+		  "strength": 975000, "agility": 375000, "endurance": 4125000, "prize_money": 2500, "prize_fame": 120, "prep_days": 24, "belt": false, "profile": "RESISTENTE" },
 		{ "id": "opp_gym_2", "location": "gym", "name": "Kid Navalha", "description": "Campeão da casa. Corta o ar e a conversa.",
 		  "entry": "Eu vi você chegar de chinelo.", "wins_line": "Volta quando a garagem te soltar.", "loses_line": "Amanhã cedo. Você e eu. De novo.",
-		  "strength": 4600000, "agility": 8050000, "endurance": 20700000, "prize_money": 6000, "prize_fame": 200, "belt": false, "profile": "RÁPIDO" }
+		  "strength": 4600000, "agility": 8050000, "endurance": 20700000, "prize_money": 6000, "prize_fame": 200, "prep_days": 16, "belt": false, "profile": "RÁPIDO" }
 	]
 }

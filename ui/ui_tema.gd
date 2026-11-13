@@ -304,6 +304,15 @@ static func nome_luvas_penduradas() -> String:
 	return "art_hung_glove_old" if suf == "" else "art_hung" + suf
 
 
+## Retrato do jogador com a luva equipada (Fase 5.3, B1): "portrait_player" + sufixo da luva; sem o sprite, o retrato base.
+## Os ids vêm de manifest.by_data_id.player_portrait (base, by_glove).
+static func nome_retrato_jogador() -> String:
+	var info: Dictionary = manifest().get("by_data_id", {}).get("player_portrait", {})
+	var base := str(info.get("base", "portrait_player"))
+	var nome := base + GameState.sufixo_luva()
+	return nome if not sprite(nome).is_empty() else base
+
+
 ## Ícone 16x16 de loja de uma luva (`id` = glove_l1...).
 static func icone_luva(id: String) -> String:
 	return str(manifest().get("by_data_id", {}).get(id, {}).get("icon", "icon_glove_old"))

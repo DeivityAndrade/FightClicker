@@ -87,7 +87,7 @@ func _montar_fixo() -> void:
 	# Com a aba ESTILO a fileira de baixo tem 3 botões iguais (140 px, folga de 20): [CORPO / CARREIRA] [NOVA CARREIRA] [ESTILO].
 	var com_abas := GameState.arvore_ramos().any(func(r: Dictionary) -> bool: return str(r.id) == "style")
 	var b := botao_texto(Rect2(250, 284, 140, 24) if com_abas else Rect2(240, 284, 160, 24),
-		UiTema.txt("tree_new_career", "NOVA CARREIRA"), UiTema.WHITE)
+		UiTema.txt("tree_new_career", "NOVA CAMPANHA"), UiTema.WHITE)
 	b.pressed.connect(func() -> void: nova_carreira_pedido.emit())
 	_montar_abas()
 

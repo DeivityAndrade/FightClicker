@@ -235,7 +235,7 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	# Jogador (esquerda)
 	var pf: Array = lay.get("player_portrait_frame", [6, 6])
 	var quadro_j := UiTema.textura_rect(hud, "ui_portrait_frame", float(pf[0]), float(pf[1]))
-	UiTema.textura_rect(quadro_j, "portrait_player", 2, 2)  # o retrato fica dentro da moldura
+	UiTema.textura_rect(quadro_j, UiTema.nome_retrato_jogador(), 2, 2)  # o retrato fica dentro da moldura
 	var pn: Array = lay.get("player_name", [46, 6])
 	UiTema.rotulo(hud, UiTema.txt("preview_you", "VOCÊ"), UiTema.WHITE, float(pn[0]), float(pn[1]))
 	var bj: Array = lay.get("player_hp_bar", [46, 16, 236, 12])

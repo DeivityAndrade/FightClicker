@@ -1,5 +1,5 @@
 {
-	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último). Fase 5.2 (Diretor de Arte): event_golden_crew, icon_crew_click, caixa da L3/L4 (gerador no scratchpad do Diretor de Arte; ver direcao-visual.md §19).",
+	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último). Fase 5.2 (Diretor de Arte): event_golden_crew, icon_crew_click, caixa da L3/L4 (gerador no scratchpad do Diretor de Arte; ver direcao-visual.md §19). Fase 5.3 (Diretor de Arte): calendário da campanha (folhinha, plaquinhas, faixas de aviso, selo do dia, PASSAR O POSTO, campanha completa) e retrato da luta por luva (direcao-visual.md §20).",
 	"_como_usar": "Sprite2D/AnimatedSprite2D com centered=false e offset = -pivot; position = posição na sala (coordenadas da tela base 640x360). Ordem de desenho: pelo y dos pés (sort_y = pos.y, ou pos.y + sort_y_offset nos sacos pendurados). Nunca escalar por fator não-inteiro nem rodar.",
 	"base_resolution": [
 		640,
@@ -1625,7 +1625,7 @@
 					0
 				],
 				"wobble_fps": 12,
-				"every_s": 4.0,
+				"every_s": 4,
 				"glint": "fx_box_glint",
 				"glint_offset": {
 					"box_big": [
@@ -1686,11 +1686,11 @@
 			"fx_pos": "pos da caixa + top_center_offset do sprite (meio de cima da caixa)",
 			"open_timeline_s": {
 				"shake": [
-					0.0,
+					0,
 					0.15
 				],
 				"burst": [
-					0.0,
+					0,
 					0.5
 				],
 				"item_appears": [
@@ -1777,7 +1777,165 @@
 		"crew_click": {
 			"icon": "icon_crew_click"
 		},
-		"_nota_fase52_arte": "Fase 5.2 (Diretor de Arte): golden_event (bolsa da torcida), crew_click (ícone da LOJA), box.sprite_by_item/slot_by_item de glove_l3 e glove_l4 (caixa pequena, slot glove)."
+		"_nota_fase52_arte": "Fase 5.2 (Diretor de Arte): golden_event (bolsa da torcida), crew_click (ícone da LOJA), box.sprite_by_item/slot_by_item de glove_l3 e glove_l4 (caixa pequena, slot glove).",
+		"player_portrait": {
+			"base": "portrait_player",
+			"by_glove": {
+				"glove_old": "portrait_player",
+				"glove_l1": "portrait_player_glove_l1",
+				"glove_l2": "portrait_player_glove_l2",
+				"glove_l3": "portrait_player_glove_l3",
+				"glove_l4": "portrait_player_glove_l4"
+			},
+			"rule": "Igual às folhas de luta: id = 'portrait_player' + sufixo da luva equipada ('' para a velha, '_glove_lN' para a LN). Vale para o topo da luta E para a prévia (inclusive a do dia). Se o id não existir, cair no portrait_player.",
+			"frame": "ui_portrait_frame"
+		},
+		"campaign_calendar": {
+			"hud": {
+				"plate_rect": [
+					7,
+					131,
+					116,
+					26
+				],
+				"page_pos": [
+					11,
+					133
+				],
+				"page_number_rect": [
+					2,
+					10,
+					15,
+					9
+				],
+				"text_x": 35,
+				"line1_y": 136,
+				"line2_y": 146,
+				"risk_chip_pos": [
+					35,
+					160
+				],
+				"page": "ui_calendar_page",
+				"page_frame_normal": 0,
+				"page_frame_fight_day": 1,
+				"plate_by_risk": {
+					"risk_easy": "ui_countdown_plate_easy",
+					"risk_even": "ui_countdown_plate_even",
+					"risk_hard": "ui_countdown_plate_hard"
+				},
+				"plate_fight_day": "ui_countdown_plate_today",
+				"plate_done": "ui_countdown_plate_done",
+				"page_done": "icon_campaign_complete",
+				"colors": {
+					"line1": "col_text_1",
+					"line2": "col_text_2",
+					"page_number": "d1",
+					"today_line1": "y2",
+					"done_lines": "col_money"
+				},
+				"note": "Coluna da esquerda, no lugar do 'PRÓXIMA:' de hoje (1x, base 640x360). Folhinha = DIA da campanha (número 1x em d1 no meio da área branca); linha 1 = 'Faltam X dias' (txt_body), linha 2 = nome do adversário (col_text_2), embaixo o selo de risco que já existe (ui_risk_* + icon_risk_*). Nada em txt_hero: é informação de nível 2."
+			},
+			"day_turn": {
+				"fx": "fx_calendar_tear",
+				"pos_rule": "pivô do fx no canto de cima à esquerda da folhinha",
+				"fps": 12.0,
+				"frames": [
+					0,
+					1,
+					2,
+					3
+				],
+				"note": "Quando o dia vira: troca o número da folhinha e toca o fx por cima, uma vez (0,33 s). Sem som novo (fase 13)."
+			},
+			"warn_3d": {
+				"sprite": "ui_warn_strip_3d",
+				"icon": "icon_calendar",
+				"rect": [
+					214,
+					22,
+					212,
+					18
+				],
+				"icon_offset": [
+					7,
+					3
+				],
+				"text_offset": [
+					23,
+					5
+				],
+				"text_color": "col_text_1",
+				"nine_slice_cap": 4,
+				"note": "Faixa calma no topo da sala, centrada em x 320 (largura = conteúdo + 10 px; exemplo de 212 px). Entra descendo 18 px em 0,2 s, fica ~6 s e sobe. Não cobre lutador nem alvo."
+			},
+			"warn_1d": {
+				"sprite": "ui_warn_strip_1d",
+				"sprite_pulse": "ui_warn_strip_1d_hi",
+				"pulse_fps": 2.0,
+				"icon": "icon_calendar_alert",
+				"rect": [
+					196,
+					22,
+					248,
+					18
+				],
+				"icon_offset": [
+					13,
+					3
+				],
+				"text_offset": [
+					29,
+					5
+				],
+				"text_color": "y2",
+				"nine_slice_cap": 10,
+				"note": "Faixa urgente: mesmo lugar, alterna _1d/_1d_hi a 2 fps (sem alpha, sem tremer). Toca o som que já existe ao entrar. Pode ficar até a luta ou até o jogador clicar nela (UI/UX decide)."
+			},
+			"fight_day": {
+				"badge": "ui_day_badge",
+				"badge_offset_in_preview": [
+					-10,
+					-12
+				],
+				"badge_header_text_rect": [
+					1,
+					5,
+					37,
+					7
+				],
+				"badge_number_rect": [
+					5,
+					18,
+					29,
+					14
+				],
+				"badge_header_color": "white",
+				"badge_number_color": "d1",
+				"badge_number_size": "txt_hero",
+				"fight_button": "fight_button (o LUTAR! de sempre)",
+				"pass_button": "pass_post_button",
+				"dim": "o mesmo pontilhado que já escurece a sala atrás da prévia",
+				"note": "Prévia do dia: a folhinha grande fica presa (fita crepe) no canto de cima à esquerda da janela, por cima da borda; cabeçalho 'HOJE' 1x, número do dia em 2x dentro do círculo de caneta. Sem botão de voltar. O HUD atrás usa plate_fight_day e a folhinha no quadro 1 (dia circulado)."
+			},
+			"campaign_complete": {
+				"hud_page": "icon_campaign_complete",
+				"hud_plate": "ui_countdown_plate_done",
+				"seal": "seal_campaign_complete",
+				"note": "Depois do Kid: a folhinha vira a página dourada com estrela (sem número, o relógio some), 2 linhas 'CAMPANHA' / 'COMPLETA' em col_money. O selo 40x44 é para o fim de carreira/cartão (pode ampliar 2x inteiro)."
+			},
+			"_nota": "Fase 5.3 (Diretor de Arte), direcao-visual.md §20. Posições em 1x (base 640x360). Textos provisórios: quem fecha é o Roteirista; quem fecha o layout é o UI/UX pela alinhamento-ui."
+		},
+		"pass_post_button": {
+			"normal": "ui_button_pass_normal",
+			"hover": "ui_button_pass_hover",
+			"pressed": "ui_button_pass_pressed",
+			"disabled": "ui_button_pass_disabled",
+			"icon": "icon_pass_post",
+			"text_color": "p2",
+			"text_color_disabled": "g1",
+			"note": "PASSAR O POSTO na prévia do dia: botão de contorno (ação secundária, menos peso que o LUTAR! vermelho), mesmo 9-slice dos botões da Fase 2. Na sala, fora do dia, o botão roxo de sempre (retire_button) só troca o texto; sugestão: trocar também o ícone para icon_pass_post."
+		},
+		"_nota_fase53_arte": "Fase 5.3 (Diretor de Arte): campaign_calendar, pass_post_button, player_portrait (retrato por luva)."
 	},
 	"palette_swap_glove": {
 		"r0": "#5a1a22",
@@ -22818,6 +22976,450 @@
 				0
 			],
 			"note": "Ícone 16x16 da LOJA do Grito da equipe (crew_click): megafone verde da equipe gritando, ondas amarelas."
+		},
+		"icon_calendar": {
+			"file": "res://assets/sprites/ui/icon_calendar.png",
+			"frame_size": [
+				11,
+				11
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 11x11 de calendário de parede (argolas, cabeçalho vermelho, um dia marcado). Em linha com texto 1x: HUD, faixa de 3 dias, dicas."
+		},
+		"icon_calendar_alert": {
+			"file": "res://assets/sprites/ui/icon_calendar_alert.png",
+			"frame_size": [
+				11,
+				11
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 11x11 do calendário com '!' vermelho: faixa de 1 dia."
+		},
+		"ui_calendar_page": {
+			"file": "res://assets/sprites/ui/ui_calendar_page.png",
+			"frame_size": [
+				20,
+				22
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"number_rect": [
+				2,
+				10,
+				15,
+				9
+			],
+			"number_color": "d1",
+			"note": "Folhinha 20x22 do HUD (dia da campanha). Quadro 0 normal, 1 dia circulado de caneta (dia da luta). Número 1x em d1 centrado em number_rect (até 2 dígitos). Folhas de baixo = 1 px de borda à direita e embaixo."
+		},
+		"fx_calendar_tear": {
+			"file": "res://assets/sprites/ui/fx_calendar_tear.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				6,
+				10
+			],
+			"loop": false,
+			"note": "Folha arrancada quando o dia vira (uma vez, 12 fps). Pôr o pivô (6,10) no canto de cima à esquerda da ui_calendar_page, por cima dela; o número novo já aparece embaixo."
+		},
+		"ui_countdown_plate_easy": {
+			"file": "res://assets/sprites/ui/ui_countdown_plate_easy.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "white",
+			"note": "Plaquinha 9-slice do 'Faltam X dias' no HUD (easy): fundo d1, faixa de 2 px à esquerda na cor gr2. Tamanho de uso 116x26 (by_data_id.campaign_calendar.hud)."
+		},
+		"ui_countdown_plate_even": {
+			"file": "res://assets/sprites/ui/ui_countdown_plate_even.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "white",
+			"note": "Plaquinha 9-slice do 'Faltam X dias' no HUD (even): fundo d1, faixa de 2 px à esquerda na cor y0. Tamanho de uso 116x26 (by_data_id.campaign_calendar.hud)."
+		},
+		"ui_countdown_plate_hard": {
+			"file": "res://assets/sprites/ui/ui_countdown_plate_hard.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "white",
+			"note": "Plaquinha 9-slice do 'Faltam X dias' no HUD (hard): fundo d1, faixa de 2 px à esquerda na cor r2. Tamanho de uso 116x26 (by_data_id.campaign_calendar.hud)."
+		},
+		"ui_countdown_plate_today": {
+			"file": "res://assets/sprites/ui/ui_countdown_plate_today.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "y2",
+			"note": "Plaquinha 9-slice do 'Faltam X dias' no HUD (today): fundo r0, faixa de 2 px à esquerda na cor y1. Tamanho de uso 116x26 (by_data_id.campaign_calendar.hud)."
+		},
+		"ui_countdown_plate_done": {
+			"file": "res://assets/sprites/ui/ui_countdown_plate_done.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 4,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "y1",
+			"note": "Plaquinha 9-slice do 'Faltam X dias' no HUD (done): fundo d1, faixa de 2 px à esquerda na cor y1. Tamanho de uso 116x26 (by_data_id.campaign_calendar.hud)."
+		},
+		"ui_warn_strip_3d": {
+			"file": "res://assets/sprites/ui/ui_warn_strip_3d.png",
+			"frame_size": [
+				40,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 5,
+				"top": 4,
+				"right": 2,
+				"bottom": 4
+			},
+			"text_color": "white",
+			"note": "Faixa de aviso de 3 dias (calma): painel d1 com filetes br2 e ponta âmbar à esquerda. 18 px de altura; ícone icon_calendar em (7,3), texto em (23,5)."
+		},
+		"ui_warn_strip_1d": {
+			"file": "res://assets/sprites/ui/ui_warn_strip_1d.png",
+			"frame_size": [
+				40,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 10,
+				"top": 4,
+				"right": 10,
+				"bottom": 4
+			},
+			"text_color": "y2",
+			"note": "Faixa de aviso de 1 dia (urgente): vermelho r1, pontas com listras diagonais r0/r2 (fita de aviso vermelha, sem amarelo-e-preto), filetes dourados. Alterna com ui_warn_strip_1d_hi a 2 fps. Ícone icon_calendar_alert em (13,3), texto em (29,5)."
+		},
+		"ui_warn_strip_1d_hi": {
+			"file": "res://assets/sprites/ui/ui_warn_strip_1d_hi.png",
+			"frame_size": [
+				40,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 10,
+				"top": 4,
+				"right": 10,
+				"bottom": 4
+			},
+			"text_color": "y2",
+			"note": "Quadro aceso da faixa de 1 dia (listras r1/r3, filete y2). Mesmo 9-slice da ui_warn_strip_1d."
+		},
+		"ui_day_badge": {
+			"file": "res://assets/sprites/ui/ui_day_badge.png",
+			"frame_size": [
+				40,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"header_text_rect": [
+				1,
+				5,
+				37,
+				7
+			],
+			"number_rect": [
+				5,
+				18,
+				29,
+				14
+			],
+			"note": "Folhinha grande do dia da luta, presa com fita crepe na prévia do dia (offset (-10,-12) do canto de cima à esquerda da janela). Cabeçalho para 'HOJE' 1x branco; número do dia em txt_hero (2x) d1 dentro do círculo de caneta vermelha."
+		},
+		"ui_button_pass_normal": {
+			"file": "res://assets/sprites/ui/ui_button_pass_normal.png",
+			"frame_size": [
+				16,
+				17
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 5
+			},
+			"text_color": "p2",
+			"note": "Botão PASSAR O POSTO da prévia do dia: contorno roxo (p1, p2 no hover) sobre d1, ação secundária ao lado do LUTAR! vermelho. Texto 1x p2 + icon_pass_post. Mesma base dos ui_button_* da Fase 2."
+		},
+		"ui_button_pass_hover": {
+			"file": "res://assets/sprites/ui/ui_button_pass_hover.png",
+			"frame_size": [
+				16,
+				17
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 5
+			},
+			"text_color": "p2",
+			"note": "Botão PASSAR O POSTO da prévia do dia: contorno roxo (p1, p2 no hover) sobre d1, ação secundária ao lado do LUTAR! vermelho. Texto 1x p2 + icon_pass_post. Mesma base dos ui_button_* da Fase 2."
+		},
+		"ui_button_pass_pressed": {
+			"file": "res://assets/sprites/ui/ui_button_pass_pressed.png",
+			"frame_size": [
+				16,
+				17
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 4,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "p2",
+			"note": "Botão PASSAR O POSTO da prévia do dia: contorno roxo (p1, p2 no hover) sobre d1, ação secundária ao lado do LUTAR! vermelho. Texto 1x p2 + icon_pass_post. Mesma base dos ui_button_* da Fase 2."
+		},
+		"ui_button_pass_disabled": {
+			"file": "res://assets/sprites/ui/ui_button_pass_disabled.png",
+			"frame_size": [
+				16,
+				17
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 5
+			},
+			"text_color": "g1",
+			"note": "Botão PASSAR O POSTO da prévia do dia: contorno roxo (p1, p2 no hover) sobre d1, ação secundária ao lado do LUTAR! vermelho. Texto 1x p2 + icon_pass_post. Mesma base dos ui_button_* da Fase 2."
+		},
+		"icon_pass_post": {
+			"file": "res://assets/sprites/ui/icon_pass_post.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone 16x16 de PASSAR O POSTO: a luva velha passa (seta roxa) e vira Legado (estrela p2)."
+		},
+		"icon_campaign_complete": {
+			"file": "res://assets/sprites/ui/icon_campaign_complete.png",
+			"frame_size": [
+				20,
+				22
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Folhinha dourada com estrela (20x22, mesmo lugar da ui_calendar_page): campanha completa, sem número."
+		},
+		"seal_campaign_complete": {
+			"file": "res://assets/sprites/ui/seal_campaign_complete.png",
+			"frame_size": [
+				40,
+				44
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Selo 40x44 de CAMPANHA COMPLETA (Kid vencido): roseta dourada com estrela e duas fitas vermelhas. Fim de carreira/cartão; pode ampliar 2x inteiro."
+		},
+		"portrait_player_glove_l1": {
+			"file": "res://assets/sprites/fight/portrait_player_glove_l1.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"facing": "direita",
+			"note": "Retrato 32x32 do jogador com a luva glove_l1 (Fase 5.3, B1). Mesmo recorte, fundo e virada do portrait_player; escolha pela luva equipada (by_data_id.player_portrait)."
+		},
+		"portrait_player_glove_l2": {
+			"file": "res://assets/sprites/fight/portrait_player_glove_l2.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"facing": "direita",
+			"note": "Retrato 32x32 do jogador com a luva glove_l2 (Fase 5.3, B1). Mesmo recorte, fundo e virada do portrait_player; escolha pela luva equipada (by_data_id.player_portrait)."
+		},
+		"portrait_player_glove_l3": {
+			"file": "res://assets/sprites/fight/portrait_player_glove_l3.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"facing": "direita",
+			"note": "Retrato 32x32 do jogador com a luva glove_l3 (Fase 5.3, B1). Mesmo recorte, fundo e virada do portrait_player; escolha pela luva equipada (by_data_id.player_portrait)."
+		},
+		"portrait_player_glove_l4": {
+			"file": "res://assets/sprites/fight/portrait_player_glove_l4.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"facing": "direita",
+			"note": "Retrato 32x32 do jogador com a luva glove_l4 (Fase 5.3, B1). Mesmo recorte, fundo e virada do portrait_player; escolha pela luva equipada (by_data_id.player_portrait)."
 		}
 	},
 	"fight_layout": {

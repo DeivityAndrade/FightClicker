@@ -49,6 +49,11 @@ signal caixa_criada(item: String, tipo: String)  # compra: caixa nova (tipo "app
 signal caixa_batida(item: String, batidas: int)  # cada clique na caixa (1, 2, 3); o 3º vem seguido de caixa_aberta
 signal caixa_aberta(item: String, tipo: String)  # 3º clique: item já aplicado e salvo (a UI só anima)
 signal caixas_mudaram()  # lista de caixas trocada de uma vez (carga do save, NOVA CARREIRA)
+signal dia_mudou(dia: int)  # Fase 5.3: o relógio da campanha virou o dia
+signal aviso_data(dias: int)  # faixa de aviso: dias que faltam (uma vez ao passar de warn_days e uma ao passar de warn_sound_days)
+signal dia_da_luta_chegou()  # o relógio travou no dia da luta: abrir a prévia do dia
+signal campanha_completa_mudou()  # venceu o último adversário (ou carga/nova carreira mudou o estado)
+signal sala_ativa_mudou(ativa: bool)  # a condição única de tick mudou
 
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
@@ -138,7 +143,13 @@ var _morto_total := 0.0
 var _perigoso_melhor := false
 var _chave_melhor := ""
 var _tempo_melhor := 0.0
-var _perigo_gym := 0.0  # Fase 5: segundos seguidos com o adversário da academia PERIGOSO (não vai para o save)
+var segundos_campanha := 0.0  # Fase 5.3: career.campaign_seconds, relógio da campanha (só anda com sala_ativa)
+var fight_day := -1  # Fase 5.3: career.fight_day, data da próxima luta (-1 = sem próxima luta)
+var _dia_anterior := 1
+var _aviso_data_chave := -2  # fight_day cujos avisos já foram dados
+var _aviso_feito := {"warn": false, "sound": false}
+var _dia_chegou_emitido := false
+var _sala_antes := true
 var _estilo: Dictionary = {}  # Fase 5: arte -> soma dos nós ESTILO comprados (art_rule_bonus)
 
 
@@ -195,22 +206,154 @@ func tick(delta: float) -> void:
 		return
 	# Com a tela de fim pendente a carreira está congelada (nada produz, o tempo não anda).
 	if fim.is_empty():
-		var producao := producao_total()
-		if producao > 0.0:
-			_ganhar(producao * delta)
 		tempo_jogo += delta
-		if arte_id != "":
-			arte_segundos += delta  # o relógio da arte anda junto com o da carreira (inclusive em luta)
+		_ocioso += delta
 		_tick_risco(delta)
-		_tick_metronomo(delta)
-		_tick_assistido(delta)
-		_tick_tempo_morto(delta)
-		_tick_evento_dourado(delta)
+		# Fase 5.3: UMA condição (sala_ativa) liga relógio, equipe, Metrônomo, assistido, ouro e arte.
+		# `dt` é o tempo de sala deste quadro (menor que delta se o relógio travou no dia da luta).
+		var dt := _avancar_relogio(delta)
+		if dt > 0.0:
+			var producao := producao_total()
+			if producao > 0.0:
+				_ganhar(producao * dt)
+			if arte_id != "":
+				arte_segundos += dt
+			_tick_tempo_morto(dt)
+			_tick_metronomo(dt)
+			_tick_evento_dourado(dt)
+		_tick_assistido(dt)
+		_verificar_calendario()
+	_checar_sala()
 	if autosave_ativo:
 		_tempo_autosave += delta
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
 			_tempo_autosave = 0.0
 			salvar()
+
+
+# --- Fase 5.3: calendário da campanha e sala ativa ---
+
+## A ÚNICA condição de tick: relógio da campanha, equipe, Metrônomo, assistido, clique, luva dourada e Jiu-jitsu
+## só andam com ela. Perder foco ou minimizar NÃO desliga; janela, luta, escolha da arte e dia da luta sim.
+func sala_ativa() -> bool:
+	return fim.is_empty() and luta.is_empty() and not escolha_arte_pendente() and not modal_aberto and not no_dia_da_luta()
+
+
+func calendario_ligado() -> bool:
+	return float(lutas.calendario.get("seconds_per_day", 0.0)) > 0.0
+
+
+func _segundos_por_dia() -> float:
+	return float(lutas.calendario.get("seconds_per_day", 0.0))
+
+
+## Dia da campanha (começa em 1). Sem calendário: sempre 1.
+func dia_campanha() -> int:
+	if not calendario_ligado():
+		return 1
+	return 1 + int(floor((segundos_campanha + 1.0e-6) / _segundos_por_dia()))
+
+
+## Depois do último adversário (Kid): "Campanha completa", sem data nem relógio.
+func campanha_completa() -> bool:
+	return escada_completa()
+
+
+## Dias que faltam para a próxima luta (0 = é hoje); -1 sem calendário ou sem próxima luta.
+func dias_para_luta() -> int:
+	if not calendario_ligado() or fight_day <= 0 or campanha_completa():
+		return -1
+	return maxi(0, fight_day - dia_campanha())
+
+
+## true quando o relógio chegou na data da próxima luta (e o adversário luta neste local).
+## Se o adversário pede outra sala (Tonhão com o jogador na garagem), o relógio segue sem travar.
+func no_dia_da_luta() -> bool:
+	if not calendario_ligado() or fight_day <= 0 or estado_escada() != "fight":
+		return false
+	return segundos_campanha >= _alvo_relogio() - 1.0e-6
+
+
+func _alvo_relogio() -> float:
+	return float(fight_day - 1) * _segundos_por_dia()
+
+
+func _prep_do_indice(i: int) -> int:
+	if i < 0 or i >= lutas.adversarios.size():
+		return 14
+	return int(lutas.adversarios[i].get("prep_days", 14))
+
+
+## Data da próxima luta contada a partir do dia de hoje (-1 se a escada acabou).
+func _data_da_proxima_luta() -> int:
+	if escada_completa():
+		return -1
+	return dia_campanha() + _prep_do_indice(indice_escada)
+
+
+## Avança o relógio com a regra única. Devolve o tempo de sala usado (0 com a sala parada).
+func _avancar_relogio(delta: float) -> float:
+	if not sala_ativa():
+		return 0.0
+	if not calendario_ligado() or campanha_completa():
+		return delta
+	if estado_escada() == "move":
+		return delta  # B3: a próxima luta é em outro local; o relógio não conta até chegar lá
+	var dt := delta
+	if fight_day > 0 and estado_escada() == "fight":
+		var restante := _alvo_relogio() - segundos_campanha
+		if restante <= delta:
+			dt = maxf(restante, 0.0)
+			segundos_campanha = _alvo_relogio()  # trava exatamente no dia
+			return dt
+	segundos_campanha += dt
+	return dt
+
+
+# Emite dia, avisos e chegada do dia (cada aviso uma vez por data).
+func _verificar_calendario() -> void:
+	if not calendario_ligado():
+		return
+	var dia := dia_campanha()
+	if dia != _dia_anterior:
+		_dia_anterior = dia
+		dia_mudou.emit(dia)
+	if fight_day != _aviso_data_chave:
+		_aviso_data_chave = fight_day
+		_aviso_feito = {"warn": false, "sound": false}
+		_dia_chegou_emitido = false
+	var dias := dias_para_luta()
+	if dias > 0:
+		var w := int(lutas.calendario.warn_days)
+		var s := int(lutas.calendario.warn_sound_days)
+		# B2: no máximo um aviso por verificação; o limiar mais próximo alcançado marca os anteriores
+		if s > 0 and dias <= s and not _aviso_feito.sound:
+			_aviso_feito.sound = true
+			_aviso_feito.warn = true
+			aviso_data.emit(dias)
+		elif w > 0 and dias <= w and not _aviso_feito.warn:
+			_aviso_feito.warn = true
+			aviso_data.emit(dias)
+	elif dias == 0 and fight_day > 0 and not _aviso_feito.sound:
+		# B2: tick grande saltou direto para o dia: avisa uma vez com o último limiar (1 dia)
+		var s2 := int(lutas.calendario.warn_sound_days)
+		_aviso_feito.sound = true
+		_aviso_feito.warn = true
+		if s2 > 0:
+			aviso_data.emit(s2)
+	if no_dia_da_luta():
+		if not _dia_chegou_emitido:
+			_dia_chegou_emitido = true
+			dia_da_luta_chegou.emit()
+	else:
+		_dia_chegou_emitido = false
+
+
+func _checar_sala() -> void:
+	var a := sala_ativa()
+	if a != _sala_antes:
+		_sala_antes = a
+		sala_ativa_mudou.emit(a)
 
 
 # --- Consultas ---
@@ -363,7 +506,7 @@ func texto_efeito_melhoria(melhoria: Dictionary) -> String:
 ## Um clique no alvo central. Soma no saldo e no atributo do foco; emite `clicou`.
 func clicar() -> Dictionary:
 	_ocioso = 0.0  # mão mexendo, mesmo se a ação for recusada
-	if acoes_bloqueadas():
+	if acoes_bloqueadas() or not sala_ativa():
 		return {}
 	return _socar(false)
 
@@ -372,7 +515,7 @@ func clicar() -> Dictionary:
 ## atributo), mas emite `auto_socou` em vez de `clicou` (a UI não treme a tela e usa número menor).
 ## Normalmente chamado pelo tique do Metrônomo; público para testes.
 func auto_socar() -> Dictionary:
-	if acoes_bloqueadas():
+	if acoes_bloqueadas() or not sala_ativa():
 		return {}
 	auto_socos_total += 1
 	return _socar(true)
@@ -646,7 +789,7 @@ func assistido_segurando() -> bool:
 func assistido_estado() -> String:
 	if nivel_metronomo >= 1:
 		return "metronome"
-	if not _segurando or modal_aberto or acoes_bloqueadas():
+	if not _segurando or not sala_ativa():
 		return "off"
 	return "active" if _mao_parada() else "waiting"
 
@@ -687,7 +830,6 @@ func _atualizar_estado_assist() -> void:
 
 
 func _tick_assistido(delta: float) -> void:
-	_ocioso += delta
 	if assistido_estado() == "active":
 		_acc_assist += delta
 		var n := 0
@@ -709,6 +851,10 @@ func _tick_assistido(delta: float) -> void:
 ## a garagem não aceita clique nem compra.
 ## Fase 5: a janela de escolha da arte aberta também bloqueia (sem clique, Metrônomo, assistido, compra ou luta).
 func acoes_bloqueadas() -> bool:
+	return _bloqueio_base() or no_dia_da_luta()  # Fase 5.3: no dia só LUTAR e PASSAR O POSTO funcionam
+
+
+func _bloqueio_base() -> bool:
 	return not luta.is_empty() or not fim.is_empty() or escolha_arte_pendente()
 
 
@@ -756,11 +902,11 @@ func estado_escada() -> String:
 
 
 func pode_lutar() -> bool:
-	return not proximo_adversario().is_empty() and not acoes_bloqueadas()
+	return not proximo_adversario().is_empty() and not _bloqueio_base()
 
 
 func pode_aposentar() -> bool:
-	return not acoes_bloqueadas()
+	return not _bloqueio_base()
 
 
 ## Legado em jogo (o "pote"): derivado da fama e do cinturão, não é salvo.
@@ -934,13 +1080,16 @@ func texto_efeito_metronomo(nivel_def: Dictionary) -> String:
 
 ## true quando o Metrônomo pode socar agora: garagem na tela (sem luta, sem tela de fim, sem janela da UI).
 func metronomo_ativo() -> bool:
-	return nivel_metronomo > 0 and not modal_aberto and not acoes_bloqueadas()
+	return nivel_metronomo > 0 and sala_ativa()
 
 
-## Chamado pela UI quando uma janela (prévia, confirmação, vitória, cartão) abre ou fecha.
+## API da UI (Fase 5.3): chamar com true quando QUALQUER janela abre (prévia, confirmação, vitória, cartão,
+## futuras opções) e false quando fecha. Janela aberta = sala parada (relógio, equipe, Metrônomo, clique...).
+## Toda janela passa por `Fluxo._abrir`, que já chama isto.
 func definir_modal(aberto: bool) -> void:
 	modal_aberto = aberto
 	_atualizar_estado_assist()
+	_checar_sala()
 
 
 # Acumula tempo só com o alvo livre; no máximo 3 socos por quadro (nunca acumula socos para depois).
@@ -1294,8 +1443,12 @@ func concluir_luta() -> Dictionary:
 		var revanche := e_algoz(opp.id)
 		if revanche:
 			permanente["revenge_opponent"] = ""
+		# Fase 5.3: a próxima data conta do dia em que esta luta aconteceu (-1 depois do Kid).
+		fight_day = _data_da_proxima_luta()
+		if escada_completa():
+			campanha_completa_mudou.emit()
 		var proximo := proximo_adversario()
-		resumo = {"win": true, "opponent": opp.id, "money": premio, "fame": premio_f,
+		resumo = {"win": true, "fight_day": fight_day, "opponent": opp.id, "money": premio, "fame": premio_f,
 			"legacy_gain": legado_em_jogo() - pote_antes, "legacy_run": legado_em_jogo(), "belt": opp.belt,
 			"next": proximo.get("id", ""), "next_name": proximo.get("name", ""), "revenge": revanche,
 			"revenge_line": preencher(texto_ui("victory_revenge_line"), {"nome": opp.name}) if revanche else ""}
@@ -1450,12 +1603,13 @@ func _zerar_carreira() -> void:
 	arte_id = ""
 	arte_segundos = 0.0
 	_atualizar_traco()
-	_perigo_gym = 0.0
+	segundos_campanha = 0.0
 	nivel_luva = 0
 	crew_click_comprado = false
 	dinheiro = 0.0
 	fama = 0
 	indice_escada = 0
+	fight_day = _data_da_proxima_luta()  # Dia 1 + folga do primeiro adversário
 	cinturao = false
 	tatica = lutas.tatica_padrao
 	tempo_jogo = 0.0
@@ -1696,12 +1850,14 @@ func mudar() -> bool:
 		return false
 	var d := academia.destino_mudanca()
 	_gastar_dinheiro(float(d.move.cost))
+	var estava_parado := estado_escada() == "move"
 	local_id = str(d.id)
+	if estava_parado and calendario_ligado():
+		fight_day = _data_da_proxima_luta()  # B3: chegou ao novo local, folga cheia a partir de hoje
 	var primeira: bool = permanente.arts_unlocked.is_empty() and not academia.artes.is_empty()
 	if primeira:
 		permanente["arts_unlocked"] = academia.ids_artes()
 	_chave_melhor = ""
-	_perigo_gym = 0.0
 	salvar()
 	local_mudou.emit(local_id)
 	if primeira:
@@ -1914,9 +2070,13 @@ func tatica_efetiva(tatica_id: String = "") -> Dictionary:
 ## Os segundos não vão para o save (reabrir o jogo zera a contagem).
 func dica_aposentar() -> Dictionary:
 	var legado := int(previa_aposentar().total)
-	var mostrar := fim.is_empty() and luta.is_empty() and _perigo_gym >= float(lutas.carreira.gym_retire_hint_seconds)
-	return {"show": mostrar, "legacy": legado, "seconds": _perigo_gym,
-		"text": preencher(texto_ui("gym_retire_hint", "APOSENTAR AGORA LEVA {n} DE LEGADO"), {"n": legado})}
+	var dias := dias_para_luta()
+	var limite := int(lutas.calendario.get("retire_hint_days", 3))
+	var vermelho := str(_risco_hud.rotulo) == "hard" and str(_risco_hud.adversario) == str(proximo_adversario().get("id", "x"))
+	var mostrar := fim.is_empty() and luta.is_empty() and limite > 0 and dias >= 0 and dias <= limite \
+		and vermelho and legado > 0
+	return {"show": mostrar, "legacy": legado, "days": dias,
+		"text": preencher(texto_ui("retire_hint", "PASSAR O POSTO AGORA LEVA {n} DE LEGADO"), {"n": legado})}
 
 
 # --- Fase 4: tempo morto (depuração/QA; não vai para o save) ---
@@ -1945,14 +2105,10 @@ func menor_preco_loja() -> float:
 
 func _tick_tempo_morto(delta: float) -> void:
 	var morto := false
-	var perigo_gym := false
 	var opp := proximo_adversario()
 	if risco_hud_ativo and luta.is_empty() and not opp.is_empty():
 		_atualizar_melhor_risco(delta)
 		morto = _perigoso_melhor and dinheiro < menor_preco_loja()
-		perigo_gym = _perigoso_melhor and str(opp.location) != academia.local_padrao
-	# Fase 5: segundos seguidos com o adversário da academia PERIGOSO (base da dica de aposentar)
-	_perigo_gym = _perigo_gym + delta if perigo_gym else 0.0
 	if morto:
 		_morto_atual += delta
 		_morto_total += delta
@@ -2219,6 +2375,8 @@ func para_save() -> Dictionary:
 			"belt": cinturao,
 			"tactic": tatica,
 			"play_seconds": tempo_jogo,
+			"campaign_seconds": segundos_campanha,
+			"fight_day": fight_day,
 			"money_earned": dinheiro_ganho,
 			"fight": luta.duplicate(true) if not luta.is_empty() else null,
 		},
@@ -2284,13 +2442,24 @@ func aplicar_save(estado: Dictionary) -> void:
 	tempo_jogo = _numero_valido(c.get("play_seconds", 0.0))
 	dinheiro_ganho = _numero_valido(c.get("money_earned", 0.0))
 	luta = _validar_luta(c.get("fight", null))
+	# Fase 5.3: relógio e data. Data ausente ou inválida = folga cheia a partir do dia de hoje.
+	segundos_campanha = _numero_valido(c.get("campaign_seconds", 0.0))
+	var fd := -1
+	if not escada_completa():
+		var bruto = c.get("fight_day", null)
+		fd = _inteiro_valido(bruto, 1.0e9) if (typeof(bruto) == TYPE_FLOAT or typeof(bruto) == TYPE_INT) else 0
+		if fd <= 0 or fd > dia_campanha() + 999:
+			fd = _data_da_proxima_luta()
+	fight_day = fd
+	_dia_anterior = dia_campanha()
+	_aviso_data_chave = -2
+	_dia_chegou_emitido = false
 	_recalcular_bonus()
 	nivel_metronomo = _inteiro_valido(c.get("metronome_level", 0), float(metronomo_niveis()))
 	_acc_metronomo = 0.0
 	_acc_assist = _assist_primeiro()
 	_chave_melhor = ""
 	fim = _validar_fim(estado.get("ending", null))
-	_perigo_gym = 0.0
 	_finalizar_motivo(false)
 	_motivo_cache = {}
 
@@ -2482,8 +2651,11 @@ func _emitir_tudo(pedir_arte: bool = true) -> void:
 	escada_mudou.emit()
 	economia_mudou.emit()
 	carreira_mudou.emit()
+	campanha_completa_mudou.emit()
 	if risco_hud_ativo:
 		atualizar_risco_hud()
+	_verificar_calendario()  # reabrir com Faltam <= 3 mostra a faixa uma vez; no dia, abre a prévia do dia
+	_checar_sala()
 	if pedir_arte and escolha_arte_pendente():
 		escolha_arte_pedida.emit(escolha_arte_primeira())
 
