@@ -583,3 +583,55 @@ Precisa de pixel artist: a bolsa pede volume de tecido de verdade (dobras, peso 
 mão; o megafone pede um ângulo de 3/4. Manter 22x21, pivô (11,10) e 3 quadros para trocar só o arquivo.
 Nota para o Roteirista: o toast diz "PASSOU O CHAPÉU", mas o objeto é uma bolsa. Ou o texto fala de bolsa/sacola, ou a arte vira
 chapéu (perde a silhueta oposta à luva; não recomendo).
+
+## 20. Fase 5.3 (calendário da campanha, Passar o posto, retrato por luva)
+Gerador: `tools/art/make_sprites_fase53.gd` (rodar de uma pasta temporária com `project.godot` vazio;
+`-- --final` grava no projeto e só acrescenta chaves ao manifest, relendo o arquivo na hora). Retratos por luva:
+`tools/art/make_sprites_jogador.gd -- <saida> --so-retratos`. Mockup: `mockups/fase53_calendario_x2.png`.
+Dados para a UI: `manifest.json → by_data_id.campaign_calendar`, `pass_post_button`, `player_portrait`. Posições em 1x.
+
+### 20.1 Ideia visual
+**Uma folhinha de parede** (argolas, cabeçalho vermelho, picote da folha arrancada) é o símbolo de tudo: o dia anda = folha
+arrancada; a data da luta = **dia circulado de caneta vermelha**; campanha completa = folhinha dourada com estrela.
+Nenhum relógio de ponteiro, nenhuma contagem em segundos: o jogador pensa em dias.
+
+### 20.2 HUD (nível 2, não grita)
+- Fica na coluna da esquerda, no lugar do "PRÓXIMA:" de hoje: plaquinha 9-slice `ui_countdown_plate_<risco>` (7,131) 116x26,
+  folhinha `ui_calendar_page` (11,133) com o **dia da campanha** (1x, `d1`), linha 1 "Faltam X dias" (`col_text_1`, x 35, y 136),
+  linha 2 o adversário (`col_text_2`, y 146), e embaixo o selo de risco que já existe (35,160).
+- A **faixa de 2 px à esquerda da plaquinha tem a cor do risco** (verde/âmbar/vermelho, os mesmos `col_risk_*`); o selo repete
+  com ícone, para quem não distingue cor. Nada em `txt_hero`: o número grande da tela continua sendo o Treino.
+- Dia da luta: `ui_countdown_plate_today` (fundo `r0`, faixa ouro) + folhinha no quadro 1 (dia circulado). Depois do Kid:
+  `ui_countdown_plate_done` + `icon_campaign_complete` e "CAMPANHA / COMPLETA" em `col_money`; sem número, o relógio some.
+- Dia virando: `fx_calendar_tear` (4 quadros, 12 fps, uma vez) por cima da folhinha. Sem som novo.
+
+### 20.3 Avisos
+| Quando | Sprite | Onde | Comportamento sugerido |
+|---|---|---|---|
+| 3 dias | `ui_warn_strip_3d` + `icon_calendar` | topo da sala, centrada em x 320, y 22, 18 de altura | desce em 0,2 s, fica ~6 s, sobe |
+| 1 dia | `ui_warn_strip_1d` ↔ `_1d_hi` a 2 fps + `icon_calendar_alert` | mesmo lugar | som que já existe ao entrar; fica até a luta ou até clicar |
+
+A de 1 dia é urgente sem ser feia: vermelho da própria paleta, pontas com listras diagonais vermelhas (fita de aviso sem o
+amarelo-e-preto de obra), filete dourado, pulso por troca de quadro (sem alpha, sem tremida). Largura = conteúdo + margens;
+nenhuma das duas cobre o lutador nem o alvo.
+
+### 20.4 Dia da luta
+- A sala fica atrás do **mesmo pontilhado** que já escurece a sala na prévia; o HUD mostra a plaquinha "today".
+- A prévia ganha a folhinha grande `ui_day_badge` (40x40) **presa com fita crepe** no canto de cima à esquerda (offset -10,-12),
+  por cima da borda: cabeçalho "HOJE" 1x branco, número do dia em `txt_hero` dentro do círculo de caneta.
+- Dois botões **diferentes no peso**: **LUTAR!** o vermelho cheio de sempre (`fight_button`); **PASSAR O POSTO** de contorno
+  roxo sobre `d1` (`ui_button_pass_*` + `icon_pass_post`, texto `p2`). Roxo = Legado, que é o que ele rende. O contorno deixa a
+  escolha clara e diminui o clique sem querer (a confirmação continua obrigatória). Sem botão de voltar a treinar.
+- Fora do dia, o botão roxo da sala segue igual e só troca o texto; sugestão: ícone `icon_pass_post` também ali, para a mesma
+  ação ter o mesmo desenho. "PASSAR O POSTO" + ícone cabem em 103 px (o botão tem 115).
+
+### 20.5 Retrato da luta por luva (B1)
+`portrait_player` (velha) + `portrait_player_glove_l1..l4`: mesmo recorte, fundo e virada; só a luva muda. Regra igual à das
+folhas: id = `portrait_player` + sufixo da luva equipada; vale no topo da luta e na prévia (inclusive a do dia).
+O `portrait_player` regerado saiu idêntico ao arquivo de antes.
+
+### 20.6 Placeholder / precisa de pixel artist
+- A folhinha e a folha arrancada são retângulos girados por código: falta a folha dobrar de verdade e um rasgo desenhado.
+- O círculo de caneta é uma elipse com espessura variável; à mão ficaria com traço de marcador (começo e fim sobrepostos).
+- O selo da campanha (roseta) e o `icon_pass_post` (luva → estrela) pedem desenho à mão; manter 40x44 e 16x16.
+- Números da folhinha usam a fonte 5x7; uma fonte de calendário (números condensados) ficaria melhor e é o mesmo pedido da §18.1.

@@ -73,7 +73,7 @@ E:\testePresidente3\tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless
 ## Verificador de alinhamento da UI
 Toda mudança de tela passa por ele (0 problemas, capturas em pasta de saída):
 ```
-E:\testePresidente3\tools\godot\Godot_v4.7.2-stable_win64_console.exe --path E:\Fightclicker --resolution 1280x720 --script res://tools/ui/ui_audit.gd -- --estados todos
+E:\testePresidente3\tools\godot\Godot_v4.7.2-stable_win64_console.exe --path E:\Fightclicker --resolution 1280x720 --position 1950,40 --script res://tools/ui/ui_audit.gd -- --estados todos
 ```
 Usa save de teste isolado (`user://test/ui_audit/`); sai com código 1 se houver problema.
 

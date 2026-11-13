@@ -536,7 +536,7 @@ func _teste_dica_do_verde() -> void:
 func _teste_textos_da_previa() -> void:
 	var gs := _novo("f4_previa_textos")
 	checar_igual(gs.previa().stake_win, "SE VENCER: $50 + 10 FAMA", "sem nós: prêmio sem bônus")
-	checar_igual(gs.previa().stake_lose, "PERDER ENCERRA A CARREIRA (METADE DO LEGADO)", "sem nós: perder = metade")
+	checar_igual(gs.previa().stake_lose, "PERDER ENCERRA A CAMPANHA (METADE DO LEGADO)", "sem nós: perder = metade")
 	checar(not gs.previa().show_percent, "sem nós: sem porcentagem")
 	_ir_para_arvore(gs, 2000)
 	for id in ["career_purse", "career_scouting", "career_crowd", "career_good_loser"]:
@@ -544,7 +544,7 @@ func _teste_textos_da_previa() -> void:
 	gs.nova_carreira()
 	var p: Dictionary = gs.previa()
 	checar_igual(p.stake_win, "SE VENCER: $75 (+50%) + 15 FAMA (+50%)", "prêmio com bônus e (+50%)")
-	checar_igual(p.stake_lose, "PERDER ENCERRA A CARREIRA (75% DO LEGADO)", "perder leva 75%")
+	checar_igual(p.stake_lose, "PERDER ENCERRA A CAMPANHA (75% DO LEGADO)", "perder leva 75%")
 	checar(p.show_percent and p.percent_text.ends_with("%"), "porcentagem: %s" % p.percent_text)
 	for t in p.risks:
 		var chance: float = p.risks[t].chance
@@ -722,7 +722,7 @@ func _teste_cartao_e_resumo() -> void:
 	gs.nova_carreira()
 	checar_igual(cartoes.size(), 1, "nova_carreira_iniciada emitido uma vez")
 	var c: Dictionary = cartoes[0]
-	checar_igual(c.title, "CARREIRA 2 — O QUE VOCÊ TROUXE:", "título do cartão")
+	checar_igual(c.title, "CAMPANHA 2 — O QUE VOCÊ TROUXE:", "título do cartão")
 	checar_igual(c.nodes.size(), 2, "uma linha por nó")
 	checar_igual(c.nodes[0].effect_text, "+100% TREINO POR CLIQUE", "efeito do jab em número")
 	checar_igual(c.nodes[1].effect_text, "+50% DINHEIRO POR VITÓRIA", "efeito da bolsa em número")

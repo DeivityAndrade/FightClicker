@@ -1,6 +1,7 @@
 extends SceneTree
 ## Gera TODAS as folhas do lutador do jogador no padrão novo (personagem_lib.gd), garagem + luta,
-## com as 5 luvas (velha, _glove_l1, _glove_l2, _glove_l3, _glove_l4) e o retrato 32x32.
+## com as 5 luvas (velha, _glove_l1, _glove_l2, _glove_l3, _glove_l4) e o retrato 32x32 (um por luva desde a 5.3).
+## Só os retratos: `-- <saida> --so-retratos`.
 ## Rodar headless a partir de uma pasta temporária com um project.godot vazio (nunca no projeto):
 ##   godot --headless --path <pasta_tmp> --script E:/Fightclicker/tools/art/make_sprites_jogador.gd -- <saida> <antigos>
 ##   <saida>   = pasta onde gravar characters/*.png, fight/*.png e relatorio.txt
@@ -317,15 +318,26 @@ func contact_sheet(rows: Array, glove_rows: Array) -> void:
 	out.save_png(MOCK)
 
 # ================================================================ main
+## Fase 5.3 (B1): um retrato por luva, mesmo recorte e fundo. portrait_player (velha) + portrait_player_glove_lN.
+## Modo só retratos: `-- <saida> --so-retratos` (não grava folhas nem a folha de contato).
+func save_portraits() -> void:
+	for suffix in GLOVES:
+		make_portrait(make_build(suffix)).save_png(out_dir + "fight/portrait_player" + suffix + ".png")
+
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0].trim_suffix("/") + "/"
-	old_dir = args[1].trim_suffix("/") + "/"
 	var base: String = get_script().resource_path.get_base_dir()
 	L = load(base + "/pixel_lib.gd").new()
 	P = load(base + "/personagem_lib.gd").new(L)
 	M = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
 	DirAccess.make_dir_recursive_absolute(out_dir + "fight")
+	if args.has("--so-retratos"):
+		save_portraits()
+		print("ok: %d retratos" % GLOVES.size())
+		quit()
+		return
+	old_dir = args[1].trim_suffix("/") + "/"
 	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
 	var newf := {}
 	for suffix in GLOVES:
@@ -340,8 +352,7 @@ func _init() -> void:
 			var fr := gen_garage(b, sid)
 			save_sheet("characters/" + id + ".png", id, fr)
 			newf[id] = fr
-		if suffix == "":
-			make_portrait(b).save_png(out_dir + "fight/portrait_player.png")
+		make_portrait(b).save_png(out_dir + "fight/portrait_player" + suffix + ".png")
 	# folha de contato
 	var rows := []
 	var crop_f := Rect2i(8, 8, 96, 96)

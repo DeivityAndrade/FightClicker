@@ -329,7 +329,7 @@ func _teste_cinturao_e_aposentar() -> void:
 	checar_igual(gs.permanente.belts_won, 1, "1 cinturão ganho")
 	checar_igual(gs.permanente.best_wins, 4, "melhor carreira: 4 vitórias")
 	checar_igual(r.summary.belts, 1, "resumo: 1 cinturão")
-	checar_igual(gs.textos_fim().support, "Cinturão na parede. Joelho no gelo.", "texto de apoio com cinturão")
+	checar_igual(gs.textos_fim().support, "Cinturão na parede. A escola segue de pé.", "texto de apoio com cinturão")
 	gs.nova_carreira()
 	checar_igual(gs.numero_carreira(), 2, "Carreira 2")
 	checar(not gs.cinturao and gs.indice_escada == 0, "novo começo")
@@ -337,7 +337,7 @@ func _teste_cinturao_e_aposentar() -> void:
 	var r2: Dictionary = gs.aposentar()
 	checar_igual(r2.legacy_gained, 0, "aposentar com pote 0 leva 0")
 	checar_igual(gs.permanente.legacy_total, 750, "Legado anterior intacto")
-	checar_igual(gs.textos_fim().support, "O saco fica pro próximo.", "texto de apoio sem cinturão")
+	checar_igual(gs.textos_fim().support, "A escola segue. O saco fica pra quem vem.", "texto de apoio sem cinturão")
 	_liberar(gs)
 
 
@@ -600,7 +600,7 @@ func _teste_textos() -> void:
 	gs.lutar()
 	gs.concluir_luta()
 	var t: Dictionary = gs.textos_fim()
-	checar_igual(t.title, "FIM DE CARREIRA", "título")
+	checar_igual(t.title, "CAMPANHA ENCERRADA", "título")
 	checar(t.who.begins_with("Dinho Pulga VENCEU"), "quem venceu: %s" % t.who)
 	checar(gs.fim.reason.faltaram > 0.0, "existe 'faltaram' neste estado")
 	checar(t.reason.begins_with("FALTARAM ") and " DE " in t.reason, "motivo principal 'FALTARAM n DE ...': %s" % t.reason)

@@ -7,6 +7,7 @@ extends JanelaBase
 
 signal lutar_pedido
 signal voltar_pedido
+signal passar_pedido  # só na prévia do dia (Fase 5.3): PASSAR O POSTO
 
 const X0 := 164.0
 const X1 := 476.0
@@ -23,9 +24,11 @@ var _dica: Label
 var _aviso: Label
 var _percent: Label
 var _t := 0.0
+var dia_da_luta := false  # Fase 5.3: prévia do dia (sem VOLTAR A TREINAR, sem X, sem Esc; com LUTAR e PASSAR O POSTO)
 
 
-func abrir_com(dados: Dictionary) -> void:
+func abrir_com(dados: Dictionary, do_dia: bool = false) -> void:
+	dia_da_luta = do_dia
 	_dados = dados
 	tatica_original = str(dados.tactic)
 	_tatica = tatica_original
@@ -48,13 +51,18 @@ func _montar() -> void:
 	# Fase 5.1: a janela ganha até 10 px de altura (metade para cada lado) para os blocos respirarem; com a fita da
 	# revanche e a linha da arte juntas, o respiro encolhe para a janela caber na tela (358 px).
 	var folga := int(clampf(30.0 - ex, 0.0, 10.0))
+	if dia_da_luta:
+		folga = 0  # a folhinha do dia pede o topo da janela livre (não cobre o retrato): layout compacto
 	var topo := floorf(float(folga) / 2.0)
 	var g1 := floorf(float(folga) * 0.2)  # quem é quem -> atributos
 	var g2 := floorf(float(folga) * 0.3)  # atributos -> risco
 	var g3 := floorf(float(folga) * 0.2)  # risco -> táticas
 	var g4 := floorf(float(folga) * 0.3)  # dica da tática -> o que está em jogo
 	moldura("ui_window", Rect2(152, 16 + oy - topo, 336, 328 + ex + folga))
-	faixa_titulo("neutral", Rect2(158, 22 + oy - topo, 324, 17), UiTema.txt("preview_title", "PRÓXIMA LUTA"))
+	var titulo := UiTema.txt("fight_day_title", "DIA DA LUTA") if dia_da_luta else UiTema.txt("preview_title", "PRÓXIMA LUTA")
+	faixa_titulo("neutral", Rect2(158, 22 + oy - topo, 324, 17), titulo)
+	if dia_da_luta:
+		_folhinha_do_dia(152.0, 16.0 + oy - topo)
 
 	# --- Retratos: ELE à esquerda, VOCÊ à direita (espelhado, olha para ele) ---
 	var y := 46.0 + oy - topo
@@ -66,7 +74,7 @@ func _montar() -> void:
 	var vs := UiTema.textura_rect(painel, "ui_vs_badge", 304, y + 6)
 	vs.pivot_offset = Vector2(16, 12)
 
-	retrato("portrait_player", "ui_portrait_frame", X1 - 36, y, true)
+	retrato(UiTema.nome_retrato_jogador(), "ui_portrait_frame", X1 - 36, y, true)
 	var dir := X1 - 42
 	_rotulo_dir(UiTema.txt("preview_you", "VOCÊ"), UiTema.G2, dir, y + 2)
 	_rotulo_dir(UiTema.txt("hud_career", "CARREIRA {n}", {"n": GameState.numero_carreira()}), UiTema.WHITE, dir, y + 13)
@@ -81,7 +89,12 @@ func _montar() -> void:
 	var ar := 0.0 if regra else 1.0
 	# Descrição dele
 	y += 42.0
-	UiTema.rotulo_centro(painel, str(opp.description).to_upper(), UiTema.CREAM, 320.0, y)
+	if dia_da_luta:
+		# No dia, a linha de baixo dos retratos diz o que fazer ("{nome} chegou. Lutar ou passar o posto?"); a descrição fica na LUTAR.
+		UiTema.rotulo_centro(painel, UiTema.txt("fight_day_line", "{nome} chegou. Lutar ou passar o posto?",
+			{"nome": str(opp.name)}), UiTema.Y1, 320.0, y)
+	else:
+		UiTema.rotulo_centro(painel, str(opp.description).to_upper(), UiTema.CREAM, 320.0, y)
 
 	# --- Atributos lado a lado ---
 	y += 13.0 + g1 + 2.0 * ar  # respiro entre quem é quem e os atributos
@@ -138,13 +151,37 @@ func _montar() -> void:
 
 	# --- Botões ---
 	# Dois botões do mesmo tamanho, com 4 px entre eles, ocupando a largura útil da janela.
-	var larg_botao := (X1 - X0 - 4.0) / 2.0
 	var yb := 310.0 + ex + oy + float(folga) - topo
+	if dia_da_luta:
+		# Prévia do dia: PASSAR O POSTO (contorno roxo, menos peso) e LUTAR! (vermelho cheio), 12 px entre eles para não
+		# apertar um pelo outro. Sem botão de voltar.
+		var larg_dia := (X1 - X0 - 12.0) / 2.0
+		var passar := UiTema.botao_estilizado(painel, Rect2(X0, yb, larg_dia, 26), "ui_button_pass")
+		UiTema.botao_conteudo(passar, UiTema.txt("fight_day_pass", "PASSAR O POSTO"), UiTema.P2, 1, "icon_pass_post", 4.0)
+		passar.pressed.connect(func() -> void: passar_pedido.emit())
+		var lutar_dia := botao_texto(Rect2(X0 + larg_dia + 12.0, yb, larg_dia, 26), UiTema.txt("fight_day_fight", "LUTAR") + "!",
+			UiTema.Y2, "", 2, "ui_button_fight")
+		lutar_dia.pressed.connect(func() -> void: lutar_pedido.emit())
+		return
+	var larg_botao := (X1 - X0 - 4.0) / 2.0
 	var voltar := botao_texto(Rect2(X0, yb, larg_botao, 26), UiTema.txt("back_button", "VOLTAR A TREINAR"))
 	voltar.pressed.connect(func() -> void: voltar_pedido.emit())
 	var lutar := botao_texto(Rect2(X0 + larg_botao + 4.0, yb, larg_botao, 26), UiTema.txt("fight_button", "LUTAR!"),
 		UiTema.Y2, "", 2, "ui_button_fight")
 	lutar.pressed.connect(func() -> void: lutar_pedido.emit())
+
+
+## Folhinha grande do dia ("HOJE" + número do dia em 2x), presa no canto de cima à esquerda da janela por cima da borda
+## (offset -34,-12 da moldura; no máximo até o topo da tela).
+func _folhinha_do_dia(x_janela: float, y_janela: float) -> void:
+	# Fica pendurada no canto: 34 px para a esquerda da borda (6 px da folhinha sobre a moldura), assim o canto direito dela
+	# (x 158) nunca chega no retrato (x 164), mesmo com a janela subida pela fita da revanche + linha da arte.
+	var f := UiTema.textura_rect(painel, "ui_day_badge", x_janela - 34.0, maxf(0.0, y_janela - 12.0))
+	var cab := UiTema.rotulo_centrado(f, Rect2(1, 5, 37, 7), UiTema.txt("day_badge_header", "HOJE"), UiTema.WHITE, 1, false, "center_h")
+	cab.name = "Cabecalho"
+	var num := UiTema.rotulo_centrado(f, Rect2(5, 18, 29, 14), str(mini(GameState.dia_campanha(), 99)), UiTema.D1, 2, false, "center_h")
+	num.name = "Numero"
+	num.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))  # sem sombra: o número vai sobre papel claro
 
 
 ## Fita vermelha "VOCÊ PERDEU PRA ELE" (esparadrapo em X + texto), centralizada na janela.
@@ -275,7 +312,8 @@ func _mostrar_risco(rot: String, animar: bool) -> void:
 	elif primeira and rot == "hard":
 		_aviso.text = UiTema.txt("risk_hard_warn", "VERMELHO = VAI PERDER")
 		_aviso.add_theme_color_override("font_color", UiTema.R3)
-	elif GameState.esperar_verde(str(_dados.opponent.id), rot):
+	elif GameState.esperar_verde(str(_dados.opponent.id), rot) and not GameState.no_dia_da_luta():
+		# No dia da luta o treino está parado: não dá para esperar, então a dica some.
 		# Regra L1 (decisão D2): contra o algoz e quem vem antes dele, enquanto não estiver verde. Só texto: a cor não mente.
 		_aviso.text = UiTema.txt("preview_wait_green", "ESPERE FICAR VERDE")
 		_aviso.add_theme_color_override("font_color", UiTema.Y1)
