@@ -160,6 +160,7 @@
 	"shop_generator_effect": "+{n}/S",
 	"hud_money": "DINHEIRO",
 	"hud_fame": "FAMA",
+	"skip_hint": "pular",
 	"hud_legacy_run": "LEGADO EM JOGO",
 	"hud_career": "CAMPANHA {n}",
 	"hud_next_fight": "PRÓXIMA: {nome}",

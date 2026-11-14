@@ -24,6 +24,11 @@ const GLOVES := {
 	"_glove_l4": {"name": "Luva de competição", "style": "campeao", "ramp": ["b1", "b2", "b3"]},
 }
 
+## Fase 6a: quem veste o corpo. FC_LUTADOR=disc gera o discípulo padrão (arquivos e ids com "_disc" no fim);
+## sem a variável, o 1º lutador (os arquivos de sempre).
+var QUEM := "disc" if OS.get_environment("FC_LUTADOR") == "disc" else "primeiro"
+var SUF := "_disc" if QUEM == "disc" else ""
+
 var L
 var P
 var out_dir := ""
@@ -327,7 +332,9 @@ func rastro(im: Image, a: Vector2, b: Vector2) -> void:
 
 func make_build(suffix: String) -> Dictionary:
 	var g: Dictionary = GLOVES[suffix]
-	return P.build({"glove": g.style, "glove_ramp": g.ramp})
+	var o: Dictionary = P.identidade(QUEM)
+	o.merge({"glove": g.style, "glove_ramp": g.ramp}, true)
+	return P.build(o)
 
 
 func gen(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> Array:
@@ -386,8 +393,9 @@ func _init() -> void:
 	var garagem: Dictionary = dados.get("garage", {})
 	var corda: Dictionary = dados.get("rope", {}).get("corda", {})
 	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
-	for suffix in GLOVES:
-		var b := make_build(suffix)
+	for gsuf in GLOVES:
+		var b := make_build(gsuf)
+		var suffix: String = gsuf + SUF
 		for nome in todos:
 			if not so_estes.is_empty() and not (nome in so_estes):
 				continue
@@ -419,7 +427,7 @@ func _init() -> void:
 			var r := gen_garage(b, nome, g, suffix)
 			P.strip(r[0]).save_png(out_dir + "characters/fighter_%s%s.png" % [nome, suffix])
 			entradas["fighter_%s%s" % [nome, suffix]] = entrada_garage(nome, g, suffix, r[1])
-	if not corda.is_empty() and (so_estes.is_empty() or "corda" in so_estes):
+	if QUEM == "primeiro" and not corda.is_empty() and (so_estes.is_empty() or "corda" in so_estes):
 		DirAccess.make_dir_recursive_absolute(out_dir + "equipment")
 		for nome in ROPES:
 			var frente := corda_sheet(corda, ROPES[nome], "front")

@@ -246,6 +246,9 @@ const GLYPHS := {
 	"/": ["....#", "...#.", "...#.", "..#..", ".#...", ".#...", "#...."],
 	"+": [".....", "..#..", "..#..", "#####", "..#..", "..#..", "....."],
 	"-": ["....", "....", "....", "####", "....", "....", "...."],
+	# --- Fase 6a: travessão e reticências de um caractere (falas)
+	"—": [".....", ".....", ".....", "#####", ".....", ".....", "....."],
+	"…": [".....", ".....", ".....", ".....", ".....", ".....", "#.#.#"],
 	"$": ["..#..", ".####", "#.#..", ".###.", "..#.#", "####.", "..#.."],
 	# --- Fase 3: ordinais ("2º ROUND")
 	"º": [".#.", "#.#", ".#.", "...", "###", "...", "..."],
@@ -332,9 +335,12 @@ func _glyph_rows(ch: String) -> Dictionary:
 		for row in m:
 			var s: String = m[row]
 			var r: int = row
+			# Fase 6a: minúscula = marca nas linhas -1..0 (1 linha de folga antes da altura-x; antes encostava na letra)
 			if lower and r < 0:
-				r += 2
+				r += 1
 			out[r] = s.substr(off, w)
+		if ch == "í":
+			out[2] = ".#."   # Fase 6a: sem a bandeirinha, o í lia como 1
 	return out
 
 func glyph_w(ch: String) -> int:

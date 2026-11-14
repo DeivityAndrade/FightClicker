@@ -237,14 +237,14 @@ func _abrir(pasta: String) -> Node:
 
 
 func _teste_save_v10() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 10, "save v10")
+	checar_igual(SaveStore.VERSAO_ATUAL, 11, "save v11")
 	var pasta := pasta_limpa("f54_save")
 	var gs := _abrir(pasta)
 	gs.permanente["legacy_total"] = 10
 	gs.comprar_no("body_jab")
 	gs.salvar()
 	var doc = JSON.parse_string(ler(pasta + "save.json"))
-	checar(int(doc.version) == 10 and doc.state.career.active_nodes == [] and doc.state.permanent.tree_last_node == "body_jab",
+	checar(int(doc.version) == 11 and doc.state.career.active_nodes == [] and doc.state.permanent.tree_last_node == "body_jab",
 		"active_nodes e tree_last_node no arquivo")
 	gs.free()
 	# migração v9: nós ficam, active = nós, sem reembolso

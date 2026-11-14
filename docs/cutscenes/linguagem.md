@@ -2,7 +2,7 @@
 
 Dono: Diretor de Cutscenes. Versão 1 (2026-11-11).
 Base: `docs/cutscenes/ideia-do-dono.md`, `docs/direcao-narrativa.md` (manda), `docs/arte/direcao-visual.md`, `assets/sprites/manifest.json`.
-Tudo aqui é proposta até o dono aprovar. Nomes de personagens são provisórios: `primeiro` (1º lutador), `treinador` (treinador original), `discipulo` (lutador da campanha atual).
+Nomes escolhidos pelo dono em 2026-11-13: John Bullet (1º lutador), Osmar Brandão (treinador), Raízes Fight Club (escola). Os ids usados neste guia continuam: `primeiro` (1º lutador), `treinador` (treinador original), `discipulo` (lutador da campanha atual).
 
 ## 1. Ideia em uma frase
 A cena é **a própria sala com a interface apagada**: ninguém troca de tela, a câmera quase não se mexe, e o que emociona é reconhecer um gesto, um som e um lugar que o jogador já viu centenas de vezes treinando.
@@ -96,6 +96,8 @@ O exagero cresce **de liga em liga** (cada vinheta um pouco mais alta que a ante
 O que nunca muda, em nenhum registro: o balão, o blip de voz, as regras de pular e a sinceridade entre mestre e discípulo (piada só com adversário e com objeto, nunca com o vínculo).
 
 ## 7. Fala: balão e voz
+
+> **6a:** a especificação final está em `balao-e-voz.md`. Onde ela diverge deste capítulo (ordem das notas por vogal, pausa de `:` e `;`, posição com a zona do alvo), vale ela.
 
 ### 7.1 Balão
 Um componente só, usado nas cenas e nos comentários do dia a dia. É um **balão preso ao personagem** (não uma caixa no rodapé): o olho fica no gesto e os pés não são cobertos.

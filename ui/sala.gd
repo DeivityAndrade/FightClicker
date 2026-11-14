@@ -24,6 +24,9 @@ const BR0 := Color("3b2622")  # caneta da plaquinha de papelão (direcao-visual 
 ## Clique na marca de fita (ou na plaquinha) de um aparelho que ainda não chegou: a garagem abre a aba TREINO.
 signal marca_clicada(aparelho: String)
 
+## Clique na sala que nao pegou nada (fora do alvo, de caixa e de aparelho): completa o balao que esta escrevendo (Fase 6a).
+signal clique_vazio
+
 var sfx: Sfx
 var dica_ativa := false  # mostra a seta que aponta o alvo (primeira vez)
 
@@ -76,6 +79,17 @@ var _proxima_piscada := 6.0
 var _rng := RandomNumberGenerator.new()
 var _montado := false
 
+# Fase 6a: Osmar na garagem, gesto do 1Âº lutador e parede da memÃ³ria.
+const OSMAR_FOLHAS := {"idle": "coach_idle", "look": "coach_look", "talk": "coach_talk"}
+const NO_COVER := Rect2(310, 180, 52, 94)
+var _osmar: AnimSprite
+var _sombra_osmar: Sprite2D
+var _osmar_estado := ""
+var _coach_falando := false
+var _gesto: Gesto
+var _gesto_sprite := ""
+var _parede: Dictionary = {}  # objeto -> {sprite, rect, dica}
+
 # Fase 4b: marcas de fita no lugar dos aparelhos que faltam e a chegada deles.
 var _marcas: Dictionary = {}  # aparelho -> {fita, fantasma, placa, extras, chave, rect, m}
 var _marca_hover := ""  # marca de fita sob o mouse (acende a versão _hi)
@@ -117,6 +131,10 @@ func _ready() -> void:
 		_atualizar_marcas())
 	GameState.local_mudou.connect(_ao_local)
 	GameState.arte_mudou.connect(_ao_arte)
+	GameState.gesto_pedido.connect(_ao_gesto_pedido)
+	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
+	GameState.marco_gravado.connect(func(_id: String) -> void: _atualizar_parede())
+	GameState.abertura_mudou.connect(func(_e: String) -> void: _atualizar_osmar())
 	_local_anterior = GameState.local_id
 	_aplicar_layout()
 	_atualizar_pessoas(false)
@@ -204,6 +222,10 @@ func _montar() -> void:
 	_fx_brilho_chegada = _novo_fx("fx_arrive_sparkle")
 	_fx_poeira_pequena = _novo_fx("fx_arrive_dust_small")
 	_montar_marcas()
+	_montar_osmar()
+	_montar_parede()
+	_gesto = Gesto.new()
+	add_child(_gesto)
 
 
 func _novo_estatico(nome: String, z: int) -> Sprite2D:
@@ -336,6 +358,8 @@ func _aplicar_local() -> void:
 	_lampada.visible = not tubos
 	for t in _tubos:
 		t.visible = tubos
+	_atualizar_osmar()
+	_atualizar_parede()
 
 
 ## Pera (Boxe) e boneco (Jiu-jitsu): só existem na carreira da arte e depois de comprados. No foco ficam no centro
@@ -396,6 +420,8 @@ func _entrada_pessoa(sp: AnimSprite) -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if not ALVO.has_point(event.position + position):
+			GameState.registrar_clique()  # clique fora do alvo: cancela o gesto e zera a sala parada
 		_clique_em(event.position + position)
 		accept_event()
 	elif event is InputEventMouseMotion:
@@ -442,6 +468,8 @@ func _clique_em(p: Vector2) -> void:
 			GameState.definir_foco(id)
 			sfx.foco()
 			return
+	if not NO_COVER.has_point(p):
+		clique_vazio.emit()  # nada foi pego: completa o balão que está escrevendo
 
 
 ## Treino pelo teclado (Espaço): igual a um clique no alvo central (mesmo `GameState.clicar()`, mesmo número flutuante,
@@ -600,6 +628,10 @@ func _pegar_numero() -> Numero:
 
 
 func _reagir(aparelho: String, critico: bool) -> void:
+	if _gesto != null and _gesto.ativo():
+		_gesto.cancelar()
+		sfx.cortar_rip()
+	_gesto_sprite = ""
 	var nb := GameState.nivel_visual(SACO)
 	match aparelho:
 		SACO:
@@ -1088,6 +1120,8 @@ func _hover_em(p: Vector2) -> void:
 		tip = _texto_bolsa()
 	elif cx != "":
 		tip = _texto_caixa(cx)
+	elif _texto_parede(p) != "":
+		tip = _texto_parede(p)
 	else:
 		for id in _marcas:
 			var d: Dictionary = _marcas[id]
@@ -1389,6 +1423,209 @@ class CaixaSala extends Node2D:
 				a.z_index = z_index + 2
 				par.add_child(a)
 				a.tocar([0, 1, 2, 3], 8.0, false, func() -> void: a.queue_free())
+
+
+# --- Fase 6a: Osmar, gesto do 1º lutador, parede da memória ---
+
+## Osmar Brandão: só na garagem, num ponto próprio (manifest.original_trainer.pos). Parado, olhando a parede ou falando.
+func _montar_osmar() -> void:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("original_trainer", {})
+	var p: Array = info.get("pos", [196, 236])
+	var pos_o := Vector2(float(p[0]), float(p[1]))
+	_sombra_osmar = Sprite2D.new()
+	_sombra_osmar.texture = UiTema.textura("floor_shadow")
+	_sombra_osmar.position = pos_o + Vector2(0, -1)
+	_sombra_osmar.z_index = int(pos_o.y) - 1
+	_mundo.add_child(_sombra_osmar)
+	_osmar = _novo_anim("coach_idle", "", int(pos_o.y))
+	_osmar.position = pos_o
+	_atualizar_osmar()
+
+
+## Folha do Osmar: falando enquanto o balão dele escreve; na abertura ele olha a parede entre as falas.
+func _atualizar_osmar() -> void:
+	if _osmar == null:
+		return
+	var na_garagem := GameState.local_id == "garage"
+	_osmar.visible = na_garagem
+	_sombra_osmar.visible = na_garagem
+	if not na_garagem:
+		return
+	var estado := "idle"
+	if _coach_falando:
+		estado = "talk"
+	elif GameState.abertura_estado() == "playing":
+		estado = "look"
+	if estado == _osmar_estado:
+		return
+	_osmar_estado = estado
+	_osmar.definir(str(OSMAR_FOLHAS[estado]))
+	_osmar.tocar([0, 1, 2, 3], float(UiTema.sprite(_osmar.nome_sprite).get("fps", 3.0)), true)
+
+
+## O balão avisa quem está escrevendo (a Garagem liga os dois).
+func definir_falando(speaker: String, sim: bool) -> void:
+	if speaker != "coach":
+		return
+	_coach_falando = sim
+	_atualizar_osmar()
+
+
+## Ponto logo acima da cabeça de quem fala (head_anchor do manifest, relativo ao pivô; não treme com o soco).
+func ponto_cabeca(speaker: String) -> Vector2:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {})
+	if speaker == "coach":
+		var o: Dictionary = info.get("original_trainer", {})
+		var a: Array = o.get("head_anchor", [1, -63])
+		var p: Array = o.get("pos", [196, 236])
+		return Vector2(float(p[0]) + float(a[0]), float(p[1]) + float(a[1]))
+	var a2: Array = info.get("first_fighter", {}).get("head_anchor", {}).get("garage", [1, -65])
+	# Mesmo ponto de pé de _pose_repouso: corda, esteira ou (saco, pera, boneco) o ponto do saco.
+	var pe: Vector2
+	match GameState.foco:
+		CORDA:
+			pe = UiTema.pos("fighter_idle", "foco_corda")
+		ESTEIRA:
+			pe = UiTema.pos("fighter_run", "foco_esteira")
+		_:
+			pe = UiTema.pos("fighter_idle", "foco_saco")
+	return pe + Vector2(float(a2[0]), float(a2[1]))
+
+
+## Cabeças dos OUTROS personagens que o balão de `speaker` não pode cobrir (além da zona do alvo).
+func cabecas_a_evitar(speaker: String) -> Array:
+	var outro := "first" if speaker == "coach" else "coach"
+	if outro == "coach" and GameState.local_id != "garage":
+		return []
+	var h := ponto_cabeca(outro)
+	return [Rect2(h.x - 9.0, h.y, 18.0, 18.0)]
+
+
+# Gesto "fecho e dois toques" (só o John): momentos da sala = abertura, luva nova e sala parada.
+func _ao_gesto_pedido(plano: Dictionary) -> void:
+	if str(plano.get("momento", "")) in ["fight_intro", "victory"]:
+		return  # esses são da arena (TelaLuta)
+	if GameState.lutador_atual() != "first" or GameState.foco == ESTEIRA:
+		GameState.cancelar_gesto()
+		return
+	_gesto.iniciar(plano, {
+		"comecar": _gesto_comecar,
+		"rip": func() -> void: sfx.strap_rip(),
+		"toque": _gesto_toque,
+		"fim": _gesto_fim,
+	})
+
+
+func _gesto_comecar(plano: Dictionary) -> void:
+	var nome := _f("fighter_gesture_short" if str(plano.version) == "short" else "fighter_gesture")
+	if UiTema.sprite(nome).is_empty():
+		return
+	_gesto_sprite = nome
+	_corda_giro.visible = false
+	_corda_costas.visible = false
+	_lutador.definir(nome)
+	_lutador.position = UiTema.pos(nome, "foco_corda" if GameState.foco == CORDA else "foco_saco")
+	var n := int(UiTema.sprite(nome).get("frames", 4))
+	var seq: Array = []
+	for i in n:
+		seq.append(i)
+	_lutador.tocar(seq, float(UiTema.sprite(nome).get("fps", 9.0)), false)
+	_sombra_lutador.position = _lutador.position + Vector2(0, -1)
+
+
+func _gesto_toque(n: int) -> void:
+	sfx.tap_glove()
+	if _gesto_sprite == "":
+		return
+	var pts: Array = UiTema.sprite(_gesto_sprite).get("tap_points", [[3, -47]])
+	var tp: Array = pts[mini(n, pts.size() - 1)]
+	_impacto(_lutador.position + Vector2(float(tp[0]) + 14.0, float(tp[1])), false)
+
+
+func _gesto_fim() -> void:
+	if _gesto_sprite != "":
+		_gesto_sprite = ""
+		_pose_repouso()
+
+
+## Qualquer clique cancela o gesto no mesmo quadro: corta o strap_rip (o 2º toque não toca) e volta à guarda.
+func _ao_gesto_cancelado() -> void:
+	if _gesto != null:
+		_gesto.cancelar()
+	sfx.cortar_rip()
+	if _gesto_sprite != "":
+		_gesto_sprite = ""
+		_pose_repouso()
+
+
+## Parede da memória: objetos do garage_story_wall conforme os marcos da escola. Só na garagem.
+func _montar_parede() -> void:
+	var obj: Dictionary = UiTema.manifest().get("by_data_id", {}).get("garage_story_wall", {}).get("objects", {})
+	var ordem := ["notice_debt", "form", "photo_old", "clipping", "photo_team", "school_symbol"]
+	for k in ordem:
+		var o: Dictionary = obj.get(k, {})
+		if o.is_empty():
+			continue
+		var nome := str(o.get("sprite", o.get("sprite_before", "")))
+		var s := AnimSprite.new()
+		s.definir(nome)
+		var p: Array = o.pos
+		s.position = Vector2(float(p[0]), float(p[1]))
+		s.z_index = -45 + ordem.find(k)  # a ordem do manifest decide quem fica por cima
+		_mundo.add_child(s)
+		_parede[k] = {"sprite": s, "dados": o}
+	_atualizar_parede()
+
+
+func _atualizar_parede() -> void:
+	if _parede.is_empty():
+		return
+	var garagem := GameState.local_id == "garage"
+	var salva := GameState.marco("garage_saved_seen")
+	for k in _parede:
+		var d: Dictionary = _parede[k]
+		var s: AnimSprite = d.sprite
+		var o: Dictionary = d.dados
+		var ver := garagem
+		match k:
+			"notice_debt":
+				ver = ver and not salva
+			"clipping":
+				ver = ver and GameState.marco("first_school_win")
+			"photo_team", "school_symbol":
+				ver = ver and salva
+			"form":
+				s.definir(str(o.sprite_after if salva else o.sprite_before))
+		s.visible = ver
+
+
+## Texto da dica de um objeto da parede sob o ponto (coordenadas da tela base), ou "".
+func _texto_parede(p: Vector2) -> String:
+	var ordem := ["school_symbol", "photo_team", "clipping", "photo_old", "form", "notice_debt"]
+	for k in ordem:
+		if not _parede.has(k):
+			continue
+		var s: AnimSprite = _parede[k].sprite
+		if not s.visible:
+			continue
+		var r := Rect2(s.position, UiTema.tamanho_quadro(s.nome_sprite))
+		if not r.has_point(p):
+			continue
+		var d: DialogosData = GameState.dialogos
+		match k:
+			"notice_debt":
+				return "%s\n%s" % [d.texto_objeto("debt_notice", "title"), d.texto_objeto("debt_notice", "text")]
+			"form":
+				return d.texto_objeto("entry_form_after" if GameState.marco("garage_saved_seen") else "entry_form_before")
+			"photo_old":
+				return d.texto_objeto("old_photo")
+			"clipping":
+				return "%s\n%s\n%s" % [d.texto_objeto("clipping", "title"), d.texto_objeto("clipping"), d.texto_objeto("clipping", "footer")]
+			"photo_team":
+				return d.texto_objeto("team_photo")
+			"school_symbol":
+				return d.texto_objeto("garage_saved_seal", "title")
+	return ""
 
 
 # --- Quadro a quadro ---

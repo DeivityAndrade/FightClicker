@@ -1,0 +1,112 @@
+{
+	"version": 1,
+	"cast": {
+		"first": { "name": "John Bullet", "short": "john", "color": "r2", "voice": "first" },
+		"coach": { "name": "Osmar Brandão", "short": "osmar", "color": "y0", "voice": "coach" }
+	},
+	"school_name": "Raízes Fight Club",
+	"voices": {
+		"first": { "base_hz": 180, "cps": 28, "vowel_order": "uoaei", "vowel_steps": [0, 2, 4, 5, 7] },
+		"coach": { "base_hz": 110, "cps": 22, "vowel_order": "uoaei", "vowel_steps": [0, 2, 4, 5, 7] },
+		"disciple": { "base_hz": 260, "cps": 30, "vowel_order": "uoaei", "vowel_steps": [0, 2, 4, 5, 7] }
+	},
+	"typing": {
+		"pause_comma": 0.12, "pause_stop": 0.28, "pause_ellipsis_dot": 0.13,
+		"hold_min": 1.2, "hold_per_char": 0.06, "click_guard": 0.15,
+		"blip_every_letters": 2, "blip_pitch_jitter": 0.03, "blip_volume_db": -8,
+		"space_completes_passive": false
+	},
+	"comments": {
+		"gap_min_seconds": 60, "gap_filler_seconds": 120, "filler_max_priority": 4,
+		"settle_seconds": 2.0, "defer_max_seconds": 15.0, "after_gesture": true,
+		"idle_comment_seconds": 45, "balloon_safety_seconds": 1.0
+	},
+	"gesture": {
+		"fight_intro_start": 0.30, "victory_short_start": 0.15, "victory_pose_at": 0.60,
+		"opening_start": 0.30, "glove_start": 0.30,
+		"full_seconds": 0.89, "short_seconds": 0.44,
+		"rip_at": 0.11, "full_tap_at": 0.56, "short_tap_at": 0.11, "tap_interval": 0.22,
+		"idle_first_seconds": 20, "idle_repeat_min": 30, "idle_repeat_max": 60, "idle_max_per_stop": 3,
+		"sounds": { "rip": "strap_rip", "tap": "tap_glove" }
+	},
+	"triggers": {
+		"garage_saved_return": { "priority": 10, "defer": true },
+		"after_defeat": { "priority": 5, "defer": true, "campaign_cap": 1 },
+		"glove_new": { "priority": 8, "defer": false },
+		"fight_won": { "priority": 7, "defer": true, "campaign_cap": 1 },
+		"gym_arrival": { "priority": 6, "defer": true, "campaign_cap": 1 },
+		"fight_near": { "priority": 4, "defer": false, "campaign_cap": 1 },
+		"big_purchase": { "priority": 3, "defer": false, "campaign_cap": 1 },
+		"box_opened": { "priority": 3, "defer": false, "campaign_cap": 1 },
+		"idle": { "priority": 1, "defer": false, "campaign_cap": 1 },
+		"retire": { "priority": 5, "defer": false },
+		"art_choice": { "priority": 3, "defer": false, "campaign_cap": 1 }
+	},
+	"opening": {
+		"max_seconds": 20, "skip_hold_seconds": 0.5, "gap_between": 0.3, "first_line_at": 1.5,
+		"lines": ["open_1", "open_2", "open_3", "open_4"]
+	},
+	"lines": [
+		{ "id": "open_1", "speaker": "coach", "text": "chegou outro aviso, {first}.", "trigger": "opening", "repeat": "once" },
+		{ "id": "open_2", "speaker": "coach", "text": "ainda formo campeão aqui.", "trigger": "opening", "repeat": "once" },
+		{ "id": "open_3", "speaker": "first", "text": "o muralha riu da ficha:\nescola: nenhuma.", "trigger": "opening", "repeat": "once" },
+		{ "id": "open_4", "speaker": "first", "text": "vou botar um nome ali.", "trigger": "opening", "repeat": "once" },
+
+		{ "id": "cl_primeira_compra", "speaker": "coach", "text": "isso, enche a sala.", "trigger": "big_purchase", "repeat": "once", "conditions": { "location": "garage" } },
+		{ "id": "cl_primeira_caixa", "speaker": "coach", "text": "cheiro de coisa nova.\nfaz tempo, hein.", "trigger": "box_opened", "repeat": "once", "conditions": { "location": "garage" } },
+		{ "id": "cl_primeira_derrota", "speaker": "coach", "text": "todo mundo cai primeiro.\neu caí em três países.", "trigger": "after_defeat", "repeat": "once", "priority": 9, "conditions": { "location": "garage" } },
+		{ "id": "cl_luva_par", "speaker": "coach", "text": "a velha é o par do {first}.\npassa de mão em mão.", "trigger": "glove_new", "repeat": "once", "conditions": { "location": "garage" } },
+		{ "id": "cl_garagem_salva", "speaker": "coach", "text": "o aviso saiu da parede.\nainda é nossa, viu?", "trigger": "garage_saved_return", "repeat": "once", "conditions": { "location": "garage" } },
+		{ "id": "cl_primeira_academia", "speaker": "coach", "text": "a garagem vai junto,\nmesmo sem a lâmpada.", "trigger": "gym_arrival", "repeat": "once", "conditions": { "location": "garage" } },
+		{ "id": "cl_passar_posto", "speaker": "coach", "text": "a escola não para.\nquem sai ensina.", "trigger": "retire", "repeat": "once", "enabled": false, "conditions": { "location": "garage" } },
+
+		{ "id": "cl_compra_1", "speaker": "coach", "text": "a sala tá ficando gente.", "trigger": "big_purchase", "repeat": "rest", "group": "compra", "conditions": { "location": "garage" } },
+		{ "id": "cl_compra_2", "speaker": "coach", "text": "comprou bem. eu acho.", "trigger": "big_purchase", "repeat": "rest", "group": "compra", "conditions": { "location": "garage" } },
+		{ "id": "cl_compra_3", "speaker": "coach", "text": "no meu tempo era cimento\nnum saco de batata.", "trigger": "big_purchase", "repeat": "rest", "group": "compra", "conditions": { "location": "garage" } },
+
+		{ "id": "cl_caixa_1", "speaker": "coach", "text": "abre aí, que eu espio.", "trigger": "box_opened", "repeat": "rest", "group": "caixa", "conditions": { "location": "garage" } },
+		{ "id": "cl_caixa_2", "speaker": "coach", "text": "caixa nova, dia bom.", "trigger": "box_opened", "repeat": "rest", "group": "caixa", "conditions": { "location": "garage" } },
+		{ "id": "cl_caixa_3", "speaker": "coach", "text": "essa caixa vira banco.", "trigger": "box_opened", "repeat": "rest", "group": "caixa", "conditions": { "location": "garage" } },
+
+		{ "id": "cl_derrota_1", "speaker": "coach", "text": "foi só um dia ruim.", "trigger": "after_defeat", "repeat": "rest", "group": "derrota", "conditions": { "location": "garage" } },
+		{ "id": "cl_derrota_2", "speaker": "coach", "text": "eu apanhei de um poste.", "trigger": "after_defeat", "repeat": "rest", "group": "derrota", "conditions": { "location": "garage" } },
+		{ "id": "cl_derrota_3", "speaker": "coach", "text": "senta, bebe água, volta.", "trigger": "after_defeat", "repeat": "rest", "group": "derrota", "conditions": { "location": "garage" } },
+		{ "id": "cl_derrota_recall_1", "speaker": "coach", "text": "eu também já perdi aqui.", "trigger": "after_defeat", "repeat": "rest", "group": "derrota", "conditions": { "location": "garage" } },
+		{ "id": "cl_derrota_recall_2", "speaker": "coach", "text": "a escola já levantou.", "trigger": "after_defeat", "repeat": "rest", "group": "derrota", "conditions": { "location": "garage" } },
+		{ "id": "cl_derrota_recall_3", "speaker": "coach", "text": "cai, mas a gente volta.", "trigger": "after_defeat", "repeat": "rest", "group": "derrota", "conditions": { "location": "garage" } },
+
+		{ "id": "cl_revanche_1", "speaker": "coach", "text": "conta quitada, hein.", "trigger": "fight_won", "repeat": "rest", "group": "revanche", "conditions": { "location": "garage", "revenge": true } },
+		{ "id": "cl_revanche_2", "speaker": "coach", "text": "ele não esperava essa.", "trigger": "fight_won", "repeat": "rest", "group": "revanche", "conditions": { "location": "garage", "revenge": true } },
+		{ "id": "cl_revanche_3", "speaker": "coach", "text": "agora ele que lembre.", "trigger": "fight_won", "repeat": "rest", "group": "revanche", "conditions": { "location": "garage", "revenge": true } },
+
+		{ "id": "cl_recorde_1", "speaker": "coach", "text": "marca nova, e eu vi.", "trigger": "fight_won", "repeat": "rest", "priority": 6, "group": "recorde", "conditions": { "location": "garage", "record": true } },
+		{ "id": "cl_recorde_2", "speaker": "coach", "text": "isso aí passou da marca.", "trigger": "fight_won", "repeat": "rest", "priority": 6, "group": "recorde", "conditions": { "location": "garage", "record": true } },
+		{ "id": "cl_recorde_3", "speaker": "coach", "text": "quem diria, hein.", "trigger": "fight_won", "repeat": "rest", "priority": 6, "group": "recorde", "conditions": { "location": "garage", "record": true } },
+
+		{ "id": "cl_luta_marcada_1", "speaker": "coach", "text": "tá chegando a luta.", "trigger": "fight_near", "repeat": "rest", "group": "luta_marcada", "conditions": { "location": "garage" } },
+		{ "id": "cl_luta_marcada_2", "speaker": "coach", "text": "bota a luva e respira.", "trigger": "fight_near", "repeat": "rest", "group": "luta_marcada", "conditions": { "location": "garage" } },
+		{ "id": "cl_luta_marcada_3", "speaker": "coach", "text": "ombro solto, queixo baixo.", "trigger": "fight_near", "repeat": "rest", "group": "luta_marcada", "conditions": { "location": "garage" } },
+
+		{ "id": "cl_parado_1", "speaker": "coach", "text": "saco não bate sozinho.", "trigger": "idle", "repeat": "rest", "group": "parado", "conditions": { "location": "garage" } },
+		{ "id": "cl_parado_2", "speaker": "coach", "text": "tá dormindo em pé?", "trigger": "idle", "repeat": "rest", "group": "parado", "conditions": { "location": "garage" } },
+		{ "id": "cl_parado_3", "speaker": "coach", "text": "a lâmpada tá piscando, ó.", "trigger": "idle", "repeat": "rest", "group": "parado", "conditions": { "location": "garage" } },
+
+		{ "id": "cl_academia_volta_1", "speaker": "coach", "text": "já sabe o caminho, né?", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_volta", "conditions": { "location": "garage", "after_line": "cl_primeira_academia" } },
+		{ "id": "cl_academia_volta_2", "speaker": "coach", "text": "cheiro de tatame, hein?", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_volta", "conditions": { "location": "garage", "after_line": "cl_primeira_academia" } },
+		{ "id": "cl_academia_volta_3", "speaker": "coach", "text": "aqui o espelho é maior.", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_volta", "conditions": { "location": "garage", "after_line": "cl_primeira_academia" } },
+
+		{ "id": "cl_arte_1", "speaker": "coach", "text": "cada um tem seu jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte", "enabled": false, "conditions": { "location": "garage" } },
+		{ "id": "cl_arte_2", "speaker": "coach", "text": "escolheu? vai até o fim.", "trigger": "art_choice", "repeat": "rest", "group": "arte", "enabled": false, "conditions": { "location": "garage" } },
+		{ "id": "cl_arte_3", "speaker": "coach", "text": "eu lutei de todo jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte", "enabled": false, "conditions": { "location": "garage" } }
+	],
+	"objects": {
+		"debt_notice": { "title": "AVISO DE COBRANÇA", "title_alt": "AVISO FINAL", "text": "Aluguel em atraso. Regularize ou desocupe." },
+		"old_photo": { "text": "Osmar, bem antes das histórias." },
+		"entry_form_before": { "text": "ESCOLA: NENHUMA" },
+		"entry_form_after": { "text": "ESCOLA: RAÍZES FIGHT CLUB", "text_alt": "ESCOLA: RAIZES FIGHT CLUB" },
+		"clipping": { "title": "GARAGEM FAZ BARULHO NO BAIRRO", "text": "Ninguém sabia que ali treinava gente.", "footer": "Errata: o nome é {school}." },
+		"team_photo": { "text": "A escola inteira. Pouca gente, muita raiz." },
+		"garage_saved_seal": { "title": "GARAGEM SALVA", "text": "O LUGAR CONTINUA NOSSO" },
+		"starter_glove_desc": { "text": "O par do John. Velha, mas fecha direito." }
+	}
+}

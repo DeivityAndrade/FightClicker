@@ -298,6 +298,102 @@ const FACES_34 := {
 	"effort": {5: "HHHSsbbsslbbl", 10: "..Sssxxxxss..", 11: "...SSsssss..."},
 }
 
+## ---------------------------------------------------------------- 1º LUTADOR (Fase 6a)
+## O lutador do jogador da Carreira 1 ganha rosto próprio: cabelo preto com topete (um tufo que sobe e avança sobre a
+## testa e uma ponta na nuca) e esparadrapo branco acima da sobrancelha (P). Mesmo tamanho de cabeça; só uma linha a
+## mais em cima (o tufo), por isso a âncora desce 1 px e o centro da cabeça fica no mesmo lugar de antes.
+## Rostos novos da 6a: "bite" (morde o fecho da luva: sobrancelha baixa, boca aberta para a frente, dentes W) e
+## "smile" (sorriso leve, de canto; diferente do "joy" da vitória).
+const PRIMEIRO_HEAD_SIDE := [
+	"........hHH...",
+	"....HHHHHHHH..",
+	"..HHHHhhHHHH..",
+	".HHHHhhhhHHHH.",
+	".HHHHHHHHHHHHH",
+	"HHHHHHHssPPl..",
+	"HHHHHHssbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	".HHEEssssssll.",
+	"HHHHsssssssss.",
+	"..HSssssssss..",
+	"...SSssssmSs..",
+	"....SSsssss...",
+	".....SSSss....",
+]
+const PRIMEIRO_FACES_SIDE := {
+	"normal": {},
+	"pain": {6: "HHHHHHsbbssl..", 7: "HHHEEssxxssl..", 11: "..HSsssssxss..", 12: "...SSsssxxSs.."},
+	"tired": {6: "HHHHHHsssbbl..", 7: "HHHEEssssesl..", 12: "...SSssssxSs..", 13: "....SSsssxs..."},
+	"ko": {6: "HHHHHHsssssl..", 7: "HHHEEsssxxsl..", 12: "...SSssssxSs..", 13: "....SSsssxs..."},
+	"joy": {5: "HHHHHHHsbPPl..", 6: "HHHHHHssssll..", 12: "...SSsssxxxs..", 13: "....SSssxxs..."},
+	"bite": {6: "HHHHHHsssbbl..", 7: "HHHEEssbbxsl..", 12: "...SSsssxWWx..", 13: "....SSsssxx..."},
+	"smile": {7: "HHHEEssssxsl..", 12: "...SSsssssxs..", 13: "....SSssxxs..."},
+}
+const PRIMEIRO_HEAD_34 := [
+	"......hHH....",
+	"..HHHHHHHHHH.",
+	".HHHHhhhHHHHH",
+	"HHHHhhhhhHHHH",
+	"HHHHHHHHHHHHH",
+	"HHHHssllllPPl",
+	"HHHSsbbsslbbl",
+	"HHESsesssles.",
+	"HEsSssssslll.",
+	".HESssssssss.",
+	".HSsssssssSs.",
+	"..SsssmmmSs..",
+	"...SSsssss...",
+	".....SSSs....",
+]
+const PRIMEIRO_FACES_34 := {
+	"normal": {},
+	"effort": {6: "HHHSsbbsslbbl", 11: "..Sssxxxxss..", 12: "...SSsssss..."},
+	"bite": {6: "HHHSsssssllll", 7: "HHESsbbsslbb.", 8: "HEsSsxsssxll.", 11: "..SsssxWWxs..", 12: "...SSsssxs..."},
+	"smile": {11: "..Ssssmmmxs..", 10: ".HSsssssssxs."},
+}
+
+## Identidade de quem usa o corpo do jogador. "primeiro" = 1º lutador (Carreira 1); "disc" = discípulo padrão
+## (Carreira 2+ até a personalização da 6b): troca de paleta fixa (cabelo castanho claro sem topete e sem
+## esparadrapo, calção verde). Os geradores do jogador fazem P.build(identidade(quem) + luva).
+func identidade(quem: String) -> Dictionary:
+	if quem == "disc":
+		return {"hair": ["br1", "br2"], "brow": "br0", "shorts": ["gr0", "gr1", "gr2"], "band": "gr3"}
+	return {"hair": ["d1", "g0"], "brow": "ink", "head_side": PRIMEIRO_HEAD_SIDE, "head_34": PRIMEIRO_HEAD_34,
+		"faces_side": PRIMEIRO_FACES_SIDE, "faces_34": PRIMEIRO_FACES_34,
+		"head_anchor_side": Vector2i(7, 8), "head_anchor_34": Vector2i(6, 7),
+		"head_legend_extra": {"P": "white", "W": "white"}}
+
+## Boca (pixel da cabeça) do personagem numa vista, relativa ao centro da cabeça (hd).
+func mouth_offset(b: Dictionary, view: String) -> Vector2:
+	var rows: Array = b.head_side if view == "side" else b.head_34
+	var an: Vector2i = b.head_anchor_side if view == "side" else b.head_anchor_34
+	for j in rows.size():
+		var r: String = rows[j]
+		var i := r.find("m")
+		if i >= 0:
+			return Vector2(i - an.x, j - an.y)
+	return Vector2(2, 4)
+
+## Ponta do fecho da luva (Fase 6a): fita na cor do punho do estilo, do punho da luva até a boca (os dentes),
+## desenhada por cima de tudo (gancho de pose "end"). n = quantos pixels de fita (2 = presa, 3 = esticada).
+func strap_tip(b: Dictionary, mouth: Vector2, cuff: Vector2, n: int) -> void:
+	var st: Dictionary = GLOVE_STYLES.get(b.glove, GLOVE_STYLES["old"])
+	var d := cuff - mouth
+	var steps := maxi(int(round(maxf(absf(d.x), absf(d.y)))), 1)
+	var placed := 0
+	var pts := []
+	for k in range(steps + 1):
+		var p := (mouth + d * (float(k) / float(steps))).round()
+		if pts.is_empty() or pts[-1] != p:
+			pts.append(p)
+	# a fita sai da boca: os n primeiros pixels a partir do dente; o último (no punho) é a costura escura
+	for p in pts:
+		if placed >= n:
+			break
+		put(int(p.x), int(p.y), st.c if placed < n - 1 else st.g, NEAR_GLOVE_TOP + 5)
+		placed += 1
+
 ## Luvas (5 orientações). D/M/L = r0/r1/r2 da luva (a troca de paleta continua valendo),
 ## c/g = punho (claro/escuro), t/T = fita de remendo (só a luva velha; nas outras vira detalhe do estilo).
 const GLOVE_UP := [   # antebraço subindo (guarda): punho embaixo

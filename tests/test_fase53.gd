@@ -370,14 +370,14 @@ func _teste_prep_days_dos_dados() -> void:
 
 
 func _teste_save_v9() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 10, "versão do save é 9")
+	checar_igual(SaveStore.VERSAO_ATUAL, 11, "versão do save é 11")
 	var pasta := pasta_limpa("f53_save")
 	var gs := _reabrir(pasta)
 	gs.segundos_campanha = 123.5
 	gs.fight_day = 17
 	gs.salvar()
 	var doc = JSON.parse_string(ler(pasta + "save.json"))
-	checar_igual([int(doc.version), doc.state.career.campaign_seconds, int(doc.state.career.fight_day)], [10, 123.5, 17], "gravado v9")
+	checar_igual([int(doc.version), doc.state.career.campaign_seconds, int(doc.state.career.fight_day)], [11, 123.5, 17], "gravado v9")
 	_liberar(gs)
 	var g2 := _reabrir(pasta)
 	checar_igual([g2.segundos_campanha, g2.fight_day], [123.5, 17], "recarrega relógio e data")
@@ -407,7 +407,7 @@ func _teste_migracao_8_para_9() -> void:
 	checar_igual([g.segundos_campanha, g.dia_campanha(), g.fight_day], [0.0, 1, 1 + 10], "em andamento: Dia 1, data = 1 + folga do Dinho")
 	checar(g.avisos.is_empty(), "migração sem avisos")
 	g.salvar()
-	checar_igual(int(JSON.parse_string(ler(p1 + "save.json")).version), 10, "regravado como v9")
+	checar_igual(int(JSON.parse_string(ler(p1 + "save.json")).version), 11, "regravado como v11")
 	_liberar(g)
 	# Kid já vencido: campanha completa.
 	var p2 := pasta_limpa("f53_mig_b")

@@ -137,3 +137,35 @@ func derrota() -> void:
 
 func moeda() -> void:
 	_tocar("coin", -7.0, 0.02)
+
+
+# --- Fase 6a: gesto do 1º lutador e selo da garagem salva ---
+
+var _rip: AudioStreamPlayer
+
+
+## Fecho puxado com os dentes. Tem um tocador só, para o clique poder cortar o som no meio.
+func strap_rip() -> void:
+	if _rip == null:
+		_rip = AudioStreamPlayer.new()
+		add_child(_rip)
+		_rip.stream = load(PASTA + "strap_rip.wav")
+	_rip.volume_db = -6.0
+	_rip.pitch_scale = 1.0
+	_rip.play()
+
+
+func cortar_rip() -> void:
+	if _rip != null and _rip.playing:
+		_rip.stop()
+
+
+func tap_glove() -> void:
+	if not _fluxos.has("tap_glove"):
+		_fluxos["tap_glove"] = _carregar_variacoes("tap_glove")
+	_tocar("tap_glove", -6.0, 0.0)
+
+
+## Batida do selo na tela de vitória (som que já existe: hit_heavy).
+func selo() -> void:
+	_tocar("hit_heavy", -5.0, 0.02)

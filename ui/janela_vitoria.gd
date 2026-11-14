@@ -100,6 +100,9 @@ func _letreiro_revanche(r: Dictionary, y: float) -> void:
 
 
 func _montar_cinturao(r: Dictionary) -> void:
+	# Fase 6a: o 1º cinturão da escola salva a garagem. Entra uma 4ª linha de prêmio (ícone + GARAGEM SALVA) e o selo à direita.
+	var salva := bool(r.get("garage_saved", false))
+	var ds := 18.0 if salva else 0.0  # a janela é a mesma; o miolo de baixo desce 18 px para caber a linha extra
 	moldura("ui_window", Rect2(150, 22, 340, 316))
 	faixa_titulo("victory", Rect2(156, 28, 328, 22), UiTema.txt("belt_title", "CINTURÃO AMADOR"), UiTema.Y1, 2)
 	var cint := AnimSprite.new()
@@ -114,18 +117,67 @@ func _montar_cinturao(r: Dictionary) -> void:
 			UiTema.Y1, 320.0, 140.0)
 	else:
 		UiTema.rotulo_centro(painel, UiTema.txt("belt_line", "O bairro viu. Uns quinze."), UiTema.CREAM, 320.0, 140.0)
-	_linhas_ganhos(r, roundf(320.0 - _largura_ganhos(r, 1) / 2.0), 158.0, 1, true)
-	divisor(166, 208, 308)
-	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 215)
-	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215)
+	var larg := _largura_ganhos(r, 1)
+	var titulo_selo := ""
+	var sub_selo := ""
+	if salva:
+		var d: DialogosData = GameState.dialogos
+		titulo_selo = d.texto_objeto("garage_saved_seal", "title").to_upper()
+		sub_selo = d.texto_objeto("garage_saved_seal", "text").to_upper()
+		larg = maxf(larg, 20.0 + UiTema.largura_visivel(sub_selo))
+	var x_linhas := roundf(320.0 - larg / 2.0)
+	_linhas_ganhos(r, x_linhas, 158.0, 1, true)
+	if salva:
+		_linha_selo(x_linhas, 206.0, titulo_selo, sub_selo)
+		_selo_garagem()
+	divisor(166, 208 + ds + (2.0 if salva else 0.0), 308)
+	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 215 + ds)
+	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215 + ds)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
 	# Academia de bairro: aviso de que a mudança é automática (NÃO é botão).
-	fundo_cor(Rect2(166, 232, 308, 42), Color(UiTema.P0, 0.55))
-	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 238)
-	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 188, 238, 280)
-	UiTema.rotulo(painel, UiTema.txt("belt_hint", "A MUDANÇA SAI DO PRÊMIO E SOBRA DINHEIRO PARA GASTAR."), UiTema.G3, 174, 252, 292)
+	fundo_cor(Rect2(166, 232 + ds, 308, 42), Color(UiTema.P0, 0.55))
+	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 238 + ds)
+	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 188, 238 + ds, 280)
+	UiTema.rotulo(painel, UiTema.txt("belt_hint", "A MUDANÇA SAI DO PRÊMIO E SOBRA DINHEIRO PARA GASTAR."), UiTema.G3, 174, 252 + ds, 292)
 	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
+
+
+## 4ª linha de prêmio: ícone da garagem salva + "GARAGEM SALVA" (branco) e embaixo a frase do Roteirista (cinza).
+func _linha_selo(x: float, y: float, titulo: String, sub: String) -> void:
+	UiTema.textura_rect(painel, "icon_garage_saved", x, y)
+	UiTema.rotulo(painel, titulo, UiTema.WHITE, x + 20.0, y + 1.0)
+	UiTema.rotulo(painel, sub, UiTema.COL_TEXT_2, x + 20.0, y + 9.0)
+
+
+## Selo 52x54 em (418,146): entra 0,3 s depois da janela (2 quadros em 2x, depois 1x), tremida de 1 px e o som do hit_heavy.
+func _selo_garagem() -> void:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("garage_saved_seal", {})
+	var p: Array = info.get("victory_pos", [418, 146])
+	var selo := UiTema.textura_rect(painel, str(info.get("seal", "seal_garage_saved")), float(p[0]), float(p[1]))
+	selo.visible = false
+	UiTema.alinhar(selo, "ignore")  # posição do manifest (victory_pos): à direita das linhas de prêmio
+	var centro := Vector2(float(p[0]), float(p[1])) + selo.size / 2.0
+	var tw := create_tween()
+	tw.tween_interval(0.3)
+	tw.tween_callback(func() -> void:
+		selo.visible = true
+		selo.scale = Vector2(2, 2)
+		selo.position = centro - selo.size  # 2x com o mesmo centro
+		sfx.selo())
+	tw.tween_interval(1.0 / 30.0)
+	tw.tween_callback(func() -> void:
+		selo.scale = Vector2(2, 2))
+	tw.tween_interval(1.0 / 30.0)
+	tw.tween_callback(func() -> void:
+		selo.scale = Vector2.ONE
+		selo.position = Vector2(float(p[0]), float(p[1])) + Vector2(1, 0))
+	tw.tween_interval(0.04)
+	tw.tween_callback(func() -> void:
+		selo.position = Vector2(float(p[0]), float(p[1])) + Vector2(-1, 1))
+	tw.tween_interval(0.04)
+	tw.tween_callback(func() -> void:
+		selo.position = Vector2(float(p[0]), float(p[1])))
 
 
 # Três ganhos com ícone: dinheiro (y1), fama (p2), Legado em jogo (p2). Os números "sobem" ao abrir.

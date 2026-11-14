@@ -1,6 +1,7 @@
 # Cena: Reencontro final (animatic por escrito)
 
 Dono: Diretor de Cutscenes. Versão 1 (2026-11-11). Fase 11. Cena única.
+> **Nomes (decisão do dono, 2026-11-13):** `primeiro` = **John Bullet** (plaquinha `john`, voz `first`); `treinador` = **Osmar Brandão** (plaquinha `osmar`, voz `coach`); escola = **Raízes Fight Club**; humilhação A, "a ficha em branco". Nas tabelas abaixo, `primeiro` é o John e `treinador` é o Osmar.
 Função (direção narrativa §6, Arco 6, e §9): **dar espaço para o jogador reconhecer** o 1º lutador pelo gesto, pela aparência e pelo nome. Ele não é vilão: é o último mestre a superar.
 Par visual: `primeira-sucessao.md` (a tabela "Como as duas cenas conversam" está lá).
 Linguagem: `linguagem.md` (registro **Simples**). Gesto: `gesto-assinatura.md` (opção A). Falas são rascunho para o Roteirista.
@@ -33,7 +34,7 @@ Tela de luta (640x360). A cena fecha a imagem na **janela (128,52,384,272)**, ig
 | 2 | 2,5–5,0 | janela 1x | Meio segundo de silêncio. **Passos** lentos fora de quadro e **couro raspando**. A porta treme, sobe e **emperra na altura do peito**. | 4 passos a cada 0,45 s; adereço `final_door` (fechada → 1/3 → emperrada, 0,8 s), tremida de 1 px | `step_1`/`step_2`, `glove_rub`, `door_shake`, `door_roll`, `door_jam` (os mesmos da sucessão) |
 | 3 | 5,0–8,2 | **corte para 2x**, região (327,123,192,136): as luvas ficam no mesmo ponto do quadro que na sucessão (centro, 78 px abaixo do topo) | Vemos `primeiro` **do peito para baixo**, luvas caídas ao lado do corpo. A luva esquerda sobe e some atrás da borda da porta: **o fecho**. Ela desce. **Dois toques.** Depois, 0,6 s sem nada. | `fight_player_gesture` na versão lenta (1,4 s), com a cabeça coberta pela porta; 2 faíscas pequenas nos toques | `strap_rip`; `tap_glove`, `tap_glove` (intervalo de 0,22 s, igual ao do jogo inteiro) |
 | 4 | 8,2–11,0 | **corte para 1x** | Ele **passa por baixo da porta** (a mesma pose do discípulo na sucessão), endireita o corpo e anda até debaixo da lâmpada. | `duck_under` em vista de luta (0,7 s); `walk` de (423,256) a (346,318), 2,1 s a 48 px/s | passos |
-| 5 | 11,0–13,6 | janela 1x | A luz pega o rosto: **mais velho**. Aparece **só o nome**, pequeno, sem título. **2,6 s sem fala e sem som novo.** Só respiração e uma piscada da lâmpada. O discípulo levanta a cabeça 1 px. | `primeiro`: parado, braços baixos; cartão de nome simples (1x, `cream`, centrado 8 px abaixo dos pés dele) | `lamp_hum` |
+| 5 | 11,0–13,6 | janela 1x | A luz pega o rosto: **mais velho**. Aparece **só o nome** ("John Bullet"), pequeno, sem título. **2,6 s sem fala e sem som novo.** Só respiração e uma piscada da lâmpada. O discípulo levanta a cabeça 1 px. | `primeiro`: parado, braços baixos; cartão de nome simples (1x, `cream`, centrado 8 px abaixo dos pés dele) | `lamp_hum` |
 | 6 | 13,6–15,8 | janela 1x | **`primeiro`:** "Então vocês chegaram." | balão de cena, 21 caracteres, 24 c/s; fica 1,3 s | blip dele, uma terça abaixo |
 | 7 | 15,8–17,6 | janela 1x | Ele **olha o símbolo da escola** no discípulo: a cabeça baixa um pouco. O símbolo dá um brilho de 2 quadros. | nova `look_emblem` (segura 1,0 s); `fx` de brilho no símbolo | — |
 | 8 | 17,6–20,4 | janela 1x | Ele **arma a guarda** e sorri de leve. **`primeiro`:** "Quero ver o que aprenderam." | guarda dele (`idle`), rosto `smile`; balão de 2 linhas (27 caracteres); fica 1,5 s | blip; couro |
