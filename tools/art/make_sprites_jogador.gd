@@ -26,6 +26,11 @@ const GLOVES := {
 const FIGHT_ACTIONS := ["idle", "jab", "heavy", "hit", "dodge", "block", "tired", "victory", "ko"]
 const GARAGE := ["fighter_idle", "fighter_punch", "fighter_rope", "fighter_run"]
 
+## Fase 6a: FC_LUTADOR=disc gera o discípulo padrão (arquivos com "_disc" no fim, sem folha de contato);
+## sem a variável, o 1º lutador (os arquivos de sempre).
+var QUEM := "disc" if OS.get_environment("FC_LUTADOR") == "disc" else "primeiro"
+var SUF := "_disc" if QUEM == "disc" else ""
+
 var L
 var P
 var M: Dictionary
@@ -192,7 +197,9 @@ func v2(a) -> Vector2:
 
 func make_build(suffix: String) -> Dictionary:
 	var g: Dictionary = GLOVES[suffix]
-	return P.build({"glove": g.style, "glove_ramp": g.ramp})
+	var o: Dictionary = P.identidade(QUEM)
+	o.merge({"glove": g.style, "glove_ramp": g.ramp}, true)
+	return P.build(o)
 
 func gen_fight(b: Dictionary, action: String, suffix: String) -> Array:
 	var id := "fight_player_" + action + suffix
@@ -241,7 +248,7 @@ func save_sheet(rel: String, id: String, frames: Array) -> void:
 	var want := Vector2i(int(e.frame_size[0]) * int(e.frames), int(e.frame_size[1]))
 	if s.get_size() != want or frames.size() != int(e.frames):
 		report.append("DIVERGÊNCIA %s: folha %s, manifest pede %s (%d quadros)" % [id, str(s.get_size()), str(want), int(e.frames)])
-	s.save_png(out_dir + rel)
+	s.save_png(out_dir + rel.replace(".png", SUF + ".png"))
 
 func make_portrait(b: Dictionary) -> Image:
 	var p := fpose({"head": V(5, -71), "hf": V(16, -55), "hb": V(12, -53)})
@@ -322,7 +329,7 @@ func contact_sheet(rows: Array, glove_rows: Array) -> void:
 ## Modo só retratos: `-- <saida> --so-retratos` (não grava folhas nem a folha de contato).
 func save_portraits() -> void:
 	for suffix in GLOVES:
-		make_portrait(make_build(suffix)).save_png(out_dir + "fight/portrait_player" + suffix + ".png")
+		make_portrait(make_build(suffix)).save_png(out_dir + "fight/portrait_player" + suffix + SUF + ".png")
 
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -352,8 +359,12 @@ func _init() -> void:
 			var fr := gen_garage(b, sid)
 			save_sheet("characters/" + id + ".png", id, fr)
 			newf[id] = fr
-		make_portrait(b).save_png(out_dir + "fight/portrait_player" + suffix + ".png")
-	# folha de contato
+		make_portrait(b).save_png(out_dir + "fight/portrait_player" + suffix + SUF + ".png")
+	# folha de contato (só do 1º lutador)
+	if QUEM == "disc":
+		print("ok: %d folhas (discípulo padrão)" % newf.size())
+		quit()
+		return
 	var rows := []
 	var crop_f := Rect2i(8, 8, 96, 96)
 	var crop_g := Rect2i(0, 0, 48, 72)

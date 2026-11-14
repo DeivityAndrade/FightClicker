@@ -34,6 +34,15 @@ func _initialize() -> void:
 	_salvar("win", _vitoria())
 	_salvar("lose", _derrota())
 	_salvar("coin", _moeda())
+	# Fase 6a (DEPOIS de todos os antigos: o ruído tem semente fixa e a ordem mudaria os sons que já existem).
+	# Voz: um arquivo por timbre e por vogal (u, o, a, e, i = 0, +2, +4, +5, +7 semitons acima da base).
+	var vogais := ["u", "o", "a", "e", "i"]
+	var passos := [0, 2, 4, 5, 7]
+	for timbre in [["first", 180.0], ["coach", 110.0], ["disciple", 260.0]]:
+		for k in vogais.size():
+			_salvar("voice_%s_%s" % [timbre[0], vogais[k]], _voz(timbre[0], timbre[1] * pow(2.0, passos[k] / 12.0)))
+	_salvar("strap_rip", _fecho_rasgando())
+	_salvar("tap_glove", _toque_de_luva())
 	print("sfx gerados em ", PASTA)
 	quit(0)
 
@@ -304,3 +313,115 @@ func _salvar(nome: String, amostras: PackedFloat32Array) -> void:
 	var erro := w.save_to_wav(PASTA + nome + ".wav")
 	if erro != OK:
 		push_error("make_sfx: falha ao gravar %s (%d)" % [nome, erro])
+
+
+# --- Fase 6a: voz dos balões e sons do gesto (docs/cutscenes/balao-e-voz.md §6) ---
+
+# Blip de voz de um timbre ("first", "coach" ou "disciple") na frequência f0. Sem tanh: a onda fica limpa.
+func _voz(timbre: String, f0: float) -> PackedFloat32Array:
+	var dur := 0.040
+	var ataque := 0.003
+	var queda := 38.0
+	var soltura := 0.005
+	var pico := 0.85
+	if timbre == "coach":
+		dur = 0.048
+		ataque = 0.006
+		queda = 26.0
+		soltura = 0.006
+		pico = 0.90
+	elif timbre == "disciple":
+		dur = 0.034
+		ataque = 0.002
+		queda = 45.0
+		soltura = 0.004
+		pico = 0.78
+	var n := int(dur * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var fase := 0.0  # começa em 0 para não estalar
+	var lp := 0.0
+	var lp_ruido := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		var f := f0
+		if timbre == "first":
+			f = f0 * (1.0 + 0.10 * exp(-t * 90.0))  # o "bup": começa 10% acima e cai
+		elif timbre == "coach":
+			f = f0 * (1.0 - 0.05 * t / dur)
+		else:
+			f = f0 * (1.0 + 0.04 * t / dur)
+		fase += TAU * f / TAXA
+		var seno := sin(fase)
+		var v := 0.0
+		if timbre == "first":
+			lp += (signf(seno) - lp) * 0.30
+			v = lp + 0.15 * seno
+		elif timbre == "coach":
+			lp += (signf(seno) - lp) * 0.18
+			v = lp
+			lp_ruido += (_rng.randf_range(-1.0, 1.0) - lp_ruido) * 0.5
+			if seno > 0.0:
+				v += lp_ruido * 0.30  # a rouquidão só na metade positiva da onda
+		else:
+			var ph := fmod(fase / TAU, 1.0)
+			v = 4.0 * absf(ph - 0.5) - 1.0
+		var env := minf(t / ataque, 1.0) * exp(-maxf(t - ataque, 0.0) * queda)
+		if t > dur - soltura:
+			env *= maxf((dur - t) / soltura, 0.0)
+		s[i] = v * env
+	return _normalizar(s, pico)
+
+
+# Fecho da luva puxado com os dentes: ruído passa-alta que fica mais agudo, em grãos que aceleram (70 a 150 por s).
+func _fecho_rasgando() -> PackedFloat32Array:
+	var dur := 0.16
+	var n := int(dur * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var lp := 0.0
+	var lp2 := 0.0
+	var inicio_grao := 0.0
+	var proximo_grao := 1.0 / 70.0
+	for i in n:
+		var t := float(i) / TAXA
+		var x := t / dur
+		var r := _rng.randf_range(-1.0, 1.0)
+		lp += (r - lp) * 0.25
+		var alta := r - lp
+		lp2 += (alta - lp2) * (0.35 + 0.45 * x)
+		if t >= proximo_grao:
+			inicio_grao = t
+			proximo_grao += 1.0 / (70.0 + 80.0 * x)
+		var v := lp2 * exp(-(t - inicio_grao) * 400.0) * pow(x, 0.6)
+		if t > dur - 0.008:
+			v *= maxf((dur - t) / 0.008, 0.0)
+		s[i] = v
+	return _normalizar(s, 0.5)
+
+
+# Toque de luva em luva: mais seco e curto que o soco, mais grave que o bloqueio.
+func _toque_de_luva() -> PackedFloat32Array:
+	var n := int(0.075 * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var fase := 0.0
+	var lp := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		fase += TAU * (150.0 + 90.0 * exp(-t * 60.0)) / TAXA
+		lp += (_rng.randf_range(-1.0, 1.0) - lp) * 0.35
+		var v := sin(fase) * 0.8 * exp(-t * 48.0) + lp * 0.6 * exp(-t * 170.0)
+		s[i] = tanh(v * 1.2)
+	return _normalizar(s, 0.6)
+
+
+# Escala a onda para que o pico (valor absoluto) seja `alvo`.
+func _normalizar(s: PackedFloat32Array, alvo: float) -> PackedFloat32Array:
+	var maximo := 0.0
+	for v in s:
+		maximo = maxf(maximo, absf(v))
+	if maximo > 0.0:
+		for i in s.size():
+			s[i] = s[i] / maximo * alvo
+	return s

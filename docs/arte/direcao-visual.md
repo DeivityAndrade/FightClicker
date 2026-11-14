@@ -745,3 +745,65 @@ Retas de centro a centro em **pixels de Bresenham** (nada de Line2D com antialia
 - A borda das regiões em degraus de 8 px é proposital, mas um recorte desenhado (papel rasgado, lona com bainha) daria mais vida.
 - `fx_map_reveal` e `fx_map_buy` são anéis e pontos calculados; são os efeitos que mais ganham com animação feita à mão.
 - O ícone da corda montada é o mais fraco em 16 px. Manter os tamanhos (24/38/28, ícone 16, ladrilho 32) para trocar só os arquivos.
+
+## 22. Fase 6a (Prólogo e voz: balão, parede da memória, garagem salva)
+Gerador: `tools/art/make_cenario_fase6a.gd` (rodar de uma pasta temporária com `project.godot` vazio; `-- --final` grava no projeto e
+só acrescenta chaves ao manifest, relendo o arquivo na hora). O `make_sprites_fase6a.gd` é do Artista de Personagens (Téo, Osmar, gesto).
+Mockup: `mockups/fase6a_garagem_x2.png`. Dados para a UI: `manifest.json → by_data_id.speech_bubble`, `skip_hold`, `garage_saved_seal`,
+`garage_story_wall`, `coach_point`, `school_symbol`. Posições em 1x. Valores do balão: `docs/cutscenes/balao-e-voz.md` (manda).
+
+### 22.1 Fonte 5x7 (conferida antes de tudo)
+- Minúsculas acentuadas (á à â ã é ê í ó ô õ ú ç) **existiam**, mas o acento encostava na letra (ã e õ viravam borrão). Agora a marca
+  fica 1 linha acima, com 1 linha de folga. O `í` perdeu a bandeirinha (lia como "1"). Entraram `—` e `…` (117 caracteres).
+  Mesmo atlas, mesma ordem, mesma métrica (`lineHeight` 12, `base` 9): nenhuma largura de texto muda.
+- Maiúsculas `Í Â Ã Ç É` renderizam (RAÍZES, COBRANÇA, CINTURÃO). O acento da maiúscula encosta na letra porque a célula não tem
+  mais linhas em cima; lê bem no contexto. Separar exigiria fonte mais alta (mexe em todo o layout): não vale agora.
+- A fonte não tem `▼`: a seta é o sprite `ui_balloon_next`.
+
+### 22.2 Balão
+| Peça | Tamanho | Regra |
+|---|---|---|
+| `ui_balloon` | 9-slice 16x16, cantos 5 | cream, contorno ink com canto de 2 px, sombra dura `d1` embaixo e à direita **dentro** do retângulo w x h |
+| `ui_balloon_tail` (+ `_l`, `_r`) | 7x6 | linha 0 cream em y = by + h - 2 (apaga o contorno); ponta em by + h + 3. `_l`/`_r` só quando a ponta está a menos de 14/15 px da quina |
+| `ui_balloon_tag_<cor>` | 9-slice 8x10 | em (bx + 6, by - 6), largura nome x 6 + 6, nome em minúsculas. **10 px e não 9**: o acento de "téo" precisa de folga. Téo `red` (r2, texto white), Osmar `gold` (y0, texto ink), discípulo `blue` (b3) |
+| `ui_balloon_next` | 5x4, 2 quadros | modo cena (6b) |
+- Texto ink sem sombra, topo da maiúscula em by + 5, linhas a 9 px; 1 linha = 17, 2 linhas = 26 de altura.
+- Na parede creme da academia o balão cream se separa pelo contorno e pela sombra (conferido no mockup).
+- **Proposta de regra extra (DC/UI):** o balão não cobre o `head_anchor` de outro personagem na sala. Sem ela, o "desliza" do Téo
+  em `foco_saco` (x 154..307, y 175..200) tapa a cabeça do Osmar (197,173); com ela, o balão sobe (x 226..379, y 149..174, ponta em y 178).
+- **Segurar ESC** (só na abertura): chip `ui_skip_chip` (apagado) / `_active`, anel `ui_skip_ring` (9 quadros) e tecla `icon_key_esc`;
+  altura 16, canto de baixo à direita da sala (direita em 507, base em 285). Texto sugerido: `esc: pular`.
+
+### 22.3 Parede da memória (garagem, Arco 1)
+Faixa **x 176..256, y 38..87**: ajuste da proposta do DC (180..262, 56..104), porque abaixo de y 92 está o metrônomo (231..249) e
+em y 101 a prateleira. Não encosta no gancho da corda, no pôster, na lâmpada, na corrente (x 335), na pera da parede nem na porta.
+| Objeto | Sprite | Pos (canto sup. esq.) | Quando |
+|---|---|---|---|
+| Aviso de cobrança | `wall_notice_debt` 22x28 | (178,52) | desde o começo até a garagem salva |
+| Ficha amassada | `wall_form_blank` → `wall_form_named` 22x24 | (205,62) | sempre; troca quando a garagem é salva |
+| Foto antiga (Osmar jovem, torta) | `wall_photo_old` 18x21 | (237,67) | sempre (cobre a fotinho pintada no fundo) |
+| Recorte de jornal | `wall_clipping` 20x24 | (236,40) | 1ª vitória da escola |
+| Foto da equipe | `wall_photo_team` 26x21 | (176,54) | garagem salva (no lugar do aviso) |
+| Símbolo pintado | `wall_school_symbol` 32x40 | (344,38) | garagem salva (alto, à direita da corrente) |
+- Nenhum objeto tem texto legível na sala (regra da 5.1). "ESCOLA: NENHUMA" / "ESCOLA: RAÍZES FIGHT CLUB", "AVISO DE COBRANÇA" etc.
+  vão na dica de hover (textos do Roteirista). A ficha "depois" tem o rabisco riscado de vermelho e o nome à mão em caneta azul.
+- Luz da lâmpada aplicada em cada ponto: não mover para longe. Só na garagem; troca de estado sem animação.
+- **Osmar em (196,236)** (decisão do Produtor): balão em cima, sem ajuste (x 132..285, y 138..163), não cobre a parede da memória.
+  Os vizinhos 1 e 2 passam na frente das pernas dele com a equipe cheia (ordem por y): aceito.
+
+### 22.4 Símbolo da escola: Raízes Fight Club
+A lâmpada da garagem, de pé, plantada: bulbo, soquete, uma linha de chão e raízes embaixo. `school_symbol_5/9/16/32` em tinta de
+carimbo azul (b1/b2), como o provisório; `box_big`/`box_small` tiveram a etiqueta retocada (só o símbolo). Na parede, o 16 em 2x:
+bulbo em tinta amarela que afunda no rejunte, raízes em tinta marrom, escorridos. O 5x5 é o limite: lê como "lâmpada com raiz" só de perto.
+
+### 22.5 Selo "garagem salva"
+O próprio aviso de cobrança, despregado, com o carimbo azul da escola. `seal_garage_saved` 52x54 na tela de vitória do cinturão em
+**(418,146)** (à direita das linhas de prêmio), mais uma linha de prêmio `icon_garage_saved` + "GARAGEM SALVA" / "O LUGAR CONTINUA
+NOSSO". Entrada: 2 quadros em 2x e depois 1x, tremida de 1 px, som que já existe. `seal_garage_saved_text` (96x64, com fita) e a fita
+9-slice `ui_seal_garage_band` servem para espaços maiores.
+
+### 22.6 Placeholder / precisa de pixel artist
+- Papéis (aviso, ficha, recorte) são retângulos com riscos: um artista faria o amassado de verdade, a letra à mão e o papel de jornal.
+- As fotos têm 5–10 px de gente: o retrato do Osmar jovem e a foto da equipe pedem desenho à mão (mesmos tamanhos).
+- O símbolo é o que mais pede mão humana: em 5x5 a raiz é um traço. Manter 5/9/16/32 para trocar só os arquivos.
+- O carimbo e a tinta na parede usam falhas por sorteio fixo; à mão ficariam com pressão e borda de carimbo real.

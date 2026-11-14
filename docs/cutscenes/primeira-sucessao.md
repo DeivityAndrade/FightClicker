@@ -1,6 +1,7 @@
 # Cena: Primeira sucessão (animatic por escrito)
 
 Dono: Diretor de Cutscenes. Versão 1 (2026-11-11). Fase 6b. Cena única.
+> **Nomes (decisão do dono, 2026-11-13):** `primeiro` = **John Bullet** (plaquinha `john`, voz `first`); `treinador` = **Osmar Brandão** (plaquinha `osmar`, voz `coach`); escola = **Raízes Fight Club**; humilhação A, "a ficha em branco". Nas tabelas abaixo, `primeiro` é o John e `treinador` é o Osmar.
 Função (direção narrativa §9): mostrar a passagem de responsabilidade e apresentar o novo discípulo. **Sem despedida triste:** é a descoberta de que o anterior continua conosco.
 Par visual: `reencontro-final.md` (ver "Como as duas cenas conversam", no fim).
 Linguagem: `linguagem.md`. Gesto: `gesto-assinatura.md` (opção A). Falas são rascunho para o Roteirista.
@@ -74,8 +75,8 @@ Luvas penduradas: `art_hung_glove_old` em (336,186), pontas até y ≈ 197.
 ## Rascunho de falas (para o Roteirista)
 | id | Quem | Rascunho | Intenção |
 |---|---|---|---|
-| `suc_guarda` | `primeiro` | "Vamos ver sua guarda." | Convite, não ordem. Manter o verbo **ver** (ecoa no reencontro). |
-| `suc_isso` | `primeiro` | "Isso." | Aprovação mínima no 1º clique. Pode ficar sem texto. |
+| `suc_guarda` | `primeiro` | "vamos ver sua guarda." (polida pelo Roteirista) | Convite, não ordem. Manter o verbo **ver** (ecoa no reencontro). |
+| `suc_isso` | `primeiro` | "isso." | Aprovação mínima no 1º clique. Pode ficar sem texto. |
 
 ## Como as duas cenas conversam
 

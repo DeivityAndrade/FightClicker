@@ -3,7 +3,10 @@ extends RefCounted
 ## Grava e lê o save em JSON, com versão, migração, backup e proteção contra corrupção.
 ## A pasta é escolhida na criação: o jogo usa PASTA_REAL, os testes usam user://test/...
 ##
-## Formato atual (versão 9, Fase 5.3): igual ao v8 mais career.campaign_seconds (relógio da campanha, float) e
+## Formato atual (versão 11, Fase 6a): igual ao v10 mais state.school (campanha do 1º lutador, marcos da escola,
+## falas já vistas, último fim) e career.gestured_gloves (níveis de luva que já tiveram o gesto de calçar).
+## Versão 10 (Fase 5.4): árvore grande (career.active_nodes, permanent.tree_last_node).
+## Versão 9 (Fase 5.3): igual ao v8 mais career.campaign_seconds (relógio da campanha, float) e
 ## career.fight_day (dia da próxima luta; -1 = sem próxima luta).
 ## Versão 8 (Fase 5.2): igual ao v7 mais career.crew_click (Grito da equipe comprado, bool).
 ## Versão 7 (Fase 5.1): igual ao v6 mais career.boxes (caixas de equipamento fechadas: [{item, kind, hits}]);
@@ -19,7 +22,7 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 10
+const VERSAO_ATUAL := 11
 # Fator de conversão do Legado na migração v3 -> v4 (reescala do design; é formato, não balanceamento).
 const ESCALA_LEGADO_V4 := 10
 # Migração v5 -> v6: dinheiro mínimo de quem já tem o cinturão (= preço da mudança na v6). É formato, não lê data/:
@@ -48,6 +51,7 @@ const MIGRACOES := {
 	7: "_migrar_7_para_8",
 	8: "_migrar_8_para_9",
 	9: "_migrar_9_para_10",
+	10: "_migrar_10_para_11",
 }
 
 var pasta: String
@@ -444,5 +448,37 @@ func _migrar_9_para_10(doc: Dictionary) -> Dictionary:
 	perm["tree_last_node"] = str(nos[-1]) if not nos.is_empty() else ""
 	estado["career"] = carreira
 	estado["permanent"] = perm
+	novo["state"] = estado
+	return novo
+
+
+# v10 (Fase 5.4) -> v11 (Fase 6a): nasce o bloco `school` (fora do reset). A campanha ATUAL vira a do 1º lutador;
+# se há tela de fim pendente, é a PRÓXIMA (o número só sobe no NOVA CAMPANHA). Nenhum marco é criado: a garagem
+# nunca é "salva" por cinturão antigo (belts_won e career.belt não são lidos). Nada mais muda.
+func _migrar_10_para_11(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	var perm = estado.get("permanent", {})
+	if not (perm is Dictionary):
+		perm = {}
+	var n = perm.get("career_number", 1)
+	var numero := 1
+	if (typeof(n) == TYPE_FLOAT or typeof(n) == TYPE_INT) and is_finite(float(n)) and float(n) >= 1.0 and float(n) < 1.0e9:
+		numero = int(n)
+	var fim = estado.get("ending", null)
+	var pendente: bool = fim is Dictionary and str(fim.get("kind", "")) in ["defeat", "retire"]
+	carreira["gestured_gloves"] = []
+	estado["career"] = carreira
+	estado["school"] = {
+		"first_fighter_campaign": numero + (1 if pendente else 0),
+		"milestones": {},
+		"lines_seen": {},
+		"last_end": {"kind": str(fim.kind), "campaign": numero} if pendente else null,
+	}
 	novo["state"] = estado
 	return novo

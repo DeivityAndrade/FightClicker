@@ -288,8 +288,16 @@ static func singular(texto: String) -> String:
 
 
 ## Nome do sprite que depende da luva equipada: "fight_player_jab" + "_glove_l1".
+## Fase 6a: o discípulo padrão (campanha 2 em diante) usa as folhas com "_disc" depois do sufixo da luva; o 1º lutador (John
+## Bullet) não tem sufixo. Folha sem versão _disc (ex.: gesto) volta para a normal.
 static func com_luva(nome: String) -> String:
-	return nome + GameState.sufixo_luva()
+	return com_disc(nome + GameState.sufixo_luva())
+
+
+static func com_disc(nome: String) -> String:
+	if GameState.lutador_atual() == "disciple" and not sprite(nome + "_disc").is_empty():
+		return nome + "_disc"
+	return nome
 
 
 ## Cursor-luva da luva equipada ("cursor_glove" ou "cursor_glove_lN").
@@ -309,7 +317,7 @@ static func nome_luvas_penduradas() -> String:
 static func nome_retrato_jogador() -> String:
 	var info: Dictionary = manifest().get("by_data_id", {}).get("player_portrait", {})
 	var base := str(info.get("base", "portrait_player"))
-	var nome := base + GameState.sufixo_luva()
+	var nome := com_disc(base + GameState.sufixo_luva())
 	return nome if not sprite(nome).is_empty() else base
 
 

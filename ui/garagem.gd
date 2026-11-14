@@ -12,6 +12,8 @@ extends Control
 @onready var _debug: DebugOverlay = $DebugOverlay
 
 var _botao_mapa: BotaoMapa
+var _balao: Balao
+var _faixa: FaixaAviso
 var _cursor: AnimSprite
 var _sujo := true
 var _mouse_escondido := false
@@ -48,7 +50,9 @@ func _ready() -> void:
 	add_child(_botao_mapa)
 	_botao_mapa.pressed.connect(_fluxo.abrir_arvore)
 	add_child(Dica.new())  # Fase 5.1: dica flutuante do nível 3 (hover)
-	add_child(FaixaAviso.new())  # Fase 5.3: faixa de aviso da data (3 dias e 1 dia)
+	_faixa = FaixaAviso.new()
+	add_child(_faixa)  # Fase 5.3: faixa de aviso da data (3 dias e 1 dia)
+	_montar_fala()
 	_fluxo.ligar(_barra)
 	# A luva equipada troca o cursor, a mão do lutador na garagem (Sala) e na luta (TelaLuta) pelo mesmo sufixo.
 	GameState.luva_mudou.connect(func(_n: int, _s: String) -> void: _cursor.definir(UiTema.nome_cursor()))
@@ -135,3 +139,34 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if GameState.definir_foco(lista[i].id):
 				_sala.sfx.foco()
 			get_viewport().set_input_as_handled()
+
+
+# --- Fase 6a: balão de fala, dica "esc: pular" e cliques ---
+
+func _montar_fala() -> void:
+	_balao = Balao.new()
+	add_child(_balao)
+	var chip := PularAbertura.new()
+	chip.fluxo = _fluxo
+	add_child(chip)
+	GameState.fala_pedida.connect(_ao_fala_pedida)
+	GameState.fala_cancelada.connect(func(id: String) -> void: _balao.cancelar(id))
+	_balao.falando.connect(_sala.definir_falando)
+	_sala.clique_vazio.connect(_balao.completar)
+
+
+## O GameState pediu uma fala: o balão nasce preso à cabeça de quem fala (nunca cobre o alvo; sem espaço, a fala some).
+func _ao_fala_pedida(speaker: String, texto: String, id: String) -> void:
+	if _fluxo.ocupado():
+		return  # janela por cima: nunca há balão por baixo dela (o GameState também cancela)
+	var faixa_y := -1.0
+	if _faixa != null and _faixa.visible:
+		faixa_y = _faixa.position.y + _faixa.size.y
+	if not _balao.mostrar(id, speaker, texto, _sala.ponto_cabeca(speaker), faixa_y, _sala.cabecas_a_evitar(speaker)):
+		GameState.fala_recusada(id)  # a fala única não conta como vista
+
+
+## Todo clique de mouse conta como "o jogador mexeu": cancela o gesto e zera a sala parada (clicar() já faz o mesmo no alvo).
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		GameState.registrar_clique()

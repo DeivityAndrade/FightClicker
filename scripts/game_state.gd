@@ -56,6 +56,15 @@ signal dia_da_luta_chegou()  # o relógio travou no dia da luta: abrir a prévia
 signal campanha_completa_mudou()  # venceu o último adversário (ou carga/nova carreira mudou o estado)
 signal sala_ativa_mudou(ativa: bool)  # a condição única de tick mudou
 
+# Fase 6a: falas, abertura, marcos da escola e gesto (contrato da UI em docs/fases/fase6a-api.md)
+signal fala_pedida(speaker: String, text: String, id: String)  # mostrar o balão (speaker = "first" | "coach")
+signal fala_cancelada(id: String)  # fechar o balão na hora (janela abriu, luta começou, abertura pulada)
+signal comentario(line_id: String)  # um comentário começou (também com os balões escondidos)
+signal marco_gravado(id: String)  # marco da escola gravado (a parede da garagem pode mudar)
+signal abertura_mudou(estado: String)  # "pending" | "playing" | "over"
+signal gesto_pedido(plano: Dictionary)  # tocar o gesto do 1º lutador (plano: ver pedir_gesto)
+signal gesto_cancelado()  # clique ou janela: parar o gesto e cortar o som dele
+
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
 const PASTA_SAVE_TESTES := "user://test/autoload/"
@@ -154,6 +163,34 @@ var _sala_antes := true
 var _estilo: Dictionary = {}  # Fase 5: arte -> soma dos nós ESTILO comprados (art_rule_bonus)
 var nos_ativos_ids: Array = []  # Fase 5.4: foto dos nós que valem NESTA campanha (career.active_nodes)
 
+# Fase 6a: escola (fora do reset da carreira), falas e gesto
+const MARCOS_VERSAO := 1
+var escola: Dictionary = {}  # state.school: first_fighter_campaign, milestones, lines_seen, last_end
+var gestos_calcados: Array = []  # career.gestured_gloves: níveis de luva que já tiveram o gesto de calçar
+var dialogos: DialogosData
+var baloes_escondidos := false  # opção de teste (aceite 3): nada de balão, mas marcos e lines_seen valem igual
+var _t_real := 0.0  # tempo real desde que o jogo abriu (conta luta e janela; não vai para o save)
+var _ultimo_comentario := -1.0e9
+var _calma := 0.0  # segundos seguidos de sala ativa
+var _parado := 0.0  # segundos de sala ativa sem clique (zera no clique; começa em 0 ao carregar)
+var _gatilhos_quadro: Array = []  # gatilhos chegados neste quadro: [{id, params}]
+var _vaga: Dictionary = {}  # a única vaga de espera: {id, params, prio, espera}
+var _balao: Dictionary = {}  # balão na tela: {id, ate}
+var _abertura := "pending"
+var _abertura_t := 0.0
+var _abertura_idx := 0
+var _abertura_proxima := 0.0
+var _gesto: Dictionary = {}  # gesto tocando: {momento, ate}
+var _gestos_parada := 0
+var _proximo_gesto_parada := 20.0
+var _idle_comentou := false
+var _garagem_retomada := false
+var _derrota_rearmada := false  # 1ª derrota já disparada nesta sessão (nova_carreira ou carga)
+var _fala_recusada := false  # a UI recusou o balão que acabou de ser pedido
+var _metro_prev := 0
+var _crew_prev := false
+var _rng_fala := RandomNumberGenerator.new()
+
 
 func _ready() -> void:
 	rng.randomize()
@@ -182,8 +219,11 @@ func inicializar(pasta_save: String, caminho_config: String,
 		caminho_treino: String = TrainingData.CAMINHO_TREINO,
 		caminho_geradores: String = TrainingData.CAMINHO_GERADORES,
 		caminho_textos: String = TrainingData.CAMINHO_TEXTOS, dados_lutas: FightData = null,
-		dados_academia: GymData = null) -> void:
+		dados_academia: GymData = null, dados_dialogos: DialogosData = null) -> void:
 	config = GameConfig.carregar(caminho_config)
+	dialogos = dados_dialogos if dados_dialogos != null else DialogosData.carregar()
+	_rng_fala.randomize()
+	_ligar_gatilhos_de_fala()
 	dados = TrainingData.carregar(caminho_treino, caminho_geradores, caminho_textos)
 	FRENESI_MULT = dados.golden_frenzy_mult
 	FRENESI_DURACAO = dados.golden_frenzy_seconds
@@ -226,6 +266,7 @@ func tick(delta: float) -> void:
 		_tick_assistido(dt)
 		_verificar_calendario()
 	_checar_sala()
+	_tick_falas(delta)
 	if autosave_ativo:
 		_tempo_autosave += delta
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
@@ -355,6 +396,8 @@ func _checar_sala() -> void:
 	var a := sala_ativa()
 	if a != _sala_antes:
 		_sala_antes = a
+		if not a:
+			_fechar_para_janela()  # Fase 6a: nunca fica balão (nem gesto da sala) por baixo de janela ou luta
 		sala_ativa_mudou.emit(a)
 
 
@@ -508,6 +551,7 @@ func texto_efeito_melhoria(melhoria: Dictionary) -> String:
 ## Um clique no alvo central. Soma no saldo e no atributo do foco; emite `clicou`.
 func clicar() -> Dictionary:
 	_ocioso = 0.0  # mão mexendo, mesmo se a ação for recusada
+	registrar_clique()  # Fase 6a: cancela o gesto e zera a "sala parada"
 	if acoes_bloqueadas() or not sala_ativa():
 		return {}
 	return _socar(false)
@@ -1452,6 +1496,13 @@ func concluir_luta() -> Dictionary:
 		indice_escada += 1
 		if opp.belt:
 			cinturao = true
+		# Fase 6a: marcos da escola, gravados no mesmo save do prêmio. A garagem só é salva por vitória AO VIVO
+		# sobre o adversário do cinturão (qualquer lutador da escola); nunca por belts_won.
+		var recorde := int(permanente.best_wins) > 0 and indice_escada > int(permanente.best_wins)
+		var primeira_vitoria := _gravar_marco("first_school_win", {}, false)
+		var garagem_salva := false
+		if opp.belt:
+			garagem_salva = _gravar_marco("garage_saved", {"opponent": str(opp.id), "by_first": lutador_atual() == "first"}, false)
 		# Revanche: vencer o algoz limpa a marca (no mesmo save do prêmio).
 		var revanche := e_algoz(opp.id)
 		if revanche:
@@ -1464,6 +1515,7 @@ func concluir_luta() -> Dictionary:
 		resumo = {"win": true, "fight_day": fight_day, "opponent": opp.id, "money": premio, "fame": premio_f,
 			"legacy_gain": legado_em_jogo() - pote_antes, "legacy_run": legado_em_jogo(), "belt": opp.belt,
 			"next": proximo.get("id", ""), "next_name": proximo.get("name", ""), "revenge": revanche,
+			"record": recorde, "first_school_win": primeira_vitoria, "garage_saved": garagem_salva,
 			"revenge_line": preencher(texto_ui("victory_revenge_line"), {"nome": opp.name}) if revanche else ""}
 		dinheiro_mudou.emit(dinheiro)
 		fama_mudou.emit(fama)
@@ -1554,6 +1606,7 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 	if cinturao:
 		permanente["belts_won"] = int(permanente.belts_won) + 1
 	var motivo_fim := motivo.duplicate()
+	escola["last_end"] = {"kind": tipo, "campaign": numero_carreira()}  # Fase 6a: o comentário da derrota usa isto
 	if tipo == "defeat":
 		motivo_fim["unlock_tip"] = _aparelho_da_dica(motivo)
 	fim = {
@@ -1592,10 +1645,17 @@ func nova_carreira() -> bool:
 	# Com as artes liberadas, a escolha vem ANTES do cartão (a UI abre a janela e depois mostra `cartao_inicio()`).
 	if escolha_arte_pendente():
 		escolha_arte_pedida.emit(escolha_arte_primeira())
+	# Fase 6a: depois de uma derrota o treinador comenta no 1º momento calmo da campanha nova.
+	var fim_anterior = escola.get("last_end", null)
+	if fim_anterior is Dictionary and str(fim_anterior.get("kind", "")) == "defeat" \
+			and int(fim_anterior.get("campaign", 0)) == numero_carreira() - 1:
+		disparar_gatilho("after_defeat")
+		_derrota_rearmada = true
 	return true
 
 
 func _zerar_carreira() -> void:
+	gestos_calcados = []
 	frenesi_restante = 0.0
 	evento_dourado_restante = 0.0
 	_evento_espera = -1.0
@@ -2022,6 +2082,8 @@ func mudar() -> bool:
 	atualizar_risco_hud()
 	if escolha_arte_pendente():
 		escolha_arte_pedida.emit(escolha_arte_primeira())
+	if local_id == "gym":
+		disparar_gatilho("gym_arrival")  # Fase 6a: só a chegada pelo MUDAR (a carga e o NOVA CAMPANHA não passam aqui)
 	return true
 
 
@@ -2546,11 +2608,13 @@ func para_save() -> Dictionary:
 			"campaign_seconds": segundos_campanha,
 			"fight_day": fight_day,
 			"active_nodes": nos_ativos_ids.duplicate(),
+			"gestured_gloves": gestos_calcados.duplicate(),
 			"money_earned": dinheiro_ganho,
 			"fight": luta.duplicate(true) if not luta.is_empty() else null,
 		},
 		"permanent": permanente.duplicate(),
 		"ending": fim.duplicate(true) if not fim.is_empty() else null,
+		"school": escola.duplicate(true),
 	}
 
 
@@ -2631,6 +2695,10 @@ func aplicar_save(estado: Dictionary) -> void:
 	_acc_assist = _assist_primeiro()
 	_chave_melhor = ""
 	fim = _validar_fim(estado.get("ending", null))
+	# Fase 6a: escola (depois de permanente e fim: o padrão depende deles) e estado volátil das falas
+	gestos_calcados = _validar_gestos(c.get("gestured_gloves", []))
+	escola = _validar_escola(estado.get("school", null), not estado.is_empty())
+	_reiniciar_falas()
 	_finalizar_motivo(false)
 	_motivo_cache = {}
 
@@ -2808,6 +2876,8 @@ func _inteiro_valido(v: Variant, maximo: float) -> int:
 
 
 func _emitir_tudo(pedir_arte: bool = true) -> void:
+	_metro_prev = nivel_metronomo  # Fase 6a: carga e NOVA CAMPANHA não contam como compra
+	_crew_prev = crew_click_comprado
 	treino_mudou.emit(treino)
 	for id in atributos:
 		atributo_mudou.emit(id, atributos[id])
@@ -3092,4 +3162,499 @@ func _validar_ativos(v: Variant) -> Array:
 		var id := str(x)
 		if id in nos and not (id in r) and not lutas.no_da_arvore(id).is_empty():
 			r.append(id)
+	return r
+
+
+# --- Fase 6a: escola, marcos, falas, abertura e gesto (só lógica; a UI está em docs/fases/fase6a-api.md) ---
+
+## Quem está jogando: "first" (John Bullet, a campanha dele) ou "disciple" (discípulo padrão, das seguintes).
+func lutador_atual() -> String:
+	return "first" if numero_carreira() <= int(escola.get("first_fighter_campaign", 1)) else "disciple"
+
+
+## true se o marco da escola já foi gravado (prologue_seen, first_school_win, garage_saved, garage_saved_seen...).
+func marco(id: String) -> bool:
+	var m = escola.get("milestones", {})
+	return m is Dictionary and m.has(id)
+
+
+## Dados do marco ({campaign, version, ...}); {} se não existe.
+func dados_marco(id: String) -> Dictionary:
+	return escola.milestones[id].duplicate() if marco(id) else {}
+
+
+## "pending" (ainda não tocou), "playing" ou "over".
+func abertura_estado() -> String:
+	return _abertura
+
+
+## Segundos de sala ativa sem clique (zera no clique; começa em 0 ao abrir o jogo). Não conta janela nem luta.
+func segundos_ocioso() -> float:
+	return _parado
+
+
+## true com balão na tela (comentário ou abertura).
+func tem_balao() -> bool:
+	return not _balao.is_empty()
+
+
+## Descrição da luva inicial: "o par do John" no 1º lutador, a descrição padrão nos outros.
+func descricao_luva_inicial() -> String:
+	if lutador_atual() == "first":
+		return dialogos.texto_objeto("starter_glove_desc")
+	return str(lutas.luva_base.get("description", ""))
+
+
+# Grava um marco (id desconhecido também). false se já existia. `salvar_agora`: false quando quem chama salva em seguida.
+func _gravar_marco(id: String, extra: Dictionary = {}, salvar_agora: bool = true) -> bool:
+	if marco(id):
+		return false
+	var m := {"campaign": numero_carreira(), "version": MARCOS_VERSAO}
+	for k in extra:
+		m[k] = extra[k]
+	escola["milestones"][id] = m
+	if salvar_agora:
+		salvar()
+	marco_gravado.emit(id)
+	return true
+
+
+# --- Abertura ---
+
+## Pula a abertura (ESC segurado 0,5 s): mesmo estado final de terminar. Em "pending" só grava o marco.
+func pular_abertura() -> void:
+	if _abertura == "pending":
+		_gravar_marco("prologue_seen")
+		_abertura = "over"
+		_ultimo_comentario = _t_real
+		abertura_mudou.emit(_abertura)
+	elif _abertura == "playing":
+		_terminar_abertura(true)
+
+
+func _iniciar_abertura() -> void:
+	if dialogos.opening.get("lines", []).is_empty():
+		pular_abertura()
+		return
+	_abertura = "playing"
+	_abertura_t = 0.0
+	_abertura_idx = 0
+	_abertura_proxima = float(dialogos.opening.get("first_line_at", 1.5))
+	_gravar_marco("prologue_seen")  # em t = 0, antes do gesto e de qualquer balão: fechar o jogo não repete nada
+	abertura_mudou.emit(_abertura)
+	pedir_gesto("opening")
+
+
+func _tick_abertura(delta: float) -> void:
+	_abertura_t += delta
+	if _abertura_t >= float(dialogos.opening.get("max_seconds", 20.0)):
+		_terminar_abertura(false)  # o balão que está escrevendo termina sozinho
+		return
+	var ids: Array = dialogos.opening.get("lines", [])
+	if _abertura_idx < ids.size():
+		if _balao.is_empty() and _gesto.is_empty() and sala_ativa() and _abertura_t >= _abertura_proxima:
+			var l := dialogos.linha(str(ids[_abertura_idx]))
+			if not l.is_empty() and str(l.speaker) == "coach" and local_id != "garage":
+				return  # sem Osmar na cena (academia): espera voltar à garagem (o teto de 20 s encerra)
+			_abertura_idx += 1
+			if not l.is_empty():
+				_mostrar_fala(l, false)
+	elif _balao.is_empty():
+		_terminar_abertura(false)
+
+
+func _terminar_abertura(pulada: bool) -> void:
+	_abertura = "over"
+	if pulada:
+		_cancelar_balao()
+		cancelar_gesto()
+	_ultimo_comentario = _t_real  # o fim da abertura conta como comentário
+	abertura_mudou.emit(_abertura)
+
+
+# --- Falas ---
+
+## Um gatilho de comentário chegou (id de data/dialogos.json > triggers). Resolvido no próximo tick: se a sala não
+## está calma, só os gatilhos `defer` ficam na vaga única; os outros somem. Público para os testes.
+func disparar_gatilho(id: String, params: Dictionary = {}) -> void:
+	if dialogos.gatilho(id).is_empty():
+		return
+	_gatilhos_quadro.append({"id": id, "params": params})
+
+
+## A UI avisa que o balão sumiu (leitura acabou). Sem isso o jogo libera sozinho depois do tempo previsto.
+func fala_terminada(id: String) -> void:
+	if str(_balao.get("id", "")) == id:
+		_limpar_balao()
+
+
+func _ctx_falas(params: Dictionary) -> Dictionary:
+	return {"campaign": numero_carreira(), "first_campaign": int(escola.get("first_fighter_campaign", 1)),
+		"lutador": lutador_atual(), "location": local_id, "milestones": escola.get("milestones", {}),
+		"lines_seen": escola.get("lines_seen", {}), "params": params}
+
+
+func _mostrar_fala(l: Dictionary, como_comentario: bool) -> bool:
+	var texto := dialogos.texto_balao(l)
+	var voz := str(dialogos.personagem(str(l.speaker)).get("voice", l.speaker))
+	var dur := float(dialogos.tempo_fala(texto, voz).total)
+	_balao = {"id": str(l.id), "ate": _t_real + dur + float(dialogos.comments.get("balloon_safety_seconds", 1.0))}
+	# A UI pode recusar o balão (sem espaço) chamando fala_recusada() dentro do sinal: aí nada é gravado.
+	_fala_recusada = false
+	if not baloes_escondidos:
+		fala_pedida.emit(str(l.speaker), texto, str(l.id))
+	if _fala_recusada:
+		_fala_recusada = false
+		_balao = {}
+		_calma = 0.0  # tenta de novo só depois de uma nova calma
+		if como_comentario and l.repeat == "once":
+			_guardar_vaga({"id": str(l.trigger), "params": {}}, dialogos.prioridade(l), true)
+		return false
+	if como_comentario:
+		_ultimo_comentario = _t_real
+		escola["lines_seen"][str(l.id)] = numero_carreira()
+		if l.repeat == "once":
+			salvar()  # única: salva na hora (a repetível vai no autosave)
+		comentario.emit(str(l.id))
+	return true
+
+
+## A UI não conseguiu mostrar o balão pedido por `fala_pedida`: a fala não conta como vista (a única fica pendente).
+## Chamar dentro do tratador do sinal (ou antes de qualquer outra coisa).
+func fala_recusada(id: String) -> void:
+	if str(_balao.get("id", "")) == id:
+		_fala_recusada = true
+
+
+func _limpar_balao() -> void:
+	_balao = {}
+	if _abertura == "playing":
+		_abertura_proxima = _abertura_t + float(dialogos.opening.get("gap_between", 0.3))
+
+
+func _cancelar_balao() -> void:
+	if _balao.is_empty():
+		return
+	var id := str(_balao.id)
+	_limpar_balao()
+	fala_cancelada.emit(id)
+
+
+# Janela, luta, tela de fim ou escolha da arte: o balão fecha na hora e o gesto "da sala" para.
+func _fechar_para_janela() -> void:
+	_cancelar_balao()
+	if not _gesto.is_empty() and str(_gesto.momento) in ["opening", "glove", "idle"]:
+		cancelar_gesto()
+
+
+func _tick_falas(delta: float) -> void:
+	_t_real += delta
+	var ativa := sala_ativa()
+	if ativa:
+		_calma += delta
+		_parado += delta
+	else:
+		_calma = 0.0
+	if not _balao.is_empty() and _t_real >= float(_balao.ate):
+		_limpar_balao()
+	if not _gesto.is_empty() and _t_real >= float(_gesto.ate):
+		_gesto = {}
+	if _abertura == "pending":
+		if ativa and local_id == "garage":  # o Osmar só é desenhado na garagem
+			_iniciar_abertura()
+	elif _abertura == "playing":
+		_tick_abertura(delta)
+	if _abertura == "over":
+		_tick_sala_parada(ativa)
+		# A parede muda quando a sala é desenhada na garagem depois do marco; o comentário vem junto.
+		if ativa and local_id == "garage" and marco("garage_saved") and not marco("garage_saved_seen"):
+			_gravar_marco("garage_saved_seen")
+			disparar_gatilho("garage_saved_return")
+		elif ativa and local_id == "garage" and marco("garage_saved_seen") and not _garagem_retomada and not escola.lines_seen.has("cl_garagem_salva"):
+			disparar_gatilho("garage_saved_return")  # fechou o jogo antes da fala: ela nunca se perde
+		if ativa and local_id == "garage" and marco("garage_saved_seen"):
+			_garagem_retomada = true
+		# Fechou o jogo logo após NOVA CAMPANHA da derrota: rearma a 1ª derrota (a fala nunca se perde)
+		if ativa and local_id == "garage" and not _derrota_rearmada:
+			_derrota_rearmada = true
+			var fim_ant = escola.get("last_end", null)
+			if fim_ant is Dictionary and str(fim_ant.get("kind", "")) == "defeat" \
+					and int(fim_ant.get("campaign", 0)) == numero_carreira() - 1 and not escola.lines_seen.has("cl_primeira_derrota"):
+				disparar_gatilho("after_defeat")
+	_resolver_gatilhos(delta)
+
+
+func _resolver_gatilhos(delta: float) -> void:
+	if not _vaga.is_empty() and sala_ativa():
+		_vaga["espera"] = float(_vaga.espera) + delta
+		if float(_vaga.espera) > float(dialogos.comments.get("defer_max_seconds", 15.0)) and not bool(_vaga.get("persiste", false)):
+			_vaga = {}  # fala única (persiste) nunca é perdida: fica até o próximo espaço livre
+	var novos := _gatilhos_quadro
+	_gatilhos_quadro = []
+	if novos.is_empty() and _vaga.is_empty():
+		return
+	var grupo := novos.duplicate()
+	if not _vaga.is_empty():
+		grupo.append({"id": _vaga.id, "params": _vaga.params, "vaga": true})
+	var calma_base := sala_ativa() and _abertura == "over" and _balao.is_empty() \
+		and _calma >= float(dialogos.comments.get("settle_seconds", 2.0))
+	if not calma_base:
+		# Sem sala calma: só os `defer` esperam (uma vaga, vence a de maior prioridade); o resto é descartado.
+		for g in novos:
+			if bool(dialogos.gatilho(str(g.id)).get("defer", false)):
+				var m := _melhor_do_grupo([g])
+				if not m.is_empty():
+					_guardar_vaga(g, dialogos.prioridade(m.linha), m.linha.repeat == "once")
+		return
+	var melhor := _melhor_do_grupo(grupo)
+	if melhor.is_empty():
+		if not _vaga.is_empty():
+			_vaga = {}  # nada mais a dizer (a fala já tocou ou a condição mudou)
+		return
+	var g_ganho: Dictionary = melhor.g
+	if not _gesto.is_empty() and bool(dialogos.comments.get("after_gesture", true)):
+		# "O gesto antes da fala": espera ele acabar (ou ser cancelado) na vaga.
+		if not g_ganho.has("vaga"):
+			_guardar_vaga(g_ganho, dialogos.prioridade(melhor.linha), melhor.linha.repeat == "once")
+		return
+	var l: Dictionary = melhor.linha
+	var filler := dialogos.prioridade(l) <= int(dialogos.comments.get("filler_max_priority", 4))
+	var intervalo := float(dialogos.comments.get("gap_filler_seconds" if filler else "gap_min_seconds", 60.0))
+	# Prioridade 9 ou mais (garagem salva, 1ª derrota): só precisa de espaço livre, sem o intervalo de 60 s.
+	if dialogos.prioridade(l) < 9 and _t_real - _ultimo_comentario < intervalo:
+		return  # sem intervalo: o novo some; a vaga (se for ela) segue esperando até vencer o tempo dela
+	if g_ganho.has("vaga"):
+		_vaga = {}
+	_mostrar_fala(l, true)
+
+
+func _melhor_do_grupo(grupo: Array) -> Dictionary:
+	var todas: Array = []
+	var dono := {}
+	for g in grupo:
+		for l in dialogos.candidatas(str(g.id), _ctx_falas(g.params)):
+			todas.append(l)
+			dono[str(l.id)] = g
+	var melhor := dialogos.melhor(todas, _ctx_falas({}), _rng_fala)
+	if melhor.is_empty():
+		return {}
+	return {"linha": melhor, "g": dono[str(melhor.id)]}
+
+
+func _guardar_vaga(g: Dictionary, prio: int, persiste: bool = false) -> void:
+	if _vaga.is_empty() or prio > int(_vaga.prio):
+		_vaga = {"id": str(g.id), "params": g.params, "prio": prio, "espera": 0.0, "persiste": persiste}
+
+
+# Fio entre os sinais que já existem e os gatilhos (design §1.4).
+func _ligar_gatilhos_de_fala() -> void:
+	var pares: Array = [[caixa_criada, _fala_caixa_criada], [melhoria_comprada, _fala_melhoria],
+		[metronomo_mudou, _fala_metronomo], [crew_click_mudou, _fala_crew], [caixa_aberta, _fala_caixa_aberta],
+		[luta_resolvida, _fala_luta_resolvida], [aviso_data, _fala_aviso_data]]
+	for par in pares:
+		var sinal: Signal = par[0]
+		var rotina: Callable = par[1]
+		if not sinal.is_connected(rotina):
+			sinal.connect(rotina)
+
+
+func _fala_caixa_criada(item: String, tipo: String) -> void:
+	disparar_gatilho("big_purchase", {"what": tipo, "item": item})
+
+
+func _fala_melhoria(aparelho: String, _melhoria: String, nivel: int) -> void:
+	var total: int = dados.aparelho(aparelho).get("upgrades", []).size()
+	if total > 0 and nivel >= total:
+		disparar_gatilho("big_purchase", {"what": "upgrade_max", "item": aparelho})
+
+
+func _fala_metronomo(nivel: int) -> void:
+	if _metro_prev == 0 and nivel >= 1:
+		disparar_gatilho("big_purchase", {"what": "metronome", "item": "metronome"})
+	_metro_prev = nivel
+
+
+func _fala_crew(comprado: bool) -> void:
+	if comprado and not _crew_prev:
+		disparar_gatilho("big_purchase", {"what": "crew_click", "item": "crew_click"})
+	_crew_prev = comprado
+
+
+func _fala_caixa_aberta(item: String, tipo: String) -> void:
+	disparar_gatilho("box_opened", {"kind": tipo, "item": item})
+	if tipo == "glove":
+		disparar_gatilho("glove_new", {"item": item})
+		pedir_gesto("glove", luvas_abertas())
+
+
+func _fala_luta_resolvida(resumo: Dictionary) -> void:
+	if bool(resumo.get("win", false)) and not resumo.has("retire"):
+		disparar_gatilho("fight_won", {"revenge": bool(resumo.get("revenge", false)), "record": bool(resumo.get("record", false)),
+			"opponent": str(resumo.get("opponent", ""))})
+
+
+func _fala_aviso_data(dias: int) -> void:
+	if dias == int(lutas.calendario.get("warn_days", 3)):
+		var proximo: Dictionary = {} if escada_completa() else lutas.adversarios[indice_escada]
+		disparar_gatilho("fight_near", {"opponent": str(proximo.get("id", ""))})
+
+
+# --- Gesto de assinatura (só o 1º lutador) ---
+
+## Pede o gesto. `momento`: "opening", "fight_intro", "victory", "glove" (com `nivel`) ou "idle". Devolve o plano
+## (e emite `gesto_pedido`) ou {} se não vale: discípulo nunca faz; luva já festejada; sala não ativa (glove, idle).
+## A UI chama "fight_intro" no começo da animação da luta e "victory" quando começa o `outro`;
+## "opening", "glove" e "idle" o GameState chama sozinho. Plano: {momento, version ("full"|"short"), start, duration,
+## rip_at (-1 no curto), taps [t1, t2] (t2 - t1 = tap_interval), rip_sound, tap_sound, pose_at (só na vitória)}.
+func pedir_gesto(momento: String, nivel: int = -1) -> Dictionary:
+	if lutador_atual() != "first":
+		return {}
+	var g: Dictionary = dialogos.gesture
+	var inicio := 0.0
+	match momento:
+		"opening":
+			inicio = float(g.get("opening_start", 0.3))
+		"fight_intro":
+			inicio = float(g.get("fight_intro_start", 0.3))
+		"victory":
+			inicio = float(g.get("victory_short_start", 0.15))
+		"glove":
+			if nivel < 1 or nivel in gestos_calcados or not sala_ativa():
+				return {}
+			gestos_calcados.append(nivel)  # cancelado pelo clique também conta como feito
+			inicio = float(g.get("glove_start", 0.3))
+		"idle":
+			if not sala_ativa() or not _balao.is_empty() or not _gesto.is_empty():
+				return {}
+		_:
+			return {}
+	var curto := momento == "victory" or momento == "idle"
+	var primeiro := float(g.get("short_tap_at", 0.11) if curto else g.get("full_tap_at", 0.56))
+	var sons: Dictionary = g.get("sounds", {})
+	var plano := {"momento": momento, "version": "short" if curto else "full", "start": inicio,
+		"duration": float(g.get("short_seconds", 0.44) if curto else g.get("full_seconds", 0.89)),
+		"rip_at": -1.0 if curto else float(g.get("rip_at", 0.11)),
+		"taps": [primeiro, primeiro + float(g.get("tap_interval", 0.22))],
+		"rip_sound": str(sons.get("rip", "strap_rip")), "tap_sound": str(sons.get("tap", "tap_glove")),
+		"pose_at": float(g.get("victory_pose_at", 0.6)) if momento == "victory" else -1.0}
+	_gesto = {"momento": momento, "ate": _t_real + inicio + float(plano.duration)}
+	gesto_pedido.emit(plano)
+	return plano
+
+
+## Qualquer clique do jogador (saco, botão, fora do alvo): cancela o gesto e zera a "sala parada".
+## `clicar()` já chama isto; a UI chama nos outros cliques.
+func registrar_clique() -> void:
+	_parado = 0.0
+	_gestos_parada = 0
+	_proximo_gesto_parada = float(dialogos.gesture.get("idle_first_seconds", 20.0))
+	_idle_comentou = false
+	cancelar_gesto()
+
+
+func cancelar_gesto() -> void:
+	if _gesto.is_empty():
+		return
+	_gesto = {}
+	gesto_cancelado.emit()
+
+
+# Sala parada: gesto curto aos 20 s, depois a cada 30 a 60 s (no máximo 3 por parada); comentário "parado" aos 45 s.
+func _tick_sala_parada(ativa: bool) -> void:
+	if not ativa:
+		return
+	var g: Dictionary = dialogos.gesture
+	if lutador_atual() == "first" and _gestos_parada < int(g.get("idle_max_per_stop", 3)) and _parado >= _proximo_gesto_parada \
+			and _balao.is_empty() and _gesto.is_empty():
+		if not pedir_gesto("idle").is_empty():
+			_gestos_parada += 1
+			_proximo_gesto_parada = _parado + _rng_fala.randf_range(float(g.get("idle_repeat_min", 30.0)), float(g.get("idle_repeat_max", 60.0)))
+	if not _idle_comentou and _parado >= float(dialogos.comments.get("idle_comment_seconds", 45.0)):
+		_idle_comentou = true
+		disparar_gatilho("idle")
+
+
+# Zera o que é só de sessão (balão, vaga, intervalo, gesto) e decide o estado da abertura. Carga e "Apagar save".
+func _reiniciar_falas() -> void:
+	if not _balao.is_empty():
+		fala_cancelada.emit(str(_balao.id))
+	_balao = {}
+	_gesto = {}
+	_vaga = {}
+	_gatilhos_quadro = []
+	_ultimo_comentario = -1.0e9
+	_calma = 0.0
+	_parado = 0.0
+	_gestos_parada = 0
+	_proximo_gesto_parada = float(dialogos.gesture.get("idle_first_seconds", 20.0))
+	_idle_comentou = false
+	_garagem_retomada = false
+	_derrota_rearmada = false
+	_abertura_t = 0.0
+	_abertura_idx = 0
+	_abertura = "over" if marco("prologue_seen") else "pending"
+	abertura_mudou.emit(_abertura)
+
+
+# --- Validação do bloco da escola e dos gestos ---
+
+func _validar_gestos(v: Variant) -> Array:
+	var r: Array = []
+	if not (v is Array):
+		return r
+	for x in v:
+		if typeof(x) != TYPE_FLOAT and typeof(x) != TYPE_INT:
+			continue
+		var n := int(x)
+		if n >= 1 and n <= lutas.luvas.size() and not (n in r):
+			r.append(n)
+	return r
+
+
+# state.school: ausente ou inválido recebe o padrão da migração (campanha atual, ou a próxima se há fim pendente).
+func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
+	var padrao_primeiro := numero_carreira() + (1 if not fim.is_empty() else 0)
+	var s: Dictionary = {}
+	if v is Dictionary:
+		s = v
+	elif v != null:
+		_avisar("Bloco da escola inválido: recriado pelo padrão.")
+	elif havia_save:
+		push_warning("GameState: save sem o bloco da escola: recriado pelo padrão.")
+	var r := {"first_fighter_campaign": padrao_primeiro, "milestones": {}, "lines_seen": {}, "last_end": null}
+	var f = s.get("first_fighter_campaign", null)
+	if (typeof(f) == TYPE_INT or typeof(f) == TYPE_FLOAT) and is_finite(float(f)) and float(f) >= 1.0 and float(f) < 1.0e9:
+		r["first_fighter_campaign"] = int(f)
+	elif f != null:
+		_avisar("Campanha do 1º lutador inválida: padrão aplicado.")
+	var marcos = s.get("milestones", {})
+	if marcos is Dictionary:
+		for id in marcos:
+			var m = marcos[id]
+			var extra := {}
+			var camp := 1
+			var ver := MARCOS_VERSAO
+			if m is Dictionary:
+				extra = m.duplicate(true)
+				camp = maxi(1, _inteiro_valido(m.get("campaign", 1), 1.0e9))
+				ver = maxi(1, _inteiro_valido(m.get("version", MARCOS_VERSAO), 1.0e6))
+			extra["campaign"] = camp
+			extra["version"] = ver
+			r["milestones"][str(id)] = extra
+	elif s.has("milestones"):
+		_avisar("Marcos da escola inválidos: zerados.")
+	var vistas = s.get("lines_seen", {})
+	if vistas is Dictionary:
+		for id in vistas:
+			if typeof(vistas[id]) == TYPE_INT or typeof(vistas[id]) == TYPE_FLOAT:
+				var n := _inteiro_valido(vistas[id], 1.0e9)
+				if n >= 1:
+					r["lines_seen"][str(id)] = n
+	elif s.has("lines_seen"):
+		_avisar("Falas vistas inválidas: zeradas.")
+	var le = s.get("last_end", null)
+	if le is Dictionary and str(le.get("kind", "")) in ["defeat", "retire"]:
+		r["last_end"] = {"kind": str(le.kind), "campaign": maxi(1, _inteiro_valido(le.get("campaign", 1), 1.0e9))}
+	elif not fim.is_empty():
+		r["last_end"] = {"kind": str(fim.kind), "campaign": int(fim.career_number)}
 	return r
