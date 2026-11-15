@@ -1,6 +1,7 @@
 {
-	"version": 1,
-	"_doc": "Fase 6b1. Dono dos valores: Designer (docs/fases/fase6b1-design.md). Cores = alvo para o Diretor de Arte (ele fecha o hex final). Nomes e textos ficam em data/nomes_discipulos.json e data/ui_texts.json (Roteirista).",
+	"version": 2,
+	"_ligar_6b2": "As opções novas da 6b2 estão com enabled false para o build da 6b1 seguir verde. O Programador liga (enabled true) cada campo quando as camadas dele estiverem no manifest; os valores (pesos, cores, pares) já são os finais.",
+	"_doc": "Fases 6b1 e 6b2. Dono dos valores: Designer (docs/fases/fase6b1-design.md e fase6b2-design.md). Cores = só tokens da paleta de 45 (o hex é cópia do token; peles extras: docs/arte/paletas-6b1.md). O Diretor de Arte pode trocar tokens mantendo ids e quantidade. Nomes e textos ficam em data/nomes_discipulos.json e data/ui_texts.json (Roteirista).",
 
 	"names_file": "res://data/nomes_discipulos.json",
 	"name": {
@@ -48,12 +49,13 @@
 			]
 		},
 		"hair_style": {
-			"phase": "6b1",
+			"phase": "6b2",
+			"_doc": "Ordem = ordem da seta na tela (do mais baixo ao mais alto). O corte mais alto (volume ou bun) mede o head_anchor.",
 			"options": [
-				{ "id": "short",  "enabled": true },
-				{ "id": "buzz",   "enabled": false, "phase": "6b2" },
-				{ "id": "volume", "enabled": false, "phase": "6b2" },
-				{ "id": "bun",    "enabled": false, "phase": "6b2" }
+				{ "id": "buzz",   "enabled": true, "weight": 1 },
+				{ "id": "short",  "enabled": true, "weight": 1 },
+				{ "id": "volume", "enabled": true, "weight": 1 },
+				{ "id": "bun",    "enabled": true, "weight": 1 }
 			]
 		},
 		"shorts_color": {
@@ -70,39 +72,90 @@
 		},
 		"top": {
 			"phase": "6b2",
+			"_doc": "none = peito nu (como na 6b1). tank = regata, tee = camiseta. As duas deixam o peito liso (lugar do símbolo da 6c).",
 			"options": [
-				{ "id": "none", "enabled": true },
-				{ "id": "tank", "enabled": false, "phase": "6b2" },
-				{ "id": "tee",  "enabled": false, "phase": "6b2" }
+				{ "id": "none", "enabled": true, "weight": 4 },
+				{ "id": "tank", "enabled": true, "weight": 3 },
+				{ "id": "tee",  "enabled": true, "weight": 3 }
 			]
 		},
 		"top_color": {
 			"phase": "6b2",
+			"slots": ["dark", "mid", "light"],
+			"_doc": "Sem vermelho: a luva (r1/r2) passa na frente do peito na guarda e sumiria numa camisa vermelha. O id red da 6b1 virou gray (nenhum save tem red: o campo estava desligado e o padrão é white).",
 			"options": [
-				{ "id": "white",  "enabled": false }, { "id": "black", "enabled": false }, { "id": "red", "enabled": false },
-				{ "id": "blue",   "enabled": false }, { "id": "green", "enabled": false }, { "id": "yellow", "enabled": false }
+				{ "id": "white",  "enabled": true, "colors": ["#b8b0aa", "#d9cdb4", "#f2ece0"], "tokens": ["g3", "cream", "white"] },
+				{ "id": "black",  "enabled": true, "colors": ["#2a2233", "#3d3346", "#4a4552"], "tokens": ["d1", "d2", "g0"] },
+				{ "id": "gray",   "enabled": true, "colors": ["#6b6570", "#8f8890", "#b8b0aa"], "tokens": ["g1", "g2", "g3"] },
+				{ "id": "blue",   "enabled": true, "colors": ["#1f2a44", "#2f4a78", "#4d7bb3"], "tokens": ["b0", "b1", "b2"] },
+				{ "id": "green",  "enabled": true, "colors": ["#1f3d33", "#2f6b4a", "#5aa25a"], "tokens": ["gr0", "gr1", "gr2"] },
+				{ "id": "yellow", "enabled": true, "colors": ["#9a5f36", "#e0a040", "#f5d26b"], "tokens": ["br2", "y0", "y1"] }
 			]
 		},
 		"headband": {
 			"phase": "6b2",
-			"options": [ { "id": "none", "enabled": true }, { "id": "band", "enabled": false, "phase": "6b2" } ]
+			"options": [
+				{ "id": "none", "enabled": true, "weight": 3 },
+				{ "id": "band", "enabled": true, "weight": 2 }
+			]
 		},
 		"headband_color": {
 			"phase": "6b2",
+			"slots": ["dark", "light"],
 			"options": [
-				{ "id": "red",   "enabled": false }, { "id": "white", "enabled": false }, { "id": "black", "enabled": false },
-				{ "id": "blue",  "enabled": false }, { "id": "green", "enabled": false }, { "id": "yellow", "enabled": false }
+				{ "id": "red",    "enabled": true, "colors": ["#d4473a", "#f07a5a"], "tokens": ["r2", "r3"] },
+				{ "id": "white",  "enabled": true, "colors": ["#d9cdb4", "#f2ece0"], "tokens": ["cream", "white"] },
+				{ "id": "black",  "enabled": true, "colors": ["#2a2233", "#4a4552"], "tokens": ["d1", "g0"] },
+				{ "id": "blue",   "enabled": true, "colors": ["#2f4a78", "#4d7bb3"], "tokens": ["b1", "b2"] },
+				{ "id": "green",  "enabled": true, "colors": ["#2f6b4a", "#5aa25a"], "tokens": ["gr1", "gr2"] },
+				{ "id": "yellow", "enabled": true, "colors": ["#e0a040", "#f5d26b"], "tokens": ["y0", "y1"] }
 			]
 		},
 		"socks": {
 			"phase": "6b2",
-			"options": [ { "id": "none", "enabled": true }, { "id": "on", "enabled": false, "phase": "6b2" } ]
+			"slots": ["shadow", "base", "stripe"],
+			"_doc": "Sem cor própria: cada opção copia slots de outro campo do mesmo look. none = as cores-chave do meião viram pele (some); on = cor do calção, com a listra no tom do cós.",
+			"options": [
+				{ "id": "none", "enabled": true, "weight": 1, "source": "skin",         "source_slots": ["shadow", "base", "base"] },
+				{ "id": "on",   "enabled": true, "weight": 1, "source": "shorts_color", "source_slots": ["dark", "mid", "band"] }
+			]
 		}
 	},
 
 	"random": {
 		"fields": ["skin", "hair_color", "hair_style", "shorts_color", "top", "top_color", "headband", "headband_color", "socks"],
-		"avoid_same_shorts_as_last": true
+		"_doc_weight": "Cada opção sorteia com peso `weight` (ausente = 1) entre as ligadas.",
+		"avoid_same_shorts_as_last": true,
+		"avoid_same_hair_as_last": true,
+		"max_rerolls": 8,
+		"_doc_avoid_pairs": "Depois de sortear tudo: se o look bate com um par (if E and), sorteia de novo o campo `reroll` (até max_rerolls; se não resolver, fica). Só vale para o sorteio; a escolha na tela é livre.",
+		"avoid_pairs": [
+			{ "if": { "hair_color": "black" },      "and": { "headband_color": "black" },  "reroll": "headband_color" },
+			{ "if": { "hair_color": "dark_brown" }, "and": { "headband_color": "black" },  "reroll": "headband_color" },
+			{ "if": { "hair_color": "blond" },      "and": { "headband_color": "yellow" }, "reroll": "headband_color" },
+			{ "if": { "hair_color": "copper" },     "and": { "headband_color": "yellow" }, "reroll": "headband_color" },
+			{ "if": { "hair_color": "platinum" },   "and": { "headband_color": "white" },  "reroll": "headband_color" },
+			{ "if": { "skin": "skin_5" },           "and": { "top_color": "black" },       "reroll": "top_color" },
+			{ "if": { "shorts_color": "white" },    "and": { "top_color": "white" },       "reroll": "top_color" },
+			{ "if": { "shorts_color": "yellow" },   "and": { "top_color": "yellow" },      "reroll": "top_color" }
+		]
+	},
+
+	"screen": {
+		"_doc": "Linhas da tela de criação (6b2), na ordem. Coluna 1 = cabeça, coluna 2 = corpo. kind colors = chips de cor; kind text = nome da opção (ui_texts disc_opt_<campo>_<id>). depends_on: com o campo pai em none a linha fica apagada e a seta não faz nada (o valor fica guardado).",
+		"rows_per_column": 6,
+		"rows": [
+			{ "field": "name",           "label": "disc_label_name" },
+			{ "field": "skin",           "label": "disc_label_skin",       "kind": "colors", "chips": 3 },
+			{ "field": "hair_style",     "label": "disc_label_style",      "kind": "text" },
+			{ "field": "hair_color",     "label": "disc_label_hair",       "kind": "colors", "chips": 2 },
+			{ "field": "headband",       "label": "disc_label_band",       "kind": "text" },
+			{ "field": "headband_color", "label": "disc_label_band_color", "kind": "colors", "chips": 2, "depends_on": "headband" },
+			{ "field": "top",            "label": "disc_label_top",        "kind": "text" },
+			{ "field": "top_color",      "label": "disc_label_top_color",  "kind": "colors", "chips": 3, "depends_on": "top" },
+			{ "field": "shorts_color",   "label": "disc_label_shorts",     "kind": "colors", "chips": 3 },
+			{ "field": "socks",          "label": "disc_label_socks",      "kind": "text" }
+		]
 	},
 
 	"handover": {
@@ -127,8 +180,18 @@
 	},
 
 	"room_mentors": {
-		"defeat_counts_as_passed": true,
-		"second_mentor_from_campaign": 3,
-		"second_mentor_phase": "6b2"
+		"_doc": "6b2 (design §4). passed_ends = fins de campanha que contam como 'passou o posto' (decisão do Produtor: derrota conta).",
+		"passed_ends": ["defeat", "retire", "unknown"],
+		"second_mentor": {
+			"enabled": true,
+			"requires_mentor": "first",
+			"location": "garage",
+			"spot": "mentor_2_spot",
+			"pose": "stand_bare",
+			"glove": "none",
+			"facing": "toward_bag",
+			"bag_x": 320,
+			"hidden_during_scenes": ["primeira_sucessao"]
+		}
 	}
 }

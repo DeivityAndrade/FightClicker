@@ -35,7 +35,7 @@ engraçada e triste quando o jogador voltar a ela em outra carreira.
 
 ## Elenco (reservado, entra na Fase 8)
 - **Mentor:** John Bullet (o 1º lutador) e, depois, os lutadores das carreiras anteriores. Falas curtas, voz de quem já apanhou. Marcos de progresso.
-- **Rival recorrente:** aparece em cada camada; humilha no começo, é o chefe do título mundial. Caricato, nunca cruel.
+- **Rival recorrente: James Blindado.** Aparece em cada camada; humilha no começo, é o chefe do título mundial. Caricato, nunca cruel.
 - **Gente do bairro** (Fase 2): Vizinho da casa 12, Tio aposentado. Nomes e piadas em `docs/fases/fase2-textos.md`.
 
 ## Escada amadora (Fase 3)
@@ -79,5 +79,14 @@ Loja do bairro: Prof. Nelson (cobra por hora) e luvas de lona, couro e "de marca
 
 ## Pendências
 - Nome oficial do jogo (Fightclicker é nome de trabalho).
-- Nome do rival (Fase 8). O 1º mentor já tem nome: John Bullet.
+- Nome do rival: decidido, **James Blindado** (ver abaixo). O 1º mentor é John Bullet.
 - Vozes dos locais 3 a 6 (escritos quando entrarem).
+
+## Nome do rival (2026-11-15)
+O dono definiu o primeiro nome: James. Sobrenome escolhido: **Blindado** (James Blindado, 14 caracteres, só letras comuns da 5x7).
+- **Por quê:** John Bullet é uma bala, rápido e direto. O contrário de uma bala é o que ela não fura: um blindado. O rival é imponente, quem você bate e não cai. Dá o duelo "bala contra blindado" sem explicar nada.
+- **Troca de nome:** a primeira escolha foi "James Muralha", trocada no mesmo dia porque já existe o Seu Muralha (`opp_tank`, dono do cinturão amador, que ri da ficha na abertura da 6a). O Seu Muralha continua como está.
+- **Tom:** imponente e um pouco caricato (nunca cruel); cabe em faixa de apresentação e em piada ("o Blindado").
+- **Original:** nenhum lutador ou pessoa conhecida com esse nome; "Blindado" é adjetivo comum e não há outro Blindado no elenco.
+- **Reserva:** James Bastião (13).
+- O marcador `[RIVAL]` foi trocado onde aparecia em texto (só em `docs/cutscenes/prancha-6b.md`).

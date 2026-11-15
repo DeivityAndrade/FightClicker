@@ -540,6 +540,21 @@ func write_manifest() -> void:
 			doc["by_data_id"] = bd0
 		else:
 			push_error("manifest-6b1-personagens.json ilegível: não juntei")
+	# Fase 6b2 (Artista): as mesmas entradas do discípulo com cortes, faixa, parte de cima e meião; vem depois da 6b1
+	var extra2 := ROOT + "docs/arte/manifest-6b2-personagens.json"
+	if FileAccess.file_exists(extra2):
+		var j2 := JSON.new()
+		if j2.parse(FileAccess.get_file_as_string(extra2)) == OK and j2.data is Dictionary:
+			var s2: Dictionary = j2.data.get("sprites", {})
+			for id in s2:
+				sp[id] = intify(s2[id])
+			var bd2: Dictionary = doc.get("by_data_id", {})
+			var b2in: Dictionary = j2.data.get("by_data_id", {})
+			for k in b2in:
+				bd2[k] = intify(b2in[k])
+			doc["by_data_id"] = bd2
+		else:
+			push_error("manifest-6b2-personagens.json ilegível: não juntei")
 	doc["sprites"] = sp
 	var lay: Dictionary = doc.get("layout", {})
 	var bs: Dictionary = lay.get("box_slots", {})

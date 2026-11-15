@@ -111,6 +111,13 @@ var _mentor: AnimSprite
 var _mentor_sombra: Sprite2D
 var _caixote: Sprite2D
 var _mentor_visivel := false
+var _mentor2: AnimSprite  # Fase 6b2: o último que passou o posto, parado no canto (sem clique, gesto nem fala)
+var _mentor2_sombra: Sprite2D
+var _mentor2_visivel := false
+var _mentor2_chave := ""
+var _mentor2_nome := ""
+var _dica_m2 := false  # a dica do 2º mentor está ancorada na parede
+const DICA_M2_X := 138  # x da borda esquerda da dica (dentro da sala útil)
 var _mentor_pose := ""
 var _toques_id := 0
 var _cam_escala := 1
@@ -1142,6 +1149,7 @@ func _texto_marca(id: String) -> String:
 
 ## Mouse se mexeu na sala: marca de fita ou caixa sob ele mostram a dica (e a marca acende).
 func _hover_em(p: Vector2) -> void:
+	var sobre_mentor2 := false
 	var tip := ""
 	var marca := ""
 	var cx := _caixa_em(p)
@@ -1149,6 +1157,9 @@ func _hover_em(p: Vector2) -> void:
 		tip = _texto_bolsa()
 	elif cx != "":
 		tip = _texto_caixa(cx)
+	elif _mentor2_visivel and _cam_escala == 1 and _area_mentor2().has_point(p):
+		tip = UiTema.txt("disc_mentor2_hint", "{nome}: já passou o posto.", {"nome": _mentor2_nome})
+		sobre_mentor2 = true
 	elif _texto_parede(p) != "":
 		tip = _texto_parede(p)
 	else:
@@ -1161,16 +1172,30 @@ func _hover_em(p: Vector2) -> void:
 	if marca != _marca_hover:
 		_marca_hover = marca
 		_atualizar_marcas()
+	_ancorar_dica_mentor2(sobre_mentor2)
 	if tip != "":
 		Dica.pedir(tip)
 	else:
 		Dica.limpar()
 
 
+## B2: a dica do 2º mentor fica na parede, 52 px acima da cabeça dele (acima das cabeças da equipe), nunca no tronco dele.
+func _ancorar_dica_mentor2(sobre: bool) -> void:
+	if Dica.instancia == null:
+		return
+	if sobre:
+		Dica.instancia.ancora_fixa = Vector2(float(DICA_M2_X) - 10.0, cabeca_mentor2().y - 64.0)
+		_dica_m2 = true
+	elif _dica_m2:
+		Dica.instancia.ancora_fixa = Vector2(-1, -1)
+		_dica_m2 = false
+
+
 func _sair_hover() -> void:
 	if _marca_hover != "":
 		_marca_hover = ""
 		_atualizar_marcas()
+	_ancorar_dica_mentor2(false)
 	Dica.limpar()
 
 
@@ -1535,6 +1560,10 @@ func cabecas_a_evitar(speaker: String) -> Array:
 	if _mentor_visivel and speaker != "mentor":
 		var m := cabeca_mentor()
 		lista.append(Rect2(m.x - 9.0, m.y, 18.0, 18.0))
+	# Fase 6b2: o segundo mentor parado no canto também não pode ficar sob o balão de ninguém.
+	if _mentor2_visivel:
+		var m2 := cabeca_mentor2()
+		lista.append(Rect2(m2.x - 9.0, m2.y, 18.0, 18.0))
 	return lista
 
 
@@ -1962,6 +1991,39 @@ func _montar_mentor() -> void:
 	_mentor.visible = false
 	_mentor_sombra.position = _mentor.position + Vector2(0, -1)
 	_mentor_sombra.z_index = _mentor.z_index - 1
+	_mentor2_sombra = Sprite2D.new()
+	_mentor2_sombra.texture = UiTema.textura("floor_shadow")
+	_mentor2_sombra.visible = false
+	_mundo.add_child(_mentor2_sombra)
+	_mentor2 = _novo_anim("disciple_stand_bare", "", 0)
+	_mentor2.visible = false
+	_mentor2.position = ponto_mentor2()
+	_mentor2.z_index = int(_mentor2.position.y)
+	_mentor2_sombra.position = _mentor2.position + Vector2(0, -1)
+	_mentor2_sombra.z_index = _mentor2.z_index - 1
+
+
+## Pés do segundo mentor: manifest.layout.mentor_2_spot.
+func ponto_mentor2() -> Vector2:
+	var p: Array = UiTema.manifest().get("layout", {}).get("mentor_2_spot", [150, 262])
+	return Vector2(float(p[0]), float(p[1]))
+
+
+## Ponto logo acima da cabeça do segundo mentor: head_anchor da folha dele (medido com o corte mais alto).
+func cabeca_mentor2() -> Vector2:
+	var nome := _mentor2.nome_sprite if _mentor2 != null and _mentor2.nome_sprite != "" else "disciple_stand_bare"
+	var a: Array = UiTema.sprite(nome).get("head_anchor", [1, -65])
+	return ponto_mentor2() + Vector2(float(a[0]), float(a[1]))
+
+
+func mentor2_visivel() -> bool:
+	return _mentor2_visivel
+
+
+## Retângulo do corpo do segundo mentor (para a dica ao passar o mouse; ele não é alvo de clique).
+func _area_mentor2() -> Rect2:
+	var o: Array = UiTema.manifest().get("layout", {}).get("mentor_2_spot_info", {}).get("occupies", [138, 197, 25, 67])
+	return Rect2(float(o[0]), float(o[1]), float(o[2]), float(o[3]))
 
 
 ## Pés do mentor sentado: manifest.layout.mentor_spot.
@@ -1984,7 +2046,9 @@ func _atualizar_mentor() -> void:
 	if _mentor == null:
 		return
 	var garagem := GameState.local_id == "garage"
-	var deve := garagem and not GameState.mentores_na_sala().is_empty() and not ("mentors" in _cena_oculta)
+	var lista: Array = GameState.mentores_na_sala() if garagem else []
+	var deve := garagem and not lista.is_empty() and not ("mentors" in _cena_oculta)
+	_atualizar_mentor2(lista if deve else [])
 	var caixote := garagem and (deve or _caixote_cena)
 	if _caixote.visible != caixote:
 		_caixote.visible = caixote
@@ -1994,6 +2058,37 @@ func _atualizar_mentor() -> void:
 		_mentor_sombra.visible = deve
 		if deve:
 			_mentor_repouso()
+
+
+## Segundo mentor (6b2): parado em `stand_bare`, sem luvas, com o visual que tinha, virado para o saco. Sem clique nem fala.
+func _atualizar_mentor2(lista: Array) -> void:
+	var d := {}
+	for m in lista:
+		if str(m.get("id", "")) == "second":
+			d = m
+	if d.is_empty():
+		if _mentor2_visivel:
+			_mentor2_visivel = false
+			_mentor2.visible = false
+			_mentor2_sombra.visible = false
+			_mentor2_chave = ""
+			_mentor2_nome = ""
+		return
+	var folha := "disciple_" + str(d.get("pose", "stand_bare"))
+	if str(d.get("facing", "right")) == "left" and str(UiTema.sprite(folha).get("left_variant", "")) != "":
+		folha = str(UiTema.sprite(folha).left_variant)  # folha própria da esquerda, sem espelhar
+	var look: Dictionary = d.get("look", {})
+	var chave := folha + "|" + JSON.stringify(look)
+	if chave != _mentor2_chave:
+		_mentor2_chave = chave
+		_mentor2.definir(folha)
+		_mentor2.texture = DiscVisual.textura(folha, look)
+		_mentor2.tocar([0, 1, 2, 3], float(UiTema.sprite(folha).get("fps", 4.0)), true)
+	_mentor2_nome = str(d.get("name", ""))
+	if not _mentor2_visivel:
+		_mentor2_visivel = true
+		_mentor2.visible = true
+		_mentor2_sombra.visible = true
 
 
 func _mentor_repouso() -> void:

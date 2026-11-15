@@ -46,3 +46,9 @@ O dono aprovou a prancha (`docs/cutscenes/prancha-6b.md`) com **todas as opçõe
 6. Reencontro começa com a falsa entrada exagerada que apaga.
 7. Só "John Bullet" pequeno na faixa preta.
 8. John grisalho, barba por fazer, mesmo corpo e a mesma luva velha.
+
+## Nome do rival (2026-11-15)
+O dono decidiu: "o nome do rival pode ser James (e um sobrenome imponente)". Sobrenome escolhido pelo Roteirista: **James Blindado**.
+- John Bullet é uma bala; o contrário dela é a muralha que ela não atravessa. Duelo "bala contra muralha".
+- Primeira escolha foi "James Muralha", trocada no mesmo dia: já existe o Seu Muralha (`opp_tank`, dono do cinturão amador). Ficou a reserva **James Blindado** (14 caracteres, letras comuns da 5x7; o que a bala não fura). Outra reserva: James Bastião.
+- Detalhes em `docs/narrativa.md`. O marcador `[RIVAL]` das cutscenes passa a ser James Blindado.

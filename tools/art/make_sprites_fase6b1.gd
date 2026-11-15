@@ -50,6 +50,27 @@ const PALETTE := {
 	],
 }
 
+## Fase 6b2: cores de data/disciples.json (top_color [dark, mid, light], headband_color [dark, light]) + 'deep' do Artista
+## (lado de trás e sombra de contato; na faixa é o que separa a faixa da luva que passa na frente da testa).
+const PALETTE_6B2 := {
+	"top_color": [
+		{"id": "white", "colors": ["#b8b0aa", "#d9cdb4", "#f2ece0"], "deep": "#8f8890"},
+		{"id": "black", "colors": ["#2a2233", "#3d3346", "#4a4552"], "deep": "#14101a"},
+		{"id": "gray", "colors": ["#6b6570", "#8f8890", "#b8b0aa"], "deep": "#4a4552"},
+		{"id": "blue", "colors": ["#1f2a44", "#2f4a78", "#4d7bb3"], "deep": "#14101a"},
+		{"id": "green", "colors": ["#1f3d33", "#2f6b4a", "#5aa25a"], "deep": "#14101a"},
+		{"id": "yellow", "colors": ["#9a5f36", "#e0a040", "#f5d26b"], "deep": "#6b3f2a"},
+	],
+	"headband_color": [
+		{"id": "red", "colors": ["#d4473a", "#f07a5a"], "deep": "#9c2a2a"},
+		{"id": "white", "colors": ["#d9cdb4", "#f2ece0"], "deep": "#b8b0aa"},
+		{"id": "black", "colors": ["#2a2233", "#4a4552"], "deep": "#14101a"},
+		{"id": "blue", "colors": ["#2f4a78", "#4d7bb3"], "deep": "#1f2a44"},
+		{"id": "green", "colors": ["#2f6b4a", "#5aa25a"], "deep": "#1f3d33"},
+		{"id": "yellow", "colors": ["#e0a040", "#f5d26b"], "deep": "#9a5f36"},
+	],
+}
+
 var L
 var P
 var M: Dictionary
@@ -486,9 +507,10 @@ func gen_left(b: Dictionary, id: String, e: Dictionary) -> void:
 		a["head_rot"] = -float(a.head_rot)
 		a["view"] = "34_left"
 		a.erase("flipped")
-		var hb: Array = a.get("head_box", [])
-		if hb.size() == 4:
-			a["head_box"] = [47 - (int(hb[0]) + int(hb[2]) - 1), hb[1], hb[2], hb[3]]
+		for hk in ["head_box", "head_box_max"]:
+			var hb: Array = a.get(hk, [])
+			if hb.size() == 4:
+				a[hk] = [47 - (int(hb[0]) + int(hb[2]) - 1), hb[1], hb[2], hb[3]]
 	disc_caps[lid] = caps
 	var meta: Dictionary = P.save_layer_sheet(caps, out_dir + "disciple/", lid, "", cam_store, report)
 	var ent := layered_entry(lid, "", meta, {"fps": e.fps, "loop": e.loop, "pivot": [22, 67], "facing": "esquerda"})
@@ -509,18 +531,28 @@ func layered_entry(base: String, gsuf: String, meta: Dictionary, extra: Dictiona
 	var top := 999
 	var hx := 0.0
 	for a in meta.anchors:
-		var hb: Array = a.get("head_box", [])
+		# 6b2: head_anchor medido com o corte mais alto (head_box_max = caixa dos 4 cortes juntos)
+		var hb: Array = a.get("head_box_max", a.get("head_box", []))
 		if hb.size() == 4 and int(hb[1]) < top:
 			top = int(hb[1])
 			hx = float(a.head[0])
+	var heads := {}
+	for cut in P.CUT_ORDER:
+		heads[cut] = d + base + "_disc_head_" + cut + ".png"
 	var ent := {
 		"file": d + base + gsuf + "_disc_body.png",
 		"frame_size": meta.frame_size, "frames": meta.frames, "who": "discipulo",
-		"layers": {"body": d + base + gsuf + "_disc_body.png", "head": {"short": d + base + "_disc_head_short.png"},
-			"front_mask": d + base + "_disc_front.png"},
+		"layers": {"body": d + base + gsuf + "_disc_body.png",
+			"top": {"tank": d + base + "_disc_top_tank.png", "tee": d + base + "_disc_top_tee.png"},
+			"socks": d + base + "_disc_socks.png",
+			"head": heads,
+			"band": d + base + "_disc_band.png",
+			"front_mask": d + base + "_disc_front.png",
+			"order": ["body", "top", "socks", "head", "band", "front_mask"]},
 		"palette_swap": "disciple_palette",
 		"anchors": meta.anchors.map(func(a): return {"head": a.head, "head_rot": a.head_rot, "hip": a.hip, "top": a.top,
-			"tw": a.tw, "view": a.view, "face": a.face, "head_box": a.get("head_box", []), "flipped": a.get("flipped", false)}),
+			"tw": a.tw, "view": a.view, "face": a.face, "head_box": a.get("head_box", []), "head_box_max": a.get("head_box_max", []),
+			"flipped": a.get("flipped", false)}),
 	}
 	for k in extra:
 		ent[k] = extra[k]
@@ -556,7 +588,7 @@ func merge_old_layers() -> Array:
 					if not (k in ["file", "note", "note_disc"]):
 						extra[k] = src[k]
 				extra["same_as"] = old_id
-				extra["note"] = "Discípulo EM CAMADAS (Fase 6b1): mesmos quadros, fps, pivô, mãos e hit de %s; montar body -> head_<corte> -> body pela front_mask e trocar as cores-chave (by_data_id.disciple_palette)." % old_id
+				extra["note"] = "Discípulo EM CAMADAS (Fases 6b1/6b2): mesmos quadros, fps, pivô, mãos e hit de %s; montar na ordem de layers.order (by_data_id.disciple_palette.compose) e trocar as cores-chave (by_data_id.disciple_palette)." % old_id
 				sprites[base + gsuf + "_disc_layered"] = layered_entry(base, gsuf, j[base], extra)
 	return bases
 
@@ -570,7 +602,16 @@ func palette_block() -> Dictionary:
 				continue
 			d[P.KEYS[k].slots[i]] = "#" + (L.col(n) as Color).to_html(false)
 		keys[k] = d
-	var opts := {"skin": [], "hair_color": [], "shorts_color": []}
+	var opts := {"skin": [], "hair_color": [], "shorts_color": [], "top_color": [], "headband_color": [], "socks": []}
+	for o in PALETTE_6B2.top_color:
+		var c: Array = o.colors
+		opts.top_color.append({"id": o.id, "ramp": {"deep": o.deep, "dark": c[0], "mid": c[1], "light": c[2]}})
+	for o in PALETTE_6B2.headband_color:
+		var c: Array = o.colors
+		opts.headband_color.append({"id": o.id, "ramp": {"deep": o.deep, "dark": c[0], "light": c[1]}})
+	for o in PALETTE.shorts_color:
+		var c: Array = o.colors
+		opts.socks.append({"id": o.id, "ramp": {"shadow": c[0], "base": c[1], "stripe": c[3]}})
 	for o in PALETTE.skin:
 		var c: Array = o.colors
 		opts.skin.append({"id": o.id, "ramp": {"deep": o.deep, "shadow": c[0], "base": c[1], "light": c[2], "highlight": c[2]}})
@@ -581,11 +622,13 @@ func palette_block() -> Dictionary:
 		var c: Array = o.colors
 		opts.shorts_color.append({"id": o.id, "ramp": {"deep": o.deep, "dark": c[0], "mid": c[1], "light": c[2], "band": c[3]}})
 	return {
-		"keys": {"skin": keys.skin, "hair_color": keys.hair, "shorts_color": keys.shorts},
+		"keys": {"skin": keys.skin, "hair_color": keys.hair, "shorts_color": keys.shorts,
+			"top_color": keys.top, "headband_color": keys.band, "socks": keys.socks},
 		"options": opts,
-		"default": {"skin": "skin_3", "hair_color": "brown", "shorts_color": "green"},
-		"how": "Troca exata de cor nas camadas do discípulo (body, head_*): cada pixel com a cor de keys.<campo>.<slot> vira options.<campo>[id].ramp.<slot>. Qualquer outra cor (luva, tênis, olho, contorno ink, fita) não muda. As chaves são o visual padrão (skin_3/brown/green) com +1 num canal, para não coincidir com nenhuma cor da paleta de 45 (o br0/br1/br2 do cabelo castanho também aparece na luva de couro e o br0 é a sombra funda da pele). Hex final: docs/arte/paletas-6b1.md; 'deep' = tom abaixo da sombra (pele do lado de trás e sombra de contato), escolhido pelo Artista; 'highlight'/'shine' não são usados nas folhas da 6b1.",
-		"compose": "Ordem por quadro (mesmo tamanho e pivô): body -> [parte de cima, 6b2] -> head_<corte> -> body (e a parte de cima) recortado pela front_mask (branco = desenhar). Com a máscara vazia o 3º passo não faz nada.",
+		"default": {"skin": "skin_3", "hair_color": "brown", "shorts_color": "green", "top_color": "white", "headband_color": "red", "socks": "green"},
+		"socks_source": {"field": "shorts_color", "note": "6b2: o meião não tem cor própria. options.socks tem uma entrada por calção (id = id do shorts_color) com shadow = dark, base = mid, stripe = band do calção (data/disciples.json socks.on: source shorts_color, source_slots [dark, mid, band]). Use a entrada com id == look.shorts_color. Com socks 'none' NÃO desenhe a camada socks (não precisa trocar nada para pele)."},
+		"how": "Troca exata de cor nas camadas do discípulo (body, top_*, socks, head_*, band): cada pixel com a cor de keys.<campo>.<slot> vira options.<campo>[id].ramp.<slot>. Qualquer outra cor (luva, tênis, olho, contorno ink, fita) não muda. As chaves são o visual padrão com +1 num canal, para não coincidir com nenhuma cor da paleta de 45 nem umas com as outras (pele/cabelo/calção da 6b1; 6b2: parte de cima = camiseta branca, faixa = vermelha, meião = calção verde com +1 no azul). Hex final: docs/arte/paletas-6b1.md e data/disciples.json; 'deep' = tom abaixo da sombra (lado de trás e sombra de contato), escolhido pelo Artista (não existe no JSON); 'highlight'/'shine' não são usados nas folhas.",
+		"compose": "Por quadro (mesmo tamanho e pivô), na ordem de layers.order: 1) body; 2) top.<tank|tee> se look.top != 'none'; 3) socks se look.socks == 'on'; 4) head.<look.hair_style>; 5) band se look.headband != 'none'; 6) front_mask: nos pixels brancos da máscara, desenhar de novo o resultado de 1+2+3 (body com parte de cima e meião), só onde ele tem cor (alfa > 0). Trocar as cores-chave em todas as camadas (antes ou depois de montar: as chaves não se repetem). Com a máscara vazia o passo 6 não faz nada.",
 	}
 
 # ================================================================ mockups
@@ -954,6 +997,23 @@ func _init() -> void:
 	var f := FileAccess.open(out_dir + "manifest-6b1-personagens.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(doc, "\t"))
 	f.close()
+	# ---- Fase 6b2: só as entradas do discípulo em camadas (agora com cortes, faixa, parte de cima e meião) + paleta
+	var sp6 := {}
+	for id in sprites:
+		if str((sprites[id] as Dictionary).get("who", "")) == "discipulo":
+			sp6[id] = sprites[id]
+	var lay := {"note": "Discípulo em camadas (escopo 6b §4.4, Fase 6b2). Arquivos em assets/sprites/disciple/, todos com o mesmo quadro e pivô da folha da pose: <base>[_glove_lN]_disc_body.png (corpo sem cabeça, peito nu, sem meião; um por luva); <base>_disc_top_tank.png e _top_tee.png (regata/camiseta: só os pixels que a peça muda no tronco e nos braços); <base>_disc_socks.png (meião: só as canelas); <base>_disc_head_<corte>.png (buzz, short, volume, bun); <base>_disc_band.png (faixa: igual para os 4 cortes); <base>_disc_front.png (máscara: corpo que passa na frente da cabeça; vale para os 4 cortes, para a faixa e com qualquer parte de cima). Nenhuma camada depende da luva, só o body. Cada opção é um arquivo por pose; nenhuma combinação vira arquivo. Entrada '<base>[_glove_lN]_disc_layered' (poses que já existiam, same_as = a folha inteira) ou o próprio id (poses da 6b1). anchors[q]: head_box = caixa da cabeça do short, head_box_max = dos 4 cortes juntos. head_anchor = topo do corte mais alto (volume/bun) relativo ao pivô.",
+		"compose": palette_block().compose, "bases_existentes": old_bases, "cuts": P.CUT_ORDER, "tops": ["tank", "tee"],
+		"layer_keys": {"top": "look.top (none = não desenhar)", "socks": "look.socks (none = não desenhar)", "head": "look.hair_style", "band": "look.headband (none = não desenhar)"}}
+	var doc6 := {
+		"_sobre": "Fase 6b2 (Artista de Personagens): camadas de personalização do discípulo (4 cortes, regata, camiseta, faixa, meião) em todas as poses em camadas, e a paleta das peças novas. Gerador: tools/art/make_sprites_fase6b1.gd + personagem_lib.gd (_capture_call_6b2), rodando também make_sprites_jogador.gd e make_golpes_jogador.gd com FC_LUTADOR=disc FC_CAMADAS=1. Juntar ao manifest: tools/art/merge_manifest_personagens.gd.",
+		"sprites": sp6,
+		"by_data_id": {"disciple_palette": palette_block(), "disciple_layers": lay},
+	}
+	var f6 := FileAccess.open(out_dir + "manifest-6b2-personagens.json", FileAccess.WRITE)
+	f6.store_string(JSON.stringify(doc6, "\t"))
+	f6.close()
+	doc.by_data_id.disciple_layers = lay
 	mockups(old_bases)
 	antes_depois(out_dir + "mock/")
 	if args.size() > 2:

@@ -105,7 +105,16 @@ func _teste_dados() -> void:
 	checar_igual(d.nome_padrao, "Novato", "nome padrão do migrado")
 	checar_igual(d.look_padrao.size(), 9, "look com 9 campos")
 	checar_igual([d.opcoes_ativas("skin").size(), d.opcoes_ativas("hair_color").size(), d.opcoes_ativas("shorts_color").size()], [5, 6, 6], "5 peles, 6 cabelos, 6 calções ligados")
-	checar_igual([d.opcoes_ativas("hair_style"), d.opcoes_ativas("top"), d.opcoes_ativas("socks")], [["short"], ["none"], ["none"]], "6b1: campos da 6b2 com uma opção só")
+	# 6b2: as opções existem no JSON (ligadas ou não, conforme a arte) e o padrão do look está entre elas.
+	var ids_6b2 := {}
+	for campo in ["hair_style", "top", "top_color", "headband", "headband_color", "socks"]:
+		var ids: Array = []
+		for o in d.opcoes(campo):
+			ids.append(str(o.id))
+		ids_6b2[campo] = ids
+		checar(str(d.look_padrao[campo]) in ids, "6b2: %s tem o id padrão entre as opções" % campo)
+	checar_igual([ids_6b2.hair_style, ids_6b2.top, ids_6b2.headband, ids_6b2.socks],
+		[["buzz", "short", "volume", "bun"], ["none", "tank", "tee"], ["none", "band"], ["none", "on"]], "6b2: ids das opções novas")
 	var c := d.cores(d.look_padrao)
 	checar_igual([c.skin.colors, c.hair_color.tokens, c.shorts_color.tokens], [["#7a4632", "#b9744f", "#e3a275"], ["br1", "br2", "br0"], ["gr0", "gr1", "gr2", "gr3"]], "cores do visual padrão")
 	var l := d.look_padrao.duplicate()
@@ -145,7 +154,8 @@ func _teste_nome_e_sorteio() -> void:
 		verdes += 1 if r.look.shorts_color == "green" else 0  # o último discípulo da lista usou o verde padrão
 	checar(evitou and verdes <= 20, "sorteio: sem os 5 últimos nomes nem o atual, opções ligadas, calção diferente do último")
 	var r2 := d.sortear(rng, [], "")
-	checar_igual([r2.look.hair_style, r2.look.top, r2.look.socks], ["short", "none", "none"], "sorteio mantém os campos da 6b2 no padrão")
+	for campo in ["hair_style", "top", "socks"]:
+		checar(r2.look[campo] in d.opcoes_ativas(campo), "sorteio da 6b2: %s sai de uma opção ligada" % campo)
 
 
 # --- Validador ---
@@ -290,7 +300,7 @@ func _teste_primeira_sucessao() -> void:
 	# Criação.
 	checar(gs.definir_rascunho("name", "  Zé  Cutelo "), "troca o nome")
 	checar(gs.definir_rascunho("skin", "skin_5") and gs.definir_rascunho("hair_color", "copper") and gs.definir_rascunho("shorts_color", "purple"), "troca pele, cabelo e calção")
-	checar(not gs.definir_rascunho("hair_style", "bun") and not gs.definir_rascunho("skin", "skin_9"), "recusa opção desligada ou inexistente")
+	checar(gs.definir_rascunho("hair_style", "bun") and not gs.definir_rascunho("hair_style", "mullet") and not gs.definir_rascunho("skin", "skin_9"), "6b2: aceita opção ligada, recusa inexistente")
 	gs.definir_rascunho("name", "   ")
 	checar(not gs.confirmar_discipulo(), "nome vazio: não confirma")
 	checar(gs.limpar_nome(gs.rascunho().name) != "", "...e o campo volta a um nome sorteado")

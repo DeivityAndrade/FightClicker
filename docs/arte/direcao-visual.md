@@ -848,3 +848,33 @@ igual ao `br2`: cabelo e sobrancelha sumiam); sobrancelha do `copper` e do `blon
 - A porta sobe com as lâminas paradas (só a barra anda): um artista animaria o rolo e a lâmina vibrando no tranco.
 - A luz do dia é o chão +1 passo; à mão ganharia poeira no feixe e a borda da sombra do batente.
 - O caixote e as luvas penduradas são pequenos e honestos; o par balançando pede 2 quadros a mais desenhados à mão.
+
+## 24. Fase 6b2 (o segundo mentor na garagem)
+Gerador: `tools/art/make_mockup_fase6b2_mentor2.gd` (pasta temporária com `project.godot` vazio; `-- --final` grava os mockups no projeto,
+`--manifest` grava só `layout.mentor_2_spot`, `layout.mentor_2_spot_info` e `by_data_id.mentor_2_spot`, relendo o arquivo; ele confere
+as regras abaixo e não grava se alguma falhar). Nenhum sprite novo.
+
+### 24.1 `mentor_2_spot` = (150,262), de pé, encostado na parede esquerda
+- **Quem:** o último que passou o posto, da Carreira 3 em diante, enquanto o John está no caixote. Parado, sem luvas, não fala, não é clicável.
+- **Pose:** `disciple_stand_bare` (já existe no discípulo em camadas), virado à **direita** (olha o saco), sem espelho, quadros 0-3 a 4 fps
+  (a respiração de 1 px é a "pose viva"). O "olha o saco de vez em quando" é o próprio facing: não pede folha nova. Sentado pediria uma
+  folha `sit` do discípulo e um 2º caixote; de pé ocupa menos chão, e o escopo já previa isso para a garagem lotada.
+- **Visual:** o que ele tinha (troca de cor `disciple_palette`, corte da cabeça dele). Sem luz pintada, como as folhas do discípulo.
+  `floor_shadow` nos pés. Ordem por y (`sort_y` 262).
+- **head_anchor** (1,-65) relativo ao pivô = (151,197) na sala. Ocupa x 138..162, y 197..263.
+- **Conferido** (equipe cheia, 4 caixas com a corda em (424,287), porta fechada e emperrada, Osmar, John no caixote, discípulo no saco):
+  fora da faixa do alvo com folga (273..370), fora da `no_cover`, fora do caminho da porta até o saco (faixa de 24 px de (423,221) a
+  (303,272)), não encosta no vizinho 1 (que começa em x 163), no Osmar, no vizinho 2, no John nem na caixa da arte (188..220).
+  Balões "em cima" do Osmar (132..285, y 132..167), do John sentado ou de pé (178..331, y ≥ 146, até 191) e do discípulo no saco
+  não chegam na cabeça dele (x 145..157, y 199..211).
+- **Por que não (490,250):** lá ele fica atrás do vizinho 3 (700 px² de sobreposição), do tio 1 e colado na caixa da esteira; some no canto.
+  Em (152,262) o punho do vizinho 1 encostava na coxa: 2 px para a esquerda resolveram.
+- **6c:** quando o John sair, o último que passou o posto vai para o `mentor_spot` (caixote) e este ponto fica livre.
+- Mockups: `mockups/fase6b2_mentor2_garagem_x1.png` / `_x2.png` (jogo), `fase6b2_mentor2_conferencia_x2.png` (zonas, caminho, balão),
+  `fase6b2_mentor2_candidatos_x2.png` (A x B).
+
+### 24.2 Placeholder / precisa de pixel artist
+- Sem luz da lâmpada no corpo dele: no canto ele fica um pouco mais claro que a equipe (que tem luz assada). Se incomodar, `modulate`
+  ~(0.9, 0.9, 0.95) só nele, ou uma folha com luz assada para este ponto.
+- Uma pose própria de mentor (ombro na parede, braços cruzados, olhar que vira para o saco) daria mais personalidade: 4 quadros, mesmo
+  quadro 48x72 e pivô (22,67), com as mesmas camadas do discípulo.

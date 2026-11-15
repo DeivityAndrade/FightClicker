@@ -229,6 +229,9 @@ func cabecas_a_evitar(excluir: String) -> Array:
 			continue
 		var h := cabeca_do_ator(str(id))
 		r.append(Rect2(h.x - 9.0, h.y, 18.0, 18.0))
+	if sala != null and sala.mentor2_visivel():  # 6b2: quem passou o posto fica parado no canto e nenhum balão o cobre
+		var h2 := sala.cabeca_mentor2()
+		r.append(Rect2(h2.x - 9.0, h2.y, 18.0, 18.0))
 	return r
 
 

@@ -2,7 +2,7 @@
 
 Dono: Diretor de Cutscenes. Versão 1 (2026-11-14). Pedida em `docs/fases/fase6a-revisao.md` §4: o dono aprova antes do escopo da 6b.
 Base: `ideia-do-dono.md` e `docs/direcao-narrativa.md` (mandam), `primeira-sucessao.md`, `reencontro-final.md`, `linguagem.md`, `gesto-assinatura.md`.
-Nomes: John Bullet (1º lutador), Osmar Brandão (treinador), Raízes Fight Club. **O rival não aparece em nenhuma das duas cenas**; onde for preciso citá-lo, o marcador é `[RIVAL]`.
+Nomes: John Bullet (1º lutador), Osmar Brandão (treinador), Raízes Fight Club. **O rival não aparece em nenhuma das duas cenas**; onde for preciso citá-lo, o nome é James Blindado (decidido em 2026-11-15; o marcador antigo era `[RIVAL]`).
 
 **É rascunho de composição, não arte final.** As imagens mostram onde cada um fica, a luz, as silhuetas e o tempo. As poses novas são um quadro só, feitas por código, e não entraram em `assets/` nem no manifest.
 

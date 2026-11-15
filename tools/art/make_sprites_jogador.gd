@@ -284,7 +284,9 @@ func portrait_layers(caps: Array, dir: String, suffix: String) -> Dictionary:
 	body.blend_rect((c.body as Image).get_region(r), Rect2i(0, 0, 32, 32), Vector2i.ZERO)
 	var full: Image = bg.duplicate()
 	full.blend_rect((c.full as Image).get_region(r), Rect2i(0, 0, 32, 32), Vector2i.ZERO)
-	var cc := {"full": full, "body": body, "head": (c.head as Image).get_region(r), "mask": (c.mask as Image).get_region(r), "anchor": c.anchor}
+	var cc: Dictionary = P.capture_crop(c, r)   # 6b2: leva também cortes, faixa, partes de cima e meião
+	cc["full"] = full
+	cc["body"] = body
 	var meta: Dictionary = P.save_layer_sheet([cc], dir, "portrait_player", suffix, cam_store, report)
 	meta["crop_of"] = "fight_player (pose do retrato), recorte (%d,%d,32,32) do quadro 112x104" % [r.position.x, r.position.y]
 	return meta

@@ -203,6 +203,7 @@ var discipulo: Dictionary = {}  # career.disciple {name, look, campaign}; {} = c
 var mentor_cumprimentou := false  # career.mentor_greeted: os toques do 1º clique da campanha já foram dados
 var sucessao := "none"  # "none" | "scene_1" | "creating" | "scene_2" | "arriving" (só em memória; o save guarda school.handover)
 var sucessao_retomada := false  # true quando o estado veio de um save aberto no meio (a cena grande não toca)
+var _pontos_cena: CenaDados = null  # só para ler pontos nomeados do manifest (mentor_2_spot)
 var _cena_grande_ativa := false  # a primeira_sucessao tocou NESTA sessão (a reação do 1º clique está armada)
 var _rng_sucessao := RandomNumberGenerator.new()  # próprio: não mexe em crítico, luta nem calendário
 var _toques: Dictionary = {}  # toques tocando: {momento, inicio, ate, guarda}
@@ -3741,6 +3742,12 @@ func rascunho() -> Dictionary:
 	return h.draft.duplicate(true) if h.get("draft", null) is Dictionary else {}
 
 
+## Linhas da tela de criação (6b2) com o rascunho atual: ver DiscipulosData.linhas_tela(). `apagada` = cor da peça em "sem".
+func linhas_tela_criacao() -> Array:
+	var d := rascunho()
+	return disciples.linhas_tela(d.get("look", {}) if d.get("look", null) is Dictionary else {})
+
+
 ## Nome sem espaços nas pontas e sem repetidos, só com as letras que a fonte desenha ("" se não sobrar nenhuma).
 func limpar_nome(texto: String) -> String:
 	return disciples.limpar_nome(texto)
@@ -3782,9 +3789,56 @@ func cores_visual(look: Dictionary = {}) -> Dictionary:
 	return disciples.cores(l) if not l.is_empty() else {}
 
 
-## Quem está sentado na garagem: [{id: "first", spot: "mentor_spot", pose: "sit_rest"}]. Só na garagem, com discípulo jogando.
+## Quem está na garagem: o John sentado e, se houver, o segundo mentor (6b2) parado. Só com discípulo jogando.
 func mentores_na_sala() -> Array:
-	return [{"id": "first", "spot": "mentor_spot", "pose": "sit_rest"}] if mentor_sentado() else []
+	var r: Array = []
+	if mentor_sentado():
+		r.append({"id": "first", "spot": "mentor_spot", "pose": "sit_rest"})
+		var s := segundo_mentor()
+		if not s.is_empty():
+			r.append({"id": "second", "spot": s.ponto_nome, "pose": s.pose, "glove": s.glove, "facing": s.facing,
+				"campaign": s.campaign, "name": s.nome, "look": s.look})
+	return r
+
+
+## Entrada do roster do segundo mentor (design 6b2 §4.1): a última `kind == "disciple"` com fim em `passed_ends`.
+## {} se não há. Sem as condições de sala (para testes e para a 6c).
+func segundo_mentor_entrada() -> Dictionary:
+	var fins: Array = disciples.mentores_cfg.get("passed_ends", ["defeat", "retire", "unknown"])
+	var lista: Array = escola.get("roster", [])
+	for i in range(lista.size() - 1, -1, -1):
+		var e = lista[i]
+		if e is Dictionary and str(e.get("kind", "")) == "disciple" and str(e.get("end", "unknown")) in fins:
+			return e.duplicate(true)
+	return {}
+
+
+## Consulta da UI: o segundo mentor desenhado agora, ou {}. Vale só na garagem, com o John sentado (requires_mentor),
+## fora da cena grande. Devolve {nome, look (9 campos), ponto ([x, y] do manifest), pose, glove, facing ("right" |
+## "left", virado para o saco), campaign, ponto_nome}. Sem alvo no clique, sem fala (design §4.4).
+func segundo_mentor() -> Dictionary:
+	var cfg: Dictionary = disciples.mentores_cfg.get("second_mentor", {})
+	if not bool(cfg.get("enabled", false)) or not mentor_sentado():
+		return {}
+	if not (str(cfg.get("requires_mentor", "first")) in escola.get("mentors", [])) or local_id != str(cfg.get("location", "garage")):
+		return {}
+	if sucessao != "none" and str(_handover().get("scene", "")) in cfg.get("hidden_during_scenes", []):
+		return {}
+	var e := segundo_mentor_entrada()
+	if e.is_empty():
+		return {}
+	var nome_ponto := str(cfg.get("spot", "mentor_2_spot"))
+	if _pontos_cena == null:
+		_pontos_cena = CenaDados.novo()
+	var p: Array = _pontos_cena.ponto(nome_ponto)
+	if p.size() != 2:
+		return {}
+	var bag_x := float(cfg.get("bag_x", 320))
+	var lado := "right" if float(p[0]) < bag_x else "left"
+	var look = e.get("look", null)
+	return {"nome": str(e.get("name", "")), "look": disciples.validar_look(look) if look is Dictionary else disciples.look_padrao.duplicate(),
+		"ponto": [int(p[0]), int(p[1])], "ponto_nome": nome_ponto, "pose": str(cfg.get("pose", "stand_bare")),
+		"glove": str(cfg.get("glove", "none")), "facing": lado, "campaign": int(e.get("campaign", 0))}
 
 
 func mentor_sentado() -> bool:
