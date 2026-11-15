@@ -83,6 +83,10 @@ const ESTADOS_TODOS := [
 	"f6b1_criar", "f6b1_criar_nome14", "f6b1_criar_cores", "f6b1_criar_vazio", "f6b1_chegada", "f6b1_mentor_sentado",
 	"f6b1_mentor_balao", "f6b1_mentor_balao_isso", "f6b1_mentor_toques", "f6b1_fim_botao", "f6b1_fim_nome14", "f6b1_hud_nome14",
 	"f6b1_cartao", "f6b1_arte", "f6b1_luva_hover", "f6b1_save_criacao", "f6b1_pular_anel", "f6b1_pular",
+	# Fase 6b2: cara de lutador (tela de criação em 2 colunas, cortes, roupas, faixa, meião, segundo mentor)
+	"f6b2_criar", "f6b2_criar_apagadas", "f6b2_criar_nome14", "f6b2_criar_cheio", "f6b2_cortes", "f6b2_partes", "f6b2_faixa_meiao",
+	"f6b2_luta_cheio", "f6b2_luta_regata", "f6b2_mentor2", "f6b2_mentor2_dica", "f6b2_mentor2_balao_osmar", "f6b2_mentor2_balao_john",
+	"f6b2_mentor2_cena", "f6b2_mentor2_chegada",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -317,6 +321,7 @@ func _rodar() -> void:
 	await _rodar_fase6a()
 	await _rodar_fase6b1()
 	await _rodar_fase6b1_pular()
+	await _rodar_fase6b2()
 	_fechar_cena()
 
 
@@ -2660,6 +2665,9 @@ func _checar_balao(nome: String, speaker: String) -> void:
 	var sala: Node = _cena.get_node("Sala")
 	for e in sala.cabecas_a_evitar(speaker):
 		_exigir(not r.intersects(e), nome, "o balão cobre a cabeça do outro personagem: %s x %s" % [_fmt(r), _fmt(e)])
+	if sala.mentor2_visivel():
+		var m2: Vector2 = sala.cabeca_mentor2()
+		_exigir(not r.intersects(Rect2(m2.x - 9.0, m2.y, 18.0, 18.0)), nome, "o balão cobre a cabeça do segundo mentor: %s" % _fmt(r))
 
 
 func _rodar_fase6a() -> void:
@@ -3254,6 +3262,9 @@ func _checar_balao_6b1(nome: String, speaker: String) -> void:
 		cabecas.append(Rect2(l.x - 9.0, l.y, 18.0, 18.0))
 	for c in cabecas:
 		_exigir(not r.intersects(c), nome, "o balão cobre a cabeça de alguém: %s x %s" % [_fmt(r), _fmt(c)])
+	if sala.mentor2_visivel():
+		var m2: Vector2 = sala.cabeca_mentor2()
+		_exigir(not r.intersects(Rect2(m2.x - 9.0, m2.y, 18.0, 18.0)), nome, "o balão cobre a cabeça do segundo mentor: %s" % _fmt(r))
 
 
 ## PULAR: o anel enche com ESC/ESPAÇO segurado, o botão pula até a tela de criação e, depois dela, até o fim (estado final em ~0,3 s).
@@ -3291,3 +3302,220 @@ func _rodar_fase6b1_pular() -> void:
 		await _esperar(0.5)
 		_cena.get_node("Fluxo").fechar_cartao_aberto()
 		await _ver("f6b1_pular")
+
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 6b2: cara de lutador. Tela de criação em 2 colunas, 4 cortes, partes de cima, faixa e meião, segundo mentor parado.
+# ---------------------------------------------------------------------------------------------
+
+const LOOK_CHEIO_6B2 := {"skin": "skin_2", "hair_color": "copper", "hair_style": "bun", "shorts_color": "blue", "top": "tee",
+	"top_color": "gray", "headband": "band", "headband_color": "white", "socks": "on"}
+const LOOK_MENTOR_6B2 := {"skin": "skin_5", "hair_color": "black", "hair_style": "volume", "shorts_color": "yellow", "top": "tank",
+	"top_color": "blue", "headband": "band", "headband_color": "red", "socks": "on"}
+
+
+func _look_6b2(mudar: Dictionary = {}) -> Dictionary:
+	var l: Dictionary = LOOK_CHEIO_6B2.duplicate()
+	l.merge(mudar, true)
+	return l
+
+
+## Campanha do discípulo na garagem com o John sentado; com `look_mentor` o roster tem quem passou o posto (o 2º mentor).
+func _f6b2_jogo(look: Dictionary, look_mentor: Dictionary = {}) -> void:
+	_novo_jogo()
+	gs.escola["mentors"] = ["first"]
+	gs.discipulo = {"name": "Tati Gancho", "look": look.duplicate(), "campaign": 3}
+	if not look_mentor.is_empty():
+		gs.escola["roster"] = [
+			{"campaign": 1, "kind": "first", "name": "John Bullet", "look": null, "end": "retire"},
+			{"campaign": 2, "kind": "disciple", "name": "Beto Cruz", "look": look_mentor.duplicate(), "end": "defeat", "wins": 3,
+				"belt": false, "art": "", "opponent": "", "legacy_gained": 0}]
+
+
+func _f6b2_luta(nome: String, look: Dictionary) -> void:
+	var achada := _achar_luta(true, true)
+	_f6b2_jogo(look, LOOK_MENTOR_6B2)
+	gs.atributos = achada.atr
+	await _abrir()
+	await _esperar(0.4)
+	gs.rng.seed = int(achada.k)
+	var fl: Node = _cena.get_node("Fluxo")
+	fl.abrir_previa()
+	await _esperar(0.3)
+	fl.janela.lutar_pedido.emit()
+	await _esperar(1.0)
+	_estado = nome
+	_exigir(fl.tela._l[0].spr.nome_sprite.ends_with("_disc") and fl.tela._l[0].spr.texture != null, nome, "a luta usa a folha _disc em camadas")
+	await _ver(nome)
+	await _esperar(0.9)
+	await _ver(nome + "_b")
+
+
+func _rodar_fase6b2() -> void:
+	# --- Tela de criação: 10 linhas em 2 colunas, linhas apagadas, nome longo, visual cheio ---
+	if _quer("f6b2_criar") or _quer("f6b2_criar_apagadas") or _quer("f6b2_criar_nome14") or _quer("f6b2_criar_cheio") or _quer("f6b2_mentor2_chegada"):
+		_f6b1_fim("Tati Gancho", true)
+		await _abrir()
+		await _esperar(0.5)
+		_exigir(gs.receber_discipulo() and gs.sucessao_estado() == "creating", "f6b2_criar", "a sucessão abre na criação (%s)" % gs.sucessao_estado())
+		var t: Node = await _f6b1_janela_criar()
+		_exigir(t != null, "f6b2_criar", "a tela de criação deveria abrir")
+		await _esperar(0.6)
+		if t == null:
+			return
+		var linhas: Array = gs.linhas_tela_criacao()
+		_exigir(linhas.size() == 10 and t._campos.size() == 9, "f6b2_criar", "10 linhas (nome + 9) na tela: %d / %d" % [linhas.size(), t._campos.size()])
+		_exigir(t._janela.size.x > 500.0 and t._janela.size.x <= 600.0, "f6b2_criar", "a janela tem 2 colunas: %s" % str(t._janela.size))
+		for c in t._campos:
+			if str(c.kind) == "text":
+				for id in gs.disciples.opcoes_ativas(str(c.campo)):
+					var nome_op: String = _tema().txt("disc_opt_%s_%s" % [c.campo, id])
+					_exigir(_tema().largura_visivel(nome_op) <= t.LARG_VALOR - 8.0, "f6b2_criar", "'%s' cabe ao lado das setas (%.0f px)" % [nome_op, _tema().largura_visivel(nome_op)])
+		await _ver("f6b2_criar")
+		if _quer("f6b2_criar_apagadas"):
+			gs.definir_rascunho("top_color", "green")
+			gs.definir_rascunho("headband_color", "blue")
+			gs.definir_rascunho("top", "none")
+			gs.definir_rascunho("headband", "none")
+			await _esperar(0.3)
+			var ap := {}
+			for l in gs.linhas_tela_criacao():
+				ap[str(l.field)] = bool(l.apagada)
+			_exigir(bool(ap.get("top_color")) and bool(ap.get("headband_color")), "f6b2_criar_apagadas", "as linhas de cor ficam apagadas com a peça em SEM")
+			t._trocar("top_color", 1)
+			_exigir(str(gs.rascunho().look.top_color) == "green", "f6b2_criar_apagadas", "a seta da linha apagada não faz nada")
+			await _ver("f6b2_criar_apagadas")
+			gs.definir_rascunho("top", "tank")
+			await _esperar(0.3)
+			_exigir(str(gs.rascunho().look.top_color) == "green", "f6b2_criar_apagadas", "ligando a peça, a cor guardada volta")
+		if _quer("f6b2_criar_nome14"):
+			gs.definir_rascunho("name", "MMMMMMMMMMMMMMMMMM")
+			gs.definir_rascunho("top", "tee")
+			gs.definir_rascunho("hair_style", "bun")
+			await _esperar(0.3)
+			_exigir(t._nome.text.length() == 14, "f6b2_criar_nome14", "o nome corta em 14 letras (%d)" % t._nome.text.length())
+			await _ver("f6b2_criar_nome14")
+		if _quer("f6b2_criar_cheio"):
+			for campo in _look_6b2():
+				gs.definir_rascunho(str(campo), str(_look_6b2()[campo]))
+			await _esperar(0.3)
+			await _ver("f6b2_criar_cheio")
+		# A chegada curta com o 2º mentor: quem acabou de passar o posto já está parado no canto, olhando.
+		if _quer("f6b2_mentor2_chegada"):
+			gs.definir_rascunho("name", "Zeca Chave")
+			t._confirmar()
+			_exigir(gs.sucessao_estado() == "arriving", "f6b2_mentor2_chegada", "CONFIRMAR leva à chegada curta (%s)" % gs.sucessao_estado())
+			var sala_c: Node = _cena.get_node("Sala")
+			await _esperar(0.9)
+			_exigir(sala_c.mentor2_visivel() and sala_c.mentor_visivel(), "f6b2_mentor2_chegada", "na chegada o 2º mentor e o John estão na sala")
+			await _ver("f6b2_mentor2_chegada")
+			await _esperar(0.6)
+			await _ver("f6b2_mentor2_chegada_b")
+			for i in 40:
+				if gs.sucessao_estado() == "none":
+					break
+				await _esperar(0.1)
+			_exigir(sala_c.mentor2_visivel(), "f6b2_mentor2_chegada", "depois da chegada o 2º mentor continua no canto")
+
+	# --- Os 4 cortes, na garagem, com o visual cheio ---
+	if _quer("f6b2_cortes"):
+		_f6b2_jogo(_look_6b2({"hair_style": "buzz"}))
+		await _abrir()
+		await _esperar(0.5)
+		for estilo in ["buzz", "short", "volume", "bun"]:
+			gs.discipulo.look["hair_style"] = estilo
+			await _esperar(0.35)
+			await _ver("f6b2_cortes_" + estilo)
+
+	# --- Partes de cima (regata, camiseta, sem) e cores, na garagem ---
+	if _quer("f6b2_partes"):
+		_f6b2_jogo(_look_6b2({"top": "tank", "headband": "none", "socks": "none"}))
+		await _abrir()
+		await _esperar(0.5)
+		for caso in [["tank", "gray"], ["tee", "gray"], ["tank", "black"], ["tee", "yellow"], ["none", "gray"]]:
+			gs.discipulo.look["top"] = caso[0]
+			gs.discipulo.look["top_color"] = caso[1]
+			await _esperar(0.35)
+			await _ver("f6b2_partes_%s_%s" % caso)
+
+	# --- Faixa (cores) e meião (cor do calção) ---
+	if _quer("f6b2_faixa_meiao"):
+		_f6b2_jogo(_look_6b2({"hair_style": "short", "top": "none", "headband": "band", "headband_color": "red", "socks": "on"}))
+		await _abrir()
+		await _esperar(0.5)
+		for caso in [["red", "blue", "on"], ["white", "blue", "on"], ["green", "yellow", "on"], ["black", "purple", "on"], ["red", "green", "none"]]:
+			gs.discipulo.look["headband_color"] = caso[0]
+			gs.discipulo.look["shorts_color"] = caso[1]
+			gs.discipulo.look["socks"] = caso[2]
+			await _esperar(0.35)
+			await _ver("f6b2_faixa_meiao_%s_%s_%s" % caso)
+
+	# --- Visual cheio na luta ---
+	if _quer("f6b2_luta_cheio"):
+		await _f6b2_luta("f6b2_luta_cheio", _look_6b2())
+	if _quer("f6b2_luta_regata"):
+		await _f6b2_luta("f6b2_luta_regata", _look_6b2({"top": "tank", "top_color": "black", "hair_style": "volume", "headband_color": "red", "socks": "none", "skin": "skin_1"}))
+
+	# --- Segundo mentor ---
+	if _quer("f6b2_mentor2") or _quer("f6b2_mentor2_dica") or _quer("f6b2_mentor2_balao_osmar") or _quer("f6b2_mentor2_balao_john"):
+		_f6b2_jogo(_look_6b2(), LOOK_MENTOR_6B2)
+		for g in gs.dados.geradores:
+			gs.geradores[g.id] = 10  # garagem cheia
+		await _abrir()
+		await _esperar(0.6)
+		var sala_m: Node = _cena.get_node("Sala")
+		_estado = "f6b2_mentor2"
+		_exigir(sala_m.mentor2_visivel(), _estado, "o 2º mentor está na garagem")
+		_exigir(sala_m._mentor2.position == Vector2(150, 262), _estado, "pés em mentor_2_spot: %s" % str(sala_m._mentor2.position))
+		_exigir(sala_m._mentor2.nome_sprite == "disciple_stand_bare" and sala_m._mentor2.texture != null, _estado, "pose stand_bare virada para o saco: %s" % sala_m._mentor2.nome_sprite)
+		_exigir(sala_m._mentor2.texture != _tema().textura("disciple_stand_bare"), _estado, "ele usa o visual guardado no roster (camadas e cores)")
+		await _ver("f6b2_mentor2")
+		if _quer("f6b2_mentor2_dica"):
+			sala_m._hover_em(Vector2(150, 240))
+			await _esperar(0.1)
+			var di: Control = _dica_inst()
+			var rd := Rect2(di.position, di.size)
+			_exigir(UTIL_6A.encloses(rd), "f6b2_mentor2_dica", "a dica fica dentro da sala: %s" % _fmt(rd))
+			_exigir(not rd.intersects(NO_COVER_6A), "f6b2_mentor2_dica", "a dica não cobre o alvo: %s" % _fmt(rd))
+			var cab: Array = [sala_m.cabeca_mentor2(), sala_m.ponto_cabeca("coach"), sala_m.ponto_cabeca("first"), sala_m.cabeca_mentor()]
+			for h in cab:
+				_exigir(not rd.intersects(Rect2(h.x - 9.0, h.y, 18.0, 18.0)), "f6b2_mentor2_dica", "a dica cobre a cabeça de alguém: %s x %s" % [_fmt(rd), str(h)])
+			_exigir(rd.end.y <= sala_m.cabeca_mentor2().y, "f6b2_mentor2_dica", "a dica fica acima da cabeça do 2º mentor: %s" % _fmt(rd))
+			_exigir(_dica_inst().texto_atual() == "BETO CRUZ: JÁ PASSOU O POSTO.", "f6b2_mentor2_dica", "dica do 2º mentor: %s" % _dica_inst().texto_atual())
+			await _ver("f6b2_mentor2_dica")
+			sala_m._hover_em(Vector2(500, 120))
+			_exigir(_dica_inst().texto_atual() == "", "f6b2_mentor2_dica", "a dica some ao sair de cima dele")
+			_sem_dica()
+		if _quer("f6b2_mentor2_balao_osmar"):
+			await _falar("coach", "chegou outro aviso, john.\nainda é nossa, viu?")
+			_checar_balao("f6b2_mentor2_balao_osmar", "coach")
+			await _ver("f6b2_mentor2_balao_osmar")
+			_balao().fechar_agora()
+			await _esperar(0.2)
+		if _quer("f6b2_mentor2_balao_john"):
+			var cu2: Node = _cena_ui()
+			cu2._falar({"ator": "first", "line": "t", "text": "vamos ver sua guarda.", "seconds": 4.0})
+			await _esperar(0.2)
+			_balao().completar()
+			await _esperar(0.1)
+			_exigir(_balao().ativo(), "f6b2_mentor2_balao_john", "o balão do John sentado deveria aparecer")
+			_checar_balao_6b1("f6b2_mentor2_balao_john", "first")
+			await _ver("f6b2_mentor2_balao_john")
+			_balao().fechar_agora()
+
+	# --- Na cena grande (primeira_sucessao) ele não aparece ---
+	if _quer("f6b2_mentor2_cena"):
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.6)
+		var sala_g: Node = _cena.get_node("Sala")
+		gs.receber_discipulo()
+		await _esperar(1.2)
+		_exigir(not sala_g.mentor2_visivel(), "f6b2_mentor2_cena", "durante a cena grande o 2º mentor não aparece")
+		await _ver("f6b2_mentor2_cena")
+
+
+## UiTema só carrega depois dos autoloads: o verificador a pega pelo caminho, na hora de usar.
+func _tema() -> GDScript:
+	return load("res://ui/ui_tema.gd")

@@ -1,29 +1,28 @@
 class_name TelaCriarDiscipulo
 extends JanelaBase
-## Tela "RECEBER NOVO DISCÍPULO" (Fase 6b1, prancha S5): nome editável, pele, cabelo e calção com setas, SORTEAR e CONFIRMAR,
-## a linha "LUVA: O PAR DO JOHN" e o preview do discípulo com as cores escolhidas (troca de paleta em tempo real, DiscVisual).
-## Só desenho: lê `GameState.rascunho()` e chama `definir_rascunho`, `sortear_rascunho` e `confirmar_discipulo`. Não fecha com ESC
-## nem tem X: só sai pelo CONFIRMAR (`confirmou`). Fase 6b2: acrescente campos em CAMPOS (ids de data/disciples.json > fields);
-## só aparecem os que têm mais de uma opção ligada, e com mais de 6 linhas a tela abre uma 2ª coluna.
+## Tela "RECEBER NOVO DISCÍPULO" (Fase 6b1, prancha S5): nome editável e as linhas de aparência com setas, SORTEAR e CONFIRMAR,
+## a linha "LUVA: O PAR DO JOHN" e o preview do discípulo com tudo o que foi escolhido (troca de paleta em tempo real, DiscVisual).
+## Só desenho: lê `GameState.rascunho()` e `GameState.linhas_tela_criacao()` (Fase 6b2: 10 linhas, data/disciples.json > screen) e chama
+## `definir_rascunho`, `sortear_rascunho` e `confirmar_discipulo`. Não fecha com ESC nem tem X: só sai pelo CONFIRMAR (`confirmou`).
+## Linha "colors" mostra chips + contador; linha "text" mostra o nome da opção (disc_opt_<campo>_<id>). Com mais de 6 linhas a tela
+## abre uma 2ª coluna. A linha de cor fica apagada (e a seta desligada) quando a peça de que ela depende está em "sem".
 
 signal confirmou
 
-## Campos escolhidos por seta: [campo do look, chave do rótulo, quantas cores mostrar]
-const CAMPOS := [
-	["skin", "disc_label_skin", 3],
-	["hair_color", "disc_label_hair", 2],
-	["shorts_color", "disc_label_shorts", 3],
-]
-const LARG_COLUNA := 330.0
+const LARG_COLUNA := 330.0  # janela com 1 coluna
+const PASSO_COLUNA := 219.0  # 207 px de rótulo + seletor, mais 12 de vão
 const LINHAS_POR_COLUNA := 6
 const ALT_LINHA := 18.0
 const PASSO_LINHA := 24.0
+const LARG_VALOR := 119.0
 
 var sfx: Sfx
 var _origem := Vector2.ZERO
 var _nome: LineEdit
 var _nome_caixa: Panel
-var _campos: Array = []  # {campo, ids, valor (Control raiz), chips: Array[ColorRect], contador: Label, cores_n}
+## Uma entrada por linha com seta: {campo, kind, rotulo, valor, esq, dir, chips: Array[ColorRect], contador: Label, texto: Label, n}
+var _campos: Array = []
+var _grupos_setas: Dictionary = {}  # coluna (2 em diante) -> Control que guarda as setas dela
 var _previa: AnimSprite
 var _confirmando := false
 var _janela: Rect2
@@ -32,14 +31,16 @@ var _janela: Rect2
 func abrir_com() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
+	# As linhas vêm do jogo (data/disciples.json > screen.rows). Uma linha de escolha só aparece com mais de uma opção ligada.
 	var ativos: Array = []
-	for c in CAMPOS:
-		if GameState.disciples.opcoes_ativas(str(c[0])).size() > 1:
-			ativos.append(c)
+	for l in GameState.linhas_tela_criacao():
+		var k := str(l.get("kind", ""))
+		if k != "" and (l.get("opcoes", []) as Array).size() > 1:
+			ativos.append(l)
 	var linhas := 1 + ativos.size()  # nome + campos
 	var colunas := ceili(float(linhas) / float(LINHAS_POR_COLUNA))
 	var linhas_col := mini(linhas, LINHAS_POR_COLUNA)
-	var larg := LARG_COLUNA + float(colunas - 1) * 170.0
+	var larg := LARG_COLUNA + float(colunas - 1) * PASSO_COLUNA
 	var fim_linhas := 32.0 + float(linhas_col) * PASSO_LINHA
 	var rodape := maxf(fim_linhas, 162.0) + 4.0
 	var alt := rodape + 24.0 + 22.0 + 12.0
@@ -119,8 +120,8 @@ func _montar_linhas(ativos: Array) -> void:
 	_nome_caixa.add_child(_nome)
 	# Linhas dos campos com seta.
 	for i in ativos.size():
-		var c: Array = ativos[i]
-		_montar_campo(i + 1, str(c[0]), UiTema.txt(str(c[1])), int(c[2]))
+		var c: Dictionary = ativos[i]
+		_montar_campo(i + 1, str(c.field), UiTema.txt(str(c.label)), str(c.kind), int(c.chips))
 
 
 func _caixa(borda: Color) -> StyleBoxFlat:
@@ -136,28 +137,40 @@ func _caixa(borda: Color) -> StyleBoxFlat:
 
 
 func _x_coluna(i: int) -> float:
-	return _origem.x + 111.0 + float(i / LINHAS_POR_COLUNA) * 170.0
+	return _origem.x + 111.0 + float(i / LINHAS_POR_COLUNA) * PASSO_COLUNA
 
 
 func _y_linha(i: int) -> float:
 	return _origem.y + 32.0 + float(i % LINHAS_POR_COLUNA) * PASSO_LINHA
 
 
-func _rotulo_linha(i: int, texto: String) -> void:
+func _rotulo_linha(i: int, texto: String) -> Label:
 	var y := _y_linha(i)
-	UiTema.rotulo(painel, texto, UiTema.G3, _x_coluna(i), UiTema.y_texto(Rect2(0, y, 1, ALT_LINHA)))
+	return UiTema.rotulo(painel, texto, UiTema.G3, _x_coluna(i), UiTema.y_texto(Rect2(0, y, 1, ALT_LINHA)))
 
 
-func _montar_campo(i: int, campo: String, rotulo: String, n_cores: int) -> void:
-	_rotulo_linha(i, rotulo)
+func _montar_campo(i: int, campo: String, rotulo_txt: String, kind: String, n_cores: int) -> void:
+	var rotulo := _rotulo_linha(i, rotulo_txt)
 	var y := _y_linha(i)
 	var x := _x_coluna(i) + 56.0
 	var esq := botao_texto(Rect2(x, y, 16, ALT_LINHA), "<", UiTema.WHITE)
 	var dir := botao_texto(Rect2(x + 151.0 - 16.0, y, 16, ALT_LINHA), ">", UiTema.WHITE)
-	var valor := UiTema.nine_patch(painel, "ui_card_dim", Rect2(x + 16.0, y, 119, ALT_LINHA))
-	valor.set_meta("ui_align", "ignore")  # o conteúdo (chips + contador) é centralizado à mão, como grupo
+	if i >= LINHAS_POR_COLUNA:
+		# Cada coluna tem seu próprio grupo de setas: o verificador compara fileiras só entre irmãos do mesmo pai.
+		var coluna := i / LINHAS_POR_COLUNA
+		if not _grupos_setas.has(coluna):
+			var g := Control.new()
+			g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			g.size = painel.size
+			g.set_meta("ui_align", "ignore")
+			painel.add_child(g)
+			_grupos_setas[coluna] = g
+		for b in [esq, dir]:
+			b.reparent(_grupos_setas[coluna], true)
+	var valor := UiTema.nine_patch(painel, "ui_card_dim", Rect2(x + 16.0, y, LARG_VALOR, ALT_LINHA))
+	valor.set_meta("ui_align", "ignore")  # o conteúdo (chips + contador, ou o nome da opção) é centralizado à mão, como grupo
 	var chips: Array[ColorRect] = []
-	for k in n_cores:
+	for k in (n_cores if kind == "colors" else 0):
 		var fundo := ColorRect.new()
 		fundo.color = UiTema.INK
 		fundo.size = Vector2(16, 10)
@@ -169,15 +182,23 @@ func _montar_campo(i: int, campo: String, rotulo: String, n_cores: int) -> void:
 		chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		fundo.add_child(chip)
 		chips.append(chip)
-	var cont := UiTema.rotulo(valor, "", UiTema.G3, 0, 0)
-	_campos.append({"campo": campo, "valor": valor, "chips": chips, "contador": cont, "n": n_cores})
+	var cont := UiTema.rotulo(valor, "", UiTema.G3, 0, 0)  # contador "2/6" (cores) ou nome da opção (texto)
+	_campos.append({"campo": campo, "kind": kind, "rotulo": rotulo, "valor": valor, "esq": esq, "dir": dir, "chips": chips,
+		"contador": cont, "n": n_cores})
 	esq.pressed.connect(func() -> void: _trocar(campo, -1))
 	dir.pressed.connect(func() -> void: _trocar(campo, 1))
 
 
+func _linha_apagada(campo: String) -> bool:
+	for l in GameState.linhas_tela_criacao():
+		if str(l.field) == campo:
+			return bool(l.apagada)
+	return false
+
+
 func _trocar(campo: String, passo: int) -> void:
 	var ids: Array = GameState.disciples.opcoes_ativas(campo)
-	if ids.is_empty():
+	if ids.is_empty() or _linha_apagada(campo):
 		return
 	var atual := ids.find(str(GameState.rascunho().get("look", {}).get(campo, "")))
 	var novo := posmod(atual + passo, ids.size())
@@ -204,24 +225,41 @@ func _atualizar() -> void:
 		_nome.text = str(r.get("name", ""))
 		_nome.caret_column = _nome.text.length()
 	var cores: Dictionary = GameState.cores_visual(look)
+	var apagadas := {}
+	for l in GameState.linhas_tela_criacao():
+		apagadas[str(l.field)] = bool(l.apagada)
 	for c in _campos:
 		var campo := str(c.campo)
 		var ids: Array = GameState.disciples.opcoes_ativas(campo)
-		var pos := ids.find(str(look.get(campo, ""))) + 1
-		var hex: Array = cores.get(campo, {}).get("colors", [])
-		var chips: Array = c.chips
-		for k in chips.size():
-			(chips[k] as ColorRect).color = Color(str(hex[k])) if k < hex.size() else UiTema.G0
-		var texto := "%d/%d" % [pos, ids.size()]
+		var atual := str(look.get(campo, ""))
+		var pos := ids.find(atual) + 1
 		var cont: Label = c.contador
-		cont.text = texto
-		# Grupo [chips][6 px][contador] centralizado no valor (119 px de largura, 18 de altura).
-		var larg_chips := float(chips.size()) * 16.0 + float(chips.size() - 1) * 2.0
-		var total := larg_chips + 6.0 + UiTema.largura_visivel(texto)
-		var x0 := roundf((119.0 - total) / 2.0)
-		for k in chips.size():
-			((chips[k] as ColorRect).get_parent() as Control).position = Vector2(x0 + float(k) * 18.0, 4)
-		cont.position = Vector2(roundf(x0 + larg_chips + 6.0), UiTema.y_texto(Rect2(0, 0, 1, ALT_LINHA)))
+		var y_txt := UiTema.y_texto(Rect2(0, 0, 1, ALT_LINHA))
+		if str(c.kind) == "text":
+			var nome_opcao := UiTema.txt("disc_opt_%s_%s" % [campo, atual], atual.to_upper())
+			cont.text = nome_opcao
+			cont.position = Vector2(roundf((LARG_VALOR - UiTema.largura_visivel(nome_opcao)) / 2.0), y_txt)
+		else:
+			var hex: Array = cores.get(campo, {}).get("colors", [])
+			var chips: Array = c.chips
+			for k in chips.size():
+				(chips[k] as ColorRect).color = Color(str(hex[k])) if k < hex.size() else UiTema.G0
+			var texto := "%d/%d" % [pos, ids.size()]
+			cont.text = texto
+			# Grupo [chips][6 px][contador] centralizado no valor (119 px de largura, 18 de altura).
+			var larg_chips := float(chips.size()) * 16.0 + float(chips.size() - 1) * 2.0
+			var total := larg_chips + 6.0 + UiTema.largura_visivel(texto)
+			var x0 := roundf((LARG_VALOR - total) / 2.0)
+			for k in chips.size():
+				((chips[k] as ColorRect).get_parent() as Control).position = Vector2(x0 + float(k) * 18.0, 4)
+			cont.position = Vector2(roundf(x0 + larg_chips + 6.0), y_txt)
+		# Linha apagada (a peça de que ela depende está em "sem"): tom mais baixo e as setas não fazem nada.
+		var apagada: bool = bool(apagadas.get(campo, false))
+		UiTema.escurecer(c.rotulo, not apagada)
+		UiTema.escurecer(c.valor, not apagada)
+		for b in [c.esq, c.dir]:
+			(b as Button).disabled = apagada
+			UiTema.escurecer(b, not apagada)
 	if _previa != null:
 		_previa.texture = DiscVisual.textura("fighter_idle_disc_layered", look)
 

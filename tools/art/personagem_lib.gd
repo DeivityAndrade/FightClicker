@@ -90,7 +90,145 @@ const KEYS := {
 		"slots": ["ink", "brow", "dark", "light", "shine"]},
 	"shorts": {"names": ["k_sh_d", "k_sh0", "k_sh1", "k_sh2", "k_sh3"], "hex": ["15101a", "203d33", "306b4a", "5ba25a", "a7d86a"],
 		"slots": ["deep", "dark", "mid", "light", "band"]},
+	## Fase 6b2: parte de cima (visual = camiseta branca g2/g3/cream/white +1 no azul), faixa (vermelha r0/r1/r2 +1 no azul)
+	## e meião (calção verde gr0/gr1/gr3 +1 no azul; o calção usa +1 no vermelho, então nunca se confundem).
+	"top": {"names": ["k_tp_d", "k_tp0", "k_tp1", "k_tp2"], "hex": ["8f8891", "b8b0ab", "d9cdb5", "f2ece1"],
+		"slots": ["deep", "dark", "mid", "light"]},
+	"band": {"names": ["k_bd_d", "k_bd0", "k_bd1"], "hex": ["5a1a23", "9c2a2b", "d4473b"],
+		"slots": ["deep", "dark", "light"]},
+	"socks": {"names": ["k_so0", "k_so1", "k_so2"], "hex": ["1f3d34", "2f6b4b", "a6d86b"],
+		"slots": ["shadow", "base", "stripe"]},
 }
+
+# ---------------------------------------------------------------- Fase 6b2: cortes, faixa, parte de cima, meião
+## Cortes do discípulo. Cada corte = os dois mapas de cabeça (3/4 da garagem e perfil da luta) com o MESMO rosto
+## do mapa-base (HEAD_34 / HEAD_SIDE): só o cabelo muda. pad = [colunas a mais à esquerda, linhas a mais em cima]
+## em relação ao mapa-base (a âncora anda junto, então o rosto e o centro da cabeça ficam no mesmo pixel).
+## Regra da faixa: as linhas 3 e 4 do mapa-base (testa) têm o MESMO contorno em todos os cortes, e os pixels do nó
+## (atrás) existem em todos; assim a faixa é uma camada só, igual para os 4 cortes (o gerador confere).
+## H = tom escuro do cabelo (a franja sempre nele), h = tom claro, b = sobrancelha; o resto = HEAD_*.
+const CUT_ORDER := ["short", "buzz", "volume", "bun"]
+const DISC_CUTS := {
+	"short": {"pad": [0, 0], "34": HEAD_34, "side": HEAD_SIDE},
+	# raspado: o crânio 1 px mais baixo, sem brilho, entradas na testa e nuca rala (pele aparecendo)
+	"buzz": {"pad": [0, 0],
+		"34": [
+			".............",
+			"...HHHHHHH...",
+			".HHHSHHHSHHH.",
+			"HHHHHHHSHHSls",
+			"HHHSsslllllll",
+			"HHSSsbbsslbbl",
+			"HSESsesssles.",
+			"HEsSssssslll.",
+			".SESssssssss.",
+			".SSsssssssSs.",
+			"..SsssmmmSs..",
+			"...SSsssss...",
+			".....SSSs....",
+		],
+		"side": [
+			"..............",
+			"....HHHHHHH...",
+			"..HHHSHHHSHH..",
+			".HHHHHHHSHSll.",
+			"HHHHHHssssll..",
+			"HHHHHsssbbbl..",
+			"HHSEEssssesl..",
+			"HSSEsEsssssl..",
+			".SSEEssssssll.",
+			".SSSsssssssss.",
+			"..SSssssssss..",
+			"...SSssssmSs..",
+			"....SSsssss...",
+			".....SSSss....",
+		]},
+	# volume: topete alto penteado para cima e para a frente (2 linhas a mais), franja escura caindo na testa
+	"volume": {"pad": [0, 2],
+		"34": [
+			"...HHHHHHH....",
+			".HHHhhhhhHHH..",
+			"HHHhhhhhhhhHH.",
+			"HHHHhhhhhhhhHH",
+			"HHHHHhhhhhHHHH",
+			"HHHHHHHHHHHHs.",
+			"HHHHHHHllllll.",
+			"HHHSsbbsslbbl.",
+			"HHESsesssles..",
+			"HEsSssssslll..",
+			".HESssssssss..",
+			".HSsssssssSs..",
+			"..SsssmmmSs...",
+			"...SSsssss....",
+			".....SSSs.....",
+		],
+		"side": [
+			"....HHHHHHH...",
+			"..HHHhhhhhHHH.",
+			".HHHhhhhhhhhHH",
+			"HHHHhhhhhhhHHH",
+			"HHHHHHhhhhHHH.",
+			".HHHHHHHHHHHH.",
+			"HHHHHHHHssll..",
+			"HHHHHHssbbbl..",
+			"HHHEEssssesl..",
+			"HHHEsEsssssl..",
+			".HHEEssssssll.",
+			".HHHsssssssss.",
+			"..HSssssssss..",
+			"...SSssssmSs..",
+			"....SSsssss...",
+			".....SSSss....",
+		]},
+	# coque: cabelo puxado para trás (riscas claras indo para a nuca) e coque alto atrás (3 linhas a mais)
+	"bun": {"pad": [1, 3],
+		"34": [
+			".HHH..........",
+			"HhhHH.........",
+			"HHhHHH........",
+			".HHHHHHHHH....",
+			"..HhhhhHHHHHH.",
+			".HHHHHhhhhHHHH",
+			".HHHHHHHHHHHHs",
+			".HHHHsslllllll",
+			".HHHSsbbsslbbl",
+			".HHESsesssles.",
+			".HEsSssssslll.",
+			"..HESssssssss.",
+			"..HSsssssssSs.",
+			"...SsssmmmSs..",
+			"....SSsssss...",
+			"......SSSs....",
+		],
+		"side": [
+			".HHH...........",
+			"HhhHH..........",
+			"HHhHH..........",
+			".HHHHHHHHHH....",
+			"..HHHhhhhHHHH..",
+			"..HHHHHhhhHHHH.",
+			"..HHHHHHHHHHHH.",
+			".HHHHHHHsssll..",
+			".HHHHHHssbbbl..",
+			".HHHEEssssesl..",
+			".HHHEsEsssssl..",
+			"..HHEEssssssll.",
+			"..HHHsssssssss.",
+			"...HSssssssss..",
+			"....SSssssmSs..",
+			".....SSsssss...",
+			"......SSSss....",
+		]},
+}
+## Faixa (Fase 6b2): linhas 3 e 4 do mapa-base inteiras (F = tom claro em cima, na frente; G = tom escuro embaixo e
+## atrás) + o nó atrás (pixels G em [coluna, linha] do mapa-base). Desenhada por cima do cabelo e da testa.
+const BAND := {
+	"34": {"rows": [3, 4], "back_cols": 4, "knot": [[0, 5], [0, 6]]},
+	"side": {"rows": [3, 4], "back_cols": 4, "knot": [[0, 5], [1, 5], [0, 6]]},
+}
+const BAND_LEGEND := {"F": "k_bd1", "G": "k_bd0"}
+## Meião (Fase 6b2): da canela (t = SOCK_FROM, 0 = joelho, 1 = tornozelo) até o tênis; 1 px de listra no alto.
+const SOCK_FROM := 0.38
 
 func use_keys() -> void:
 	if key_mode:
@@ -99,7 +237,29 @@ func use_keys() -> void:
 		L.add_ramp(KEYS[k].names, KEYS[k].hex)
 	key_mode = true
 
-func _capture_call(fn: Callable) -> Image:
+## Desenha o quadro com o personagem trocado em `opts` (chaves do build) e devolve [imagem, ids]; o build volta como era.
+func _variant(b: Dictionary, fn: Callable, opts: Dictionary, no_head: bool) -> Array:
+	var keep := {}
+	for k in opts:
+		keep[k] = b[k] if b.has(k) else null
+		b[k] = opts[k]
+	skip_head = no_head
+	var im: Image = fn.call()
+	skip_head = false
+	var idc := ids.duplicate()
+	for k in keep:
+		if keep[k] == null:
+			b.erase(k)
+		else:
+			b[k] = keep[k]
+	return [im, idc]
+
+const LEG_IDS := [FAR_THIGH, FAR_SHIN, FAR_SHOE, G_LEG_L, G_LEG_L + 1, G_LEG_L + 2, NEAR_THIGH, NEAR_SHIN, NEAR_SHOE]
+var variants_stats := {"frames": 0, "check_bad": 0, "band_bad": 0, "ids_bad": 0}
+
+func _capture_call(fn: Callable, bref: Dictionary = {}) -> Image:
+	if bref.get("disc_layers", false) and key_mode:
+		return _capture_call_6b2(fn, bref)
 	_cap_busy = true
 	var A: Image = fn.call()
 	var ids_a := ids.duplicate()
@@ -154,6 +314,214 @@ func _capture_call(fn: Callable) -> Image:
 	captured.append({"full": A.duplicate(), "body": B, "head": H, "mask": Mk, "anchor": anc})
 	return A
 
+func _key_set() -> Dictionary:
+	var keys := {}
+	for k in KEYS:
+		for n in KEYS[k].names:
+			if n != "ink":
+				keys[(L.col(n) as Color).to_html(false)] = true
+	return keys
+
+func _head_rect(idv: PackedInt32Array, w: int, h: int) -> Rect2i:
+	var x0 := w
+	var y0 := h
+	var x1 := -1
+	var y1 := -1
+	for y in h:
+		for x in w:
+			if idv[y * w + x] == HEAD:
+				x0 = mini(x0, x)
+				y0 = mini(y0, y)
+				x1 = maxi(x1, x)
+				y1 = maxi(y1, y)
+	if x1 < 0:
+		return Rect2i()
+	return Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+
+## Fase 6b2. Cada quadro do discípulo sai, além de body/head_short/front, com:
+##   heads[corte] = a cabeça de cada corte (mesma conta da 6b1: pixels da cabeça + o contorno e a sombra que ela faz);
+##   band         = só os pixels que a faixa muda (igual nos 4 cortes: o gerador confere e conta em variants_stats);
+##   tops[tank|tee] = corpo com a peça menos corpo sem ela (tronco e braços);
+##   socks        = corpo com meião menos corpo sem (pernas);
+##   mask         = corpo na frente da cabeça, na zona que cobre o corte mais alto (vale para os 4 cortes).
+## Sombra que a cabeça faz onde a roupa pode passar (ombro, peito) fica no body (a camiseta cobre por cima), como a
+## sombra em peças que não trocam de cor. Confere: body+tee+socks+head_bun+band+front == quadro desenhado inteiro.
+func _capture_call_6b2(fn: Callable, b: Dictionary) -> Image:
+	_cap_busy = true
+	var nlog := log_lines.size()
+	var A: Image = fn.call()
+	var ids_a := ids.duplicate()
+	var anc := last_anchor.duplicate(true)
+	var rB := _variant(b, fn, {}, true)
+	var B: Image = rB[0]
+	var ids_b: PackedInt32Array = rB[1]
+	var cutA := {"short": [A, ids_a]}
+	for cut in CUT_ORDER:
+		if cut != "short":
+			cutA[cut] = _variant(b, fn, cut_opts(cut), false)
+	var bandA := {}
+	for cut in CUT_ORDER:
+		var o := cut_opts(cut)
+		o["disc_band"] = true
+		bandA[cut] = _variant(b, fn, o, false)
+	var tops := {}
+	for tk in ["tank", "tshirt"]:
+		tops[tk] = _variant(b, fn, {"top": tk, "sock_on": true}, true)
+	var oc := cut_opts("bun")
+	oc.merge({"disc_band": true, "top": "tshirt", "sock_on": true}, true)
+	var chk: Array = _variant(b, fn, oc, false)
+	log_lines.resize(nlog)
+	_cap_busy = false
+	var w := A.get_width()
+	var h := A.get_height()
+	var keys := _key_set()
+	var white := Color(1, 1, 1, 1)
+	var none := Color(0, 0, 0, 0)
+	# zona da máscara: caixa de todos os cortes juntos
+	var box_s := _head_rect(ids_a, w, h)
+	var box_m := box_s
+	for cut in cutA:
+		var r := _head_rect(cutA[cut][1], w, h)
+		if r.has_area():
+			box_m = r if not box_m.has_area() else box_m.merge(r)
+	# partes de cima e meião
+	var T := {"tank": Image.create_empty(w, h, false, Image.FORMAT_RGBA8), "tshirt": Image.create_empty(w, h, false, Image.FORMAT_RGBA8)}
+	var S := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var topzone := PackedByteArray()
+	topzone.resize(w * h)
+	topzone.fill(0)
+	for tk in tops:
+		var im: Image = tops[tk][0]
+		var tid: PackedInt32Array = tops[tk][1]
+		if tid != ids_b:
+			variants_stats.ids_bad += 1
+		for y in h:
+			for x in w:
+				var c := im.get_pixel(x, y)
+				if c == B.get_pixel(x, y):
+					continue
+				var i := y * w + x
+				if tid[i] in LEG_IDS:
+					if tk == "tank":
+						S.set_pixel(x, y, c)
+				else:
+					(T[tk] as Image).set_pixel(x, y, c)
+					topzone[i] = 1
+	# cabeças (o short primeiro: é ele que passa sombras para o body, como na 6b1)
+	var Bm: Image = B.duplicate()
+	var heads := {}
+	for cut in CUT_ORDER:
+		var Ac: Image = cutA[cut][0]
+		var ic: PackedInt32Array = cutA[cut][1]
+		var H := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+		for y in h:
+			for x in w:
+				var i := y * w + x
+				var id := ic[i]
+				if id > HEAD:
+					continue
+				var a := Ac.get_pixel(x, y)
+				if id == HEAD:
+					H.set_pixel(x, y, a)
+				elif a != B.get_pixel(x, y):
+					if id != 0 and (not keys.has(a.to_html(false)) or topzone[i] == 1):
+						if cut == "short":
+							Bm.set_pixel(x, y, a)
+					else:
+						H.set_pixel(x, y, a)
+		heads[cut] = H
+	# faixa: o que ela muda no short; os outros cortes têm de dar o mesmo
+	var D := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var Ds: Image = bandA["short"][0]
+	for y in h:
+		for x in w:
+			var c := Ds.get_pixel(x, y)
+			if c != A.get_pixel(x, y):
+				D.set_pixel(x, y, c)
+	for cut in CUT_ORDER:
+		if cut == "short":
+			continue
+		var Ab: Image = bandA[cut][0]
+		var Ac: Image = cutA[cut][0]
+		var bad := 0
+		for y in h:
+			for x in w:
+				var c := Ab.get_pixel(x, y)
+				var want := c if c != Ac.get_pixel(x, y) else none
+				if want != D.get_pixel(x, y):
+					bad += 1
+		if bad > 0:
+			variants_stats.band_bad += 1
+			log_lines.append("AVISO faixa: corte %s difere da faixa do short em %d px" % [cut, bad])
+	# máscara
+	var Mk := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	if box_m.has_area():
+		var zone := box_m.grow(HEAD_ZONE_PAD)
+		for y in h:
+			for x in w:
+				if ids_a[y * w + x] > HEAD and zone.has_point(Vector2i(x, y)):
+					Mk.set_pixel(x, y, white)
+	# conferência com um visual cheio desenhado de verdade
+	var comp := compose_full(Bm, T.tshirt, S, heads.bun, D, Mk)
+	var nd := 0
+	var full_c: Image = chk[0]
+	for y in h:
+		for x in w:
+			if comp.get_pixel(x, y) != full_c.get_pixel(x, y):
+				nd += 1
+	variants_stats.frames += 1
+	if nd > 0 and OS.get_environment("FC_DBG6B2") != "":
+		var dd: String = OS.get_environment("FC_DBG6B2")
+		var k := int(variants_stats.frames)
+		var big := Image.create_empty(w * 3, h, false, Image.FORMAT_RGBA8)
+		big.blit_rect(comp, Rect2i(0, 0, w, h), Vector2i(0, 0))
+		big.blit_rect(full_c, Rect2i(0, 0, w, h), Vector2i(w, 0))
+		for y in h:
+			for x in w:
+				if comp.get_pixel(x, y) != full_c.get_pixel(x, y):
+					big.set_pixel(2 * w + x, y, Color(1, 0, 1))
+		big.resize(w * 9, h * 3, Image.INTERPOLATE_NEAREST)
+		big.save_png(dd + "/chk_%d.png" % k)
+	if nd > 0:
+		variants_stats.check_bad += 1
+		variants_stats["check_px"] = int(variants_stats.get("check_px", 0)) + nd
+	ids = ids_a
+	last_anchor = anc
+	anc["head_box"] = [box_s.position.x, box_s.position.y, box_s.size.x, box_s.size.y] if box_s.has_area() else []
+	anc["head_box_max"] = [box_m.position.x, box_m.position.y, box_m.size.x, box_m.size.y] if box_m.has_area() else []
+	captured.append({"full": A.duplicate(), "body": Bm, "head": heads.short, "mask": Mk, "anchor": anc,
+		"heads": heads, "band": D, "tops": {"tank": T.tank, "tee": T.tshirt}, "socks": S, "check_px": nd})
+	return A
+
+## Montagem completa da 6b2 (a mesma que o jogo faz): baixo = body + parte de cima + meião; depois cabeça do corte,
+## faixa; por fim, nos pixels da máscara front, o "baixo" de novo (só onde ele tem cor). Qualquer camada pode ser null.
+func compose_full(body: Image, top, socks, head, band, mask, recolor := {}) -> Image:
+	var w := body.get_width()
+	var h := body.get_height()
+	var out := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		for x in w:
+			var lo := body.get_pixel(x, y)
+			for ly in [top, socks]:
+				if ly != null:
+					var lc: Color = (ly as Image).get_pixel(x, y)
+					if lc.a > 0.0:
+						lo = lc
+			var c := lo
+			for ly in [head, band]:
+				if ly != null:
+					var lc: Color = (ly as Image).get_pixel(x, y)
+					if lc.a > 0.0:
+						c = lc
+			if mask != null and (mask as Image).get_pixel(x, y).a > 0.0 and lo.a > 0.0:
+				c = lo
+			if c.a > 0.0 and not recolor.is_empty():
+				var hx := c.to_html(false)
+				if recolor.has(hx):
+					c = recolor[hx]
+			out.set_pixel(x, y, c)
+	return out
+
 ## Monta body -> head -> body pela máscara (para conferir e para os mockups). recolor = {Color chave: Color nova}.
 func compose_layers(body: Image, head: Image, mask: Image, recolor := {}) -> Image:
 	var w := body.get_width()
@@ -185,9 +553,28 @@ func capture_flip_last() -> void:
 	if captured.is_empty():
 		return
 	var c: Dictionary = captured[-1]
-	for k in ["full", "body", "head", "mask"]:
-		(c[k] as Image).flip_x()
+	for k in ["full", "body", "head", "mask", "band", "socks"]:
+		if c.has(k):
+			(c[k] as Image).flip_x()
+	for k in ["heads", "tops"]:
+		if c.has(k):
+			for kk in c[k]:
+				if kk != "short":   # heads.short é a mesma imagem de c.head (já virada)
+					(c[k][kk] as Image).flip_x()
 	c.anchor["flipped"] = true
+
+## Recorte de todas as camadas de uma captura (retrato 32x32). body/full ficam com quem chama (o fundo vai no body).
+func capture_crop(c: Dictionary, r: Rect2i) -> Dictionary:
+	var out := {"head": (c.head as Image).get_region(r), "mask": (c.mask as Image).get_region(r), "anchor": c.anchor}
+	if c.has("heads"):
+		var hs := {}
+		for k in c.heads:
+			hs[k] = out.head if k == "short" else (c.heads[k] as Image).get_region(r)
+		out["heads"] = hs
+		out["band"] = (c.band as Image).get_region(r)
+		out["tops"] = {"tank": (c.tops.tank as Image).get_region(r), "tee": (c.tops.tee as Image).get_region(r)}
+		out["socks"] = (c.socks as Image).get_region(r)
+	return out
 
 ## Grava as camadas de UMA folha do discípulo (capturas na ordem dos quadros):
 ##   <dir><base><gsuf>_disc_body.png       (uma por luva)
@@ -227,6 +614,29 @@ func save_layer_sheet(caps: Array, dir: String, base: String, gsuf: String, stor
 			report.append("AVISO camadas %s%s: cabeça diferente da luva velha:%s" % [base, gsuf, ex])
 		if (store[base].mask as Image).get_data() != ms.get_data():
 			report.append("AVISO camadas %s%s: máscara diferente da luva velha" % [base, gsuf])
+	# Fase 6b2: cortes, faixa, partes de cima e meião (um arquivo por opção, nunca por combinação; não dependem da luva)
+	if (caps[0] as Dictionary).has("heads"):
+		var extra := {}
+		for cut in CUT_ORDER:
+			if cut != "short":
+				extra["head_" + cut] = strip(caps.map(func(c): return c.heads[cut]))
+		extra["band"] = strip(caps.map(func(c): return c.band))
+		extra["top_tank"] = strip(caps.map(func(c): return c.tops.tank))
+		extra["top_tee"] = strip(caps.map(func(c): return c.tops.tee))
+		extra["socks"] = strip(caps.map(func(c): return c.socks))
+		var sx: Dictionary = store[base]
+		for k in extra:
+			var im: Image = extra[k]
+			if not sx.has(k):
+				sx[k] = im
+				im.save_png(dir + base + "_disc_" + k + ".png")
+			elif (sx[k] as Image).get_data() != im.get_data():
+				report.append("AVISO camadas %s%s: %s diferente da luva velha" % [base, gsuf, k])
+		var bad := 0
+		for c in caps:
+			bad += int(c.get("check_px", 0))
+		if bad > 0:
+			report.append("NOTA camadas %s%s: visual cheio montado x desenhado difere em %d px no total (%d quadros)" % [base, gsuf, bad, caps.size()])
 	var fw: int = (caps[0].body as Image).get_width()
 	var fh: int = (caps[0].body as Image).get_height()
 	var an := []
@@ -342,6 +752,7 @@ func limb(id: int, a: Vector2, b: Vector2, ra: float, rb: float, ramp: Array, o 
 	var cloth_t: float = o.get("cloth_t", -1.0)
 	var cadd: float = o.get("cloth_add", 0.7)
 	var hem: bool = o.get("hem", true)
+	var cfrom: float = o.get("cloth_from", -1.0)   # 6b2 (meião): pano só de cfrom até o fim do membro
 	var rm := maxf(ra, rb) + absf(bul) + cadd + 2.0
 	for y in range(int(floor(minf(a.y, b.y) - rm)), int(ceil(maxf(a.y, b.y) + rm)) + 1):
 		for x in range(int(floor(minf(a.x, b.x) - rm)), int(ceil(maxf(a.x, b.x) + rm)) + 1):
@@ -351,7 +762,7 @@ func limb(id: int, a: Vector2, b: Vector2, ra: float, rb: float, ramp: Array, o 
 			var s := (p - a).dot(n)
 			var r0 := lerpf(ra, rb, tc)
 			var bump := bul * exp(-pow((tc - bt) / bw, 2.0))
-			var is_cloth := cloth.size() > 0 and tc <= cloth_t
+			var is_cloth := cloth.size() > 0 and tc <= cloth_t and tc >= cfrom
 			var add := cadd if is_cloth else 0.0
 			var rpos := r0 + add + (bump if bsign > 0.0 else 0.0)
 			var rneg := r0 + add + (bump if bsign < 0.0 else 0.0)
@@ -375,6 +786,8 @@ func limb(id: int, a: Vector2, b: Vector2, ra: float, rb: float, ramp: Array, o 
 				c = rp[2]
 			if is_cloth and hem and cloth_t < 0.999 and ln > 0.001 and (cloth_t - tc) * ln < 1.0:
 				c = o.get("hem_c", rp[0])
+			if is_cloth and o.has("stripe") and (tc - cfrom) * ln < 1.0:
+				c = o.stripe                                   # listra no alto do meião
 			put(x, y, c, id)
 
 ## Gira v por ang graus (positivo = horário na tela, y para baixo).
@@ -552,8 +965,12 @@ const PRIMEIRO_FACES_34 := {
 func identidade(quem: String) -> Dictionary:
 	if quem == "disc":
 		if key_mode:   # Fase 6b1: discípulo em camadas, cores-chave (ver KEYS)
+			# 6b2: top "none" no corpo; regata/camiseta/meião/faixa/cortes saem como camadas (ver _capture_call).
+			# sleeve_add 0: a manga não engorda o braço (mesmo contorno com e sem camiseta -> uma máscara front só).
 			return {"hair": ["k_h0", "k_h1"], "brow": "k_hb", "skin": ["k_sk0", "k_sk1", "k_sk2"],
-				"shorts": ["k_sh0", "k_sh1", "k_sh2"], "band": "k_sh3", "top": "none"}   # 6b1: sem parte de cima (default_look); a regata é opção da 6b2
+				"shorts": ["k_sh0", "k_sh1", "k_sh2"], "band": "k_sh3", "top": "none",
+				"shirt": ["k_tp0", "k_tp1", "k_tp2"], "sleeve_add": 0.0, "sleeve_t": 0.8, "tank_neck": 0.68, "sock_ramp": ["k_so0", "k_so1", "k_so2"],
+				"disc_layers": true}
 		return {"hair": ["br1", "br2"], "brow": "br0", "shorts": ["gr0", "gr1", "gr2"], "band": "gr3"}
 	return {"hair": ["d1", "g0"], "brow": "ink", "head_side": PRIMEIRO_HEAD_SIDE, "head_34": PRIMEIRO_HEAD_34,
 		"faces_side": PRIMEIRO_FACES_SIDE, "faces_34": PRIMEIRO_FACES_34,
@@ -799,6 +1216,9 @@ func head_legend(b: Dictionary) -> Dictionary:
 	var ex: Dictionary = b.head_legend_extra
 	for k in ex:
 		lg[k] = ex[k]
+	if b.get("disc_band", false):
+		for k in BAND_LEGEND:
+			lg[k] = BAND_LEGEND[k]
 	return lg
 
 ## Linhas da cabeça com expressão + acessórios (faixa, barba, bigode).
@@ -826,7 +1246,63 @@ func head_rows(b: Dictionary, view: String, face: String) -> Array:
 	if b.mustache != "" and view == "side":
 		var r: String = base[10]
 		base[10] = r.substr(0, 9) + "oo" + r.substr(11)
+	if b.get("disc_band", false):
+		_band_rows(base, view, b.get("head_pad", Vector2i.ZERO))
 	return base
+
+## Faixa da 6b2 nas linhas de um mapa de cabeça (qualquer corte: usa o deslocamento do corte).
+func _band_rows(rows: Array, view: String, pad: Vector2i) -> void:
+	var bd: Dictionary = BAND[view]
+	var r_lo: int = int(bd.rows[1])
+	for rr in bd.rows:
+		var j: int = int(rr) + pad.y
+		var r: String = rows[j]
+		var nr := ""
+		for i in r.length():
+			var c := r[i]
+			if c != ".":
+				c = "G" if (int(rr) == r_lo or i - pad.x < int(bd.back_cols)) else "F"
+			nr += c
+		rows[j] = nr
+	for kn in bd.knot:
+		var j: int = int(kn[1]) + pad.y
+		var i: int = int(kn[0]) + pad.x
+		var r: String = rows[j]
+		if i < r.length() and r[i] != ".":
+			rows[j] = r.substr(0, i) + "G" + r.substr(i + 1)
+
+## Mapas, rostos e âncoras de um corte (Fase 6b2), para pôr no build por cima do mapa-base.
+func cut_opts(cut: String) -> Dictionary:
+	var d: Dictionary = DISC_CUTS[cut]
+	var px: int = int(d.pad[0])
+	var py: int = int(d.pad[1])
+	return {"head_34": d["34"], "head_side": d["side"],
+		"faces_34": _cut_faces(HEAD_34, FACES_34, d["34"], px, py),
+		"faces_side": _cut_faces(HEAD_SIDE, FACES_SIDE, d["side"], px, py),
+		"head_anchor_34": Vector2i(6 + px, 6 + py), "head_anchor_side": Vector2i(7 + px, 7 + py),
+		"head_pad": Vector2i(px, py)}
+
+## Expressões do mapa-base aplicadas a outro corte: só os pixels que a expressão muda (rosto), nunca o cabelo.
+func _cut_faces(base: Array, faces: Dictionary, rows: Array, px: int, py: int) -> Dictionary:
+	var out := {}
+	for f in faces:
+		var ov := {}
+		var src: Dictionary = faces[f]
+		for k in src:
+			var j := int(k)
+			var br: String = base[j]
+			var fr: String = src[k]
+			var r: String = rows[j + py]
+			var nr := ""
+			for i in r.length():
+				var c := r[i]
+				var bi := i - px
+				if bi >= 0 and bi < fr.length() and bi < br.length() and fr[bi] != br[bi]:
+					c = fr[bi]
+				nr += c
+			ov[j + py] = nr
+		out[f] = ov
+	return out
 
 func glove_legend(style: String, ramp: Array, far: bool) -> Dictionary:
 	var st: Dictionary = GLOVE_STYLES.get(style, GLOVE_STYLES["old"])
@@ -1029,6 +1505,14 @@ func leg(b: Dictionary, id_th: int, hip: Vector2, toe: Vector2, shoe: String, lt
 	elif b.socks != "":
 		so["cloth"] = [L.shade(L.col(b.socks), -1), b.socks, b.socks]
 		so["cloth_t"] = 2.0
+	elif b.get("sock_on", false):
+		# 6b2: meião do discípulo (cores-chave k_so*), da canela até o tênis, sem engordar a perna
+		var sr: Array = b.sock_ramp
+		so["cloth"] = [sr[0], sr[0], sr[1]] if far else [sr[0], sr[1], sr[1]]
+		so["cloth_t"] = 2.0
+		so["cloth_from"] = SOCK_FROM
+		so["cloth_add"] = 0.0
+		so["stripe"] = sr[2]
 	limb(id_th + 1, knee, ankle + down, r[2], r[3], skin, so)
 	if b.socks != "" and not pants:
 		pass
@@ -1119,7 +1603,7 @@ func torso(b: Dictionary, id: int, hip: Vector2, top: Vector2, view: String, tw 
 				else:
 					var mid := (back + front) * 0.5 + 0.8
 					if top_kind == "tank":
-						skin = (t > 0.84 and absf(s - mid) < 3.0) or t > 1.0 or (t > 0.74 and (db < 2.2 or df < 2.2))
+						skin = (t > float(b.get("tank_neck", 0.84)) and absf(s - mid) < 3.0) or t > 1.0 or (t > 0.74 and (db < 2.2 or df < 2.2))   # tank_neck: decote (6b2: discípulo mais fundo)
 					else:
 						skin = (t > 0.92 and absf(s - mid) < 2.4) or t > 1.02
 				if skin:
@@ -1235,7 +1719,7 @@ func mid_34(back: float, front: float) -> float:
 ##  far_glove_front (luva de trás desenhada na frente da cabeça — defesa).
 func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112, 104), pivot := Vector2(56, 98)) -> Image:
 	if capture and not _cap_busy:
-		return _capture_call(func() -> Image: return fight_frame(b, p, tag, size, pivot))
+		return _capture_call(func() -> Image: return fight_frame(b, p, tag, size, pivot), b)
 	canvas(size.x, size.y)
 	var O := pivot
 	var hip: Vector2 = O + p.hip
@@ -1296,7 +1780,7 @@ func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112
 ## Lado ESQUERDO da tela = mão de trás (mais escura); DIREITO = mão da frente (a que soca o saco).
 func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48, 72), pivot := Vector2(22, 67)) -> Image:
 	if capture and not _cap_busy:
-		return _capture_call(func() -> Image: return garage_frame(b, p, tag, size, pivot))
+		return _capture_call(func() -> Image: return garage_frame(b, p, tag, size, pivot), b)
 	canvas(size.x, size.y)
 	var O := pivot
 	var hip: Vector2 = O + p.hip
@@ -1319,6 +1803,7 @@ func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48
 	if b.top == "tshirt":
 		o_up["cloth"] = b.shirt
 		o_up["cloth_t"] = 1.0 if b.sleeve_long else b.sleeve_t
+		o_up["cloth_add"] = b.get("sleeve_add", 0.7)
 		if b.trim != "":
 			o_up["hem_c"] = b.trim
 	limb(FAR_UP, shr, elr, ar[0], ar[1], skin, o_up)
@@ -1340,6 +1825,7 @@ func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48
 	if b.top == "tshirt":
 		o_ul["cloth"] = b.shirt
 		o_ul["cloth_t"] = 1.0 if b.sleeve_long else b.sleeve_t
+		o_ul["cloth_add"] = b.get("sleeve_add", 0.7)
 		if b.trim != "":
 			o_ul["hem_c"] = b.trim
 	limb(NEAR_UP, shl, ell, ar[0], ar[1], skin, o_ul)
