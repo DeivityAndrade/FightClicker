@@ -123,6 +123,14 @@ func _ready() -> void:
 	y += ALTURA_CARTAO_LOJA + 1.0
 	_luva_atual_icone = UiTema.textura_rect(_aba_loja, "icon_glove_old", 6, y - 1)
 	_luva_atual = UiTema.rotulo(_aba_loja, "", UiTema.G3, 26, y + 3, 96)
+	# Fase 6b1: passar o mouse na luva em uso mostra o cartão dela (a luva inicial: "O par do John").
+	var hov_luva := Control.new()
+	hov_luva.position = Vector2(4, y - 2)
+	hov_luva.size = Vector2(122, 18)
+	hov_luva.set_meta("ui_align", "ignore")
+	hov_luva.mouse_entered.connect(func() -> void: _sobre("la"))
+	hov_luva.mouse_exited.connect(func() -> void: _sobre(""))
+	_aba_loja.add_child(hov_luva)
 	_altura_loja = y + 18.0
 	_aba_loja.size.y = _altura_loja
 
@@ -484,6 +492,13 @@ func _sobre(chave: String) -> void:
 func _emitir_info() -> void:
 	if _hover == "":
 		info_mudou.emit({})
+		return
+	if _hover == "la":
+		var eq: Dictionary = GameState.luva_equipada()
+		var desc := str(eq.get("description", ""))
+		if str(eq.get("id", "glove_old")) == "glove_old":
+			desc = GameState.descricao_luva_inicial()  # "O par do John..." (variante do discípulo: "Agora é seu.")
+		info_mudou.emit({"titulo": eq.get("name", ""), "texto": desc, "extra": ""})
 		return
 	if _hover == "l":
 		var l: Dictionary = GameState.proxima_luva()

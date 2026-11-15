@@ -23,9 +23,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = 2300
 	visible = false
-	var txt := UiTema.txt("skip_hint", "pular").to_lower()
+	var txt := UiTema.txt("skip_chip", "SEGURE ESC: PULAR")  # Fase 6b1: antes lia "ESC esc: pular" (a tecla desenhada e o texto repetiam)
 	var larg := UiTema.largura_visivel(txt)
-	_w = 41.0 + larg + 5.0
+	_w = 19.0 + larg + 6.0
 	size = Vector2(_w, ALTURA)
 	position = Vector2(DIREITA - _w, BASE_Y - ALTURA)
 	_fundo = UiTema.nine_patch(self, "ui_skip_chip", Rect2(0, 0, _w, ALTURA))
@@ -33,8 +33,7 @@ func _ready() -> void:
 	_anel.definir("ui_skip_ring")
 	_anel.position = Vector2(3, 3)
 	add_child(_anel)
-	UiTema.textura_rect(self, "icon_key_esc", 16, 3)
-	_texto = UiTema.rotulo(self, txt, UiTema.G2, 41, 3, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
+	_texto = UiTema.rotulo(self, txt, UiTema.G2, 19, 3, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 	GameState.abertura_mudou.connect(_ao_estado)
 	_ao_estado(GameState.abertura_estado())
 

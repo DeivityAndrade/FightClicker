@@ -316,7 +316,7 @@ func _teste_escolha_e_nova_carreira() -> void:
 	checar_igual(gs.nivel_melhoria("speed_bag"), 0, "técnicas zeram")
 	checar(gs.escolha_arte_pendente() and not gs.escolha_arte_primeira(), "da 2ª carreira em diante a escolha vem no início")
 	checar_igual(pedidos, [false], "sinal escolha_arte_pedida(false)")
-	checar_igual(gs.subtitulo_escolha_arte(), "CAMPANHA 2: ESCOLHA A ARTE", "subtítulo da carreira")
+	checar_igual(gs.subtitulo_escolha_arte(), "NOVATO: ESCOLHA A ARTE", "subtítulo da carreira")
 	var c: Array = gs.artes_para_escolha()
 	checar_igual([c[0].last, c[1].last, c[0].last_text], [true, false, "ÚLTIMA: BOXE"], "a última arte vem marcada")
 	checar_igual(gs.artes_liberadas(), ["boxing", "bjj"], "as artes ficam liberadas para sempre")
@@ -732,14 +732,14 @@ func _teste_dados_mudam_o_jogo() -> void:
 # --- Save v6 ---
 
 func _teste_save_v6() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 11, "versão do save é 11 (Fase 6a)")
+	checar_igual(SaveStore.VERSAO_ATUAL, 12, "versão do save é 11 (Fase 6a)")
 	var gs := _na_academia("f5_save", "bjj")
 	gs.geradores["neighbor_kid"] = 3
 	_passar(gs, 12.0)
 	gs.salvar()
 	var doc = JSON.parse_string(ler(gs.store.caminho()))
 	var c: Dictionary = doc.state.career
-	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [11, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
+	checar_igual([int(doc.version), c.location, c.art, absf(float(c.art_seconds) - 12.0) < 1e-6], [12, "gym", "bjj", true], "career.location, art e art_seconds no arquivo")
 	checar_igual([doc.state.permanent.arts_unlocked, doc.state.permanent.last_art], [["boxing", "bjj"], "bjj"], "permanent.arts_unlocked e last_art no arquivo")
 	var g2: Node = GameStateScript.new()
 	g2.inicializar(gs.store.pasta, "res://data/config.json")
@@ -761,7 +761,7 @@ func _teste_save_v6() -> void:
 	g4.autosave_ativo = false
 	checar_igual([g4.treino, g4.local_id, g4.arte_id, g4.artes_liberadas()], [77.0, "garage", "", []], "v0 -> v7 em cadeia")
 	g4.salvar()
-	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 11, "regravado como v11")
+	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 12, "regravado como v11")
 	for g in [gs, g2, g3, g4]:
 		_liberar(g)
 

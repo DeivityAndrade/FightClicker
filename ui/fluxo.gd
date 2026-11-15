@@ -167,7 +167,7 @@ func _abrir_fim(fim: Dictionary, reabrindo: bool = false) -> void:
 	_abrir(j)
 	# Som: a derrota já tocou durante a luta; na aposentadoria e ao reabrir o jogo toca ao abrir. Voltando do mapa: sem som.
 	j.abrir_com(fim, not reabrindo and (str(fim.kind) == "retire" or not tela.visible), reabrindo)
-	j.nova_carreira_pedido.connect(func() -> void: GameState.nova_carreira())
+	j.nova_carreira_pedido.connect(func() -> void: GameState.receber_discipulo())
 	j.arvore_pedido.connect(abrir_arvore)
 
 
@@ -270,6 +270,24 @@ func _fechar_cartao() -> void:
 		cartao.fechou.disconnect(_ao_cartao_fechou)
 		cartao.queue_free()
 	cartao = null
+
+
+# --- Fase 6b1: tela "RECEBER NOVO DISCÍPULO" (a cena de passar o posto pede; só sai pelo CONFIRMAR) ---
+
+func abrir_criar_discipulo() -> void:
+	if janela is TelaCriarDiscipulo or GameState.sucessao_estado() != "creating":
+		return
+	var j := TelaCriarDiscipulo.new()
+	_abrir(j)
+	j.abrir_com()
+	j.confirmou.connect(func() -> void:
+		if janela == j:
+			janela = null
+			j.queue_free()
+			GameState.definir_modal(tela.visible)
+			if _barra != null and not tela.visible:
+				_barra.definir_janela_aberta(false)
+			janela_mudou.emit(ocupado()))
 
 
 # --- Aposentar ---

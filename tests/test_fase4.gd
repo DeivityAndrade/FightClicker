@@ -722,7 +722,7 @@ func _teste_cartao_e_resumo() -> void:
 	gs.nova_carreira()
 	checar_igual(cartoes.size(), 1, "nova_carreira_iniciada emitido uma vez")
 	var c: Dictionary = cartoes[0]
-	checar_igual(c.title, "CAMPANHA 2: O QUE VOCÊ TROUXE", "título do cartão")
+	checar_igual(c.title, "NOVATO: O QUE VOCÊ TROUXE", "título do cartão")
 	checar_igual(c.nodes.size(), 2, "uma linha por nó")
 	checar_igual(c.nodes[0].effect_text, "+100% TREINO POR CLIQUE", "efeito do jab em número")
 	checar_igual(c.nodes[1].effect_text, "+50% DINHEIRO POR VITÓRIA", "efeito da bolsa em número")

@@ -78,6 +78,11 @@ const ESTADOS_TODOS := [
 	"f6a_gym_sem_osmar", "f6a_gym_john", "f6a_parede_antes", "f6a_hover_ficha", "f6a_hover_aviso", "f6a_parede_recorte", "f6a_parede_depois",
 	"f6a_hover_ficha_depois", "f6a_gesto_sala", "f6a_gesto_curto", "f6a_gesto_cancela", "f6a_gesto_luta", "f6a_gesto_vitoria",
 	"f6a_discipulo_garagem", "f6a_discipulo_previa", "f6a_discipulo_luta", "f6a_vitoria_selo", "f6a_vitoria_sem_selo",
+	# Fase 6b1: passar o posto (cena, tela de criação, chegada, John mentor, nome no lugar de Carreira N)
+	"f6b1_s1", "f6b1_s2", "f6b1_s3", "f6b1_s4", "f6b1_s5", "f6b1_s6", "f6b1_s7", "f6b1_s8", "f6b1_s9", "f6b1_s10", "f6b1_linha",
+	"f6b1_criar", "f6b1_criar_nome14", "f6b1_criar_cores", "f6b1_criar_vazio", "f6b1_chegada", "f6b1_mentor_sentado",
+	"f6b1_mentor_balao", "f6b1_mentor_balao_isso", "f6b1_mentor_toques", "f6b1_fim_botao", "f6b1_fim_nome14", "f6b1_hud_nome14",
+	"f6b1_cartao", "f6b1_arte", "f6b1_luva_hover", "f6b1_save_criacao", "f6b1_pular_anel", "f6b1_pular",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -310,6 +315,8 @@ func _rodar() -> void:
 	await _rodar_fase53()
 	await _rodar_fase54()
 	await _rodar_fase6a()
+	await _rodar_fase6b1()
+	await _rodar_fase6b1_pular()
 	_fechar_cena()
 
 
@@ -2932,3 +2939,355 @@ func _rodar_fase6a() -> void:
 		await _abrir()
 		await _esperar(1.0)
 		await _ver("f6a_vitoria_sem_selo")
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 6b1: passar o posto (cena, tela de criação, chegada curta, John mentor, nome no lugar de "Carreira N")
+# ---------------------------------------------------------------------------------------------
+
+func _cena_ui() -> Node:
+	for c in _cena.get_children():
+		if _eh(c, "CenaUi"):
+			return c
+	return null
+
+
+## Espera até `seg` segundos depois de `t0` (ms), sem esperar se já passou.
+func _ate(t0: int, seg: float) -> void:
+	var falta := seg - float(Time.get_ticks_msec() - t0) / 1000.0
+	if falta > 0.0:
+		await _esperar(falta)
+
+
+## Campanha 2 (discípulo) encerrada com a tela de fim pendente. `marco`: a cena grande já tocou (sucessão seguinte = chegada curta).
+func _f6b1_fim(nome: String = "", marco: bool = false) -> void:
+	_derrota_pendente(NOS_MISTA, 40)
+	if nome != "":
+		gs.discipulo = {"name": nome, "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+	if marco:
+		gs._gravar_marco("cena_primeira_sucessao", {}, false)
+		gs.escola["mentors"] = ["first"]
+
+
+func _f6b1_janela_criar() -> Node:
+	var fl: Node = _cena.get_node("Fluxo")
+	for i in 80:
+		if fl.janela != null and _eh(fl.janela, "TelaCriarDiscipulo"):
+			return fl.janela
+		await _esperar(0.1)
+	return null
+
+
+func _f6b1_ui_apagada() -> bool:
+	var cu: Node = _cena_ui()
+	for n in cu.alvos:
+		if is_instance_valid(n) and (n as CanvasItem).visible and (n as CanvasItem).modulate.a > 0.05 and not _eh(n, "FaixaAviso"):
+			return false
+	return true
+
+
+func _rodar_fase6b1() -> void:
+	# --- Os quadros-chave S1..S10 da primeira sucessão (tempos do data/cutscenes/primeira_sucessao.json) ---
+	var quer_cena := _quer("f6b1_s1") or _quer("f6b1_s2") or _quer("f6b1_s3") or _quer("f6b1_s4") or _quer("f6b1_s5") \
+		or _quer("f6b1_s6") or _quer("f6b1_s7") or _quer("f6b1_s8") or _quer("f6b1_s9") or _quer("f6b1_s10")
+	if quer_cena:
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.6)
+		var cu: Node = _cena_ui()
+		var sala: Node = _cena.get_node("Sala")
+		var t0 := Time.get_ticks_msec()
+		_exigir(gs.receber_discipulo(), "f6b1_s1", "RECEBER NOVO DISCÍPULO deveria começar a sucessão")
+		_exigir(gs.sucessao_estado() == "scene_1", "f6b1_s1", "estado scene_1 (%s)" % gs.sucessao_estado())
+		await _ate(t0, 1.15)
+		_exigir(_f6b1_ui_apagada(), "f6b1_s1", "a interface deveria estar apagada em S1")
+		_exigir(cu._barras.visible and sala.cena.ator_visivel("first") and not sala._lutador.visible, "f6b1_s1", "faixas pretas, John em cena e o lutador da sala escondido")
+		await _ver("f6b1_s1")
+		await _ate(t0, 2.5)
+		await _ver("f6b1_s2")
+		await _ate(t0, 4.3)
+		_exigir(sala._cam_escala == 2, "f6b1_s3", "o corte de perto é 2x (%d) t=%.2f i=%d" % [sala._cam_escala, cu.player._t, cu.player._i])
+		await _ver("f6b1_s3")
+		await _ate(t0, 7.9)
+		_exigir(sala._cam_escala == 1, "f6b1_s4", "volta ao 1x em S4")
+		await _ver("f6b1_s4")
+		var tela: Node = await _f6b1_janela_criar()
+		_exigir(tela != null and gs.sucessao_estado() == "creating", "f6b1_s5", "a tela de criação deveria abrir (%s)" % gs.sucessao_estado())
+		await _esperar(0.5)
+		await _ver("f6b1_s5")
+		if tela != null:
+			tela._confirmar()
+		_exigir(gs.sucessao_estado() == "scene_2", "f6b1_s6", "CONFIRMAR leva a scene_2 (%s)" % gs.sucessao_estado())
+		var t1 := Time.get_ticks_msec()
+		await _ate(t1, 0.8)
+		await _ver("f6b1_s6")
+		await _ate(t1, 1.9)
+		await _ver("f6b1_s7")
+		await _ate(t1, 4.3)
+		_exigir(_balao().ativo(), "f6b1_s8", "o balão 'vamos ver sua guarda.' deveria estar na tela")
+		_checar_balao_6b1("f6b1_s8", "first")
+		await _ver("f6b1_s8")
+		await _ate(t1, 5.3)
+		await _ver("f6b1_s9")
+		for i in 40:
+			if gs.sucessao_estado() == "none":
+				break
+			await _esperar(0.1)
+		_exigir(gs.sucessao_estado() == "none", "f6b1_s10", "o controle volta em ~6 s (%s)" % gs.sucessao_estado())
+		await _esperar(0.5)
+		_exigir(sala.mentor_visivel() and not sala.cena.ator_visivel("first"), "f6b1_s10", "o John sentado agora é o mentor da sala")
+		_cena.get_node("Fluxo").fechar_cartao_aberto()  # o clique que fecha o cartão "o que você trouxe" não treina
+		await _esperar(0.3)
+		gs.clicar()
+		await _esperar(0.45)
+		_exigir(_balao().ativo() and str(_balao().id) == "cena_suc_isso", "f6b1_s10", "o balão 'isso.' deveria aparecer")
+		_checar_balao_6b1("f6b1_s10", "first")
+		await _ver("f6b1_s10")
+		await _esperar(4.0)
+		_exigir(not _f6b1_ui_apagada(), "f6b1_s10", "a interface voltou")
+
+	# --- Captura da cena a cada 0,5 s (a captura leva ~0,3 s: a série fica em ~0,8 s) ---
+	if _quer("f6b1_linha"):
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.4)
+		var t2 := Time.get_ticks_msec()
+		gs.receber_discipulo()
+		var k := 0
+		for i in 40:
+			await _ate(t2, 0.5 * float(i))
+			if _eh(_cena.get_node("Fluxo").janela, "TelaCriarDiscipulo"):
+				break
+			await _ver("f6b1_linha_a%02d" % k)
+			k += 1
+		var tela2: Node = await _f6b1_janela_criar()
+		if tela2 != null:
+			tela2._confirmar()
+		var t3 := Time.get_ticks_msec()
+		var k2 := 0
+		for i in 14:
+			await _ate(t3, 0.5 * float(i))
+			if gs.sucessao_estado() == "none":
+				break
+			await _ver("f6b1_linha_b%02d" % k2)
+			k2 += 1
+
+	# --- Tela de criação (sucessão seguinte: abre direto) ---
+	if _quer("f6b1_criar") or _quer("f6b1_criar_nome14") or _quer("f6b1_criar_cores") or _quer("f6b1_criar_vazio") or _quer("f6b1_chegada"):
+		_f6b1_fim("Tati Gancho", true)
+		await _abrir()
+		await _esperar(0.5)
+		_exigir(gs.receber_discipulo() and gs.sucessao_estado() == "creating", "f6b1_criar", "a sucessão seguinte abre direto na criação (%s)" % gs.sucessao_estado())
+		var tela3: Node = await _f6b1_janela_criar()
+		_exigir(tela3 != null, "f6b1_criar", "a tela de criação deveria abrir")
+		await _esperar(0.6)
+		_exigir(tela3 != null and tela3._nome.text != "", "f6b1_criar", "o nome já vem sorteado")
+		await _ver("f6b1_criar")
+		if _quer("f6b1_criar_nome14") and tela3 != null:
+			gs.definir_rascunho("name", "MMMMMMMMMMMMMMMMMM")
+			await _esperar(0.2)
+			_exigir(tela3._nome.text.length() == 14, "f6b1_criar_nome14", "o nome corta em 14 letras (%d)" % tela3._nome.text.length())
+			tela3._nome.text = "A1B2C3D4E5F6G7H8I9J0"
+			tela3._ao_digitar(tela3._nome.text)
+			_exigir(tela3._nome.text == "ABCDEFGHIJ", "f6b1_criar_nome14", "colar com números filtra antes de cortar (%s)" % tela3._nome.text)
+			gs.definir_rascunho("name", "MMMMMMMMMMMMMMMMMM")
+			await _esperar(0.1)
+			await _ver("f6b1_criar_nome14")
+		if _quer("f6b1_criar_cores") and tela3 != null:
+			gs.definir_rascunho("skin", "skin_5")
+			gs.definir_rascunho("hair_color", "platinum")
+			gs.definir_rascunho("shorts_color", "white")
+			await _esperar(0.2)
+			await _ver("f6b1_criar_cores")
+			gs.definir_rascunho("skin", "skin_1")
+			gs.definir_rascunho("hair_color", "black")
+			gs.definir_rascunho("shorts_color", "purple")
+			await _esperar(0.2)
+			await _ver("f6b1_criar_cores")
+		if _quer("f6b1_criar_vazio") and tela3 != null:
+			tela3._nome.text = ""
+			tela3._ao_digitar("")
+			tela3._confirmar()
+			await _esperar(0.3)
+			_exigir(gs.sucessao_estado() == "creating" and tela3._nome.text != "", "f6b1_criar_vazio", "nome vazio não confirma e o campo volta a um nome sorteado")
+			await _ver("f6b1_criar_vazio")
+		if _quer("f6b1_chegada") and tela3 != null:
+			var nome_final := "Zeca Chave"
+			gs.definir_rascunho("name", nome_final)
+			tela3._confirmar()
+			_exigir(gs.sucessao_estado() == "arriving", "f6b1_chegada", "CONFIRMAR leva à chegada curta (%s)" % gs.sucessao_estado())
+			await _esperar(1.4)
+			await _ver("f6b1_chegada")
+			for i in 40:
+				if gs.sucessao_estado() == "none":
+					break
+				await _esperar(0.1)
+			_exigir(gs.sucessao_estado() == "none" and gs.nome_lutador() == nome_final, "f6b1_chegada", "a chegada acaba sozinha e o discípulo tem o nome escolhido (%s)" % gs.nome_lutador())
+			await _esperar(0.5)
+			_exigir(_cena.get_node("Sala").mentor_visivel(), "f6b1_chegada", "o John segue sentado depois da chegada")
+
+	# --- Abrir o jogo com a criação em andamento (save): tela sobre a garagem escurecida, sem tocar a cena ---
+	if _quer("f6b1_save_criacao"):
+		_f6b1_fim("Tati Gancho", true)
+		await _abrir()
+		await _esperar(0.4)
+		gs.receber_discipulo()
+		await _esperar(0.3)
+		var snap: Dictionary = gs.para_save()
+		gs.aplicar_save(snap.duplicate(true))
+		await _abrir()
+		await _esperar(1.0)
+		_exigir(gs.sucessao_estado() == "creating", "f6b1_save_criacao", "o save abre na criação (%s)" % gs.sucessao_estado())
+		var t6: Node = await _f6b1_janela_criar()
+		_exigir(t6 != null, "f6b1_save_criacao", "a tela de criação deveria abrir")
+		await _ver("f6b1_save_criacao")
+
+	# --- John mentor sentado no caixote, balão e toques ---
+	if _quer("f6b1_mentor_sentado") or _quer("f6b1_mentor_balao") or _quer("f6b1_mentor_balao_isso") or _quer("f6b1_mentor_toques"):
+		_novo_jogo()
+		gs.escola["mentors"] = ["first"]
+		gs.discipulo = {"name": "Tati Gancho", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		await _abrir()
+		await _esperar(0.6)
+		var sala_m: Node = _cena.get_node("Sala")
+		_exigir(sala_m.mentor_visivel() and sala_m._caixote.visible, "f6b1_mentor_sentado", "John sentado no caixote em mentor_spot")
+		_exigir(sala_m._mentor.position == Vector2(254, 252), "f6b1_mentor_sentado", "pés do mentor em mentor_spot: %s" % str(sala_m._mentor.position))
+		await _ver("f6b1_mentor_sentado")
+		var cu2: Node = _cena_ui()
+		for caso in [["f6b1_mentor_balao", "vamos ver sua guarda."], ["f6b1_mentor_balao_isso", "isso."]]:
+			if _quer(caso[0]):
+				cu2._falar({"ator": "first", "line": "t", "text": caso[1], "seconds": 4.0})
+				await _esperar(0.2)
+				_balao().completar()
+				await _esperar(0.1)
+				_exigir(_balao().ativo(), caso[0], "o balão do John sentado deveria aparecer")
+				_checar_balao_6b1(caso[0], "first")
+				await _ver(caso[0])
+				_balao().fechar_agora()
+		if _quer("f6b1_mentor_toques"):
+			var plano := {"momento": "win_return", "version": "short", "start": 0.0, "duration": 0.44, "taps": [0.11, 0.33],
+				"tap_sound": "tap_fist", "anim": "mentor_first_taps", "guard": 0.0, "cena": "", "com_fala": false}
+			gs.toques_mentor_pedidos.emit(plano)
+			await _esperar(0.2)
+			_exigir(sala_m._mentor_pose == "taps", "f6b1_mentor_toques", "o John faz os toques (%s)" % sala_m._mentor_pose)
+			await _ver("f6b1_mentor_toques")
+			await _esperar(0.5)
+			_exigir(sala_m._mentor_pose == "rest", "f6b1_mentor_toques", "depois dos toques volta ao sit_rest")
+			gs.toques_mentor_pedidos.emit(plano)
+			await _esperar(0.05)
+			gs.toques_mentor_cancelados.emit()
+			_exigir(sala_m._mentor_pose == "rest", "f6b1_mentor_toques", "cancelar volta ao sit_rest na hora")
+
+	# --- Tela de fim com o botão novo; nome de 14 letras no resumo e no HUD ---
+	if _quer("f6b1_fim_botao") or _quer("f6b1_fim_nome14"):
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.9)
+		var fim_j: Node = _cena.get_node("Fluxo").janela
+		var bt: Button = fim_j.painel.get_node_or_null("BotaoNovoDiscipulo")
+		_exigir(bt != null, "f6b1_fim_botao", "o botão RECEBER NOVO DISCÍPULO deveria existir")
+		if bt != null:
+			_exigir(_texto_botao(bt) in ["RECEBER NOVO DISCÍPULO", "NOVO DISCÍPULO"], "f6b1_fim_botao", "texto do botão: %s" % _texto_botao(bt))
+		await _ver("f6b1_fim_botao")
+		if _quer("f6b1_fim_nome14"):
+			_f6b1_fim("MMMMMMMMMMMMMM")
+			await _abrir()
+			await _esperar(0.9)
+			await _ver("f6b1_fim_nome14")
+	if _quer("f6b1_hud_nome14"):
+		_novo_jogo()
+		gs.discipulo = {"name": "MMMMMMMMMMMMMM", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		await _abrir()
+		await _esperar(0.6)
+		await _ver("f6b1_hud_nome14")
+
+	# --- Cartão "o que você trouxe" e escolha da arte com o nome ---
+	if _quer("f6b1_cartao"):
+		_novo_jogo()
+		gs.discipulo = {"name": "MMMMMMMMMMMMMM", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		_com_nos(NOS_MISTA, 40)
+		await _abrir()
+		await _esperar(0.5)
+		_cena.get_node("Fluxo")._ao_nova_carreira_iniciada(gs.cartao_inicio())
+		await _esperar(0.5)
+		await _ver("f6b1_cartao")
+	if _quer("f6b1_arte"):
+		_f6b1_fim("Tati Gancho")
+		gs.local_id = "gym"
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		await _abrir()
+		await _esperar(0.6)
+		gs.nova_carreira()
+		await _esperar(0.8)
+		_exigir(_cena.get_node("Fluxo").janela != null, "f6b1_arte", "a janela de arte deveria estar aberta")
+		await _ver("f6b1_arte")
+
+	# --- Luva inicial: o cartão diz "o par do John" ---
+	if _quer("f6b1_luva_hover"):
+		_novo_jogo()
+		gs.discipulo = {"name": "Tati Gancho", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		await _abrir()
+		await _abrir_loja()
+		var loja: Node = _cena.get_node("PainelLoja")
+		loja._sobre("la")
+		await _esperar(0.2)
+		_exigir(gs.descricao_luva_inicial().begins_with("O par do John"), "f6b1_luva_hover", "descrição da luva inicial: %s" % gs.descricao_luva_inicial())
+		await _ver("f6b1_luva_hover")
+
+
+## Balão da 6b1: fora da zona do alvo, dentro da sala e sem cobrir a cabeça do Osmar, do lutador nem de ninguém em cena.
+func _checar_balao_6b1(nome: String, speaker: String) -> void:
+	var b: Node = _balao()
+	if not b.ativo():
+		return
+	var r: Rect2 = b.retangulo_total()
+	_exigir(not r.intersects(NO_COVER_6A), nome, "o balão cobre a zona do alvo: %s" % _fmt(r))
+	_exigir(UTIL_6A.encloses(r), nome, "o balão sai da sala: %s" % _fmt(r))
+	var sala: Node = _cena.get_node("Sala")
+	var cabecas: Array = []
+	var o: Vector2 = sala.ponto_cabeca("coach")
+	cabecas.append(Rect2(o.x - 9.0, o.y, 18.0, 18.0))
+	if sala._cena_ativa:
+		cabecas.append_array(sala.cena.cabecas_a_evitar(speaker))
+	else:
+		var l: Vector2 = sala.ponto_cabeca("first")
+		cabecas.append(Rect2(l.x - 9.0, l.y, 18.0, 18.0))
+	for c in cabecas:
+		_exigir(not r.intersects(c), nome, "o balão cobre a cabeça de alguém: %s x %s" % [_fmt(r), _fmt(c)])
+
+
+## PULAR: o anel enche com ESC/ESPAÇO segurado, o botão pula até a tela de criação e, depois dela, até o fim (estado final em ~0,3 s).
+func _rodar_fase6b1_pular() -> void:
+	if not (_quer("f6b1_pular_anel") or _quer("f6b1_pular")):
+		return
+	_f6b1_fim("Tati Gancho")
+	await _abrir()
+	await _esperar(0.5)
+	var cu: Node = _cena_ui()
+	var sala: Node = _cena.get_node("Sala")
+	gs.receber_discipulo()
+	await _esperar(1.0)
+	_exigir(cu._botao.visible and cu._chip.visible, "f6b1_pular_anel", "o botão PULAR e a dica 'SEGURE ESC: PULAR' aparecem durante a cena")
+	cu.player.ler_teclado = false
+	cu.player.segurar_pular(true, 0.25)  # metade dos 0,5 s
+	await _esperar(0.1)
+	_exigir(cu._atlas.region.position.x == 44.0, "f6b1_pular_anel", "o anel está na metade (quadro %d)" % int(cu._atlas.region.position.x / 11.0))
+	await _ver("f6b1_pular_anel")
+	cu.player.segurar_pular(false, 0.0)
+	cu.player.ler_teclado = true
+	if _quer("f6b1_pular"):
+		cu._botao.pressed.emit()  # PULAR até a tela de criação
+		await _esperar(0.5)
+		var tela: Node = await _f6b1_janela_criar()
+		_exigir(tela != null and gs.sucessao_estado() == "creating", "f6b1_pular", "PULAR leva direto à tela de criação (%s)" % gs.sucessao_estado())
+		_exigir(not cu._botao.visible, "f6b1_pular", "na tela de criação não se pula")
+		_exigir(not cu.player.pular(), "f6b1_pular", "pular() na tela de criação não faz nada")
+		tela._confirmar()
+		await _esperar(1.0)
+		cu._botao.pressed.emit()  # PULAR a parte 2: estado final em ~0,3 s
+		await _esperar(0.7)
+		_exigir(gs.sucessao_estado() == "none", "f6b1_pular", "depois de pular a parte 2 o controle volta (%s)" % gs.sucessao_estado())
+		_exigir(sala.mentor_visivel() and sala._caixote.visible and sala._lutador.visible, "f6b1_pular", "estado final: John sentado no caixote e o discípulo de guarda")
+		await _esperar(0.5)
+		_cena.get_node("Fluxo").fechar_cartao_aberto()
+		await _ver("f6b1_pular")

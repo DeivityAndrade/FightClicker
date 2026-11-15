@@ -56,6 +56,22 @@ func col(n) -> Color:
 		return n
 	return C[n]
 
+## Fase 6b1 (Artista de Personagens): rampas extras de CORES-CHAVE para troca de paleta em tempo real (discípulo em
+## camadas). Ficam fora da paleta de 45: só existem nas folhas em camadas e o jogo troca cada chave pela cor da opção.
+## Sem chamar add_ramp nada muda (todos os geradores antigos dão o mesmo resultado).
+var extra_ramps: Array = []
+
+## names = nomes novos (escuro -> claro); hexes = cor de cada um ("" = nome que já existe na paleta, ex. "ink").
+func add_ramp(names: Array, hexes: Array) -> void:
+	var ri := RAMPS.size() + extra_ramps.size()
+	extra_ramps.append(names)
+	for i in names.size():
+		if hexes[i] != "":
+			C[names[i]] = Color.html("#" + hexes[i])
+		var hx: String = (C[names[i]] as Color).to_html(false)
+		if not _lookup.has(hx):
+			_lookup[hx] = [ri, i]
+
 ## Anda n passos na rampa da cor (n<0 escurece, n>0 clareia).
 func shade(c: Color, n: int) -> Color:
 	var hx := c.to_html(false)
@@ -64,7 +80,7 @@ func shade(c: Color, n: int) -> Color:
 	if hx == _ink_hex:
 		return c   # contorno nunca clareia
 	var info: Array = _lookup[hx]
-	var ramp: Array = RAMPS[info[0]]
+	var ramp: Array = RAMPS[info[0]] if info[0] < RAMPS.size() else extra_ramps[info[0] - RAMPS.size()]
 	var i: int = clampi(info[1] + n, 0, ramp.size() - 1)
 	return C[ramp[i]]
 

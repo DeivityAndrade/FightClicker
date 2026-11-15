@@ -169,3 +169,12 @@ func tap_glove() -> void:
 ## Batida do selo na tela de vitória (som que já existe: hit_heavy).
 func selo() -> void:
 	_tocar("hit_heavy", -5.0, 0.02)
+
+
+# --- Fase 6b1: sons da cena de passar o posto e dos toques do mentor (assets/sfx/<id>.wav) ---
+
+## Toca um som pelo id do arquivo (volume linear 0..1). Sem o arquivo, não faz nada.
+func por_id(id: String, volume: float = 1.0) -> void:
+	if not _fluxos.has("id:" + id):
+		_fluxos["id:" + id] = _carregar_variacoes(id)
+	_tocar("id:" + id, linear_to_db(maxf(volume, 0.01)) - 4.0, 0.0)

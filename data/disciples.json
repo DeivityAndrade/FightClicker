@@ -1,0 +1,134 @@
+{
+	"version": 1,
+	"_doc": "Fase 6b1. Dono dos valores: Designer (docs/fases/fase6b1-design.md). Cores = alvo para o Diretor de Arte (ele fecha o hex final). Nomes e textos ficam em data/nomes_discipulos.json e data/ui_texts.json (Roteirista).",
+
+	"names_file": "res://data/nomes_discipulos.json",
+	"name": {
+		"max_chars": 14,
+		"min_letters": 1,
+		"allowed_letters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ",
+		"allow_space": true,
+		"avoid_recent": 5
+	},
+
+	"default_look": {
+		"skin": "skin_3",
+		"hair_color": "brown",
+		"hair_style": "short",
+		"shorts_color": "green",
+		"top": "none",
+		"top_color": "white",
+		"headband": "none",
+		"headband_color": "red",
+		"socks": "none"
+	},
+
+	"fields": {
+		"skin": {
+			"phase": "6b1",
+			"slots": ["shadow", "base", "light"],
+			"options": [
+				{ "id": "skin_1", "enabled": true, "colors": ["#a8684e", "#e0a888", "#f4d0b4"] },
+				{ "id": "skin_2", "enabled": true, "colors": ["#8f5238", "#cc8c62", "#eebd94"] },
+				{ "id": "skin_3", "enabled": true, "colors": ["#7a4632", "#b9744f", "#e3a275"], "tokens": ["sk0", "sk1", "sk2"] },
+				{ "id": "skin_4", "enabled": true, "colors": ["#5a3029", "#8c5545", "#b8806a"] },
+				{ "id": "skin_5", "enabled": true, "colors": ["#422529", "#73453f", "#a06a5a"] }
+			]
+		},
+		"hair_color": {
+			"phase": "6b1",
+			"slots": ["dark", "light", "brow"],
+			"options": [
+				{ "id": "black",      "enabled": true, "colors": ["#2a2233", "#4a4552", "#14101a"], "tokens": ["d1", "g0", "ink"] },
+				{ "id": "dark_brown", "enabled": true, "colors": ["#3b2622", "#6b3f2a", "#14101a"], "tokens": ["br0", "br1", "ink"] },
+				{ "id": "brown",      "enabled": true, "colors": ["#6b3f2a", "#9a5f36", "#3b2622"], "tokens": ["br1", "br2", "br0"] },
+				{ "id": "copper",     "enabled": true, "colors": ["#9a5f36", "#c98a4b", "#3b2622"], "tokens": ["br2", "br3", "br0"] },
+				{ "id": "blond",      "enabled": true, "colors": ["#e0a040", "#f5d26b", "#3b2622"], "tokens": ["y0", "y1", "br0"] },
+				{ "id": "platinum",   "enabled": true, "colors": ["#b8b0aa", "#d9cdb4", "#6b6570"], "tokens": ["g3", "cream", "g1"] }
+			]
+		},
+		"hair_style": {
+			"phase": "6b1",
+			"options": [
+				{ "id": "short",  "enabled": true },
+				{ "id": "buzz",   "enabled": false, "phase": "6b2" },
+				{ "id": "volume", "enabled": false, "phase": "6b2" },
+				{ "id": "bun",    "enabled": false, "phase": "6b2" }
+			]
+		},
+		"shorts_color": {
+			"phase": "6b1",
+			"slots": ["dark", "mid", "light", "band"],
+			"options": [
+				{ "id": "green",  "enabled": true, "colors": ["#1f3d33", "#2f6b4a", "#5aa25a", "#a6d86a"], "tokens": ["gr0", "gr1", "gr2", "gr3"] },
+				{ "id": "blue",   "enabled": true, "colors": ["#1f2a44", "#2f4a78", "#4d7bb3", "#8fbbe0"], "tokens": ["b0", "b1", "b2", "b3"] },
+				{ "id": "black",  "enabled": true, "colors": ["#2a2233", "#3d3346", "#4a4552", "#8f8890"], "tokens": ["d1", "d2", "g0", "g2"] },
+				{ "id": "white",  "enabled": true, "colors": ["#8f8890", "#b8b0aa", "#d9cdb4", "#f2ece0"], "tokens": ["g2", "g3", "cream", "white"] },
+				{ "id": "purple", "enabled": true, "colors": ["#4a2f6b", "#7a4fa0", "#b07ad8", "#d9cdb4"], "tokens": ["p0", "p1", "p2", "cream"] },
+				{ "id": "yellow", "enabled": true, "colors": ["#9a5f36", "#e0a040", "#f5d26b", "#fff3c4"], "tokens": ["br2", "y0", "y1", "y2"] }
+			]
+		},
+		"top": {
+			"phase": "6b2",
+			"options": [
+				{ "id": "none", "enabled": true },
+				{ "id": "tank", "enabled": false, "phase": "6b2" },
+				{ "id": "tee",  "enabled": false, "phase": "6b2" }
+			]
+		},
+		"top_color": {
+			"phase": "6b2",
+			"options": [
+				{ "id": "white",  "enabled": false }, { "id": "black", "enabled": false }, { "id": "red", "enabled": false },
+				{ "id": "blue",   "enabled": false }, { "id": "green", "enabled": false }, { "id": "yellow", "enabled": false }
+			]
+		},
+		"headband": {
+			"phase": "6b2",
+			"options": [ { "id": "none", "enabled": true }, { "id": "band", "enabled": false, "phase": "6b2" } ]
+		},
+		"headband_color": {
+			"phase": "6b2",
+			"options": [
+				{ "id": "red",   "enabled": false }, { "id": "white", "enabled": false }, { "id": "black", "enabled": false },
+				{ "id": "blue",  "enabled": false }, { "id": "green", "enabled": false }, { "id": "yellow", "enabled": false }
+			]
+		},
+		"socks": {
+			"phase": "6b2",
+			"options": [ { "id": "none", "enabled": true }, { "id": "on", "enabled": false, "phase": "6b2" } ]
+		}
+	},
+
+	"random": {
+		"fields": ["skin", "hair_color", "hair_style", "shorts_color", "top", "top_color", "headband", "headband_color", "socks"],
+		"avoid_same_shorts_as_last": true
+	},
+
+	"handover": {
+		"screen": "customize_disciple",
+		"first_scene": "primeira_sucessao",
+		"first_scene_milestone": "cena_primeira_sucessao",
+		"short_scene": "chegada_discipulo",
+		"short_scene_max_seconds": 2.5
+	},
+
+	"mentor_taps": {
+		"enabled": true,
+		"on_first_click": true,
+		"on_win_return": true,
+		"cooldown_seconds": 60.0,
+		"first_click_guard_seconds": 0.5,
+		"win_return_delay_seconds": 1.0,
+		"tap_interval": 0.22,
+		"anim": "mentor_first_taps",
+		"sound": "tap_fist",
+		"location": "garage"
+	},
+
+	"room_mentors": {
+		"defeat_counts_as_passed": true,
+		"second_mentor_from_campaign": 3,
+		"second_mentor_phase": "6b2"
+	}
+}

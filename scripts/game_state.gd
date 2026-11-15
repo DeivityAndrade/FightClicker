@@ -65,6 +65,12 @@ signal abertura_mudou(estado: String)  # "pending" | "playing" | "over"
 signal gesto_pedido(plano: Dictionary)  # tocar o gesto do 1º lutador (plano: ver pedir_gesto)
 signal gesto_cancelado()  # clique ou janela: parar o gesto e cortar o som dele
 
+# Fase 6b1: passar o posto (contrato da UI em docs/fases/fase6b1-api.md)
+signal sucessao_mudou(estado: String)  # "none" | "scene_1" | "creating" | "scene_2" | "arriving"
+signal rascunho_mudou()  # nome ou visual do rascunho mudou (sorteio, troca de campo, nome corrigido)
+signal toques_mentor_pedidos(plano: Dictionary)  # o John sentado faz os dois toques sem luva (plano: ver _pedir_toques)
+signal toques_mentor_cancelados()  # clique, janela, luta ou mudança de local: parar a pose e cortar o 2º toque
+
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
 const PASTA_SAVE_TESTES := "user://test/autoload/"
@@ -191,6 +197,18 @@ var _metro_prev := 0
 var _crew_prev := false
 var _rng_fala := RandomNumberGenerator.new()
 
+# Fase 6b1: passar o posto, discípulo e John mentor
+var disciples: DiscipulosData  # data/disciples.json + banco de nomes
+var discipulo: Dictionary = {}  # career.disciple {name, look, campaign}; {} = campanha do John (ou criação em andamento)
+var mentor_cumprimentou := false  # career.mentor_greeted: os toques do 1º clique da campanha já foram dados
+var sucessao := "none"  # "none" | "scene_1" | "creating" | "scene_2" | "arriving" (só em memória; o save guarda school.handover)
+var sucessao_retomada := false  # true quando o estado veio de um save aberto no meio (a cena grande não toca)
+var _cena_grande_ativa := false  # a primeira_sucessao tocou NESTA sessão (a reação do 1º clique está armada)
+var _rng_sucessao := RandomNumberGenerator.new()  # próprio: não mexe em crítico, luta nem calendário
+var _toques: Dictionary = {}  # toques tocando: {momento, inicio, ate, guarda}
+var _toque_ultimo := -1.0e9  # _t_real do início do último toque (intervalo de 60 s)
+var _toque_vitoria := -1.0  # >= 0: segundos de sala ativa desde a vitória; -1 = nada pendente
+
 
 func _ready() -> void:
 	rng.randomize()
@@ -219,8 +237,10 @@ func inicializar(pasta_save: String, caminho_config: String,
 		caminho_treino: String = TrainingData.CAMINHO_TREINO,
 		caminho_geradores: String = TrainingData.CAMINHO_GERADORES,
 		caminho_textos: String = TrainingData.CAMINHO_TEXTOS, dados_lutas: FightData = null,
-		dados_academia: GymData = null, dados_dialogos: DialogosData = null) -> void:
+		dados_academia: GymData = null, dados_dialogos: DialogosData = null, dados_discipulos: DiscipulosData = null) -> void:
 	config = GameConfig.carregar(caminho_config)
+	disciples = dados_discipulos if dados_discipulos != null else DiscipulosData.carregar()
+	_rng_sucessao.randomize()
 	dialogos = dados_dialogos if dados_dialogos != null else DialogosData.carregar()
 	_rng_fala.randomize()
 	_ligar_gatilhos_de_fala()
@@ -246,8 +266,8 @@ func tick(delta: float) -> void:
 	# Ignora delta inválido (NaN, infinito, zero ou negativo) sem tocar no acumulador do autosave.
 	if not is_finite(delta) or delta <= 0.0:
 		return
-	# Com a tela de fim pendente a carreira está congelada (nada produz, o tempo não anda).
-	if fim.is_empty():
+	# Com a tela de fim pendente (ou a sucessão em andamento, Fase 6b1) a carreira está congelada: nada produz, o tempo não anda.
+	if fim.is_empty() and sucessao == "none":
 		tempo_jogo += delta
 		_ocioso += delta
 		_tick_risco(delta)
@@ -279,7 +299,7 @@ func tick(delta: float) -> void:
 ## A ÚNICA condição de tick: relógio da campanha, equipe, Metrônomo, assistido, clique, luva dourada e Jiu-jitsu
 ## só andam com ela. Perder foco ou minimizar NÃO desliga; janela, luta, escolha da arte e dia da luta sim.
 func sala_ativa() -> bool:
-	return fim.is_empty() and luta.is_empty() and not escolha_arte_pendente() and not modal_aberto and not no_dia_da_luta()
+	return fim.is_empty() and sucessao == "none" and luta.is_empty() and not escolha_arte_pendente() and not modal_aberto and not no_dia_da_luta()
 
 
 func calendario_ligado() -> bool:
@@ -554,6 +574,7 @@ func clicar() -> Dictionary:
 	registrar_clique()  # Fase 6a: cancela o gesto e zera a "sala parada"
 	if acoes_bloqueadas() or not sala_ativa():
 		return {}
+	_toques_do_primeiro_clique()
 	return _socar(false)
 
 
@@ -906,7 +927,7 @@ func acoes_bloqueadas() -> bool:
 
 
 func _bloqueio_base() -> bool:
-	return not luta.is_empty() or not fim.is_empty() or escolha_arte_pendente()
+	return not luta.is_empty() or not fim.is_empty() or sucessao != "none" or escolha_arte_pendente()
 
 
 func tem_luta_pendente() -> bool:
@@ -1342,6 +1363,7 @@ func _tick_risco(delta: float) -> void:
 func lutar() -> Dictionary:
 	if not pode_lutar():
 		return {}
+	_reacao_cena = ""  # lutar antes do 1º clique: a reação da cena se perde, os toques seguem a regra comum
 	var opp := proximo_adversario()
 	var jog := _atributos_array()
 	var semente := int(rng.randi())
@@ -1618,6 +1640,7 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 		"summary": {"wins": indice_escada, "belts": 1 if cinturao else 0, "fame": fama,
 			"money_earned": dinheiro_ganho, "play_seconds": tempo_jogo, "art": arte_id, "location": local_id},
 	}
+	_registrar_na_lista_da_escola(tipo, snap, ganho)
 	salvar()
 	permanente_mudou.emit()
 	fim_de_carreira.emit(fim.duplicate(true))
@@ -1628,6 +1651,20 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 func nova_carreira() -> bool:
 	if fim.is_empty():
 		return false
+	_reiniciar_campanha()
+	# Caminho direto (sem a tela de criação): o discípulo, se houver, é o padrão. A interface usa receber_discipulo().
+	if lutador_atual() == "disciple" and discipulo.is_empty():
+		discipulo = _discipulo_padrao()
+	salvar()
+	_tempo_autosave = 0.0
+	_emitir_tudo(false)
+	permanente_mudou.emit()
+	_emitir_inicio_da_campanha()
+	return true
+
+
+# Zera a carreira e soma 1 em "Carreira N" (sem salvar nem emitir). Fase 6b1: usado por nova_carreira() e receber_discipulo().
+func _reiniciar_campanha() -> void:
 	# Fase 5.4: a foto dos nós (o que vale nesta campanha) é tirada aqui, ANTES de zerar (a data usa "+1 dia").
 	nos_ativos_ids = permanente.get("skill_nodes", []).duplicate()
 	arte_id = ""
@@ -1635,12 +1672,14 @@ func nova_carreira() -> bool:
 	_zerar_carreira()
 	permanente["career_number"] = int(permanente.career_number) + 1
 	fim = {}
+	discipulo = {}
+	mentor_cumprimentou = false
 	_aplicar_inicio_da_arvore()
 	nivel_metronomo = mini(int(_b("metronome_start")), metronomo_niveis())
-	salvar()
-	_tempo_autosave = 0.0
-	_emitir_tudo(false)
-	permanente_mudou.emit()
+
+
+# O começo da campanha, na ordem da 6a: cartão, escolha da arte (a UI trata "arte antes do cartão") e a fala da derrota.
+func _emitir_inicio_da_campanha() -> void:
 	nova_carreira_iniciada.emit(cartao_inicio())
 	# Com as artes liberadas, a escolha vem ANTES do cartão (a UI abre a janela e depois mostra `cartao_inicio()`).
 	if escolha_arte_pendente():
@@ -1651,7 +1690,6 @@ func nova_carreira() -> bool:
 			and int(fim_anterior.get("campaign", 0)) == numero_carreira() - 1:
 		disparar_gatilho("after_defeat")
 		_derrota_rearmada = true
-	return true
 
 
 func _zerar_carreira() -> void:
@@ -1987,8 +2025,8 @@ func cartao_inicio() -> Dictionary:
 	if r.count == 0 and arte_id == "":
 		return {}
 	# Fase 5: `art` / `art_text` ("ARTE: BOXE") só depois da escolha (a UI chama de novo ao fechar a janela de arte)
-	return {"title": preencher(texto_ui("career_card_title", "CARREIRA {n} — O QUE VOCÊ TROUXE:"), {"n": numero_carreira()}),
-		"career": numero_carreira(), "nodes": r.nodes, "art": arte_id,
+	return {"title": preencher(texto_ui("career_card_title_named", "{nome}: O QUE VOCÊ TROUXE"), {"nome": nome_lutador().to_upper()}),
+		"career": numero_carreira(), "name": nome_lutador(), "nodes": r.nodes, "art": arte_id,
 		"art_text": preencher(texto_ui("career_card_art", "ARTE: {nome}"), {"nome": nome_arte(arte_id).to_upper()}) if arte_id != "" else ""}
 
 
@@ -2067,6 +2105,7 @@ func mudar() -> bool:
 	_gastar_dinheiro(float(d.move.cost))
 	var estava_parado := estado_escada() == "move"
 	local_id = str(d.id)
+	_reacao_cena = ""
 	if estava_parado and calendario_ligado():
 		fight_day = _data_da_proxima_luta()  # B3: chegou ao novo local, folga cheia a partir de hoje
 	var primeira: bool = permanente.arts_unlocked.is_empty() and not academia.artes.is_empty()
@@ -2128,7 +2167,7 @@ func nome_arte(id: String) -> String:
 ## true quando a janela de escolha da arte deve estar aberta: artes liberadas, carreira viva e sem arte escolhida.
 ## Cobre a 1ª chegada, o início de toda carreira e reabrir o jogo sem ter escolhido. Enquanto vale, `acoes_bloqueadas()`.
 func escolha_arte_pendente() -> bool:
-	return arte_id == "" and fim.is_empty() and not permanente.get("arts_unlocked", []).is_empty()
+	return arte_id == "" and fim.is_empty() and sucessao == "none" and not permanente.get("arts_unlocked", []).is_empty()
 
 
 ## true na escolha da 1ª chegada (nunca escolheu arte): subtítulo `art_sub_first`.
@@ -2140,7 +2179,7 @@ func escolha_arte_primeira() -> bool:
 func subtitulo_escolha_arte() -> String:
 	if escolha_arte_primeira():
 		return texto_ui("art_sub_first")
-	return preencher(texto_ui("art_sub_career", "CARREIRA {n}: ESCOLHA A ARTE"), {"n": numero_carreira()})
+	return preencher(texto_ui("art_sub_career_named", "{nome}: ESCOLHA A ARTE"), {"nome": nome_lutador().to_upper()})
 
 
 ## Cartões da janela de escolha: [{id, name, tagline, rule_text, fight_text, icon, apparatus, apparatus_name, last, last_text}].
@@ -2449,7 +2488,7 @@ func textos_fim(f: Dictionary = {}) -> Dictionary:
 	if tt != "" and not pool.is_empty():
 		dica_t = str(pool[int(r.get("tip", 0)) % pool.size()])
 	return {"title": texto_ui("end_defeat_title"), "who": quem, "reason": principal, "stat": texto_stat,
-		"tip": dica, "tip_tactic": dica_t, "support": texto_ui("end_support_line"),
+		"tip": dica, "tip_tactic": dica_t, "support": texto_ui("end_support_line_disc", texto_ui("end_support_line")),
 		"tactic_name": str(lutas.tatica(tt).get("name", "")),
 		"wait_green": "" if kind == "luck" else texto_ui("tip_wait_green"),
 		"tip_extra": _dica_extra(f)}
@@ -2609,6 +2648,8 @@ func para_save() -> Dictionary:
 			"fight_day": fight_day,
 			"active_nodes": nos_ativos_ids.duplicate(),
 			"gestured_gloves": gestos_calcados.duplicate(),
+			"disciple": discipulo.duplicate(true) if not discipulo.is_empty() else null,
+			"mentor_greeted": mentor_cumprimentou,
 			"money_earned": dinheiro_ganho,
 			"fight": luta.duplicate(true) if not luta.is_empty() else null,
 		},
@@ -2698,6 +2739,11 @@ func aplicar_save(estado: Dictionary) -> void:
 	# Fase 6a: escola (depois de permanente e fim: o padrão depende deles) e estado volátil das falas
 	gestos_calcados = _validar_gestos(c.get("gestured_gloves", []))
 	escola = _validar_escola(estado.get("school", null), not estado.is_empty())
+	# Fase 6b1: passar o posto. O estado da sucessão vem do save (school.handover); o discípulo depois dele.
+	_aplicar_handover_da_carga()
+	discipulo = _validar_discipulo(c.get("disciple", null), not c.is_empty())
+	var greeted = c.get("mentor_greeted", true)  # ausente = true: save sem o campo não dispara toques no meio da campanha
+	mentor_cumprimentou = typeof(greeted) != TYPE_BOOL or greeted
 	_reiniciar_falas()
 	_finalizar_motivo(false)
 	_motivo_cache = {}
@@ -3201,8 +3247,8 @@ func tem_balao() -> bool:
 ## Descrição da luva inicial: "o par do John" no 1º lutador, a descrição padrão nos outros.
 func descricao_luva_inicial() -> String:
 	if lutador_atual() == "first":
-		return dialogos.texto_objeto("starter_glove_desc")
-	return str(lutas.luva_base.get("description", ""))
+		return texto_ui("glove_start_desc", dialogos.texto_objeto("starter_glove_desc"))
+	return texto_ui("glove_start_desc_disc", str(lutas.luva_base.get("description", "")))
 
 
 # Grava um marco (id desconhecido também). false se já existia. `salvar_agora`: false quando quem chama salva em seguida.
@@ -3343,6 +3389,7 @@ func _cancelar_balao() -> void:
 # Janela, luta, tela de fim ou escolha da arte: o balão fecha na hora e o gesto "da sala" para.
 func _fechar_para_janela() -> void:
 	_cancelar_balao()
+	_cancelar_toques(true)
 	if not _gesto.is_empty() and str(_gesto.momento) in ["opening", "glove", "idle"]:
 		cancelar_gesto()
 
@@ -3359,6 +3406,7 @@ func _tick_falas(delta: float) -> void:
 		_limpar_balao()
 	if not _gesto.is_empty() and _t_real >= float(_gesto.ate):
 		_gesto = {}
+	_tick_toques(delta, ativa)
 	if _abertura == "pending":
 		if ativa and local_id == "garage":  # o Osmar só é desenhado na garagem
 			_iniciar_abertura()
@@ -3412,7 +3460,7 @@ func _resolver_gatilhos(delta: float) -> void:
 			_vaga = {}  # nada mais a dizer (a fala já tocou ou a condição mudou)
 		return
 	var g_ganho: Dictionary = melhor.g
-	if not _gesto.is_empty() and bool(dialogos.comments.get("after_gesture", true)):
+	if (not _gesto.is_empty() or not _toques.is_empty()) and bool(dialogos.comments.get("after_gesture", true)):
 		# "O gesto antes da fala": espera ele acabar (ou ser cancelado) na vaga.
 		if not g_ganho.has("vaga"):
 			_guardar_vaga(g_ganho, dialogos.prioridade(melhor.linha), melhor.linha.repeat == "once")
@@ -3450,7 +3498,7 @@ func _guardar_vaga(g: Dictionary, prio: int, persiste: bool = false) -> void:
 func _ligar_gatilhos_de_fala() -> void:
 	var pares: Array = [[caixa_criada, _fala_caixa_criada], [melhoria_comprada, _fala_melhoria],
 		[metronomo_mudou, _fala_metronomo], [crew_click_mudou, _fala_crew], [caixa_aberta, _fala_caixa_aberta],
-		[luta_resolvida, _fala_luta_resolvida], [aviso_data, _fala_aviso_data]]
+		[luta_resolvida, _fala_luta_resolvida], [aviso_data, _fala_aviso_data], [luta_resolvida, _toques_apos_vitoria]]
 	for par in pares:
 		var sinal: Signal = par[0]
 		var rotina: Callable = par[1]
@@ -3545,6 +3593,8 @@ func pedir_gesto(momento: String, nivel: int = -1) -> Dictionary:
 ## Qualquer clique do jogador (saco, botão, fora do alvo): cancela o gesto e zera a "sala parada".
 ## `clicar()` já chama isto; a UI chama nos outros cliques.
 func registrar_clique() -> void:
+	_cancelar_toques(false)  # Fase 6b1: qualquer clique cancela os toques do mentor (com a guarda do 1º clique)
+	_toque_vitoria = -1.0  # e desiste dos toques que esperavam a volta da vitória
 	_parado = 0.0
 	_gestos_parada = 0
 	_proximo_gesto_parada = float(dialogos.gesture.get("idle_first_seconds", 20.0))
@@ -3580,6 +3630,9 @@ func _reiniciar_falas() -> void:
 		fala_cancelada.emit(str(_balao.id))
 	_balao = {}
 	_gesto = {}
+	_toques = {}
+	_toque_ultimo = -1.0e9
+	_toque_vitoria = -1.0
 	_vaga = {}
 	_gatilhos_quadro = []
 	_ultimo_comentario = -1.0e9
@@ -3621,7 +3674,8 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 		_avisar("Bloco da escola inválido: recriado pelo padrão.")
 	elif havia_save:
 		push_warning("GameState: save sem o bloco da escola: recriado pelo padrão.")
-	var r := {"first_fighter_campaign": padrao_primeiro, "milestones": {}, "lines_seen": {}, "last_end": null}
+	var r := {"first_fighter_campaign": padrao_primeiro, "milestones": {}, "lines_seen": {}, "last_end": null,
+		"handover": null, "mentors": [], "roster": []}
 	var f = s.get("first_fighter_campaign", null)
 	if (typeof(f) == TYPE_INT or typeof(f) == TYPE_FLOAT) and is_finite(float(f)) and float(f) >= 1.0 and float(f) < 1.0e9:
 		r["first_fighter_campaign"] = int(f)
@@ -3657,4 +3711,406 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 		r["last_end"] = {"kind": str(le.kind), "campaign": maxi(1, _inteiro_valido(le.get("campaign", 1), 1.0e9))}
 	elif not fim.is_empty():
 		r["last_end"] = {"kind": str(fim.kind), "campaign": int(fim.career_number)}
+	_validar_escola_6b(s, r)
 	return r
+
+
+# --- Fase 6b1: passar o posto, discípulo e John mentor (design: docs/fases/fase6b1-design.md; API: fase6b1-api.md) ---
+
+# --- Consultas ---
+
+## "none" | "scene_1" | "creating" | "scene_2" | "arriving". Fora de "none" a carreira está congelada.
+func sucessao_estado() -> String:
+	return sucessao
+
+
+## Id da cena que a sucessão toca agora ("primeira_sucessao" ou "chegada_discipulo"); "" fora da sucessão.
+## Depois de abrir um save no meio, a primeira_sucessao vira chegada_discipulo (a cena grande nunca repete).
+func sucessao_cena() -> String:
+	return str(_handover().get("scene", ""))
+
+
+func _handover() -> Dictionary:
+	var h = escola.get("handover", null)
+	return h if h is Dictionary else {}
+
+
+## Rascunho da tela de criação: {name, look}. {} fora da criação.
+func rascunho() -> Dictionary:
+	var h := _handover()
+	return h.draft.duplicate(true) if h.get("draft", null) is Dictionary else {}
+
+
+## Nome sem espaços nas pontas e sem repetidos, só com as letras que a fonte desenha ("" se não sobrar nenhuma).
+func limpar_nome(texto: String) -> String:
+	return disciples.limpar_nome(texto)
+
+
+## O discípulo da campanha: {name, look, campaign}. {} na campanha do John.
+func discipulo_atual() -> Dictionary:
+	return discipulo.duplicate(true)
+
+
+## Nome de quem está lutando: "John Bullet" ou o nome do discípulo. A interface aplica `.to_upper()`.
+func nome_lutador() -> String:
+	if lutador_atual() == "first":
+		return str(dialogos.cast.get("first", {}).get("name", "John Bullet"))
+	return str(discipulo.get("name", disciples.nome_padrao))
+
+
+## Texto do HUD no lugar de "Carreira N": só o nome, em maiúsculas.
+func texto_hud_lutador() -> String:
+	return preencher(texto_ui("hud_disciple", "{nome}"), {"nome": nome_lutador().to_upper()})
+
+
+## Título do resumo de fim de campanha: "RESUMO DE {NOME}".
+func titulo_resumo() -> String:
+	return preencher(texto_ui("sum_title_named", "RESUMO DE {nome}"), {"nome": nome_lutador().to_upper()})
+
+
+## Visual do lutador atual (9 campos). {} no John (ele usa as folhas dele).
+func visual_lutador() -> Dictionary:
+	if lutador_atual() == "first":
+		return {}
+	var l = discipulo.get("look", null)
+	return l.duplicate(true) if l is Dictionary else disciples.look_padrao.duplicate()
+
+
+## Cores de um visual (padrão: o do lutador atual): {campo: {id, slots, colors (hex), tokens}}. O John devolve {}.
+func cores_visual(look: Dictionary = {}) -> Dictionary:
+	var l := look if not look.is_empty() else visual_lutador()
+	return disciples.cores(l) if not l.is_empty() else {}
+
+
+## Quem está sentado na garagem: [{id: "first", spot: "mentor_spot", pose: "sit_rest"}]. Só na garagem, com discípulo jogando.
+func mentores_na_sala() -> Array:
+	return [{"id": "first", "spot": "mentor_spot", "pose": "sit_rest"}] if mentor_sentado() else []
+
+
+func mentor_sentado() -> bool:
+	return lutador_atual() == "disciple" and "first" in escola.get("mentors", []) and local_id == "garage"
+
+
+## Lista da escola: quem passou o posto, em ordem (cópia). Ver design §3.4.
+func escola_lista() -> Array:
+	return escola.get("roster", []).duplicate(true)
+
+
+func _discipulo_padrao() -> Dictionary:
+	return {"name": disciples.nome_padrao, "look": disciples.look_padrao.duplicate(), "campaign": numero_carreira()}
+
+
+# --- Ações: o fluxo da sucessão ---
+
+## RECEBER NOVO DISCÍPULO (substitui a chamada da interface a nova_carreira()). Só com a tela de fim pendente.
+## Zera a campanha (mesma conta de hoje) e segura o começo: cartão, escolha da arte e fala da derrota só saem em
+## sucessao_terminou(). Primeira sucessão: grava o marco e os grants já aqui. No "começo do John" (save antigo,
+## campanha nova == campanha do John) é a NOVA CAMPANHA de sempre, sem tela e sem cena.
+func receber_discipulo() -> bool:
+	if fim.is_empty() or sucessao != "none":
+		return false
+	var nova := numero_carreira() + 1
+	if nova <= int(escola.get("first_fighter_campaign", 1)):
+		return nova_carreira()
+	_reiniciar_campanha()
+	var ctx := {"milestones": escola.milestones, "campaign": nova, "campaigns_finished": int(permanente.get("careers_finished", 0)),
+		"location": local_id, "calm": true}
+	var cena_id := CenaDados.escolher_cena("handover_started", ctx)
+	if cena_id == "":
+		cena_id = str(disciples.passagem.get("short_scene", "chegada_discipulo"))
+	var cena := CenaDados.carregar_cena(cena_id)
+	var grande := str(cena.get("milestone", "")) != ""
+	escola["handover"] = {"stage": "creating", "campaign": nova, "scene": cena_id,
+		"draft": disciples.sortear(_rng_sucessao, escola.roster)}
+	sucessao = "scene_1" if grande else "creating"
+	sucessao_retomada = false
+	_cena_grande_ativa = grande
+	if grande:
+		# O marco e o que ele dá são gravados no COMEÇO da cena: pular ou fechar o jogo dão o mesmo save.
+		_gravar_marco(str(cena.milestone), {}, false)
+		_aplicar_grants(cena.get("grants", []))
+	salvar()
+	_tempo_autosave = 0.0
+	_emitir_tudo(false)
+	permanente_mudou.emit()
+	sucessao_mudou.emit(sucessao)
+	rascunho_mudou.emit()
+	return true
+
+
+func _aplicar_grants(grants: Array) -> void:
+	var mentores: Array = escola.mentors
+	for g in grants:
+		if not (g is Dictionary):
+			continue
+		var quem := "first" if str(g.get("character", "")).begins_with("first_fighter") else ""
+		if quem == "":
+			continue
+		if str(g.get("type", "")) == "mentor_in_room" and not (quem in mentores):
+			mentores.append(quem)
+		elif str(g.get("type", "")) == "mentor_leaves":
+			mentores.erase(quem)
+
+
+## O player chegou no passo `open_screen` (cena grande): a tela de criação abre. scene_1 -> creating.
+func sucessao_tela_aberta() -> void:
+	if sucessao == "scene_1":
+		sucessao = "creating"
+		sucessao_mudou.emit(sucessao)
+
+
+## Sorteia TUDO de novo no rascunho (botão SORTEAR). Só com a tela aberta.
+func sortear_rascunho() -> bool:
+	var h := _handover()
+	if sucessao != "creating" or h.is_empty():
+		return false
+	h["draft"] = disciples.sortear(_rng_sucessao, escola.roster, str(h.get("draft", {}).get("name", "")))
+	rascunho_mudou.emit()
+	return true
+
+
+## Troca um campo do rascunho: "name" (texto digitado; a interface já recusa o que a fonte não desenha) ou um campo do
+## look (skin, hair_color, shorts_color... só opções ligadas). Não salva (vai no autosave).
+func definir_rascunho(campo: String, valor: String) -> bool:
+	var h := _handover()
+	if sucessao != "creating" or h.is_empty() or not (h.get("draft", null) is Dictionary):
+		return false
+	var d: Dictionary = h.draft
+	if campo == "name":
+		d["name"] = disciples.filtrar_digitacao(valor)
+	elif d.look.has(campo) and valor in disciples.opcoes_ativas(campo):
+		d.look[campo] = valor
+	else:
+		return false
+	rascunho_mudou.emit()
+	return true
+
+
+## CONFIRMAR. Nome vazio: o campo volta a um nome sorteado e não confirma (false). Senão grava o discípulo, o estado
+## `arriving` no save, e a sucessão segue: scene_2 (a cena grande continua) ou arriving (chegada curta).
+func confirmar_discipulo() -> bool:
+	var h := _handover()
+	if sucessao != "creating" or h.is_empty():
+		return false
+	var d: Dictionary = h.draft
+	var nome := disciples.limpar_nome(str(d.get("name", "")))
+	if nome == "":
+		d["name"] = disciples.sortear_nome(_rng_sucessao, escola.roster)
+		rascunho_mudou.emit()
+		return false
+	discipulo = {"name": nome, "look": disciples.validar_look(d.get("look", {})), "campaign": numero_carreira()}
+	h["stage"] = "arriving"
+	sucessao = "scene_2" if _cena_grande_ativa else "arriving"
+	salvar()
+	_tempo_autosave = 0.0
+	carreira_mudou.emit()
+	sucessao_mudou.emit(sucessao)
+	return true
+
+
+## A cena devolveu o controle (return_control) ou foi pulada: a campanha começa. Apaga o `handover`, salva e emite o
+## começo (nova_carreira_iniciada, escolha_arte_pedida se pendente, gatilho after_defeat). O relógio anda a partir daqui.
+func sucessao_terminou() -> bool:
+	if sucessao != "scene_2" and sucessao != "arriving":
+		return false
+	var h := _handover()
+	_reacao_cena = str(h.get("scene", "")) if _cena_grande_ativa else ""
+	_cena_grande_ativa = false
+	escola["handover"] = null
+	sucessao = "none"
+	sucessao_retomada = false
+	salvar()
+	_tempo_autosave = 0.0
+	sucessao_mudou.emit("none")
+	_checar_sala()
+	_emitir_inicio_da_campanha()
+	return true
+
+
+# --- Carga e validação ---
+
+# Depois de validar a escola: o que o save diz sobre uma sucessão em andamento.
+func _aplicar_handover_da_carga() -> void:
+	sucessao = "none"
+	sucessao_retomada = false
+	_cena_grande_ativa = false
+	_reacao_cena = ""
+	var h := _handover()
+	if h.is_empty():
+		return
+	sucessao_retomada = true
+	if str(h.stage) == "creating":
+		sucessao = "creating"
+		# A parte 1 não toca de novo: a cena grande vira a chegada curta (fecha na criação; ao confirmar, chegada).
+		if str(CenaDados.carregar_cena(str(h.scene)).get("milestone", "")) != "":
+			h["scene"] = str(disciples.passagem.get("short_scene", "chegada_discipulo"))
+	else:
+		sucessao = "arriving"
+		var d: Dictionary = h.get("draft", {})
+		discipulo = {"name": str(d.get("name", disciples.nome_padrao)), "look": d.get("look", {}), "campaign": numero_carreira()}
+
+
+# career.disciple: {name, look, campaign}. Na campanha do John é {}. Faltando nas outras: o Novato padrão, com aviso
+# (na tela de criação ainda não existe e não é erro).
+func _validar_discipulo(v: Variant, havia_save: bool) -> Dictionary:
+	if lutador_atual() == "first":
+		return {}
+	if sucessao == "creating":
+		return {}
+	if sucessao == "arriving" and not discipulo.is_empty():
+		var nome_seguro := disciples.limpar_nome(str(discipulo.get("name", "")))
+		return {"name": nome_seguro if nome_seguro != "" else disciples.nome_padrao,
+			"look": disciples.validar_look(discipulo.get("look", {})), "campaign": numero_carreira()}
+	if v is Dictionary:
+		var nome := disciples.limpar_nome(str(v.get("name", "")))
+		var avisos: Array = []
+		var look := disciples.validar_look(v.get("look", null), avisos)
+		if nome == "" or not avisos.is_empty():
+			_avisar("Discípulo salvo com dados inválidos: campos trocados pelo padrão.")
+		return {"name": nome if nome != "" else disciples.nome_padrao, "look": look,
+			"campaign": maxi(1, _inteiro_valido(v.get("campaign", numero_carreira()), 1.0e9))}
+	if havia_save:
+		_avisar("Save sem o discípulo: o Novato padrão foi criado.")
+	return _discipulo_padrao()
+
+
+# Campos novos da escola (6b1): handover, mentors e roster. Ausente ou inválido: padrão (com aviso se havia save).
+func _validar_escola_6b(s: Dictionary, r: Dictionary) -> void:
+	var primeiro: int = int(r.first_fighter_campaign)
+	var ms = s.get("mentors", [])
+	if ms is Array:
+		for m in ms:
+			if str(m) == "first" and not ("first" in r.mentors):
+				r.mentors.append("first")
+	elif s.has("mentors"):
+		_avisar("Mentores da escola inválidos: zerados.")
+	var lista = s.get("roster", [])
+	if lista is Array:
+		for e in lista:
+			var ok := _validar_entrada_da_lista(e)
+			if not ok.is_empty():
+				r.roster.append(ok)
+	elif s.has("roster"):
+		_avisar("Lista da escola inválida: zerada.")
+	var h = s.get("handover", null)
+	if h == null:
+		return
+	var camp := _inteiro_valido(h.get("campaign", 0), 1.0e9) if h is Dictionary else 0
+	if not (h is Dictionary) or not (str(h.get("stage", "")) in ["creating", "arriving"]) or not fim.is_empty() \
+			or camp != numero_carreira() or camp <= primeiro:
+		_avisar("Sucessão salva inválida: descartada.")
+		return
+	var d = h.get("draft", {})
+	var avisos: Array = []
+	var nome: String = disciples.limpar_nome(str(d.get("name", ""))) if d is Dictionary else ""
+	if nome == "":
+		nome = disciples.sortear_nome(_rng_sucessao, r.roster)
+	var cena_id := str(h.get("scene", ""))
+	if CenaDados.carregar_cena(cena_id).is_empty():
+		cena_id = str(disciples.passagem.get("short_scene", "chegada_discipulo"))
+	r["handover"] = {"stage": str(h.stage), "campaign": camp, "scene": cena_id,
+		"draft": {"name": nome, "look": disciples.validar_look(d.get("look", null) if d is Dictionary else null, avisos)}}
+
+
+func _validar_entrada_da_lista(e: Variant) -> Dictionary:
+	if not (e is Dictionary):
+		return {}
+	var tipo := str(e.get("kind", ""))
+	if not (tipo in ["first", "disciple"]):
+		return {}
+	var fim_tipo := str(e.get("end", "unknown"))
+	var olhar = e.get("look", null)
+	var look_ok = null
+	if tipo == "disciple":
+		look_ok = disciples.validar_look(olhar) if olhar is Dictionary else disciples.look_padrao.duplicate()
+	return {"campaign": maxi(1, _inteiro_valido(e.get("campaign", 1), 1.0e9)), "kind": tipo,
+		"name": disciples.limpar_nome(str(e.get("name", ""))) if tipo == "disciple" else str(e.get("name", "")),
+		"look": look_ok,
+		"end": fim_tipo if fim_tipo in ["defeat", "retire", "unknown"] else "unknown",
+		"wins": clampi(int(_numero_ou(e.get("wins", -1), -1.0)), -1, 1000000),
+		"belt": typeof(e.get("belt", false)) == TYPE_BOOL and e.get("belt", false),
+		"art": str(e.get("art", "")), "opponent": str(e.get("opponent", "")),
+		"legacy_gained": _inteiro_valido(e.get("legacy_gained", 0), 1.0e15)}
+
+
+# Uma entrada na lista da escola para a campanha que acabou de encerrar (no mesmo salvar() do Legado).
+func _registrar_na_lista_da_escola(tipo: String, snap: Dictionary, ganho: int) -> void:
+	var primeiro := int(escola.get("first_fighter_campaign", 1))
+	if numero_carreira() < primeiro:
+		return  # campanhas de antes do John não entram
+	var e_john := numero_carreira() == primeiro
+	escola.roster.append({"campaign": numero_carreira(), "kind": "first" if e_john else "disciple", "name": nome_lutador(),
+		"look": null if e_john else visual_lutador(), "end": tipo, "wins": indice_escada, "belt": cinturao, "art": arte_id,
+		"opponent": str(snap.get("opponent", "")) if tipo == "defeat" else "", "legacy_gained": ganho})
+
+
+# --- John mentor: os toques ---
+
+var _reacao_cena := ""  # cena que armou a reação do 1º clique ("primeira_sucessao"); "" = toques sem fala
+
+
+# 1º clique da campanha: grava mentor_greeted na hora e pede os toques (se o intervalo de 60 s deixar).
+func _toques_do_primeiro_clique() -> void:
+	if mentor_cumprimentou or lutador_atual() != "disciple":
+		return
+	mentor_cumprimentou = true
+	if bool(disciples.toques.get("on_first_click", true)):
+		_pedir_toques("first_click")
+	_reacao_cena = ""
+
+
+# Pede os dois toques sem luva do John. Devolve o plano (e emite toques_mentor_pedidos) ou {} se não vale:
+# sem John sentado, sala parada, desligado nos dados ou dentro do intervalo (descartado, nunca guardado).
+# Plano: {momento ("first_click"|"win_return"), version "short", start 0, duration, taps [t1, t2], tap_sound, anim, guard,
+# cena (id da cena que cuida da animação: a interface NÃO repete os toques), com_fala}.
+func _pedir_toques(momento: String) -> Dictionary:
+	var cfg: Dictionary = disciples.toques
+	if not bool(cfg.get("enabled", true)) or not mentor_sentado() or not sala_ativa():
+		return {}
+	if _t_real - _toque_ultimo < float(cfg.get("cooldown_seconds", 60.0)):
+		return {}
+	_toque_ultimo = _t_real
+	var g: Dictionary = dialogos.gesture
+	var primeiro := float(g.get("short_tap_at", 0.11))
+	var duracao := float(g.get("short_seconds", 0.44))
+	var guarda := float(cfg.get("first_click_guard_seconds", 0.5)) if momento == "first_click" else 0.0
+	var cena := _reacao_cena if momento == "first_click" else ""
+	var plano := {"momento": momento, "version": "short", "start": 0.0, "duration": duracao,
+		"taps": [primeiro, primeiro + float(cfg.get("tap_interval", 0.22))],
+		"tap_sound": str(cfg.get("sound", "tap_fist")), "anim": str(cfg.get("anim", "mentor_first_taps")),
+		"guard": guarda, "cena": cena, "com_fala": cena != ""}
+	_toques = {"momento": momento, "inicio": _t_real, "ate": _t_real + duracao, "guarda": guarda}
+	toques_mentor_pedidos.emit(plano)
+	return plano
+
+
+# Cancela os toques. `forcar` ignora a guarda do 1º clique (janela, luta, mudança de local).
+func _cancelar_toques(forcar: bool) -> void:
+	if _toques.is_empty():
+		return
+	if not forcar and _t_real - float(_toques.inicio) < float(_toques.guarda):
+		return
+	_toques = {}
+	toques_mentor_cancelados.emit()
+
+
+func _toques_apos_vitoria(resumo: Dictionary) -> void:
+	if bool(resumo.get("win", false)) and not resumo.has("retire") and mentor_sentado() \
+			and bool(disciples.toques.get("enabled", true)) and bool(disciples.toques.get("on_win_return", true)):
+		_toque_vitoria = 0.0
+
+
+func _tick_toques(delta: float, ativa: bool) -> void:
+	if not _toques.is_empty():
+		if local_id != "garage" or not ativa:
+			_cancelar_toques(true)
+		elif _t_real >= float(_toques.ate):
+			_toques = {}
+	if _toque_vitoria >= 0.0:
+		if local_id != "garage" or not luta.is_empty() or not mentor_sentado():
+			_toque_vitoria = -1.0  # lutar de novo ou mudar de local cancela
+		elif ativa:
+			_toque_vitoria += delta
+			if _toque_vitoria >= float(disciples.toques.get("win_return_delay_seconds", 1.0)):
+				_toque_vitoria = -1.0
+				_pedir_toques("win_return")

@@ -77,7 +77,7 @@ func _montar() -> void:
 	retrato(UiTema.nome_retrato_jogador(), "ui_portrait_frame", X1 - 36, y, true)
 	var dir := X1 - 42
 	_rotulo_dir(UiTema.txt("preview_you", "VOCÊ"), UiTema.G2, dir, y + 2)
-	_rotulo_dir(UiTema.txt("hud_career", "CARREIRA {n}", {"n": GameState.numero_carreira()}), UiTema.WHITE, dir, y + 13)
+	_rotulo_dir(GameState.texto_hud_lutador(), UiTema.WHITE, dir, y + 13)  # Fase 6b1: o nome no lugar de "CARREIRA N"
 	_rotulo_dir(UiTema.singular("%d %s" % [GameState.indice_escada, UiTema.txt("sum_wins", "VITÓRIAS")]), UiTema.G3, dir, y + 24)
 
 	if revanche:

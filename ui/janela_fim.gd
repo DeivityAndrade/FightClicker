@@ -128,7 +128,7 @@ func _resumo(f: Dictionary, y: float, com_retrato: bool) -> float:
 	var borda := BORDA_DIR if com_retrato else BORDA_DIR - 20.0  # sem retrato o bloco é recuado 20 px dos dois lados
 	if com_retrato:
 		retrato(UiTema.nome_retrato_jogador(), "ui_portrait_frame", 130, y + 2, false)
-	UiTema.rotulo(painel, UiTema.txt("sum_title", "RESUMO DA CAMPANHA {n}", {"n": int(f.career_number)}), UiTema.CREAM, x, y)
+	UiTema.rotulo(painel, GameState.titulo_resumo(), UiTema.CREAM, x, y)  # Fase 6b1: "RESUMO DE {NOME}"
 	var linhas := [
 		[UiTema.txt("sum_wins", "VITÓRIAS"), str(int(s.wins)), UiTema.WHITE],
 		[UiTema.txt("sum_belts", "CINTURÕES"), str(int(s.belts)), UiTema.WHITE],
@@ -188,8 +188,13 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 	UiTema.botao_conteudo(_botao_arvore, UiTema.txt("tree_button", "ÁRVORE"), UiTema.Y1 if _arvore_chamando else UiTema.WHITE, 2,
 		"icon_skill_map", 5.0)
 	_botao_arvore.pressed.connect(func() -> void: arvore_pedido.emit())
-	var b := botao_texto(Rect2(322, 286, 188, 32), UiTema.txt("new_career_button", "NOVA CAMPANHA"),
+	# Fase 6b1: RECEBER NOVO DISCÍPULO (22 letras). Em escala 2 não cabe nos 188 px do botão: usa NOVO DISCÍPULO (plano B do Roteirista).
+	var texto_botao := UiTema.txt("new_disciple_button", "RECEBER NOVO DISCÍPULO")
+	if UiTema.largura_visivel(texto_botao) * 2.0 > 188.0 - 12.0:
+		texto_botao = UiTema.txt("new_disciple_button_short", "NOVO DISCÍPULO")
+	var b := botao_texto(Rect2(322, 286, 188, 32), texto_botao,
 		UiTema.P2 if retire else UiTema.WHITE, "ui_button_normal", 2, "ui_button_retire" if retire else "")
+	b.name = "BotaoNovoDiscipulo"
 	b.pressed.connect(func() -> void: nova_carreira_pedido.emit())
 
 

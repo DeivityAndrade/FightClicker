@@ -100,6 +100,22 @@ var _fx_poeira_chegada: AnimSprite
 var _fx_brilho_chegada: AnimSprite
 var _fx_poeira_pequena: AnimSprite
 
+# Fase 6b1: palco da cena de passar o posto, John mentor sentado no caixote e câmera da cena.
+const MENTOR_FOLHA := "john_sit_rest"
+const MENTOR_TOQUES := "mentor_first_taps"
+var cena: CenaSala
+var _cena_ativa := false  # a cena manda na sala: foco no saco, jogador/gente/Osmar escondidos conforme `stage.hide`
+var _cena_oculta: Array = []
+var _caixote_cena := false  # a cena já mostrou o caixote (antes do fim dela o caixote não existe)
+var _mentor: AnimSprite
+var _mentor_sombra: Sprite2D
+var _caixote: Sprite2D
+var _mentor_visivel := false
+var _mentor_pose := ""
+var _toques_id := 0
+var _cam_escala := 1
+var _cam_rect := AREA
+
 
 func _ready() -> void:
 	_rng.randomize()
@@ -135,6 +151,9 @@ func _ready() -> void:
 	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
 	GameState.marco_gravado.connect(func(_id: String) -> void: _atualizar_parede())
 	GameState.abertura_mudou.connect(func(_e: String) -> void: _atualizar_osmar())
+	GameState.toques_mentor_pedidos.connect(_ao_toques_pedidos)
+	GameState.toques_mentor_cancelados.connect(_ao_toques_cancelados)
+	GameState.sucessao_mudou.connect(func(_e: String) -> void: _atualizar_mentor())
 	_local_anterior = GameState.local_id
 	_aplicar_layout()
 	_atualizar_pessoas(false)
@@ -226,6 +245,10 @@ func _montar() -> void:
 	_montar_parede()
 	_gesto = Gesto.new()
 	add_child(_gesto)
+	_montar_mentor()
+	cena = CenaSala.new()
+	cena.sala = self
+	_mundo.add_child(cena)
 
 
 func _novo_estatico(nome: String, z: int) -> Sprite2D:
@@ -258,7 +281,7 @@ func _novo_fx(nome: String) -> AnimSprite:
 
 func _aplicar_layout() -> void:
 	_aplicar_local()
-	var foco := GameState.foco
+	var foco := _foco()
 	var nb := GameState.nivel_visual(SACO)
 	var nr := GameState.nivel_visual(CORDA)
 	var ne := GameState.nivel_visual(ESTEIRA)
@@ -297,11 +320,12 @@ func _aplicar_layout() -> void:
 	_pose_repouso()
 	_esconder_reveladas()
 	_atualizar_marcas()
+	_ocultar_da_cena()
 
 
 # Lutador parado conforme o foco.
 func _pose_repouso() -> void:
-	var foco := GameState.foco
+	var foco := _foco()
 	_corda_giro.visible = false
 	_corda_costas.visible = false
 	match foco:
@@ -419,6 +443,9 @@ func _entrada_pessoa(sp: AnimSprite) -> void:
 # --- Entrada do mouse ---
 
 func _gui_input(event: InputEvent) -> void:
+	if GameState.sucessao_estado() != "none":
+		accept_event()  # Fase 6b1: durante a cena e a criação do discípulo a sala não recebe clique (a campanha está parada)
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if not ALVO.has_point(event.position + position):
 			GameState.registrar_clique()  # clique fora do alvo: cancela o gesto e zera a sala parada
@@ -1447,8 +1474,9 @@ func _atualizar_osmar() -> void:
 	if _osmar == null:
 		return
 	var na_garagem := GameState.local_id == "garage"
-	_osmar.visible = na_garagem
-	_sombra_osmar.visible = na_garagem
+	var palco := not ("coach" in _cena_oculta)  # na cena grande o Osmar é um ator do palco
+	_osmar.visible = na_garagem and palco
+	_sombra_osmar.visible = na_garagem and palco
 	if not na_garagem:
 		return
 	var estado := "idle"
@@ -1479,10 +1507,12 @@ func ponto_cabeca(speaker: String) -> Vector2:
 		var a: Array = o.get("head_anchor", [1, -63])
 		var p: Array = o.get("pos", [196, 236])
 		return Vector2(float(p[0]) + float(a[0]), float(p[1]) + float(a[1]))
+	if speaker == "mentor":
+		return cabeca_mentor()
 	var a2: Array = info.get("first_fighter", {}).get("head_anchor", {}).get("garage", [1, -65])
 	# Mesmo ponto de pé de _pose_repouso: corda, esteira ou (saco, pera, boneco) o ponto do saco.
 	var pe: Vector2
-	match GameState.foco:
+	match _foco():
 		CORDA:
 			pe = UiTema.pos("fighter_idle", "foco_corda")
 		ESTEIRA:
@@ -1495,10 +1525,15 @@ func ponto_cabeca(speaker: String) -> Vector2:
 ## Cabeças dos OUTROS personagens que o balão de `speaker` não pode cobrir (além da zona do alvo).
 func cabecas_a_evitar(speaker: String) -> Array:
 	var outro := "first" if speaker == "coach" else "coach"
-	if outro == "coach" and GameState.local_id != "garage":
-		return []
-	var h := ponto_cabeca(outro)
-	return [Rect2(h.x - 9.0, h.y, 18.0, 18.0)]
+	var lista: Array = []
+	if not (outro == "coach" and GameState.local_id != "garage"):
+		var h := ponto_cabeca(outro)
+		lista.append(Rect2(h.x - 9.0, h.y, 18.0, 18.0))
+	# Fase 6b1: o John sentado no caixote também é alguém que o balão não pode cobrir (regra do §22.2).
+	if _mentor_visivel and speaker != "mentor":
+		var m := cabeca_mentor()
+		lista.append(Rect2(m.x - 9.0, m.y, 18.0, 18.0))
+	return lista
 
 
 # Gesto "fecho e dois toques" (só o John): momentos da sala = abertura, luva nova e sala parada.
@@ -1644,9 +1679,12 @@ func _process(delta: float) -> void:
 		var o := Vector2.ZERO
 		if amp > 0:
 			o = Vector2(_rng.randi_range(-amp, amp), _rng.randi_range(-amp, amp))
-		_mundo.position = -AREA.position + o
-	elif _mundo.position != -AREA.position:
-		_mundo.position = -AREA.position
+		_mundo.position = _cam_base() + o
+	elif _mundo.position != _cam_base():
+		_mundo.position = _cam_base()
+	_atualizar_mentor()
+	_ocultar_da_cena()
+	UiTema.aplicar_visual_disc(_lutador)  # Fase 6b1: pele, cabelo e calção escolhidos (folha em camadas com troca de cor)
 
 	# Esteira: corre enquanto houver cliques recentes.
 	if _corrida > 0.0:
@@ -1673,7 +1711,7 @@ func _process(delta: float) -> void:
 		if n.ativo:
 			n.passo(delta)
 
-	_seta.visible = dica_ativa
+	_seta.visible = dica_ativa and not _cena_ativa
 	if dica_ativa:
 		_seta.passo(delta)
 
@@ -1807,3 +1845,210 @@ func _tocar_chegada(a: AnimSprite, p: Vector2, quadros: int) -> void:
 	for i in quadros:
 		seq.append(i)
 	a.tocar(seq, 12.0, false, func() -> void: a.visible = false)
+
+
+# --- Fase 6b1: cena de passar o posto, câmera, John mentor sentado no caixote e os toques ---
+
+## Em cena a sala usa o saco no centro (o palco da cena); fora dela, o foco de verdade.
+func _foco() -> String:
+	return SACO if _cena_ativa else GameState.foco
+
+
+func _cam_base() -> Vector2:
+	return -_cam_rect.position * float(_cam_escala)
+
+
+## A cena assume a sala. `oculta` = stage.hide da cena (player, crew, mentors, coach).
+func cena_iniciar(oculta: Array) -> void:
+	_cena_ativa = true
+	_cena_oculta = oculta.duplicate()
+	_caixote_cena = false
+	_aplicar_layout()
+	_atualizar_osmar()
+	_atualizar_mentor()
+	_ocultar_da_cena()
+
+
+## O controle voltou ao jogador (return_control): a sala é do jogo de novo (as peças da porta ficam no palco até a cena acabar).
+func cena_palco_liberado() -> void:
+	if not _cena_ativa:
+		return
+	_cena_ativa = false
+	_cena_oculta = []
+	_lutador.visible = true
+	for gid in _pessoas:
+		for d in _pessoas[gid]:
+			d.sprite.visible = d.visivel
+			d.sombra.visible = d.visivel
+	_aplicar_layout()
+	_atualizar_osmar()
+	_atualizar_mentor()
+	cena_camera(1, [])
+
+
+func cena_caixote(sim: bool) -> void:
+	_caixote_cena = sim
+	_atualizar_mentor()
+
+
+## Corte seco de câmera: escala 2 numa janela (rect na base 640x360) ou volta ao 1x.
+func cena_camera(escala: int, rect: Array) -> void:
+	_cam_escala = maxi(1, escala)
+	_cam_rect = Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3])) if _cam_escala > 1 and rect.size() == 4 else AREA
+	_mundo.scale = Vector2(_cam_escala, _cam_escala)
+	_mundo.position = _cam_base()
+
+
+func cena_tremer(px: int, seg: float) -> void:
+	_tremer(px, seg)
+
+
+## Saco do palco: "hit" (folha bag_l0_hit) ou "idle" (quadro parado).
+func cena_saco(anim: String, quadro: int) -> void:
+	if anim == "hit":
+		_saco.definir("bag_l0_hit")
+		_saco.position = UiTema.pos("bag_l0_hit", "centro")
+		_saco.tocar([0, 1, 2, 3], 12.0, false)
+	else:
+		_saco.definir("bag_l0_idle")
+		_saco.position = UiTema.pos("bag_l0_idle", "centro")
+		_saco.parar(maxi(0, quadro))
+
+
+func cena_lampada(anim: String) -> void:
+	if anim == "swing":
+		_lampada.tocar([1, 0, 1, 0], 6.0, false, func() -> void: _lampada.parar(0))
+	else:
+		_lampada.parar(0)
+
+
+func _ocultar_da_cena() -> void:
+	if not _cena_ativa:
+		return
+	_seta.visible = false
+	if "player" in _cena_oculta:
+		_lutador.visible = false
+		_sombra_lutador.visible = false
+		_corda_giro.visible = false
+		_corda_costas.visible = false
+	if "crew" in _cena_oculta:
+		for gid in _pessoas:
+			for d in _pessoas[gid]:
+				d.sprite.visible = false
+				d.sombra.visible = false
+
+
+func _montar_mentor() -> void:
+	_mentor_sombra = Sprite2D.new()
+	_mentor_sombra.texture = UiTema.textura("floor_shadow")
+	_mentor_sombra.visible = false
+	_mundo.add_child(_mentor_sombra)
+	_caixote = Sprite2D.new()
+	_caixote.centered = false
+	_caixote.texture = UiTema.textura("garage_crate")
+	_caixote.visible = false
+	_mundo.add_child(_caixote)
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("mentor_spot", {})
+	var c: Dictionary = info.get("crate", {})
+	var cp: Array = c.get("pos", [238, 232])  # canto superior esquerdo do caixote (já inclui o pivô)
+	_caixote.position = Vector2(float(cp[0]), float(cp[1]))
+	_caixote.z_index = int(c.get("sort_y", 250))
+	_mentor = _novo_anim(MENTOR_FOLHA, "", 0)
+	_mentor.position = ponto_mentor()
+	_mentor.z_index = int(_mentor.position.y)
+	_mentor.visible = false
+	_mentor_sombra.position = _mentor.position + Vector2(0, -1)
+	_mentor_sombra.z_index = _mentor.z_index - 1
+
+
+## Pés do mentor sentado: manifest.layout.mentor_spot.
+func ponto_mentor() -> Vector2:
+	var p: Array = UiTema.manifest().get("layout", {}).get("mentor_spot", [254, 252])
+	return Vector2(float(p[0]), float(p[1]))
+
+
+## Ponto logo acima da cabeça do mentor sentado: head_anchor da folha john_sit_rest.
+func cabeca_mentor() -> Vector2:
+	var a: Array = UiTema.sprite(MENTOR_FOLHA).get("head_anchor", [1, -56])
+	return ponto_mentor() + Vector2(float(a[0]), float(a[1]))
+
+
+func mentor_visivel() -> bool:
+	return _mentor_visivel
+
+
+func _atualizar_mentor() -> void:
+	if _mentor == null:
+		return
+	var garagem := GameState.local_id == "garage"
+	var deve := garagem and not GameState.mentores_na_sala().is_empty() and not ("mentors" in _cena_oculta)
+	var caixote := garagem and (deve or _caixote_cena)
+	if _caixote.visible != caixote:
+		_caixote.visible = caixote
+	if deve != _mentor_visivel:
+		_mentor_visivel = deve
+		_mentor.visible = deve
+		_mentor_sombra.visible = deve
+		if deve:
+			_mentor_repouso()
+
+
+func _mentor_repouso() -> void:
+	_mentor_pose = "rest"
+	_mentor.definir(MENTOR_FOLHA)
+	_mentor.position = ponto_mentor()
+	_mentor.tocar([0, 1, 2, 3], float(UiTema.sprite(MENTOR_FOLHA).get("fps", 3.0)), true)
+
+
+func _mentor_toques_pose() -> void:
+	_mentor_pose = "taps"
+	_mentor.definir(MENTOR_TOQUES)
+	_mentor.position = ponto_mentor()
+	_mentor.tocar([0, 1, 2, 3], float(UiTema.sprite(MENTOR_TOQUES).get("fps", 9.0)), false)
+
+
+## A cena (reação do 1º clique) manda o John do palco: depois do return_control ele é o mentor da sala.
+func cena_mentor_pose(anim: String) -> void:
+	_atualizar_mentor()
+	if not _mentor_visivel:
+		return
+	if anim == MENTOR_TOQUES:
+		_mentor_toques_pose()
+	else:
+		_mentor_repouso()
+
+
+func _ao_toques_pedidos(plano: Dictionary) -> void:
+	if str(plano.get("cena", "")) != "" or not _mentor_visivel:
+		return  # o 1º clique logo depois da cena grande é da reação da cena (CenaPlayer)
+	_toques_id += 1
+	var id := _toques_id
+	var t0 := Time.get_ticks_msec()
+	var ini := float(plano.get("start", 0.0))
+	if ini > 0.0:
+		await get_tree().create_timer(ini).timeout
+		if id != _toques_id:
+			return
+	_mentor_toques_pose()
+	var taps: Array = plano.get("taps", [0.11, 0.33])
+	for n in taps.size():
+		var falta := ini + float(taps[n]) - float(Time.get_ticks_msec() - t0) / 1000.0
+		if falta > 0.0:
+			await get_tree().create_timer(falta).timeout
+		if id != _toques_id:
+			return
+		sfx.por_id(str(plano.get("tap_sound", "tap_fist")), 1.0)
+		var pts: Array = UiTema.sprite(MENTOR_TOQUES).get("tap_points", [[5, -30]])
+		var tp: Array = pts[mini(n, pts.size() - 1)]
+		_impacto(_mentor.position + Vector2(float(tp[0]), float(tp[1])), false)
+	var resto := ini + float(plano.get("duration", 0.44)) - float(Time.get_ticks_msec() - t0) / 1000.0
+	if resto > 0.0:
+		await get_tree().create_timer(resto).timeout
+	if id == _toques_id and _mentor_visivel:
+		_mentor_repouso()
+
+
+func _ao_toques_cancelados() -> void:
+	_toques_id += 1  # o 2º toque (ainda no temporizador) não toca mais
+	if _mentor_pose == "taps" and _mentor_visivel:
+		_mentor_repouso()

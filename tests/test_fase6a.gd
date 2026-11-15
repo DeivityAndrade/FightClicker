@@ -228,7 +228,7 @@ func _tem(lista: Array, id: String) -> bool:
 # --- Save v11 ---
 
 func _teste_save_v11() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 11, "save v11")
+	checar_igual(SaveStore.VERSAO_ATUAL, 12, "save v11")
 	var pasta := pasta_limpa("f6a_v10")
 	var career := {"training": 500.0, "money": 20.0, "fame": 5, "ladder_index": 2, "glove_level": 1, "belt": true,
 		"campaign_seconds": 40.0, "fight_day": 9, "active_nodes": [], "metronome_level": 0}
@@ -261,7 +261,7 @@ func _teste_save_v11() -> void:
 	checar_igual([gs.lutador_atual(), gs.abertura_estado()], ["first", "pending"], "save antigo: campanha atual é do John e a abertura ainda não tocou")
 	_tickar(gs, 30.0)
 	checar(not gs.marco("garage_saved"), "...nem depois de jogar")
-	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 11, "regravado como v11")
+	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 12, "regravado como v11")
 	_liberar(gs)
 	# Ida e volta no disco, e bloco inválido
 	var g2 := _novo("f6a_volta")
@@ -288,7 +288,7 @@ func _teste_lutador_atual() -> void:
 	gs.nova_carreira()
 	checar_igual([gs.numero_carreira(), gs.lutador_atual()], [2, "disciple"], "campanha 2: discípulo padrão")
 	checar_igual(gs.escola.first_fighter_campaign, 1, "NOVA CAMPANHA não mexe no bloco da escola")
-	checar_igual(gs.descricao_luva_inicial(), gs.lutas.luva_base.description, "discípulo: descrição de luva padrão")
+	checar_igual(gs.descricao_luva_inicial(), gs.texto_ui("glove_start_desc_disc"), "discípulo: descrição de luva padrão")
 	_liberar(gs)
 	var g2 := _novo("f6a_lutador2")
 	checar_igual(g2.descricao_luva_inicial(), "O par do John. Velha, mas fecha direito.", "John: luva inicial é o par dele")

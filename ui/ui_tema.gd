@@ -477,3 +477,27 @@ static func liberar_cache() -> void:
 	_fonte = null
 	_fonte_contorno = null
 	_texturas.clear()
+
+
+# --- Fase 6b1: o visual do discípulo (pele, cabelo e calção escolhidos) nas folhas do jogador ---
+
+## Textura do sprite `nome`; o retrato do jogador (discípulo) sai com o visual escolhido (DiscVisual).
+static func textura_disc(nome: String) -> Texture2D:
+	if nome.begins_with("portrait_player") and GameState.lutador_atual() == "disciple":
+		var cam := DiscVisual.nome_em_camadas(nome)
+		if cam != "":
+			return DiscVisual.textura(cam, GameState.visual_lutador())
+	return textura(nome)
+
+
+## Folha "_disc" do jogador (garagem ou luta): troca a textura pela montada em camadas com o visual do discípulo.
+## Chamar todo quadro (um `definir` novo volta a textura pronta); o cache faz disso uma consulta barata.
+static func aplicar_visual_disc(sp: AnimSprite) -> void:
+	if sp == null or GameState.lutador_atual() != "disciple" or not sp.nome_sprite.ends_with("_disc"):
+		return
+	var cam := DiscVisual.nome_em_camadas(sp.nome_sprite)
+	if cam == "":
+		return
+	var t := DiscVisual.textura(cam, GameState.visual_lutador())
+	if sp.texture != t:
+		sp.texture = t

@@ -30,6 +30,11 @@ const GARAGE := ["fighter_idle", "fighter_punch", "fighter_rope", "fighter_run"]
 ## sem a variável, o 1º lutador (os arquivos de sempre).
 var QUEM := "disc" if OS.get_environment("FC_LUTADOR") == "disc" else "primeiro"
 var SUF := "_disc" if QUEM == "disc" else ""
+## Fase 6b1: FC_LUTADOR=disc + FC_CAMADAS=1 grava também o discípulo EM CAMADAS (cores-chave, corpo/cabeça/máscara) em
+## <saida>/disciple/ e as âncoras por quadro em <saida>/disciple/camadas_jogador.json (ver personagem_lib.gd, "CAMADAS").
+var CAMADAS := OS.get_environment("FC_CAMADAS") == "1" and QUEM == "disc"
+var cam_meta := {}
+var cam_store := {}
 
 var L
 var P
@@ -238,6 +243,8 @@ func gen_garage(b: Dictionary, sid: String) -> Array:
 		var im: Image = P.garage_frame(b, p, "%s[%d]" % [sid, i])
 		if sid == "fighter_run":
 			im.flip_x()
+			if CAMADAS:
+				P.capture_flip_last()
 		frames.append(im)
 		i += 1
 	return frames
@@ -262,6 +269,25 @@ func make_portrait(b: Dictionary) -> Image:
 	L.dither(bg, 0, 28, 32, 4, "b1", 1)
 	bg.blend_rect(crop, Rect2i(0, 0, 32, 32), Vector2i.ZERO)
 	return bg
+
+## Retrato do discípulo em camadas (6b1): o mesmo recorte 32x32 de make_portrait; o fundo vai junto com o corpo.
+func portrait_layers(caps: Array, dir: String, suffix: String) -> Dictionary:
+	var c: Dictionary = caps[0]
+	var hc := V(56, 98) + V(5, -71)
+	var r := Rect2i(int(hc.x) - 15, int(hc.y) - 13, 32, 32)
+	var bg: Image = L.blank(32, 32)
+	L.R(bg, 0, 0, 32, 32, "d1")
+	L.dither(bg, 0, 18, 32, 6, "b0")
+	L.R(bg, 0, 24, 32, 8, "b0")
+	L.dither(bg, 0, 28, 32, 4, "b1", 1)
+	var body: Image = bg.duplicate()
+	body.blend_rect((c.body as Image).get_region(r), Rect2i(0, 0, 32, 32), Vector2i.ZERO)
+	var full: Image = bg.duplicate()
+	full.blend_rect((c.full as Image).get_region(r), Rect2i(0, 0, 32, 32), Vector2i.ZERO)
+	var cc := {"full": full, "body": body, "head": (c.head as Image).get_region(r), "mask": (c.mask as Image).get_region(r), "anchor": c.anchor}
+	var meta: Dictionary = P.save_layer_sheet([cc], dir, "portrait_player", suffix, cam_store, report)
+	meta["crop_of"] = "fight_player (pose do retrato), recorte (%d,%d,32,32) do quadro 112x104" % [r.position.x, r.position.y]
+	return meta
 
 # ================================================================ folha de contato antes/depois
 func checker(dst: Image, x: int, y: int, w: int, h: int, cell: int) -> void:
@@ -347,6 +373,11 @@ func _init() -> void:
 	old_dir = args[1].trim_suffix("/") + "/"
 	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
 	var newf := {}
+	var cam_dir := out_dir + "disciple/"
+	if CAMADAS:
+		P.use_keys()
+		P.capture = true
+		DirAccess.make_dir_recursive_absolute(cam_dir)
 	for suffix in GLOVES:
 		var b := make_build(suffix)
 		for a in FIGHT_ACTIONS:
@@ -354,12 +385,24 @@ func _init() -> void:
 			var fr := gen_fight(b, a, suffix)
 			save_sheet("fight/" + id + ".png", id, fr)
 			newf[id] = fr
+			if CAMADAS:
+				cam_meta["fight_player_" + a] = P.save_layer_sheet(P.capture_take(), cam_dir, "fight_player_" + a, suffix, cam_store, report)
 		for sid in GARAGE:
 			var id: String = sid + suffix
 			var fr := gen_garage(b, sid)
 			save_sheet("characters/" + id + ".png", id, fr)
 			newf[id] = fr
+			if CAMADAS:
+				cam_meta[sid] = P.save_layer_sheet(P.capture_take(), cam_dir, sid, suffix, cam_store, report)
 		make_portrait(b).save_png(out_dir + "fight/portrait_player" + suffix + SUF + ".png")
+		if CAMADAS:
+			cam_meta["portrait_player"] = portrait_layers(P.capture_take(), cam_dir, suffix)
+	if CAMADAS:
+		var fm := FileAccess.open(cam_dir + "camadas_jogador.json", FileAccess.WRITE)
+		fm.store_string(JSON.stringify(cam_meta, "\t"))
+		fm.close()
+		for l in report:
+			print(l)
 	# folha de contato (só do 1º lutador)
 	if QUEM == "disc":
 		print("ok: %d folhas (discípulo padrão)" % newf.size())

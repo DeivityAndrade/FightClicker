@@ -78,7 +78,7 @@ func atualizar() -> void:
 		str(GameState.legado_em_jogo()),
 	]
 	var taxa := "+%s/S" % NumberFormat.fmt(GameState.producao_total())
-	var carreira := UiTema.txt("hud_career", "CARREIRA {n}", {"n": GameState.numero_carreira()})
+	var carreira := GameState.texto_hud_lutador()  # Fase 6b1: o nome de quem luta no lugar de "CARREIRA N"
 	var legado: Dictionary = GameState.resumo_legado()
 	# Nome do local à direita: na academia vira "ACADEMIA: TREINO x2" (verde, com o ícone); na garagem, o nome de sempre.
 	var texto_local := GameState.texto_hud_local().to_upper()

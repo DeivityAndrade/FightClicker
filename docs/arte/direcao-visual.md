@@ -74,6 +74,7 @@ multiplicação livre). A UI usa a mesma paleta. Fonte da verdade em código: `t
 | Luz quente | `y0 #e0a040` · `y1 #f5d26b` · `y2 #fff3c4` | lâmpada, dinheiro, número do clique |
 | Vermelho | `r0 #5a1a22` · `r1 #9c2a2a` · `r2 #d4473a` · `r3 #f07a5a` | luva, saco, Força, crítico, perigo |
 | Pele | `sk0 #7a4632` · `sk1 #b9744f` · `sk2 #e3a275` | personagens (mais tons de pele entram como rampas extras) |
+| Pele extra (6b1, só troca de paleta do discípulo) | `skin_1` #a8684e/#e0a888/#f4d0b4 · `skin_2` #8f5238/#cc8c62/#eebd94 · `skin_4` #5a3029/#8c5545/#b8806a · `skin_5` #422529/#73453f/#a06a5a | `[sombra, base, luz]`; `skin_3` = sk0/sk1/sk2. Conferência em `paletas-6b1.md` e §23.3 |
 | Azul | `b0 #1f2a44` · `b1 #2f4a78` · `b2 #4d7bb3` · `b3 #8fbbe0` | calção, ringue, céu, Agilidade |
 | Verde | `gr0 #1f3d33` · `gr1 #2f6b4a` · `gr2 #5aa25a` · `gr3 #a6d86a` | barrado da academia, treino/s, "fácil" |
 | Aço | `st0 #3a4452` · `st1 #5a6676` · `st2 #7f8c9a` · `st3 #a9b4bf` | porta de garagem, esteira, metal |
@@ -807,3 +808,43 @@ NOSSO". Entrada: 2 quadros em 2x e depois 1x, tremida de 1 px, som que já exist
 - As fotos têm 5–10 px de gente: o retrato do Osmar jovem e a foto da equipe pedem desenho à mão (mesmos tamanhos).
 - O símbolo é o que mais pede mão humana: em 5x5 a raiz é um traço. Manter 5/9/16/32 para trocar só os arquivos.
 - O carimbo e a tinta na parede usam falhas por sorteio fixo; à mão ficariam com pressão e borda de carimbo real.
+
+## 23. Fase 6b1 (Passar o posto: porta, luz do dia, caixote do mentor)
+Gerador: `tools/art/make_cenario_fase6b1.gd` (pasta temporária com `project.godot` vazio; `-- --final` grava no projeto, mexe no manifest
+só nas chaves desta fase e junta `docs/arte/manifest-6b1-personagens.json` do Artista, se existir). Pedido: `docs/cutscenes/pedidos-6b1.md` §2.
+Manifest: `by_data_id.garage_door_scene`, `by_data_id.mentor_spot`, `layout.mentor_spot`, `layout.box_slots.jump_rope`.
+
+### 23.1 Peças
+| Sprite | Quadro | Ponto | Camada | Nota |
+|---|---|---|---|---|
+| `garage_door` | 84x**68**, 9 quadros, pivô (0,12) | pos (381,166) → desenha em (381,154) | `sorted` 222 | Borda ink por quadro: 219 (fechada = recorte do fundo), 216, 209, 201, 193, 185, 178, 172, **171**. **Mudança:** o pedido era 84x56; com isso a cabeça de quem está na soleira (quadro dele começa em y 154) aparecia acima da porta. O pivô mantém o `pos` da cena |
+| `garage_door_outside` | 82x52 | (382,168) | `wall` | Dia claro branco (escolha A), y2 em dither embaixo, muro cream do outro lado, calçada cream y 213..219 com meio-fio g3 |
+| `garage_daylight` | 170x70, 3 | (308,220) | `floor` | O próprio chão do `garage_bg` +1 na rampa (miolo junto à porta +2), borda em Bayer 4x4 de 5–7 px |
+| `garage_door_shadow` | 64x32, 4 | (374,214) | `floor` | Assada sobre a luz (quadro 0 sobre a luz 0; 1..3 sobre a luz 2): desenhar depois do `garage_daylight` |
+| `garage_crate` | 26x19, pivô (16,20) | `mentor_spot` | `sorted` 250 | Engradado de feira (ripas com fresta escura, montantes, pregos). Sem fita/etiqueta: não confunde com a caixa da escola |
+| `garage_hung_gloves_old` | 20x34, 4, pivô (17,1) | argola (335,186) | `sorted` 254 | Quadro 0 só sobe 4 e vai 1 px à esquerda (o quadro de 20 px não deixa os 4) |
+
+Quem está do lado de fora contra a luz: tom −1 (silhueta), como na prancha.
+
+### 23.2 Mentor e caixas (conflito resolvido)
+- **`mentor_spot` = (254,252)** (era 268,268). Em 268 o John sentado ia até x ~285, dentro da faixa do alvo (281..362, folga até 273), e tapava a caixa da corda.
+  Em (254,252) ele ocupa x 238..270, y 200..252: encostado no fim do carro, olhando o saco, longe do Osmar (196,236) e do vizinho 2 (220,258).
+  Caixote em (238,232). Com foco na corda/esteira o saco de lado (258,160) fica atrás da cabeça dele pela ordem por y: aceito.
+- **Caixa da corda = (424,287)** (era 258,244): na frente, à direita da caixa da luva (386,280), 6 px de folga entre os cliques. Cobre 5 px da base
+  da esteira encostada (atrás, pela ordem por y; o mesmo caso já aceito da caixa da esteira com o tio 1). Fora do caminho da porta até o saco.
+- **Para o Diretor de Cutscenes:** a cena usa o nome `mentor_spot`, então não quebra, mas o `step_back` agora anda ~55 px (não 35): 0,73 s fica
+  rápido; sugiro ~1,1 s ou 4 passos. A mão do `point_spot` continua apontando o chão em frente ao saco (a direção não muda).
+- Conferência: `mockups/fase6b1_garagem_conferencia_x2.png` (alvo+folga em vermelho, caixa antiga em cinza, caixa nova em amarelo, mentor em azul).
+
+### 23.3 Paletas do discípulo
+Fonte da verdade: `docs/arte/paletas-6b1.md` (o Designer/Programador copia para `data/disciples.json`). Mudanças sobre o alvo do design §6.3:
+`skin_4` → #5a3029/#8c5545/#b8806a e `skin_5` → #422529/#73453f/#a06a5a (o alvo tinha a base da `skin_5` igual ao `br1` e a da `skin_4` quase
+igual ao `br2`: cabelo e sobrancelha sumiam); sobrancelha do `copper` e do `blond` → `br0`. Calções sem mudança.
+
+### 23.4 Fonte
+`Í Ã Ç` (e todas as maiúsculas e minúsculas de `allowed_letters`, inclusive `À/à`) já existem nos dois `.fnt`. Nada acrescentado.
+
+### 23.5 Placeholder / precisa de pixel artist
+- A porta sobe com as lâminas paradas (só a barra anda): um artista animaria o rolo e a lâmina vibrando no tranco.
+- A luz do dia é o chão +1 passo; à mão ganharia poeira no feixe e a borda da sombra do batente.
+- O caixote e as luvas penduradas são pequenos e honestos; o par balançando pede 2 quadros a mais desenhados à mão.

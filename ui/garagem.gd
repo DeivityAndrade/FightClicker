@@ -153,6 +153,13 @@ func _montar_fala() -> void:
 	GameState.fala_cancelada.connect(func(id: String) -> void: _balao.cancelar(id))
 	_balao.falando.connect(_sala.definir_falando)
 	_sala.clique_vazio.connect(_balao.completar)
+	# Fase 6b1: a cena de passar o posto (palco na sala, faixas pretas, PULAR, balão e a tela de criação do discípulo).
+	var cena_ui := CenaUi.new()
+	cena_ui.sala = _sala
+	cena_ui.fluxo = _fluxo
+	cena_ui.balao = _balao
+	cena_ui.alvos = [_hud, _esq, _dir, _barra, _botao_mapa, _faixa, $FaixaAssistido]
+	add_child(cena_ui)
 
 
 ## O GameState pediu uma fala: o balão nasce preso à cabeça de quem fala (nunca cobre o alvo; sem espaço, a fala some).

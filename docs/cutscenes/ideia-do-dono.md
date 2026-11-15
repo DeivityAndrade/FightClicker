@@ -35,3 +35,14 @@ O primeiro mestre recupera o fôlego; o discípulo estende a mão, ele aceita e 
 2. **Porta de enrolar emperrada** aprovada como elo das duas cenas; última arena simples (concreto, uma lâmpada, porta de enrolar).
 3. Falas em **balão preso ao personagem**.
 4. A luva inicial é **"o par dele"** (do 1º lutador), passada a cada discípulo.
+
+## Prancha da 6b: escolhas do dono (2026-11-14)
+O dono aprovou a prancha (`docs/cutscenes/prancha-6b.md`) com **todas as opções A**:
+1. Tela de criar o discípulo no meio da cena, depois que John olha a porta.
+2. John pendura o par de luvas no saco; o discípulo pega.
+3. Luz do dia clara e branca entrando pela porta.
+4. Osmar presente e calado na sucessão (só olha).
+5. Corte de perto no gesto do fecho nas duas cenas.
+6. Reencontro começa com a falsa entrada exagerada que apaga.
+7. Só "John Bullet" pequeno na faixa preta.
+8. John grisalho, barba por fazer, mesmo corpo e a mesma luva velha.

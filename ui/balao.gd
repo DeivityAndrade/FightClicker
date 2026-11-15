@@ -125,6 +125,24 @@ func mostrar(id_: String, speaker_: String, texto: String, cabeca: Vector2, faix
 	var w := clampf(float(maior * AVANCO + 16), 40.0, 172.0)
 	var h := 26.0 if _linhas.size() > 1 else 17.0
 	var c := calcular(cabeca, w, h, evitar)
+	if not bool(c.ok) and _linhas.size() == 1 and str(_linhas[0]).contains(" "):
+		# Fase 6b1: uma linha larga não cabe sem cobrir a cabeça de outro personagem (regra §22.2): tenta em 2 linhas.
+		var l1 := str(_linhas[0])
+		var meio := l1.length() / 2
+		var corte := -1
+		for d in l1.length():
+			for s in [meio - d, meio + d]:
+				if corte < 0 and s > 0 and s < l1.length() and l1[s] == " ":
+					corte = s
+		if corte > 0:
+			_linhas = [l1.substr(0, corte), l1.substr(corte + 1)]
+			texto = "\n".join(_linhas)
+			maior = 0
+			for l in _linhas:
+				maior = maxi(maior, str(l).length())
+			w = clampf(float(maior * AVANCO + 16), 40.0, 172.0)
+			h = 26.0
+			c = calcular(cabeca, w, h, evitar)
 	if not bool(c.ok) or (faixa_base_y >= 0.0 and Rect2(c.corpo).position.y - 6.0 < faixa_base_y):
 		push_warning("Balao: a fala '%s' não cabe sem cobrir o alvo; descartada." % id_)
 		return false
@@ -148,6 +166,7 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 		_raiz.queue_free()
 	_raiz = Control.new()
 	_raiz.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_raiz.set_meta("ui_align", "ignore")  # balão: sobreposição que escreve letra a letra (o rótulo cresce com o texto visível)
 	_raiz.size = Vector2(640, 360)
 	add_child(_raiz)
 	var by_data: Dictionary = UiTema.manifest().get("by_data_id", {}).get("speech_bubble", {})
