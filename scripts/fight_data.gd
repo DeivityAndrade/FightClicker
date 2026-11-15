@@ -11,7 +11,9 @@ const CAMINHO_CARREIRA := "res://data/career.json"
 const CAMINHO_ARVORE := "res://data/skill_tree.json"
 
 # Tipos de efeito da árvore (Fase 4). Tipo desconhecido: nó ignorado.
-const TIPOS_EFEITO := ["click_bonus", "passive_bonus", "money_bonus", "fame_bonus", "defeat_share_bonus", "metronome_start", "preview_percent", "art_rule_bonus"]
+const TIPOS_EFEITO := ["click_bonus", "passive_bonus", "money_bonus", "fame_bonus", "defeat_share_bonus", "metronome_start", "preview_percent", "art_rule_bonus",
+		# Fase 5.4
+		"rope_installed", "start_generator", "prep_days_bonus", "crew_click_bonus", "gym_training_bonus", "art_fight_bonus", "legacy_bonus"]
 # Intervalo mínimo do Metrônomo (garante <= 1,5 soco/s mesmo com dado errado) e máximo.
 const METRONOMO_INTERVALO_MIN := 0.3
 const METRONOMO_INTERVALO_MAX := 60.0
@@ -47,6 +49,8 @@ const PADRAO_GERADORES_PAGOS := [
 const PADRAO_LUVAS := [
 	{"id": "glove_l1", "cost": 120, "click_multiplier": 2},
 	{"id": "glove_l2", "cost": 500, "click_multiplier": 2},
+	{"id": "glove_l3", "cost": 1200, "click_multiplier": 2},
+	{"id": "glove_l4", "cost": 2500, "click_multiplier": 2},
 ]
 const PADRAO_CARREIRA := {"legacy_per_fame": 2.0, "belt_legacy_bonus": 100, "defeat_share": 0.5,
 	"retire_share": 1.0, "retire_belt_bonus_share": 0.5}
@@ -62,12 +66,16 @@ var luva_id := "glove_shop"
 var luva_base: Dictionary = {}
 var luvas: Array[Dictionary] = []
 var carreira: Dictionary = {}
+var calendario: Dictionary = {}  # Fase 5.3: career.json -> calendar (seconds_per_day 0 = sem calendário)
 # Visual: golpes seguidos para encher a barra de ESPECIAL (fights.json -> presentation.special_hits)
 var golpes_especial := 5
 # Fase 4
 var ramos: Array[Dictionary] = []  # {id, name}
 var arvore: Array[Dictionary] = []  # nós válidos, na ordem do arquivo
+var regioes: Array[Dictionary] = []  # Fase 5.4: {id, name, lock, icon}
+var mapa_arvore: Dictionary = {"unit_px": 40.0}  # Fase 5.4: bloco "map" do skill_tree.json
 var metronomo: Dictionary = {}  # {id, name, description, appears_as, levels: [...]} (levels vazio = sem Metrônomo)
+var crew_click: Dictionary = {}  # Fase 5.2: {id, cost, crew_share, icon, name, description, appears_as} ({} = sem a melhoria)
 
 
 static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios: String = CAMINHO_ADVERSARIOS,
@@ -279,6 +287,7 @@ func _montar_adversario(item: Dictionary, id: String, pad: Dictionary) -> Dictio
 	var a := {"id": id}
 	for chave in ["strength", "agility", "endurance", "prize_money", "prize_fame"]:
 		a[chave] = TrainingData._num(item, chave, float(pad.get(chave, 0)), 0.0, 1.0e300, id + ".")
+	a["prep_days"] = int(TrainingData._num(item, "prep_days", 14.0, 1.0, 999.0, id + "."))  # Fase 5.3: folga em dias
 	a["belt"] = item.get("belt", false) == true
 	a["location"] = TrainingData._txt(item, "location", "garage")  # Fase 5: onde ele luta; ausente = garagem
 	for chave in ["name", "description", "profile", "entry", "wins_line", "loses_line"]:
@@ -335,6 +344,7 @@ func _ler_loja(dados: Dictionary) -> void:
 		for item in PADRAO_LUVAS:
 			luvas.append(_montar_luva(item, item.id, luvas.size() + 1, item))
 	_ler_metronomo(dados.get("metronome", {}))
+	_ler_crew_click(dados.get("crew_click", null))
 
 
 func _padrao_luva(id: String) -> Dictionary:
@@ -396,11 +406,30 @@ func _ler_carreira(dados: Dictionary) -> void:
 		# Fase 5: segundos de PERIGOSO na academia até aparecer a dica "APOSENTAR AGORA LEVA {n} DE LEGADO"
 		"gym_retire_hint_seconds": TrainingData._num(dados, "gym_retire_hint_seconds", 300.0, 0.0, 1.0e6, "career."),
 	}
+	_ler_calendario(dados.get("calendar", null))
 	# Regra "aposentar rende mais que perder" não pode quebrar por dado.
 	if carreira.defeat_share >= carreira.retire_share:
 		push_warning("FightData: defeat_share deve ser < retire_share; usando 0.5 / 1.0.")
 		carreira.defeat_share = 0.5
 		carreira.retire_share = 1.0
+
+
+# Fase 5.3: calendário da campanha. Bloco ausente = sem calendário (jogo da 5.2).
+func _ler_calendario(v: Variant) -> void:
+	var b: Dictionary = v if v is Dictionary else {}
+	var spd := 0.0
+	if v is Dictionary:
+		spd = TrainingData._num(b, "seconds_per_day", 0.0, 0.0, 3600.0, "calendar.")
+		if spd > 0.0 and spd < 5.0:
+			push_warning("FightData: calendar.seconds_per_day fora de 5-3600; calendário desligado.")
+			spd = 0.0
+	calendario = {
+		"seconds_per_day": spd,
+		"warn_days": int(TrainingData._num(b, "warn_days", 3.0, 0.0, 30.0, "calendar.")),
+		"warn_sound_days": int(TrainingData._num(b, "warn_sound_days", 1.0, 0.0, 30.0, "calendar.")),
+		"retire_hint_days": int(TrainingData._num(b, "retire_hint_days", 3.0, 0.0, 30.0, "calendar.")),
+		"offline_stops_at_fight_day": b.get("offline_stops_at_fight_day", true) != false,
+	}
 
 
 # --- Fase 4: Metrônomo (loja) ---
@@ -466,7 +495,23 @@ func ramo(id: String) -> Dictionary:
 	return {}
 
 
+func regiao(id: String) -> Dictionary:
+	for r in regioes:
+		if r.id == id:
+			return r
+	return {}
+
+
 func _ler_arvore(dados: Dictionary) -> void:
+	var m = dados.get("map", {})
+	if m is Dictionary:
+		mapa_arvore = {"unit_px": clampf(float(m.get("unit_px", 40.0)), 8.0, 400.0)}
+	var rg = dados.get("regions", [])
+	if rg is Array:
+		for item in rg:
+			if item is Dictionary and not str(item.get("id", "")).is_empty() and regiao(str(item.id)).is_empty():
+				regioes.append({"id": str(item.id), "name": str(item.get("name", "")), "lock": str(item.get("lock", "")),
+					"icon": str(item.get("icon", ""))})
 	var rs = dados.get("branches", [])
 	if not (rs is Array):
 		rs = []
@@ -474,7 +519,7 @@ func _ler_arvore(dados: Dictionary) -> void:
 		if item is Dictionary and not str(item.get("id", "")).is_empty() and ramo(str(item.id)).is_empty():
 			ramos.append({"id": str(item.id), "name": TrainingData._txt(item, "name", str(item.id).to_upper()),
 				"requires_arts_unlocked": item.get("requires_arts_unlocked", false) == true})
-	if ramos.is_empty():
+	if ramos.is_empty() and regioes.is_empty():
 		push_warning("FightData: skill_tree.json sem ramos válidos: árvore vazia.")
 		return
 	var lista = dados.get("nodes", [])
@@ -489,8 +534,15 @@ func _ler_arvore(dados: Dictionary) -> void:
 			push_warning("FightData: nó da árvore com id vazio ou repetido ('%s') ignorado." % id)
 			continue
 		var r := str(item.get("branch", ""))
-		if ramo(r).is_empty():
-			push_warning("FightData: nó '%s' com ramo desconhecido ('%s'): ignorado." % [id, r])
+		var reg := str(item.get("region", r))
+		# Fase 5.4: nó novo não tem ramo (só região); nó antigo precisa de ramo válido.
+		if (r != "" and ramo(r).is_empty()) or (r == "" and regiao(reg).is_empty()):
+			push_warning("FightData: nó '%s' com ramo/região desconhecido ('%s'): ignorado." % [id, r if r != "" else reg])
+			continue
+		var pos = item.get("pos", null)
+		if not regioes.is_empty() and (not (pos is Array) or pos.size() != 2 \
+				or not (typeof(pos[0]) in [TYPE_INT, TYPE_FLOAT]) or not (typeof(pos[1]) in [TYPE_INT, TYPE_FLOAT])):
+			push_warning("FightData: nó '%s' sem posição válida: ignorado." % id)
 			continue
 		var custo = item.get("cost", null)
 		if (typeof(custo) != TYPE_FLOAT and typeof(custo) != TYPE_INT) or not is_finite(float(custo)) or float(custo) < 1.0 \
@@ -505,11 +557,24 @@ func _ler_arvore(dados: Dictionary) -> void:
 		if (typeof(valor) != TYPE_FLOAT and typeof(valor) != TYPE_INT) or not is_finite(float(valor)) or float(valor) < 0.0:
 			push_warning("FightData: nó '%s' com valor de efeito inválido: ignorado." % id)
 			continue
+		var alvo := str(ef.get("target", ""))
+		if str(ef.type) == "start_generator" and alvo == "":
+			push_warning("FightData: nó '%s' start_generator sem target: ignorado." % id)
+			continue
 		ids[id] = true
+		var vizinhos: Array = []
+		var bruto = item.get("neighbors", [])
+		if bruto is Array:
+			for v in bruto:
+				vizinhos.append(str(v))
+		var trava := str(item.get("lock", str(regiao(reg).get("lock", ""))))
 		arvore.append({
 			"id": id, "branch": r, "requires": str(item.get("requires", "")), "cost": int(custo),
+			"region": reg, "kind": str(item.get("kind", "small")), "root": item.get("root", false) == true,
+			"pos": Vector2(float(pos[0]), float(pos[1])) if pos is Array and pos.size() == 2 else Vector2.ZERO,
+			"neighbors": vizinhos, "lock": trava,
 			"requires_art": str(item.get("requires_art", "")),
-			"effect_type": str(ef.type), "effect_value": float(valor),
+			"effect_type": str(ef.type), "effect_value": float(valor), "effect_target": alvo,
 			"name": TrainingData._txt(item, "name", id), "description": TrainingData._txt(item, "description", ""),
 			"effect_text": TrainingData._txt(item, "effect_text", ""), "icon": TrainingData._txt(item, "icon", ""),
 		})
@@ -530,3 +595,72 @@ func _ler_arvore(dados: Dictionary) -> void:
 		if passos > arvore.size():
 			push_warning("FightData: ciclo em 'requires' de '%s': vira vazio." % n.id)
 			n.requires = ""
+	_validar_vizinhos()
+
+
+# Fase 5.4: vizinhos conhecidos e simétricos; avisa nó inalcançável (sem raiz e sem caminho até uma).
+func _validar_vizinhos() -> void:
+	if regioes.is_empty():
+		# Arquivo v1 (sem mapa): raiz = nó sem `requires`; vizinhos = pai e filhos; ESTILO pede a arte.
+		for n in arvore:
+			n.root = n.requires == ""
+			n.neighbors = [n.requires] if n.requires != "" else []
+			if n.requires_art != "":
+				n.lock = "art:" + n.requires_art
+		for n in arvore:
+			if n.requires != "":
+				no_da_arvore(n.requires).neighbors.append(n.id)
+	for n in arvore:
+		var ok: Array = []
+		for v in n.neighbors:
+			if no_da_arvore(str(v)).is_empty() or v == n.id:
+				push_warning("FightData: vizinho '%s' de '%s' desconhecido: removido." % [v, n.id])
+			elif not (v in ok):
+				ok.append(v)
+		n.neighbors = ok
+	for n in arvore:
+		for v in n.neighbors:
+			var o := no_da_arvore(str(v))
+			if not (n.id in o.neighbors):
+				push_warning("FightData: vizinhança '%s' -> '%s' sem volta: completada." % [n.id, v])
+				o.neighbors.append(n.id)
+	if regioes.is_empty():
+		return
+	var vistos := {}
+	var fila: Array = []
+	for n in arvore:
+		if n.root:
+			vistos[n.id] = true
+			fila.append(n.id)
+	while not fila.is_empty():
+		var atual: Dictionary = no_da_arvore(str(fila.pop_back()))
+		for v in atual.neighbors:
+			if not vistos.has(v):
+				vistos[v] = true
+				fila.append(v)
+	for n in arvore:
+		if not vistos.has(n.id):
+			push_warning("FightData: nó '%s' inalcançável (sem raiz no caminho)." % n.id)
+
+
+# --- Fase 5.2: Grito da equipe (loja, em $) ---
+
+func _ler_crew_click(v: Variant) -> void:
+	crew_click = {}
+	if v == null:
+		return  # ausente: a melhoria não existe
+	if not (v is Dictionary):
+		push_warning("FightData: bloco 'crew_click' inválido: melhoria desligada.")
+		return
+	var custo = v.get("cost", null)
+	var parte = v.get("crew_share", null)
+	if (typeof(custo) != TYPE_FLOAT and typeof(custo) != TYPE_INT) or not is_finite(float(custo)) or float(custo) <= 0.0:
+		push_warning("FightData: crew_click com custo inválido: melhoria desligada.")
+		return
+	if (typeof(parte) != TYPE_FLOAT and typeof(parte) != TYPE_INT) or not is_finite(float(parte)) \
+			or float(parte) < 0.0 or float(parte) > 100.0:
+		push_warning("FightData: crew_click com crew_share fora de [0, 100]: melhoria desligada.")
+		return
+	crew_click = {"id": TrainingData._txt(v, "id", "crew_click"), "cost": float(custo), "crew_share": float(parte),
+		"icon": TrainingData._txt(v, "icon", ""), "name": TrainingData._txt(v, "name", "Grito da equipe"),
+		"description": TrainingData._txt(v, "description", ""), "appears_as": TrainingData._txt(v, "appears_as", "")}

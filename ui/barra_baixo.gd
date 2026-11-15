@@ -262,7 +262,8 @@ func _montar_lutar() -> void:
 
 func _montar_aposentar() -> void:
 	_aposentar = UiTema.botao_estilizado(self, Rect2(520, 43, 112, 22), "ui_button_retire")
-	UiTema.botao_conteudo(_aposentar, UiTema.txt("retire_button", "APOSENTAR"), UiTema.P2, 1, "icon_retire", 3.0)
+	# Fase 5.3: "PASSAR O POSTO" com o ícone da luva que passa (o mesmo desenho do botão da prévia do dia).
+	UiTema.botao_conteudo(_aposentar, UiTema.txt("retire_button", "PASSAR O POSTO"), UiTema.P2, 1, "icon_pass_post", 3.0)
 	_aposentar.pressed.connect(func() -> void: aposentar_pedido.emit())
 
 

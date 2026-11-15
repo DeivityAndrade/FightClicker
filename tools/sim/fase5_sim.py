@@ -30,12 +30,23 @@ A mudanca automatica ja era a regra do robo (muda no mesmo passo do cinturao). O
 
 Rodar (nao ha python no PATH):
   "C:/Program Files/Blender Foundation/Blender 5.2/5.2/python/bin/python.exe" tools/sim/fase5_sim.py [secao ...]
-Secoes: precos, curvas, identidade, b23, carreiras, controle, assistido, caixa, tudo (padrao).
+Secoes: precos, curvas, identidade, b23, carreiras, controle, assistido, caixa, f52, tudo (padrao).
+
+Fase 5.2 (docs/fases/fase5.2-design.md): luvas L3/L4 (gloves.levels), bolsa da torcida (golden_event.crew_*),
+clique com a equipe (shop.json -> crew_click), robo que so luta no VERDE contra o 1o adversario (SIM_DUDU_VERDE=1)
+e a secao f52 (Kid por arte, tempo morto, 'proxima coisa', clique no fim do conteudo, cinturao Boxe x Jiu-jitsu).
+Alavancas: SIM_LUVAS_NOVAS="c3,m3,c4,m4", SIM_BOLSA="chance,segundos,piso", SIM_TORCIDA="custo,fracao",
+SIM_STYLE="boxe,jj" (value dos nos ESTILO), SIM_N52 (jogadores por perfil da f52).
+
+Fase 5.3 (docs/fases/fase5.3-design.md): calendario (data/career.json -> calendar, data/opponents.json -> prep_days),
+relogio so na sala (a equipe nao treina na luta), robo novo (antes da data so luta no VERDE; no dia luta no amarelo/verde
+e passa o posto no vermelho). Secoes b23c (23b com 2.000) e f53. Alavancas: SIM_CAL=0, SIM_CAL_SPD, SIM_PREP, SIM_ANTES, SIM_DIA.
 """
 import copy
 import json
 import math
 import os
+import random
 import sys
 from multiprocessing import Pool
 
@@ -110,6 +121,86 @@ def _caixa_dos_dados():
 _CX = os.environ.get("SIM_CAIXA", _caixa_dos_dados())
 CAIXA = None if _CX == "0" else dict(zip(("reacao", "cliques", "anim", "espera"), (float(x) for x in _CX.split(","))))
 
+# ---------------------------------------------------------------- Fase 5.2 (docs/fases/fase5.2-design.md)
+# 1) Luvas L3/L4: vem de data/shop.json -> gloves.levels (o sim ja le a lista inteira). SIM_LUVAS_NOVAS="c3,m3,c4,m4"
+#    troca/acrescenta os niveis 3 e 4.
+# 2) Bolsa da torcida (variante da luva dourada): data/training.json -> golden_event.crew_chance / crew_seconds /
+#    crew_floor_clicks. Paga de uma vez max(crew_seconds x renda sem a mao, crew_floor_clicks x clique normal).
+#    "Renda sem a mao" = equipe/s + Metronomo/s. SIM_BOLSA="chance,segundos,piso".
+# 3) Clique com a equipe (LOJA, $): data/shop.json -> crew_click {cost, crew_share}. Cada clique da MAO soma
+#    crew_share x equipe/s (antes do critico e do FRENESI; nao vale para Metronomo nem assistido).
+#    SIM_TORCIDA="custo,fracao" (custo 0 = sem a melhoria).
+# 4) Robo x Dudu: SIM_DUDU_VERDE=1 (padrao) = contra o 1o adversario da carreira o robo so luta no VERDE.
+def _f52_dos_dados():
+    cfg = {"crew_chance": 0.0, "crew_seconds": 0.0, "crew_floor_clicks": 0.0, "cc_cost": 0.0, "cc_share": 0.0}
+    try:
+        with open(os.path.join(f2.RAIZ, "data", "training.json"), encoding="utf-8") as fh:
+            ge = json.load(fh).get("golden_event", {})
+        for k in ("crew_chance", "crew_seconds", "crew_floor_clicks"):
+            cfg[k] = float(ge.get(k, 0.0))
+        with open(os.path.join(f2.RAIZ, "data", "shop.json"), encoding="utf-8") as fh:
+            cc = json.load(fh).get("crew_click", {})
+        cfg["cc_cost"] = float(cc.get("cost", 0.0))
+        cfg["cc_share"] = float(cc.get("crew_share", 0.0))
+    except (OSError, ValueError):
+        pass
+    if os.environ.get("SIM_BOLSA"):
+        q, s, fl = (float(x) for x in os.environ["SIM_BOLSA"].split(","))
+        cfg.update(crew_chance=q, crew_seconds=s, crew_floor_clicks=fl)
+    if os.environ.get("SIM_TORCIDA"):
+        c, sh = (float(x) for x in os.environ["SIM_TORCIDA"].split(","))
+        cfg.update(cc_cost=c, cc_share=sh)
+    return cfg
+
+
+F52 = _f52_dos_dados()
+DUDU_VERDE = os.environ.get("SIM_DUDU_VERDE", "1") == "1"
+
+
+# ---------------------------------------------------------------- Fase 5.3 (docs/fases/fase5.3-design.md): calendario
+# data/career.json -> calendar.seconds_per_day; data/opponents.json -> prep_days (dias depois da luta anterior; o 1o conta
+# do inicio da carreira). O relogio da campanha (self.clk) so anda na sala: nao anda na luta (e a equipe tambem nao treina
+# na luta). Robo novo (SIM_CAL_ROBO):
+#   antes da data: olha a previa a cada 30 s e so luta no VERDE (>= easy_min);
+#   no dia: luta se a chance >= even_min (amarelo/verde); no vermelho passa o posto se o pote > 0 (senao luta).
+#   SIM_DIA=luta -> no dia sempre luta (variante). SIM_ANTES=amarelo -> antes da data luta no amarelo (robo da 5.2).
+# SIM_CAL=0 desliga (jogo da 5.2). SIM_CAL_SPD="30" troca os segundos por dia; SIM_PREP="d1,d2,d3,d4,d5,d6" as folgas.
+def _cal_dos_dados():
+    cfg = {"on": False, "spd": 0.0, "prep": {}}
+    try:
+        with open(os.path.join(f2.RAIZ, "data", "career.json"), encoding="utf-8") as fh:
+            cal = json.load(fh).get("calendar", {})
+        with open(os.path.join(f2.RAIZ, "data", "opponents.json"), encoding="utf-8") as fh:
+            opps = json.load(fh)["opponents"]
+        cfg["spd"] = float(cal.get("seconds_per_day", 0.0))
+        cfg["prep"] = {o["id"]: int(o["prep_days"]) for o in opps if "prep_days" in o}
+        ids = [o["id"] for o in opps]
+    except (OSError, ValueError, KeyError):
+        ids = ["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2"]
+    if os.environ.get("SIM_CAL_SPD"):
+        cfg["spd"] = float(os.environ["SIM_CAL_SPD"])
+    if os.environ.get("SIM_PREP"):
+        cfg["prep"] = dict(zip(ids, (int(x) for x in os.environ["SIM_PREP"].split(","))))
+    cfg["on"] = cfg["spd"] > 0 and len(cfg["prep"]) >= len(ids) and os.environ.get("SIM_CAL", "1") == "1"
+    return cfg
+
+
+CAL = _cal_dos_dados()
+CAL_DIA = os.environ.get("SIM_DIA", "passa")       # vermelho no dia: "passa" (passa o posto se o pote > 0) ou "luta"
+CAL_ANTES = os.environ.get("SIM_ANTES", "verde")   # antes da data: "verde" ou "amarelo"
+
+
+def _luvas_novas(shop):
+    if not os.environ.get("SIM_LUVAS_NOVAS"):
+        return
+    c3, m3, c4, m4 = (float(x) for x in os.environ["SIM_LUVAS_NOVAS"].split(","))
+    lv = [dict(L) for L in shop["gloves"]["levels"][:2]]
+    if m3 > 0:
+        lv.append({"id": "glove_l3", "cost": c3, "click_multiplier": m3})
+        if m4 > 0:
+            lv.append({"id": "glove_l4", "cost": c4, "click_multiplier": m4})
+    shop["gloves"]["levels"] = lv
+
 
 def _proposta_dos_dados(R, treino, tree):
     """Monta o mesmo dicionario do PROPOSTA_5 a partir de data/ (locations, arts, training, opponents, skill_tree).
@@ -142,6 +233,7 @@ def _proposta_dos_dados(R, treino, tree):
 def carregar_5(quieto=False):
     dados = f4b.carregar_4b(quieto=True)
     R, treino, gens, shop, career, tree, unlocks, assist = dados
+    _luvas_novas(shop)
     P, fontes = _proposta_dos_dados(R, treino, tree)
     # os simuladores anteriores so conhecem a garagem: tira dos dados o que e da academia/artes
     treino = dict(treino)
@@ -156,6 +248,10 @@ def carregar_5(quieto=False):
     if os.environ.get("SIM_JJ"):
         s, r, cap = (float(x) for x in os.environ["SIM_JJ"].split(","))
         P["arts"]["bjj"]["rule"].update(start=s, per_minute=r, cap=cap)
+    if os.environ.get("SIM_ARTE_LUTA"):                 # 5.4: "dano_boxe,recebido_jj" (traco de luta das artes)
+        dmb, tkj = (float(x) for x in os.environ["SIM_ARTE_LUTA"].split(","))
+        P["arts"]["boxing"]["fight"]["damage_mult"] = dmb
+        P["arts"]["bjj"]["fight"]["taken_mult"] = tkj
     P["opponents_gym"] = [dict(o) for o in P["opponents_gym"]]
     for i, var in enumerate(("SIM_G1", "SIM_G2")):
         if os.environ.get(var):
@@ -165,27 +261,38 @@ def carregar_5(quieto=False):
     garagem = [o for o in R.opp if o.get("location", "garage") == "garage"]
     opps = {"opponents": garagem + P["opponents_gym"]}
     R5 = f3.Regras({"combat": R.c, "tactics": [R.tac[t] for t in R.tac_ids], "risk": R.risk, "reason": R.reason}, opps)
-    tree5 = {"branches": tree.get("branches", []), "nodes": list(tree["nodes"])}
+    tree5 = {"branches": tree.get("branches", []), "nodes": [dict(nn) for nn in tree["nodes"]]}
+    if os.environ.get("SIM_STYLE"):                     # 5.2: SIM_STYLE="boxe,jj" troca o value dos nos ESTILO
+        vb, vj = (float(x) for x in os.environ["SIM_STYLE"].split(","))
+        for nn in tree5["nodes"]:
+            if nn.get("requires_art") in ("boxing", "bjj"):
+                nn["effect"] = dict(nn["effect"], value=(vb if nn["requires_art"] == "boxing" else vj))
     if not quieto:
         print("Fontes 5: %s" % ", ".join(fontes))
         print("Fase 5: mudanca $%d, x%.2f; Boxe +%.0f%% clique manual; Jiu-jitsu %s; G1 %s; G2 %s; aposenta na academia apos %ds no vermelho" % (
             P["move"]["cost"], P["move"]["training_mult"], 100 * P["arts"]["boxing"]["rule"]["value"],
             P["arts"]["bjj"]["rule"], tuple(P["opponents_gym"][0][k] for k in ("strength", "agility", "endurance")),
             tuple(P["opponents_gym"][1][k] for k in ("strength", "agility", "endurance")), RET_GYM))
+        print("Fase 5.2: luvas %s; bolsa da torcida %s; clique com a equipe $%g x%.2f da equipe/s; robo so luta no verde contra o 1o: %s" % (
+            [(L["id"], L["cost"], L["click_multiplier"]) for L in shop["gloves"]["levels"]],
+            {k: F52[k] for k in ("crew_chance", "crew_seconds", "crew_floor_clicks")}, F52["cc_cost"], F52["cc_share"], DUDU_VERDE))
     return (R5, treino, gens, shop, career, tree5, unlocks, assist, P)
 
 
-def regras_arte(R, arte_cfg):
-    """Traco de luta: multiplica damage_mult/taken_mult de TODAS as taticas do jogador."""
+def regras_arte(R, arte_cfg, extra=0.0, arte=None):
+    """Traco de luta: multiplica damage_mult/taken_mult de TODAS as taticas do jogador.
+    5.4: extra = soma dos nos art_fight_bonus da arte (Boxe: dano x(1+extra); Jiu-jitsu: dano recebido x(1-extra))."""
     if arte_cfg is None:
         return R
     f = arte_cfg["fight"]
+    dm = 1.0 + (extra if arte == "boxing" else 0.0)
+    tm = 1.0 - (extra if arte == "bjj" else 0.0)
     R2 = copy.copy(R)
     R2.tac = {}
     for t, d in R.tac.items():
         d2 = dict(d)
-        d2["damage_mult"] = d["damage_mult"] * f.get("damage_mult", 1.0)
-        d2["taken_mult"] = d["taken_mult"] * f.get("taken_mult", 1.0)
+        d2["damage_mult"] = d["damage_mult"] * f.get("damage_mult", 1.0) * dm
+        d2["taken_mult"] = d["taken_mult"] * f.get("taken_mult", 1.0) * tm
         R2.tac[t] = d2
     return R2
 
@@ -219,15 +326,57 @@ class Carreira5(f4b.Carreira4b):
         self.luva_fechada = 0                 # luvas compradas ainda na caixa (nao multiplicam)
         self.n_caixas = 0
         self.t_caixa_mao = 0.0                # tempo de mao fora do alvo (abrindo caixas)
+        # Fase 5.2: bolsa da torcida + clique com a equipe + medidas de late game
+        self.rng_var = random.Random(semente * 104729 + 5)   # sorteio da variante (nao mexe nos outros sorteios)
+        self.ev_crew = False
+        self.bolsa_pend = False
+        self.n_bolsas = 0
+        self.treino_bolsa = 0.0
+        self.treino_cc = 0.0
+        self.cc = 0                           # clique com a equipe comprado (0/1)
+        q = F52["crew_chance"]
+        if self.pega > 0:
+            ciclo = (f4b.LUVA["wait_min"] + f4b.LUVA["wait_max"]) / 2.0 + self.pega * f4b.ROBO_LUVA["react"] + \
+                (1 - self.pega) * f4b.LUVA["visible_seconds"]
+            self.fren_med = 1.0 + (f4b.LUVA["frenzy_mult"] - 1.0) * min(1.0, self.pega * (1 - q) * f4b.LUVA["frenzy_seconds"] / ciclo)
+        self.snap_kid = None
+        self.snap_fim = None
+        self.t_l3 = None
+        # Fase 5.3: calendario
+        self.clk = 0.0                        # relogio da campanha (s de sala)
+        self.dia_ult = 0                      # dia da ultima luta (0 = inicio da carreira)
+        self.reg53 = []                       # por luta: (opp, no_dia, cor, dias_desde_a_anterior, venceu)
+        self.amostra_d = []                   # a cada 30 s de sala: segundos ate a data (para a medida do AFK)
+        self._prox_amostra = 0.0
         if arte:
             self.definir_arte(arte)
+        # Fase 5.4: nos da arvore que mudam o comeco da campanha
+        if self.b.get("rope_installed"):
+            self.owned.add("jump_rope")       # corda montada: sem compra e sem caixa
+            self.t_ap["jump_rope"] = 0.0
+        for gid, q in self.b.get("start_generator", {}).items():
+            if gid in self.qtd:
+                self.qtd[gid] += int(q)
+
+    # --- Fase 5.3: calendario
+    def dia(self):
+        return int(math.floor(self.clk / CAL["spd"] + 1e-9))
+
+    def data_prox(self):
+        """Dia da proxima luta (None sem proxima luta com data, ex.: antes da mudanca ou depois do Kid)."""
+        if self.vitorias >= len(self.R.opp):
+            return None
+        o = self.R.opp[self.vitorias]
+        if o.get("location") == "gym" and not self.mudou:
+            return None
+        return self.dia_ult + CAL["prep"][o["id"]] + int(self.b.get("prep_days_bonus", 0))
 
     # --- arte
     def definir_arte(self, arte):
         cfg = self.P["arts"][arte]
         self.arte = arte
         self.t_arte0 = self.t
-        self.R = regras_arte(self.R_base, cfg)
+        self.R = regras_arte(self.R_base, cfg, self.b.get("art_fight_bonus", {}).get(arte, 0.0), arte)
         self.sig = cfg["apparatus"]
         apc = self.P["apparatus"][self.sig]
         self.split = apc["split"]
@@ -255,6 +404,61 @@ class Carreira5(f4b.Carreira4b):
     # --- economia
     def passivo(self):
         return f4.Carreira4.passivo(self) * self.fator_equipe()
+
+    # --- Fase 5.2
+    def cc_share(self):
+        return (F52["cc_share"] + self.b.get("crew_click_bonus", 0.0)) if self.cc else 0.0
+
+    def soco_cru(self, a):
+        """Soco esperado sem o FRENESI (com a media do critico)."""
+        return self.por_soco(a) / self.fren_med
+
+    def metro_treino_s(self, a):
+        """AUTO/s do jogo: socos_por_segundo_metronomo() x por_auto_soco() (sem critico)."""
+        return self.metro_s() * self.soco_cru(a) / self.media_crit * self.loc
+
+    def renda_sem_mao(self, a=None):
+        """Equipe/s + Metronomo/s (o que entra sem a mao, sem critico). Base da bolsa e da medida de late game."""
+        a = a or self.foco()
+        return self.passivo() + self.metro_treino_s(a)
+
+    def valor_clique(self, a=None):
+        """por_clique() do jogo: 1 clique da mao sem critico e sem FRENESI, com o clique com a equipe."""
+        a = a or self.foco()
+        return self.clique_normal(a)
+
+    def clique_normal(self, a):
+        """por_clique() do jogo: sem critico e sem FRENESI (piso da bolsa)."""
+        return self.soco_cru(a) / self.media_crit * self.boxe_f * self.loc + self.cc_share() * self.passivo()
+
+    def fren_passo(self, dt):
+        """Igual ao fase4b_sim, com a variante: ao aparecer, sorteia bolsa (crew_chance) ou FRENESI x7."""
+        if self.pega <= 0:
+            return 1.0
+        L = f4b.LUVA
+        m = L["frenzy_mult"] if self.fren_rest > 0 else 1.0
+        if self.fren_rest > 0:
+            self.fren_rest = max(0.0, self.fren_rest - dt)
+            self.t_fren += dt
+        if self.ev_vis > 0:
+            self.ev_vis -= dt
+            if self.ev_vis <= 1e-9:
+                self.ev_vis = 0.0
+                if self.ev_pega:
+                    if self.ev_crew:
+                        self.bolsa_pend = True
+                        self.n_bolsas += 1
+                    else:
+                        self.fren_rest = L["frenzy_seconds"]
+                        self.n_luvas += 1
+                self.ev_wait = self.rng_ev.uniform(L["wait_min"], L["wait_max"])
+        else:
+            self.ev_wait -= dt
+            if self.ev_wait <= 0:
+                self.ev_pega = self.rng_ev.random() < self.pega
+                self.ev_vis = f4b.ROBO_LUVA["react"] if self.ev_pega else L["visible_seconds"]
+                self.ev_crew = F52["crew_chance"] > 0 and self.rng_var.random() < F52["crew_chance"]
+        return m / self.fren_med
 
     def clique_s(self, a):
         ass = 1.0 / self.assist_cfg["interval"] if (self.usa_shift and self.metro == 0 and self.cps == 0) else 0.0
@@ -348,18 +552,25 @@ class Carreira5(f4b.Carreira4b):
         return c
 
     def fren_luta(self, dur):
-        f4b.Carreira4b.fren_luta(self, dur)
+        if not CAL["on"]:                     # 5.3: na luta o relogio para; o FRENESI tambem espera
+            f4b.Carreira4b.fren_luta(self, dur)
         if self.caixa_fim is not None:
             self.caixa_fim += dur             # durante a luta ninguem abre caixa
 
     # --- compras
+    def menor_preco_loja(self):
+        p = f4.Carreira4.menor_preco_loja(self)
+        if F52["cc_cost"] > 0 and self.cc == 0:
+            p = min(p, F52["cc_cost"])
+        return p
+
     def tentar_mudar(self):
         if self.cinturao and not self.mudou and not self.belt_ends:
             mv = self.P["move"]
             if self.dinheiro + 1e-9 >= mv["cost"]:
                 self.dinheiro -= mv["cost"]
                 self.mudou = True
-                self.loc = mv["training_mult"]
+                self.loc = mv["training_mult"] * (1.0 + self.b.get("gym_training_bonus", 0.0))
                 self.t_move = self.t
                 self.eventos.append((self.t, "MUDA academia"))
                 self.fechar_trechos()
@@ -403,7 +614,7 @@ class Carreira5(f4b.Carreira4b):
 
     def _garagem_f3(self):
         """f3.Carreira.comprar_garagem com o fator da equipe e o 4o aparelho (identica sem arte e na garagem)."""
-        fe = self.fator_equipe()
+        fe = self.fator_equipe() * (1.0 + self.cc_share() * self.cps * self.media_crit)   # 5.2: a equipe tambem engorda o clique
         while True:
             w = self.pesos()
             renda = self.clique_medio() + self.passivo()
@@ -453,6 +664,9 @@ class Carreira5(f4b.Carreira4b):
                 w = self.pesos()
                 ganho = sum(self.por_soco(a) * w.get(a, 0.0) for a in self.aps()) * (novo - self.metro_s())
                 ops.append((ganho / M["cost"], "metro", M["id"], float(M["cost"])))
+            if F52["cc_cost"] > 0 and self.cc == 0:
+                ganho = (F52["cc_share"] + self.b.get("crew_click_bonus", 0.0)) * self.passivo() * self.cps * self.media_crit * self.fren_med
+                ops.append((ganho / F52["cc_cost"], "cc", "crew_click", F52["cc_cost"]))
             if not ops:
                 return
             ops.sort(reverse=True)
@@ -465,11 +679,15 @@ class Carreira5(f4b.Carreira4b):
             self.dinheiro -= c
             if tipo == "pgen":
                 self.pqtd[id_] += 1
-                if self.pqtd[id_] == 1:
-                    self.eventos.append((self.t, "1o " + id_))
+                self.eventos.append((self.t, ("1o " if self.pqtd[id_] == 1 else "loja ") + id_))
+            elif tipo == "cc":
+                self.cc = 1
+                self.eventos.append((self.t, id_))
             elif tipo == "luva":
                 self.luva += 1
                 self.eventos.append((self.t, id_))
+                if id_ == "glove_l3":
+                    self.t_l3 = self.t
                 if CAIXA:
                     self.luva_fechada += 1
                     self.nova_caixa("luva", id_)
@@ -490,6 +708,8 @@ class Carreira5(f4b.Carreira4b):
         if self.belt_ends and self.cinturao:
             self.perigoso = False
             return
+        if CAL["on"]:
+            return self._talvez_lutar_cal(o)
         if self.t - self.ult_check_t < self.olhar:
             return
         self.ult_check_t = self.t
@@ -502,6 +722,8 @@ class Carreira5(f4b.Carreira4b):
         killer = (o["id"] in cc) if isinstance(cc, (set, frozenset, list, tuple)) else (cc == o["id"])
         if self.cauteloso_gym and o.get("location") == "gym":
             killer = True
+        if DUDU_VERDE and self.vitorias == 0:
+            killer = True                      # 5.2: 1a luta da carreira so no VERDE (ver design 5.2, robo x Dudu)
         self.e_revanche = o["id"] == getattr(self, "ultimo_algoz", None)
         if killer:
             lim = easy
@@ -544,11 +766,84 @@ class Carreira5(f4b.Carreira4b):
             if o.get("location") == "gym":
                 self.t_g[o["id"]] = self.t
                 if self.vitorias >= len(self.R.opp):
+                    self.snap_kid = self.foto52()
                     self.fim = ("topo", self.t)      # venceu a academia inteira: aposenta
             self.perigoso = False
         else:
             self.fim = ("derrota", self.t, o["id"], jog, tat)
             self.eventos.append((self.t, "PERDE " + o["id"]))
+
+    def _talvez_lutar_cal(self, o):
+        """Fase 5.3: robo com calendario. Antes da data: olha a cada 30 s e luta no VERDE. No dia: decide na hora."""
+        data = self.data_prox()
+        no_dia = data is not None and self.dia() >= data
+        if not no_dia and self.t - self.ult_check_t < self.olhar:
+            return
+        self.ult_check_t = self.t
+        jog = tuple(self.attr)
+        adv = self.adv()
+        even = self.R.risk["even_min"]
+        easy = self.R.risk["easy_min"]
+        verde = any(self.R.passa(jog, adv, t, 100, easy) for t in self.R.tac_ids)
+        amarelo = verde or any(self.R.passa(jog, adv, t, 100, even) for t in self.R.tac_ids)
+        self.perigoso = not amarelo
+        cor = "verde" if verde else ("amarelo" if amarelo else "vermelho")
+        if not no_dia:
+            if CAL_ANTES == "amarelo":
+                cc = self.cauteloso_contra
+                killer = (o["id"] in cc) if isinstance(cc, (set, frozenset, list, tuple)) else (cc == o["id"])
+                if (DUDU_VERDE and self.vitorias == 0) or (self.cauteloso_gym and o.get("location") == "gym"):
+                    killer = True
+                ok = verde if killer else amarelo
+            else:
+                ok = verde
+            if not ok:
+                return
+        elif not amarelo and CAL_DIA == "passa" and self.pote() > 0:
+            self.reg53.append((o["id"], True, cor, data - self.dia_ult, None))
+            self.fechar_trechos()
+            self.fim = ("passou", self.t, o["id"], jog, None)
+            self.eventos.append((self.t, "PASSA " + o["id"]))
+            return
+        self.e_revanche = o["id"] == getattr(self, "ultimo_algoz", None)
+        tat, ps = self.R.melhor_tatica(jog, adv, 100)
+        p = ps[tat]
+        r = self.R.lutar(jog, adv, tat, self.rng.randrange(1 << 31))
+        dur = 5.0 + self.R.tela(r)
+        self.lutas.append({"t": self.t, "opp": o["id"], "p": p, "tat": tat, "win": r["win"], "attr": jog,
+                           "tela": self.R.tela(r)})
+        self.reg53.append((o["id"], no_dia, cor, self.dia() - self.dia_ult, r["win"]))
+        self.dia_ult = self.dia()
+        self.t += dur                          # a luta leva tempo de jogo, mas o relogio e a equipe param
+        self.fechar_trechos()
+        if r["win"]:
+            self.vitorias += 1
+            self.t_ult_vit = self.t
+            ganho = o["prize_money"] * (1 + self.b["money_bonus"])
+            self.dinheiro += ganho
+            self.dinheiro_total += ganho
+            self.fama += int(math.floor(o["prize_fame"] * (1 + self.b["fame_bonus"]) + 0.5))
+            if self.e_revanche:
+                self.t_revanche = self.t
+            self.eventos.append((self.t, "VENCE " + o["id"]))
+            if o.get("belt"):
+                self.cinturao = True
+                self.t_belt = self.t
+            if o.get("location") == "gym":
+                self.t_g[o["id"]] = self.t
+                if self.vitorias >= len(self.R.opp):
+                    self.snap_kid = self.foto52()
+                    self.fim = ("topo", self.t)
+            self.perigoso = False
+        else:
+            self.fim = ("derrota", self.t, o["id"], jog, tat)
+            self.eventos.append((self.t, "PERDE " + o["id"]))
+
+    def foto52(self):
+        """Medida de late game: (valor de 1 clique, renda sem a mao/s, mao/s, equipe/s, Metronomo/s, luvas abertas, cc)."""
+        a = self.foco()
+        return (self.valor_clique(a), self.renda_sem_mao(a), self.cps * self.valor_clique(a) * self.media_crit, self.passivo(),
+                self.metro_treino_s(a), self.luva - self.luva_fechada, self.cc)
 
     # --- laco
     def rodar(self):
@@ -560,8 +855,19 @@ class Carreira5(f4b.Carreira4b):
             self.comprar_loja()
             a = self.foco()
             cj = self.cps_agora()
-            ps = self.por_soco(a) * self.fren_passo(dt)
+            fp = self.fren_passo(dt)
+            ps = self.por_soco(a) * fp
             gc = cj * ps * dt * self.boxe_f * self.loc
+            if self.cc and cj > 0:              # 5.2: clique com a equipe (critico na media, FRENESI real)
+                gcc = cj * dt * self.cc_share() * self.passivo() * self.media_crit * fp * self.fren_med
+                gc += gcc
+                self.treino_cc += gcc
+            if self.bolsa_pend:                 # 5.2: bolsa da torcida, de uma vez
+                self.bolsa_pend = False
+                gb = max(F52["crew_seconds"] * self.renda_sem_mao(a), F52["crew_floor_clicks"] * self.clique_normal(a))
+                self.saldo += gb
+                self.somar(a, gb)
+                self.treino_bolsa += gb
             gm = self.metro_s() * ps * dt * self.loc
             ga = 0.0
             if cj > 0:
@@ -585,12 +891,19 @@ class Carreira5(f4b.Carreira4b):
             self.somar(a, g)
             self.tempo_foco[a] += dt
             self.t += dt
+            if CAL["on"]:
+                self.clk += dt
+                if self.clk >= self._prox_amostra:
+                    self._prox_amostra += 30.0
+                    dp = self.data_prox()
+                    if dp is not None:
+                        self.amostra_d.append(max(0.0, dp * CAL["spd"] - self.clk))
             ap = getattr(self, "aposenta_vermelho", None)
             if ap and self.perigoso and self.verm >= ap and self.pote() > 0:
                 self.fechar_trechos()
                 self.fim = ("aposentou", self.t)
                 break
-            if self.mudou and self.perigoso and self.verm >= self.ret_gym:
+            if self.mudou and self.perigoso and self.verm >= self.ret_gym and not CAL["on"]:
                 self.fechar_trechos()
                 self.fim = ("aposentou", self.t)
                 break
@@ -611,7 +924,24 @@ class Carreira5(f4b.Carreira4b):
         self.fechar_trechos()
         if not self.fim:
             self.fim = ("parado", self.t)
+        if self.mudou and self.fim[0] != "parado":
+            self.snap_fim = self.foto52()
         return self
+
+    def gaps52(self):
+        """'Proxima coisa': maior intervalo sem comprar nada na LOJA/aparelho/melhoria, sem abrir caixa e sem lutar
+        (equipe de Treino nao conta: esta sempre a venda). Devolve (maior na garagem, maior na academia)."""
+        ts = [0.0] + [t for t, e in self.eventos if not e.startswith("1o neighbor") and not e.startswith("1o retired")
+                      and e != "1a melhoria"] + [self.t]
+        ts.sort()
+        tm = self.t_move if self.t_move is not None else 1e18
+        gar, gym = 0.0, 0.0
+        for t0, t1 in zip(ts, ts[1:]):
+            if t1 <= tm + 1e-6:
+                gar = max(gar, t1 - t0)
+            else:
+                gym = max(gym, t1 - max(t0, tm))
+        return gar, (gym if self.mudou else None)
 
     def morto_total(self):
         return max(self.morto_pre, self.morto_max) if self.mudou else self.morto_max
@@ -638,6 +968,107 @@ def style_de(tree, comprados):
         if n["id"] in comprados and n.get("requires_art"):
             out[n["requires_art"]] = out.get(n["requires_art"], 0.0) + n["effect"]["value"]
     return out
+
+
+# ---------------------------------------------------------------- Fase 5.4: mapa da arvore (docs/fases/fase5.4-design.md)
+# data/skill_tree.json versao 2: cada no tem region, pos, neighbors, root, lock ("", "gym", "art:boxing", "art:bjj"),
+# requires_art, cost e effect. Visivel = trava ok e (root ou vizinho de um comprado). O robo compra o MAIS BARATO visivel
+# que o Legado paga (empate: id), nunca no da regiao da arte que ele nao joga, e repete ate nao caber nada.
+# Tudo o que se compra vale na PROXIMA campanha (o robo compra entre campanhas, entao ja e assim).
+# Alavancas: SIM_ARVORE=antiga (so os 12 nos com requires, robo 'dica' da 5.3); SIM_SEM="id,id" tira nos do mapa;
+# SIM_CUSTO="id=c;id=c" troca precos; SIM_ROBO_ARV=barato|caro (caro = o mais caro que cabe, para o teste de ordem).
+MAPA_ON = os.environ.get("SIM_ARVORE", "mapa") == "mapa"
+SEM_NOS = set(x for x in os.environ.get("SIM_SEM", "").split(",") if x)
+ROBO_ARV = os.environ.get("SIM_ROBO_ARV", "barato")
+TIPOS_NOVOS = ("rope_installed", "start_generator", "prep_days_bonus", "crew_click_bonus", "gym_training_bonus",
+               "art_fight_bonus", "legacy_bonus")
+
+
+def mapa_de(tree):
+    if not MAPA_ON or not all("neighbors" in n for n in tree["nodes"]):
+        return None
+    custo = {}
+    if os.environ.get("SIM_CUSTO"):
+        for item in os.environ["SIM_CUSTO"].split(";"):
+            i, c = item.split("=")
+            custo[i] = int(c)
+    mapa = {}
+    for n in tree["nodes"]:
+        if n["id"] in SEM_NOS:
+            continue
+        n2 = dict(n)
+        n2["cost"] = custo.get(n["id"], n["cost"])
+        mapa[n["id"]] = n2
+    for n in mapa.values():
+        n["neighbors"] = [v for v in n["neighbors"] if v in mapa]
+    return mapa
+
+
+def trava_ok(n, flags):
+    lk = n.get("lock", "")
+    if not lk:
+        return True
+    if lk == "gym":
+        return flags["gym"]
+    if lk.startswith("art:"):
+        return lk[4:] in flags["arts"]
+    return False
+
+
+def visiveis(mapa, comprados, flags):
+    out = set()
+    for i, n in mapa.items():
+        if i in comprados or not trava_ok(n, flags):
+            continue
+        if n.get("root") or any(v in comprados for v in n["neighbors"]):
+            out.add(i)
+    return out
+
+
+def uteis(mapa, artes_robo):
+    return {i for i, n in mapa.items() if n.get("requires_art", "") in ("",) + tuple(artes_robo)}
+
+
+def comprar_mapa(mapa, comprados, legado, flags, artes_robo):
+    comprados = set(comprados)
+    ok = uteis(mapa, artes_robo)
+    while True:
+        ops = [mapa[i] for i in visiveis(mapa, comprados, flags) if i in ok and mapa[i]["cost"] <= legado]
+        if not ops:
+            return comprados, legado
+        if ROBO_ARV == "caro":
+            n = max(ops, key=lambda x: (x["cost"], x["id"]))
+        else:
+            n = min(ops, key=lambda x: (x["cost"], x["id"]))
+        comprados.add(n["id"])
+        legado -= n["cost"]
+
+
+def bonus54(mapa, comprados, arte):
+    """Bonus da campanha. Nos com requires_art so valem jogando aquela arte (como o ESTILO hoje)."""
+    b = {"click_bonus": 0.0, "passive_bonus": 0.0, "money_bonus": 0.0, "fame_bonus": 0.0, "metronome_start": 0,
+         "preview_percent": 0, "defeat_share_bonus": 0.0, "rope_installed": 0, "start_generator": {}, "prep_days_bonus": 0,
+         "crew_click_bonus": 0.0, "gym_training_bonus": 0.0, "legacy_bonus": 0.0, "art_fight_bonus": {}, "art_rule_bonus": {}}
+    for i in comprados:
+        n = mapa.get(i)
+        if n is None:
+            continue
+        ra = n.get("requires_art", "")
+        if ra and ra != arte:
+            continue
+        ef = n["effect"]
+        t, v = ef["type"], ef["value"]
+        if t == "metronome_start":
+            b[t] = max(b[t], int(v))
+        elif t == "start_generator":
+            b[t][ef["target"]] = b[t].get(ef["target"], 0) + int(v)
+        elif t in ("art_rule_bonus", "art_fight_bonus"):
+            b[t][ra] = b[t].get(ra, 0.0) + v
+        elif t == "rope_installed":
+            b[t] = 1
+        else:
+            b[t] += v
+    return b
 
 
 def ordem_5():
@@ -677,11 +1108,11 @@ def sequencia(args):
     n_com_arte = 0
     t_acum = 0.0
     out = []
-    tree_base = {"nodes": [nn for nn in tree["nodes"] if not nn.get("requires_art")]}
+    mapa = mapa_de(tree)
+    arte_robo = {"boxing", "bjj"} if politica.startswith("alterna") else {politica}
+    chegou_gym = False
+    tree_base = {"nodes": [nn for nn in tree["nodes"] if not nn.get("requires_art") and "requires" in nn]}
     for k in range(1, K + 1):
-        b = f4.bonus_de(tree_base, comprados)
-        if not metronomo:
-            b["metronome_start"] = 0
         estr = "tipico"
         if "ate_algoz" in estilo and killer:
             ik = next(i for i, o in enumerate(R.opp) if o["id"] == killer)
@@ -690,9 +1121,17 @@ def sequencia(args):
             caut = set(algozes)
         arte = arte_da_carreira(politica, n_com_arte) if artes_livres else None
         chegada = None if artes_livres else arte_da_carreira(politica, 0)
+        if mapa is not None:
+            b = bonus54(mapa, comprados, arte or chegada)
+            sb = b["art_rule_bonus"]
+        else:
+            b = f4.bonus_de(tree_base, comprados)
+            sb = style_de(tree, comprados)
+        if not metronomo:
+            b["metronome_start"] = 0
         c = Carreira5(R, treino, gens, shop, career, cps, estr, semente * 100 + k, b, unlocks, assist, P,
                       arte=arte, arte_chegada=chegada, belt_ends=belt_ends,
-                      cauteloso_gym=("caut_gym" in estilo), style_bonus=style_de(tree, comprados),
+                      cauteloso_gym=("caut_gym" in estilo), style_bonus=sb,
                       regra_ap="asap", k=k, ritmo=ritmo, usa_shift=shift, limiar="equilibrado",
                       dica=dica, cauteloso_contra=caut, metronomo=metronomo, t_max=t_max)
         c.ultimo_algoz = killer
@@ -702,7 +1141,10 @@ def sequencia(args):
         primeira = (not artes_livres) and c.mudou
         if c.mudou:
             artes_livres |= {"boxing", "bjj"}
+            chegou_gym = True
         ganho = c.legado_ganho()
+        if mapa is not None and b.get("legacy_bonus"):
+            ganho = int(math.floor(ganho * (1.0 + b["legacy_bonus"]) + 1e-9))
         legado += ganho
         vit_t = {}
         for t, e in c.eventos:
@@ -710,7 +1152,8 @@ def sequencia(args):
                 vit_t[e[6:]] = t
         t_ini = t_acum
         t_acum += c.fim[1] + f4.OVERHEAD
-        rec = {"k": k, "fim": c.fim[0], "t": c.fim[1], "opp": c.fim[2] if c.fim[0] == "derrota" else None,
+        rec = {"k": k, "fim": c.fim[0], "t": c.fim[1], "opp": c.fim[2] if c.fim[0] in ("derrota", "passou") else None,
+               "reg53": list(c.reg53), "amostra_d": c.amostra_d, "clk": c.clk, "dia_fim": (c.dia() if CAL["on"] else None),
                "arte": c.arte, "primeira_chegada": primeira, "t_belt": c.t_belt, "t_move": c.t_move,
                "t_g": dict(c.t_g), "vit_t": vit_t, "morto": c.morto_total(), "morto_gym": c.morto_gym(),
                "verm": c.verm_max, "ganho": ganho, "nos_antes": len(comprados), "t_ini": t_ini, "t_fim": t_acum,
@@ -718,19 +1161,33 @@ def sequencia(args):
                "treino_clique": c.treino_clique, "treino_metro": c.treino_metro, "treino_assist": c.treino_assist,
                "attr_fim": tuple(c.attr), "mudou": c.mudou,
                "n_caixas": c.n_caixas, "t_caixa_mao": c.t_caixa_mao,
+               "snap_kid": c.snap_kid, "snap_fim": c.snap_fim, "gaps": c.gaps52(), "t_l3": c.t_l3,
+               "n_bolsas": c.n_bolsas, "n_fren": c.n_luvas, "treino_bolsa": c.treino_bolsa, "treino_cc": c.treino_cc,
+               "morto_pre": (c.morto_pre if c.mudou else c.morto_max),
+               "prep_bonus": int(b.get("prep_days_bonus", 0)), "rope": int(b.get("rope_installed", 0)),
                "lutas": [(l["opp"], l["win"], round(l["p"], 2), round(l["t"])) for l in c.lutas]}
-        if c.fim[0] == "derrota":
+        if c.fim[0] in ("derrota", "passou"):       # 5.3: passar o posto no vermelho ensina o robo como uma derrota
             _, t, opp, jog, tat = c.fim
             o = next(x for x in R.opp if x["id"] == opp)
+            if tat is None:
+                tat = c.R.melhor_tatica(jog, (o["strength"], o["agility"], o["endurance"]), 100)[0]
             attr, _, _ = c.R.motivo(jog, (o["strength"], o["agility"], o["endurance"]), tat, 100)
             dica = attr
             killer = opp
             algozes.add(opp)
         else:
             killer = None
-        arte_robo = {"boxing", "bjj"} if politica.startswith("alterna") else {politica}
-        tr = arvore_disponivel(tree, artes_livres, arte_robo)
-        comprados, legado = f4.comprar_nos(tr, comprados, legado, regra, ordem_5())
+        if mapa is not None:
+            flags = {"gym": chegou_gym, "arts": artes_livres}
+            comprados, legado = comprar_mapa(mapa, comprados, legado, flags, arte_robo)
+            rec["fechou"] = uteis(mapa, arte_robo) <= comprados
+            rec["legado_sobra"] = legado
+            rec["b"] = {kk: b[kk] for kk in ("click_bonus", "passive_bonus", "money_bonus", "fame_bonus", "legacy_bonus")}
+        else:
+            tr = arvore_disponivel(tree, artes_livres, arte_robo)
+            tr = {"nodes": [nn for nn in tr["nodes"] if "requires" in nn]}
+            comprados, legado = f4.comprar_nos(tr, comprados, legado, regra, ordem_5())
+            rec["fechou"] = {nn["id"] for nn in tree_base["nodes"]} <= comprados
         rec["nos_depois"] = len(comprados)
         rec["comprados"] = sorted(comprados)
         out.append(rec)
@@ -954,7 +1411,7 @@ def sec_carreiras(n, K):
         for k in range(min(4, K)):
             mo = [s[k]["morto"] for s in seqs]
             cel.append("%s / %s / %s" % (mm(med(mo)), mm(pct(mo, .9)), mm(max(mo))))
-        arv = [next((r["k"] for r in s if base_ids <= set(r["comprados"])), 99) for s in seqs]
+        arv = [next((r["k"] for r in s if r["fechou"]), 99) for s in seqs]
         lg = med([sum(r["ganho"] for r in s[1:]) / max(1, len(s) - 1) for s in seqs])
         print("| %s | %s | %s (%s-%s) | %s |" % (nome, " | ".join(cel), fk(med(arv)), fk(pct(arv, .1)), fk(pct(arv, .9)), round(lg)))
     return det
@@ -1072,7 +1529,7 @@ def sec_curvas():
                 round(t / 60), f3.k(jg), f3.k(mt), f3.k(pa), f3.k(at[0]), f3.k(at[1]), f3.k(at[2]), v,
                 "sim" if mu else "-", ("+%.0f%%" % (100 * jj)) if c.arte == "bjj" else "-"))
         print("Marcos: " + "; ".join("%s %s" % (mm(t), e) for t, e in c.eventos
-                                     if not e.startswith("melhoria") and not e.startswith("1o ")))
+                                     if not e.startswith("melhoria") and not e.startswith("1o ") and not e.startswith("loja ")))
         print("Fim: %s" % (c.fim,) if not c.fim or c.fim[0] != "derrota" else "Fim: derrota %s aos %s" % (c.fim[2], mm(c.fim[1])))
 
 
@@ -1110,6 +1567,340 @@ def sec_caixa(n, K):
         print("| %s | %s; %d | %.1f s; %.1f s | %.2f%%; %.2f%% |" % (nome, fk(med(nc)), max(nc), med(tm), max(tm), med(fr), max(fr)))
 
 
+def sec_52(n, K, res=None):
+    """Fase 5.2: Kid por arte, tempo morto (carreira 1 e academia), 'proxima coisa' e o valor do clique no fim."""
+    if res is None:
+        perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                         for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+        res = rodar_perfis(perfis, n, K)
+    print("\n## Fase 5.2 (%d jogadores x %d carreiras)" % (n, K))
+    print("### Kid e regressoes")
+    print("| perfil | Kid: carreiras depois da chegada (med; p10-p90) | Kid em <=1 / <=2 depois | Kid na carreira da chegada | cinturao: carreira (med) | arvore fecha (med; p10-p90) | L3 depois de mudar (med; p90) |")
+    print("|---|---|---|---|---|---|---|")
+    base_ids = {nn["id"] for nn in DADOS[5]["nodes"] if not nn.get("requires_art")}
+    kidk = {}
+    for nome, seqs in res.items():
+        r = resumo_seq(nome, seqs, K)
+        g2 = r["g2k"]
+        kidk[nome] = g2
+        arv = [next((x["k"] for x in s if x["fechou"]), 99) for s in seqs]
+        l3 = [x["t_l3"] - x["t_move"] for s in seqs for x in s if x["t_l3"] is not None and x["t_move"] is not None]
+        print("| %s | %s (%s-%s) | %.0f%% / %.0f%% | %.0f%% | %s | %s (%s-%s) | %s; %s |" % (
+            nome, fk(med(g2)), fk(pct(g2, .1)), fk(pct(g2, .9)),
+            100.0 * sum(1 for x in g2 if x <= 1) / len(g2), 100.0 * sum(1 for x in g2 if x <= 2) / len(g2),
+            100.0 * r["mesma_g2"] / max(1, r["n_cheg"]), fk(med(r["kb"])), fk(med(arv)), fk(pct(arv, .1)), fk(pct(arv, .9)),
+            mm(med(l3)) if l3 else "-", mm(pct(l3, .9)) if l3 else "-"))
+    tbelt = {}
+    for nome, seqs in res.items():
+        tbelt[nome] = med([x["t_belt"] for s in seqs for x in s if x["arte"] and not x["primeira_chegada"] and x["t_belt"]])
+    for cps in (5, 4, 3):
+        b, j = kidk.get("Boxe %d/s" % cps), kidk.get("Jiu-jitsu %d/s" % cps)
+        if b and j:
+            print("- %d/s: Kid depois da chegada, media Boxe %.2f x Jiu-jitsu %.2f; jogadores em que o JJ chega DEPOIS do Boxe (mesma semente): %d de %d" % (
+                cps, sum(min(x, 9) for x in b) / len(b), sum(min(x, 9) for x in j) / len(j),
+                sum(1 for x, y in zip(b, j) if y > x), len(b)))
+            tb, tj = tbelt["Boxe %d/s" % cps], tbelt["Jiu-jitsu %d/s" % cps]
+            if tb and tj:
+                print("  cinturao nas carreiras com arte (criterio 10 da F5): Boxe %s x Jiu-jitsu %s -> %.1f%% (%s na frente)" % (
+                    mm(tb), mm(tj), 100 * abs(tb - tj) / min(tb, tj), "Boxe" if tb < tj else "Jiu-jitsu"))
+    print("\n### Tempo morto e 'proxima coisa' (maior trecho; mediana / p90 / pior)")
+    print("| perfil | morto carreira 1 (total) | morto carreira 1 so garagem | morto na academia (todas) | proxima coisa: garagem, carreira 1 | garagem, carreiras 2+ | academia (todas) |")
+    print("|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        m1 = [s[0]["morto"] for s in seqs]
+        m1g = [s[0]["morto_pre"] for s in seqs]
+        mg = [x["morto_gym"] for s in seqs for x in s if x["morto_gym"] is not None]
+        g1 = [s[0]["gaps"][0] for s in seqs]
+        g2 = [x["gaps"][0] for s in seqs for x in s[1:]]
+        ga = [x["gaps"][1] for s in seqs for x in s if x["gaps"][1] is not None]
+        cel = lambda v: "%s / %s / %s" % (mm(med(v)), mm(pct(v, .9)), mm(max(v))) if v else "-"
+        print("| %s | %s | %s | %s | %s | %s | %s |" % (nome, cel(m1), cel(m1g), cel(mg), cel(g1), cel(g2), cel(ga)))
+    print("\n### Valor do clique no fim do conteudo (no instante em que vence o Kid)")
+    print("| perfil | Kids vencidos | 1 clique / renda sem a mao (med; min) | mao / equipe / Metronomo por s (med) | luvas abertas (med) | clique c/ equipe comprado | bolsas por carreira (med) | treino da bolsa / treino total da carreira |")
+    print("|---|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        sn = [x for s in seqs for x in s if x["snap_kid"]]
+        if not sn:
+            print("| %s | 0 | - | - | - | - | - | - |" % nome)
+            continue
+        rz = [x["snap_kid"][0] / x["snap_kid"][1] for x in sn]
+        tot = [x["treino_clique"] + x["treino_metro"] + x["treino_assist"] for x in sn]
+        print("| %s | %d | %.0f%%; %.0f%% | %s / %s / %s | %s | %.0f%% | %s | %.1f%% |" % (
+            nome, len(sn), 100 * med(rz), 100 * min(rz), f3.k(med([x["snap_kid"][2] for x in sn])),
+            f3.k(med([x["snap_kid"][3] for x in sn])), f3.k(med([x["snap_kid"][4] for x in sn])),
+            fk(med([x["snap_kid"][5] for x in sn])), 100.0 * sum(x["snap_kid"][6] for x in sn) / len(sn),
+            fk(med([x["n_bolsas"] for s in seqs for x in s])),
+            100 * med([x["treino_bolsa"] / max(1.0, sum(x["attr_fim"])) for x in sn])))
+
+
+# ---------------------------------------------------------------- Fase 5.3
+OPP_CURTO = {"opp_warmup": "Dudu", "opp_strong": "Brutao", "opp_fast": "Dinho", "opp_tank": "Muralha",
+             "opp_gym_1": "Tonhao", "opp_gym_2": "Kid"}
+
+
+def sec_b23_53(n):
+    """23b com o calendario: cinturao na 1a carreira, mais cedo, p1, quantos antes de 19:30/20:00, fim da carreira 1."""
+    perfis = filtra([{"nome": "5/s", "cps": 5}, {"nome": "4/s", "cps": 4}, {"nome": "3/s", "cps": 3}])
+    res = rodar_perfis(perfis, n, 1)
+    print("\n## 23b com calendario (%d jogadores; dia %gs; folgas %s; robo antes=%s, vermelho no dia=%s)" % (
+        n, CAL["spd"], [CAL["prep"].get(k) for k in OPP_CURTO], CAL_ANTES, CAL_DIA))
+    print("| perfil | cinturao na 1a | mais cedo | p1 | antes de 19:30 | antes de 20:00 | fim da carreira 1 (med; p10-p90) | 1a derrota (med) | passou o posto na carreira 1 | derrotas no Dudu |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        c1 = sorted(s[0]["t_belt"] for s in seqs if s[0]["t_belt"])
+        fim = [s[0]["t"] for s in seqs if not s[0]["t_belt"]]
+        d1 = [s[0]["t"] for s in seqs if s[0]["fim"] == "derrota" and not s[0]["t_belt"]]
+        pas = sum(1 for s in seqs if s[0]["fim"] == "passou")
+        dud = sum(1 for s in seqs if s[0]["opp"] == "opp_warmup" and s[0]["fim"] == "derrota")
+        p1 = c1[max(0, int(math.ceil(0.01 * len(seqs))) - 1)] if len(c1) >= max(1, int(math.ceil(0.01 * len(seqs)))) else None
+        print("| %s | %.1f%% | %s | %s | %d | %d (%.2f%%) | %s (%s-%s) | %s | %d | %d |" % (
+            nome, 100.0 * len(c1) / len(seqs), mm(c1[0]) if c1 else "-", mm(p1) if p1 else "-",
+            sum(1 for x in c1 if x < 1170), sum(1 for x in c1 if x < 1200), 100.0 * sum(1 for x in c1 if x < 1200) / len(seqs),
+            mm(med(fim)), mm(pct(fim, .1)), mm(pct(fim, .9)), mm(med(d1)) if d1 else "-", pas, dud))
+    return res
+
+
+def tabela_dia(res):
+    """Por perfil: lutas antes da data x no dia (e a cor no dia), por adversario; passar o posto; medida do AFK."""
+    print("\n### Lutas antes da data x no dia (todas as carreiras)")
+    print("| perfil | lutas | antes da data | no dia | no dia: verde / amarelo / vermelho | vermelho no dia / lutas | passou o posto (no dia) | derrotas no dia / derrotas |")
+    print("|---|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        regs = [g for s in seqs for r in s for g in r["reg53"]]
+        if not regs:
+            continue
+        nd = [g for g in regs if g[1]]
+        cor = {c: sum(1 for g in nd if g[2] == c) for c in ("verde", "amarelo", "vermelho")}
+        der = [g for g in regs if g[4] is False]
+        print("| %s | %d | %.0f%% | %.0f%% | %d / %d / %d | %.1f%% | %d | %d / %d |" % (
+            nome, len(regs), 100.0 * (len(regs) - len(nd)) / len(regs), 100.0 * len(nd) / len(regs),
+            cor["verde"], cor["amarelo"], cor["vermelho"], 100.0 * cor["vermelho"] / len(regs),
+            sum(1 for g in regs if g[4] is None), sum(1 for g in der if g[1]), len(der)))
+    print("\n### Por adversario: %% no dia; dias usados (med; p90) / folga")
+    cab = list(OPP_CURTO)
+    print("| perfil | " + " | ".join(OPP_CURTO[k] for k in cab) + " |")
+    print("|---|" + "---|" * len(cab))
+    for nome, seqs in res.items():
+        regs = [g for s in seqs for r in s for g in r["reg53"]]
+        cel = []
+        for k in cab:
+            gs = [g for g in regs if g[0] == k]
+            if not gs:
+                cel.append("-")
+                continue
+            d = [g[3] for g in gs if not g[1]]
+            cel.append("%.0f%% no dia (verm %.0f%%); %s; %s / %d" % (
+                100.0 * sum(1 for g in gs if g[1]) / len(gs), 100.0 * sum(1 for g in gs if g[1] and g[2] == "vermelho") / len(gs),
+                fk(med(d)) if d else "-", fk(pct(d, .9)) if d else "-", CAL["prep"][k]))
+        print("| %s | %s |" % (nome, " | ".join(cel)))
+    print("\n### Academia na carreira da 1a chegada: dias ate lutar (med; p25; p75; p90) e %% no dia / no dia no vermelho / vitorias")
+    print("| perfil | Tonhao | Kid |")
+    print("|---|---|---|")
+    for nome, seqs in res.items():
+        cel = []
+        for k in ("opp_gym_1", "opp_gym_2"):
+            gs = [g for s in seqs for r in s if r["primeira_chegada"] for g in r["reg53"] if g[0] == k]
+            if not gs:
+                cel.append("-")
+                continue
+            d = [g[3] for g in gs]
+            cel.append("%s; %s; %s; %s | %.0f%% / %.0f%% / venceu %.0f%% (n=%d)" % (
+                fk(med(d)), fk(pct(d, .25)), fk(pct(d, .75)), fk(pct(d, .9)),
+                100.0 * sum(1 for g in gs if g[1]) / len(gs), 100.0 * sum(1 for g in gs if g[1] and g[2] == "vermelho") / len(gs),
+                100.0 * sum(1 for g in gs if g[4]) / len(gs), len(gs)))
+        print("| %s | %s |" % (nome, " | ".join(cel)))
+    print("\n### AFK: jogo aberto e parado L minutos num momento qualquer da campanha (a equipe so treina ate o dia)")
+    print("| perfil | tempo ate a data (med; p10) | perde em 10 min AFK (med de minutos; %% do tempo) | 30 min | 60 min | dias da campanha (med; p90) |")
+    print("|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        D = [d for s in seqs for r in s for d in r["amostra_d"]]
+        if not D:
+            continue
+        cel = []
+        for L in (600, 1800, 3600):
+            perdas = [max(0.0, L - d) for d in D]
+            cel.append("%.1f min; %.0f%%" % (sum(perdas) / len(perdas) / 60.0, 100.0 * sum(perdas) / len(perdas) / L))
+        dias = [r["dia_fim"] for s in seqs for r in s if r["dia_fim"] is not None]
+        print("| %s | %s; %s | %s | %s | %s | %s; %s |" % (nome, mm(med(D)), mm(pct(D, .1)), cel[0], cel[1], cel[2],
+                                                          fk(med(dias)), fk(pct(dias, .9))))
+
+
+def sec_53(n, K):
+    perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                     for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+    res = rodar_perfis(perfis, n, K)
+    print("\n## Fase 5.3: calendario (dia %gs; folgas %s; robo antes=%s, vermelho no dia=%s; %d x %d)" % (
+        CAL["spd"], [CAL["prep"].get(k) for k in OPP_CURTO], CAL_ANTES, CAL_DIA, n, K))
+    tabela_dia(res)
+    sec_52(n, K, res)
+    print("\n### Carreira 1: como acaba")
+    for nome, seqs in res.items():
+        fins = {}
+        for s in seqs:
+            r = s[0]
+            kk = r["fim"] + ((" " + OPP_CURTO.get(r["opp"], "")) if r["opp"] else "")
+            fins[kk] = fins.get(kk, 0) + 1
+        print("- %s: %s" % (nome, ", ".join("%s %d" % kv for kv in sorted(fins.items()))))
+
+
+# ---------------------------------------------------------------- Fase 5.4
+def kid_de(s):
+    """Por jogador: campanhas ate o Kid contando a da chegada, resultado da 1a tentativa, tempos."""
+    ch = next((r for r in s if r["primeira_chegada"]), None)
+    rk = next((r for r in s if "opp_gym_2" in r["t_g"]), None)
+    t1 = next((r for r in s if "opp_gym_1" in r["t_g"]), None)   # 1a campanha em que o Kid foi o proximo
+    out = {"camp": 99, "tent": None, "tent_fim": None, "t_acum": None, "t_camp": None}
+    if ch and rk:
+        out["camp"] = rk["k"] - ch["k"] + 1
+        out["t_acum"] = rk["t_ini"] + rk["t_g"]["opp_gym_2"]
+    if t1:
+        out["tent"] = "opp_gym_2" in t1["t_g"]
+        out["tent_fim"] = "venceu" if out["tent"] else (t1["fim"] if t1["opp"] == "opp_gym_2" else t1["fim"] + "?")
+    return out
+
+
+def _dif(a, b):
+    return 100.0 * abs(a - b) / min(a, b) if a and b else float("nan")
+
+
+def sec_54(n, K, res=None):
+    perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                     for cps in (5, 4, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+    if res is None:
+        res = rodar_perfis(perfis, n, K)
+    mapa = mapa_de(DADOS[5])
+    print("\n## Fase 5.4: arvore grande (%d jogadores por perfil x %d campanhas; %d nos; robo %s; Kid F/A/R %s)" % (
+        n, K, len(mapa) if mapa else 0, ROBO_ARV,
+        tuple(f3.k(DADOS[8]["opponents_gym"][1][x]) for x in ("strength", "agility", "endurance"))))
+    print("\n### Kid por perfil e arte")
+    print("| perfil | campanhas ate o Kid, contando a da chegada (med; p10-p90; media) | Kid na 1a tentativa (venceu / tentativas) | 1a tentativa sem vitoria: como acabou | tempo de jogo acumulado ate o 1o Kid (med) | Kid nas campanhas com arte: min na campanha (med) | cinturao nas campanhas com arte (med) |")
+    print("|---|---|---|---|---|---|---|")
+    T = {}
+    for nome, seqs in res.items():
+        ks = [kid_de(s) for s in seqs]
+        camp = [x["camp"] for x in ks]
+        tent = [x["tent"] for x in ks if x["tent"] is not None]
+        perd = {}
+        for x in ks:
+            if x["tent"] is False:
+                perd[x["tent_fim"]] = perd.get(x["tent_fim"], 0) + 1
+        tac = [x["t_acum"] for x in ks if x["t_acum"] is not None]
+        tk = [r["t_g"]["opp_gym_2"] for s in seqs for r in s if r["arte"] and not r["primeira_chegada"] and "opp_gym_2" in r["t_g"]]
+        tb = [r["t_belt"] for s in seqs for r in s if r["arte"] and not r["primeira_chegada"] and r["t_belt"]]
+        T[nome] = {"camp": camp, "tac": med(tac), "tk": med(tk), "tb": med(tb),
+                   "media": sum(min(c, 9) for c in camp) / len(camp)}
+        print("| %s | %s (%s-%s); %.2f | %.1f%% (%d / %d) | %s | %s | %s | %s |" % (
+            nome, fk(med(camp)), fk(pct(camp, .1)), fk(pct(camp, .9)), T[nome]["media"],
+            100.0 * sum(tent) / max(1, len(tent)), sum(tent), len(tent),
+            ", ".join("%s %d" % kv for kv in sorted(perd.items())) or "-", mm(med(tac)), mm(med(tk)), mm(med(tb))))
+    for cps in (5, 4, 3):
+        b, j = T.get("Boxe %d/s" % cps), T.get("Jiu-jitsu %d/s" % cps)
+        if not (b and j):
+            continue
+        print("- %d/s: Boxe x Jiu-jitsu ate o Kid: na campanha com arte %s x %s -> %.1f%% (%s na frente); acumulado %s x %s -> %.1f%%; "
+              "campanhas ate o Kid (media) %.2f x %.2f (Boxe na frente por %.2f); cinturao nas campanhas com arte %s x %s -> %.1f%%" % (
+                  cps, mm(b["tk"]), mm(j["tk"]), _dif(b["tk"], j["tk"]), "Boxe" if b["tk"] < j["tk"] else "Jiu-jitsu",
+                  mm(b["tac"]), mm(j["tac"]), _dif(b["tac"], j["tac"]), b["media"], j["media"], j["media"] - b["media"],
+                  mm(b["tb"]), mm(j["tb"]), _dif(b["tb"], j["tb"])))
+    print("\n### Arvore e regressoes")
+    print("| perfil | arvore fecha: campanha (med; p10-p90) | fechou ate a %d | nos depois da campanha 1 (min; med) | Legado por campanha (med, campanhas 1..6) | cinturao amador: campanha (med; p10-p90) | 1a derrota da campanha 1 (med) | morto campanha 1 (p90) | morto academia (p90) | proxima coisa academia (p90) |" % K)
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        arv = [next((r["k"] for r in s if r["fechou"]), 99) for s in seqs]
+        n1 = [s[0]["nos_depois"] for s in seqs]
+        lg = ["%d" % med([s[k]["ganho"] for s in seqs]) for k in range(min(6, K))]
+        kb = [next((r["k"] for r in s if r["t_belt"]), 99) for s in seqs]
+        d1 = [s[0]["t"] for s in seqs if s[0]["fim"] == "derrota" and not s[0]["t_belt"]]
+        m1 = [s[0]["morto"] for s in seqs]
+        mg = [x["morto_gym"] for s in seqs for x in s if x["morto_gym"] is not None]
+        ga = [x["gaps"][1] for s in seqs for x in s if x["gaps"][1] is not None]
+        print("| %s | %s (%s-%s) | %.0f%% | %d; %s | %s | %s (%s-%s) | %s | %s | %s | %s |" % (
+            nome, fk(med(arv)), fk(pct(arv, .1)), fk(pct(arv, .9)), 100.0 * sum(1 for a in arv if a <= K) / len(arv),
+            min(n1), fk(med(n1)), " / ".join(lg), fk(med(kb)), fk(pct(kb, .1)), fk(pct(kb, .9)),
+            mm(med(d1)) if d1 else "-", mm(pct(m1, .9)), mm(pct(mg, .9)) if mg else "-", mm(pct(ga, .9)) if ga else "-"))
+    for nome, seqs in res.items():
+        d = [s[0] for s in seqs if s[0]["fim"] == "derrota"]
+        z = [r for r in d if r["ganho"] == 0]
+        ok = [r for r in d if r["ganho"] > 0 and r["nos_depois"] >= 1]
+        print("- %s: campanha 1 acabou em derrota em %d; Legado 0 (perdeu para o Dudu) em %d; das derrotas com Legado > 0, "
+              "compraram >= 1 no: %d de %d; passou o posto: %d (todos compram >= 1: %s)" % (
+                  nome, len(d), len(z), len(ok), len(d) - len(z),
+                  sum(1 for s in seqs if s[0]["fim"] == "passou"),
+                  all(s[0]["nos_depois"] >= 1 for s in seqs if s[0]["fim"] == "passou")))
+    print("\n### Late game com a arvore cheia (Kid vencido em campanhas DEPOIS de fechar a arvore)")
+    print("| perfil | Kids | 1 clique / renda sem a mao (med; pior) | mao / equipe / Metronomo por s (med) | Grito comprado | Kid: min na campanha (med) |")
+    print("|---|---|---|---|---|---|")
+    for nome, seqs in res.items():
+        sn = []
+        for s in seqs:
+            kf = next((r["k"] for r in s if r["fechou"]), 99)
+            sn += [r for r in s if r["k"] > kf and r["snap_kid"]]
+        if not sn:
+            print("| %s | 0 | - | - | - | - |" % nome)
+            continue
+        rz = [x["snap_kid"][0] / x["snap_kid"][1] for x in sn]
+        print("| %s | %d | %.0f%%; %.0f%% | %s / %s / %s | %.0f%% | %s |" % (
+            nome, len(sn), 100 * med(rz), 100 * min(rz), f3.k(med([x["snap_kid"][2] for x in sn])),
+            f3.k(med([x["snap_kid"][3] for x in sn])), f3.k(med([x["snap_kid"][4] for x in sn])),
+            100.0 * sum(x["snap_kid"][6] for x in sn) / len(sn), mm(med([x["t_g"]["opp_gym_2"] for x in sn]))))
+    print("\n### Ordem de compra (campanha em que cada no foi comprado; mediana, so quem comprou)")
+    for nome, seqs in res.items():
+        quando = {}
+        for s in seqs:
+            antes = set()
+            for r in s:
+                for i in set(r["comprados"]) - antes:
+                    quando.setdefault(i, []).append(r["k"])
+                antes = set(r["comprados"])
+        print("- %s: %s" % (nome, ", ".join("%s %s" % (i, fk(med(v))) for i, v in sorted(quando.items(), key=lambda kv: (med(kv[1]), kv[0])))))
+    return res
+
+
+def tabela_dia54(grupos):
+    """Linha propria do +1 dia e da corda montada na tabela 'luta no dia x antes' (5.3)."""
+    print("| grupo | campanhas | lutas | antes da data | no dia | vermelho no dia / lutas | passou o posto no dia | dias da campanha (med; p90) | min da campanha (med) | corda na mao aos (med) |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    for nome, rs in grupos:
+        regs = [g for r in rs for g in r["reg53"]]
+        if not regs:
+            print("| %s | %d | 0 | - | - | - | - | - | - | - |" % (nome, len(rs)))
+            continue
+        nd = [g for g in regs if g[1]]
+        dias = [r["dia_fim"] for r in rs if r["dia_fim"] is not None]
+        corda = [r["t_ap"].get("jump_rope") for r in rs if r["t_ap"].get("jump_rope") is not None]
+        print("| %s | %d | %d | %.1f%% | %.1f%% | %.1f%% | %d | %s; %s | %s | %s |" % (
+            nome, len(rs), len(regs), 100.0 * (len(regs) - len(nd)) / len(regs), 100.0 * len(nd) / len(regs),
+            100.0 * sum(1 for g in nd if g[2] == "vermelho") / len(regs), sum(1 for g in regs if g[4] is None),
+            fk(med(dias)), fk(pct(dias, .9)), mm(med([r["t"] for r in rs])), mm(med(corda)) if corda else "-"))
+
+
+def sec_54dia(n, K, res=None):
+    perfis = filtra([{"nome": "%s %d/s" % (nm, cps), "cps": cps, "arte": a}
+                     for cps in (5, 3) for nm, a in (("Boxe", "boxing"), ("Jiu-jitsu", "bjj"))])
+    if res is None:
+        res = rodar_perfis(perfis, n, K)
+    velho = os.environ.get("SIM_SEM", "")
+    os.environ["SIM_SEM"] = "camp_extra_day,gar_rope"
+    try:
+        sem = rodar_perfis(perfis, n, K)
+    finally:
+        os.environ["SIM_SEM"] = velho
+    print("\n### +1 dia e corda montada na tabela 'luta no dia x antes' (%d jogadores x %d campanhas)" % (n, K))
+    grupos = []
+    for nome in res:
+        if nome not in sem:
+            continue
+        rs = [r for s in res[nome] for r in s if r["k"] >= 2]
+        grupos.append((nome + ": campanhas 2+ com o mapa", rs))
+        grupos.append((nome + ": so as campanhas com +1 dia", [r for r in rs if r["prep_bonus"]]))
+        grupos.append((nome + ": so as campanhas com a corda montada", [r for r in rs if r["rope"]]))
+        grupos.append((nome + ": mapa SEM +1 dia e SEM corda (campanhas 2+)", [r for s in sem[nome] for r in s if r["k"] >= 2]))
+        ks = [r["k"] for s in res[nome] for r in s if r["prep_bonus"]]
+        print("- %s: +1 dia ativo em %d campanhas (1a campanha com ele: med %s)" % (
+            nome, len(ks), fk(med([next((r["k"] for r in s if r["prep_bonus"]), 99) for s in res[nome]]))))
+    tabela_dia54(grupos)
+
+
 def main():
     _init(quieto=False)
     secs = sys.argv[1:] or ["tudo"]
@@ -1132,6 +1923,24 @@ def main():
         sec_carreiras(n, K)
     if tudo or "caixa" in secs:
         sec_caixa(int(os.environ.get("SIM_N_CX", "16")), K)
+    if tudo or "f52" in secs:
+        sec_52(int(os.environ.get("SIM_N52", "48")), K)
+    if tudo or "b23c" in secs:
+        sec_b23_53(int(os.environ.get("SIM_N_23B", "2000")))
+    if tudo or "f53" in secs:
+        sec_53(int(os.environ.get("SIM_N52", "48")), K)
+    n54 = int(os.environ.get("SIM_N54", "400"))
+    K54 = int(os.environ.get("SIM_K54", "10"))
+    res54 = None
+    if tudo or "f54" in secs:
+        res54 = sec_54(n54, K54)
+    if tudo or "f54x" in secs:          # f54 + as tabelas da 5.2/5.3 (tempo morto, dia) sobre a mesma rodada
+        if res54 is None:
+            res54 = sec_54(n54, K54)
+        tabela_dia(res54)
+        sec_52(n54, K54, res54)
+    if tudo or "f54dia" in secs:
+        sec_54dia(int(os.environ.get("SIM_N54DIA", "96")), K54)
 
 
 if __name__ == "__main__":

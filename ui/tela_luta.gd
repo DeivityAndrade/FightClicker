@@ -69,6 +69,8 @@ var _opp_id := ""
 var _escala_opp := 1.0
 var _eventos_vistos := 0
 var _ordem_numeros := 0
+var _gesto: Gesto  # Fase 6a: gesto do John na entrada e na vitória
+var _gesto_nome := ""
 
 
 func _ready() -> void:
@@ -80,13 +82,16 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	visible = false
+	_gesto = Gesto.new()
+	add_child(_gesto)
+	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
 
 
 # --- Montagem (depende do adversário e da luva equipada) ---
 
 func _montar(opp_id: String) -> void:
 	for c in get_children():
-		if c != sfx:
+		if c != sfx and c != _gesto:
 			c.queue_free()
 	_l.clear()
 	_fx.clear()
@@ -235,7 +240,7 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	# Jogador (esquerda)
 	var pf: Array = lay.get("player_portrait_frame", [6, 6])
 	var quadro_j := UiTema.textura_rect(hud, "ui_portrait_frame", float(pf[0]), float(pf[1]))
-	UiTema.textura_rect(quadro_j, "portrait_player", 2, 2)  # o retrato fica dentro da moldura
+	UiTema.textura_rect(quadro_j, UiTema.nome_retrato_jogador(), 2, 2).texture = UiTema.textura_disc(UiTema.nome_retrato_jogador())  # o retrato fica dentro da moldura
 	var pn: Array = lay.get("player_name", [46, 6])
 	UiTema.rotulo(hud, UiTema.txt("preview_you", "VOCÊ"), UiTema.WHITE, float(pn[0]), float(pn[1]))
 	var bj: Array = lay.get("player_hp_bar", [46, 16, 236, 12])
@@ -328,6 +333,7 @@ func iniciar(dados: Dictionary) -> void:
 	modulate = Color.WHITE
 	_agendar_tudo()
 	_atualizar_relogio(0.0)
+	_gesto_luta(GameState.pedir_gesto("fight_intro"))  # só o John (o discípulo recebe {}); cabe nos 1,5 s da entrada
 	_mundo.position = Vector2.ZERO
 
 
@@ -395,7 +401,7 @@ func _agendar_tudo() -> void:
 		var fps_ko := float(spr_ko.get("fps", 10.0))
 		var t_chao := t_queda + float(spr_ko.get("ground_frame", 3)) / fps_ko  # quadro em que o corpo bate no chão
 		_cue(t_chao, func() -> void: _chao(perdedor))
-		_cue(t_chao + 0.5, func() -> void: _estado(vencedor, "victory"))
+		_cue(t_chao + 0.5, func() -> void: _comemorar(vencedor))
 		_cue(t_chao + 0.45, func() -> void:
 			if bool(res.win):
 				sfx.vitoria()
@@ -410,7 +416,7 @@ func _agendar_tudo() -> void:
 			sfx.sino_fim()
 			_texto_banner(UiTema.txt("fight_time", "TEMPO!"), UiTema.Y2, 2))
 		_cue(t_end + 0.35, func() -> void:
-			_estado(vencedor, "victory")
+			_comemorar(vencedor)
 			_estado(1 - vencedor, "tired")
 			_texto_sub(UiTema.txt("fight_points", "POR PONTOS"), UiTema.CREAM)
 			sfx.publico()
@@ -420,6 +426,56 @@ func _agendar_tudo() -> void:
 			else:
 				sfx.derrota())
 		_t_parada = t_end
+
+
+## Vitória: se o jogador é o John, entra o gesto curto (0,15-0,59 s) e a pose de braços erguidos vem logo depois.
+func _comemorar(vencedor: int) -> void:
+	if vencedor == 0:
+		var plano := GameState.pedir_gesto("victory")
+		if not plano.is_empty():
+			_l[0].estado = "victory"  # o fim do gesto (ou o clique) cai direto na pose
+			_gesto_luta(plano)
+			return
+	_estado(vencedor, "victory")
+
+
+## Toca o plano do gesto no lutador 0. {} = nada (discípulo, ou sem folha).
+func _gesto_luta(plano: Dictionary) -> void:
+	if plano.is_empty():
+		return
+	_gesto.iniciar(plano, {
+		"comecar": _gesto_luta_comecar,
+		"rip": func() -> void: sfx.strap_rip(),
+		"toque": func(_n: int) -> void: sfx.tap_glove(),
+		"fim": _gesto_luta_fim,
+	})
+
+
+func _gesto_luta_comecar(plano: Dictionary) -> void:
+	var nome := UiTema.com_luva("fight_player_gesture_short" if str(plano.version) == "short" else "fight_player_gesture")
+	if UiTema.sprite(nome).is_empty() or _l.is_empty() or str(_l[0].estado) == "ko":
+		return
+	_gesto_nome = nome
+	var spr: AnimSprite = _l[0].spr
+	spr.definir(nome)
+	var seq: Array = []
+	for q in spr.hframes:
+		seq.append(q)
+	spr.tocar(seq, float(UiTema.sprite(nome).get("fps", 9.0)), false)
+
+
+func _gesto_luta_fim() -> void:
+	if _gesto_nome != "" and not _l.is_empty():
+		_gesto_nome = ""
+		_repouso(0)
+
+
+func _ao_gesto_cancelado() -> void:
+	_gesto.cancelar()
+	sfx.cortar_rip()
+	if _gesto_nome != "" and not _l.is_empty():
+		_gesto_nome = ""
+		_repouso(0)
 
 
 func _cue(t: float, fn: Callable) -> void:
@@ -904,6 +960,8 @@ func tempo() -> float:
 func _process(delta: float) -> void:
 	if not ativa:
 		return
+	if _l.size() > 0 and _l[0].get("spr", null) != null:
+		UiTema.aplicar_visual_disc(_l[0].spr)  # Fase 6b1: o visual escolhido do discípulo
 	_t += delta
 	_clock += delta
 	while _idx < _cues.size() and float(_cues[_idx].t) <= _clock:
@@ -946,11 +1004,13 @@ func _finalizar() -> void:
 
 ## Esconde a arena e libera os recursos (chamado pelo Fluxo ao voltar para a garagem).
 func encerrar() -> void:
+	_gesto.cancelar()
+	_gesto_nome = ""
 	Engine.time_scale = 1.0
 	ativa = false
 	visible = false
 	for c in get_children():
-		if c != sfx:
+		if c != sfx and c != _gesto:
 			c.queue_free()
 
 

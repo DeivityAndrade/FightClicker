@@ -288,8 +288,16 @@ static func singular(texto: String) -> String:
 
 
 ## Nome do sprite que depende da luva equipada: "fight_player_jab" + "_glove_l1".
+## Fase 6a: o discípulo padrão (campanha 2 em diante) usa as folhas com "_disc" depois do sufixo da luva; o 1º lutador (John
+## Bullet) não tem sufixo. Folha sem versão _disc (ex.: gesto) volta para a normal.
 static func com_luva(nome: String) -> String:
-	return nome + GameState.sufixo_luva()
+	return com_disc(nome + GameState.sufixo_luva())
+
+
+static func com_disc(nome: String) -> String:
+	if GameState.lutador_atual() == "disciple" and not sprite(nome + "_disc").is_empty():
+		return nome + "_disc"
+	return nome
 
 
 ## Cursor-luva da luva equipada ("cursor_glove" ou "cursor_glove_lN").
@@ -302,6 +310,15 @@ static func nome_cursor() -> String:
 static func nome_luvas_penduradas() -> String:
 	var suf := GameState.sufixo_luva()
 	return "art_hung_glove_old" if suf == "" else "art_hung" + suf
+
+
+## Retrato do jogador com a luva equipada (Fase 5.3, B1): "portrait_player" + sufixo da luva; sem o sprite, o retrato base.
+## Os ids vêm de manifest.by_data_id.player_portrait (base, by_glove).
+static func nome_retrato_jogador() -> String:
+	var info: Dictionary = manifest().get("by_data_id", {}).get("player_portrait", {})
+	var base := str(info.get("base", "portrait_player"))
+	var nome := com_disc(base + GameState.sufixo_luva())
+	return nome if not sprite(nome).is_empty() else base
 
 
 ## Ícone 16x16 de loja de uma luva (`id` = glove_l1...).
@@ -460,3 +477,27 @@ static func liberar_cache() -> void:
 	_fonte = null
 	_fonte_contorno = null
 	_texturas.clear()
+
+
+# --- Fase 6b1: o visual do discípulo (pele, cabelo e calção escolhidos) nas folhas do jogador ---
+
+## Textura do sprite `nome`; o retrato do jogador (discípulo) sai com o visual escolhido (DiscVisual).
+static func textura_disc(nome: String) -> Texture2D:
+	if nome.begins_with("portrait_player") and GameState.lutador_atual() == "disciple":
+		var cam := DiscVisual.nome_em_camadas(nome)
+		if cam != "":
+			return DiscVisual.textura(cam, GameState.visual_lutador())
+	return textura(nome)
+
+
+## Folha "_disc" do jogador (garagem ou luta): troca a textura pela montada em camadas com o visual do discípulo.
+## Chamar todo quadro (um `definir` novo volta a textura pronta); o cache faz disso uma consulta barata.
+static func aplicar_visual_disc(sp: AnimSprite) -> void:
+	if sp == null or GameState.lutador_atual() != "disciple" or not sp.nome_sprite.ends_with("_disc"):
+		return
+	var cam := DiscVisual.nome_em_camadas(sp.nome_sprite)
+	if cam == "":
+		return
+	var t := DiscVisual.textura(cam, GameState.visual_lutador())
+	if sp.texture != t:
+		sp.texture = t

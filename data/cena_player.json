@@ -1,0 +1,62 @@
+{
+	"version": 1,
+	"_doc": "Fase 6b1. Números e nomes do player de cenas (scripts/cena_player.gd) e do validador (scripts/cena_validador.gd). Formato das cenas: docs/cutscenes/formato-dados.md v1.1.",
+
+	"skip": {
+		"hold_seconds": 0.5,
+		"apply_max_seconds": 0.3,
+		"keys": ["ESC", "SPACE"]
+	},
+
+	"points": {
+		"mentor_spot": [254, 252]
+	},
+
+	"characters": {
+		"first_fighter": { "sprite_prefix": "john", "cast": "first", "voice": "first", "can_gesture": true },
+		"first_fighter_old": { "sprite_prefix": "john_old", "cast": "first", "voice": "first", "can_gesture": true },
+		"coach": { "sprite_prefix": "coach", "cast": "coach", "voice": "coach", "can_gesture": false },
+		"current_player": { "sprite_prefix": "disciple", "cast": "", "voice": "disciple", "can_gesture": false },
+		"helper": { "sprite_prefix": "helper", "cast": "", "voice": "disciple", "can_gesture": false }
+	},
+	"room_objects": {
+		"punching_bag": { "idle": "bag_l0_idle", "hit": "bag_l0_hit" },
+		"lamp": { "sprite": "lamp" }
+	},
+	"sprite_aliases": {
+		"first_fighter": { "punch": "fighter_punch", "idle": "fighter_idle" },
+		"current_player": { "idle": "fighter_idle_disc", "punch": "fighter_punch_disc" }
+	},
+	"character_patterns": ["mentor:", "opp_"],
+	"gesture_anims": ["gesture", "gesture_short", "mentor_first_taps"],
+
+	"timing": {
+		"default_pose_seconds": 0.5,
+		"default_prop_anim_seconds": 0.5,
+		"default_walk_speed": 48.0,
+		"shake_fps": 30.0,
+		"default_fps": 10.0
+	},
+
+	"step_types": {
+		"executed": ["wait", "say", "move", "pose", "face", "show", "hide", "sound", "camera", "ui", "prop", "shake",
+			"open_screen", "return_control", "parallel", "sequence"],
+		"validated_only": ["frame", "fx", "light", "name_card", "photo", "start_fight"]
+	},
+
+	"events": ["handover_started", "campaign_started", "location_reached", "returned_to_room", "fight_intro", "fight_won"],
+	"requires": ["milestone_missing", "milestone_present", "campaign_min", "campaigns_finished_min", "location", "opponent", "calm"],
+	"grants": ["mentor_in_room", "mentor_leaves", "photo", "reveal_opponent", "prop_permanent"],
+	"registers": {
+		"cotidiano": { "max_seconds": 20 },
+		"espetaculo": { "max_seconds": 60 },
+		"simples": { "max_seconds": 8 }
+	},
+	"layers": ["wall", "floor", "sorted"],
+	"views": ["room", "fight"],
+	"ui_parts": ["hud", "panels", "bottom_bar"],
+	"reaction_events": ["first_click", "idle_seconds"],
+	"end_state_hand": "hand_to_game",
+
+	"draft_folder": "_rascunhos"
+}

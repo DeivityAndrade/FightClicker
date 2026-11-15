@@ -74,6 +74,7 @@ multiplicação livre). A UI usa a mesma paleta. Fonte da verdade em código: `t
 | Luz quente | `y0 #e0a040` · `y1 #f5d26b` · `y2 #fff3c4` | lâmpada, dinheiro, número do clique |
 | Vermelho | `r0 #5a1a22` · `r1 #9c2a2a` · `r2 #d4473a` · `r3 #f07a5a` | luva, saco, Força, crítico, perigo |
 | Pele | `sk0 #7a4632` · `sk1 #b9744f` · `sk2 #e3a275` | personagens (mais tons de pele entram como rampas extras) |
+| Pele extra (6b1, só troca de paleta do discípulo) | `skin_1` #a8684e/#e0a888/#f4d0b4 · `skin_2` #8f5238/#cc8c62/#eebd94 · `skin_4` #5a3029/#8c5545/#b8806a · `skin_5` #422529/#73453f/#a06a5a | `[sombra, base, luz]`; `skin_3` = sk0/sk1/sk2. Conferência em `paletas-6b1.md` e §23.3 |
 | Azul | `b0 #1f2a44` · `b1 #2f4a78` · `b2 #4d7bb3` · `b3 #8fbbe0` | calção, ringue, céu, Agilidade |
 | Verde | `gr0 #1f3d33` · `gr1 #2f6b4a` · `gr2 #5aa25a` · `gr3 #a6d86a` | barrado da academia, treino/s, "fácil" |
 | Aço | `st0 #3a4452` · `st1 #5a6676` · `st2 #7f8c9a` · `st3 #a9b4bf` | porta de garagem, esteira, metal |
@@ -551,3 +552,299 @@ marcas nos 3 estados, a corda no gancho e as caixas nos lugares, com a equipe ch
 - As silhuetas riscadas são o contorno do sprite calculado por código. Servem; à mão ficariam com traço de giz de verdade.
 - O gancho da garagem tem 6 pixels. O símbolo da escola é provisório e depende da história.
 - A cor da Fama (rampa `f`) foi escolhida para separar das outras 7; vale um olhar humano na tela real, ao lado da Força.
+
+## 19. Fase 5.2 (Bolsa da torcida, Grito da equipe, caixas da L3/L4)
+Gerado por código a partir do scratchpad do Diretor de Arte (`art52/make52.gd`, rodado com `--path E:/Fightclicker -- --final`);
+o manifest foi relido na hora de gravar e só ganhou as chaves abaixo. A luva L4 (mãos, luta, cursor, `icon_glove_l4`,
+`art_hung_glove_l4`, `equipment/glove_l4`) é do Artista de Personagens.
+
+### 19.1 Bolsa da torcida (`event_golden_crew`)
+- **Mesmo pacote da luva ×7:** quadro 22x21, pivô (11,10), 3 quadros em loop a 6 fps, o mesmo ouro (fora da paleta de cena de
+  propósito: é o evento que salta da sala), o mesmo contorno marrom-escuro e o mesmo brilho em cruz passeando da esquerda para a
+  direita. Aparece, flutua e some do mesmo jeito (sala.gd); só troca o sprite (`training.json → golden_event.crew_sprite`).
+- **Silhueta oposta, para ler de longe:** a luva é um **cogumelo** (cúpula larga em cima, punho reto creme embaixo); a bolsa é uma
+  **pera invertida** (boca franzida em 3 abas e cordão creme em cima, bojo largo embaixo, moeda estampada no meio). O creme do cordão
+  é o mesmo do punho da luva: as duas são da mesma família, mas o creme fica embaixo numa e em cima na outra.
+- `by_data_id.golden_event` junta as duas variantes (`frenzy_sprite`, `crew_sprite`, anim, fps, área de clique).
+
+### 19.2 Grito da equipe (`icon_crew_click`)
+Ícone 16x16 da LOJA (como os outros): megafone **verde** (a cor da equipe nos ícones de Corpo/equipe) gritando para a direita,
+com duas ondas de som amarelas sem contorno. `by_data_id.crew_click.icon`.
+
+### 19.3 Caixas da L3 e da L4
+`by_data_id.box.sprite_by_item` / `slot_by_item`: `glove_l3` e `glove_l4` = `box_small` no slot `glove` (igual L1 e L2; a L3 não
+estava na lista). Etiqueta: `box_label` "LUVA MARCA" / "LUVA TORNEIO" e `box_stamp` "ETIQUETA INTACTA" / "NÃO EMPRESTAR" cabem na
+etiqueta de 104 px do padrão 5.1 (conferido no mockup). Conferência da L3: ícone, cursor, luva pendurada e item já existem no padrão
+atual; faltava só a caixa.
+
+### 19.4 Mockup e placeholder
+`mockups/fase52_bolsa_x3.png`: as duas lado a lado (3 quadros, silhueta, na garagem e na academia em 1x), os ícones da LOJA
+(L3, L4, Grito) e as etiquetas das caixas.
+Precisa de pixel artist: a bolsa pede volume de tecido de verdade (dobras, peso das moedas puxando o fundo) e um brilho desenhado à
+mão; o megafone pede um ângulo de 3/4. Manter 22x21, pivô (11,10) e 3 quadros para trocar só o arquivo.
+Nota para o Roteirista: o toast diz "PASSOU O CHAPÉU", mas o objeto é uma bolsa. Ou o texto fala de bolsa/sacola, ou a arte vira
+chapéu (perde a silhueta oposta à luva; não recomendo).
+
+## 20. Fase 5.3 (calendário da campanha, Passar o posto, retrato por luva)
+Gerador: `tools/art/make_sprites_fase53.gd` (rodar de uma pasta temporária com `project.godot` vazio;
+`-- --final` grava no projeto e só acrescenta chaves ao manifest, relendo o arquivo na hora). Retratos por luva:
+`tools/art/make_sprites_jogador.gd -- <saida> --so-retratos`. Mockup: `mockups/fase53_calendario_x2.png`.
+Dados para a UI: `manifest.json → by_data_id.campaign_calendar`, `pass_post_button`, `player_portrait`. Posições em 1x.
+
+### 20.1 Ideia visual
+**Uma folhinha de parede** (argolas, cabeçalho vermelho, picote da folha arrancada) é o símbolo de tudo: o dia anda = folha
+arrancada; a data da luta = **dia circulado de caneta vermelha**; campanha completa = folhinha dourada com estrela.
+Nenhum relógio de ponteiro, nenhuma contagem em segundos: o jogador pensa em dias.
+
+### 20.2 HUD (nível 2, não grita)
+- Fica na coluna da esquerda, no lugar do "PRÓXIMA:" de hoje: plaquinha 9-slice `ui_countdown_plate_<risco>` (7,131) 116x26,
+  folhinha `ui_calendar_page` (11,133) com o **dia da campanha** (1x, `d1`), linha 1 "Faltam X dias" (`col_text_1`, x 35, y 136),
+  linha 2 o adversário (`col_text_2`, y 146), e embaixo o selo de risco que já existe (35,160).
+- A **faixa de 2 px à esquerda da plaquinha tem a cor do risco** (verde/âmbar/vermelho, os mesmos `col_risk_*`); o selo repete
+  com ícone, para quem não distingue cor. Nada em `txt_hero`: o número grande da tela continua sendo o Treino.
+- Dia da luta: `ui_countdown_plate_today` (fundo `r0`, faixa ouro) + folhinha no quadro 1 (dia circulado). Depois do Kid:
+  `ui_countdown_plate_done` + `icon_campaign_complete` e "CAMPANHA / COMPLETA" em `col_money`; sem número, o relógio some.
+- Dia virando: `fx_calendar_tear` (4 quadros, 12 fps, uma vez) por cima da folhinha. Sem som novo.
+
+### 20.3 Avisos
+| Quando | Sprite | Onde | Comportamento sugerido |
+|---|---|---|---|
+| 3 dias | `ui_warn_strip_3d` + `icon_calendar` | topo da sala, centrada em x 320, y 22, 18 de altura | desce em 0,2 s, fica ~6 s, sobe |
+| 1 dia | `ui_warn_strip_1d` ↔ `_1d_hi` a 2 fps + `icon_calendar_alert` | mesmo lugar | som que já existe ao entrar; fica até a luta ou até clicar |
+
+A de 1 dia é urgente sem ser feia: vermelho da própria paleta, pontas com listras diagonais vermelhas (fita de aviso sem o
+amarelo-e-preto de obra), filete dourado, pulso por troca de quadro (sem alpha, sem tremida). Largura = conteúdo + margens;
+nenhuma das duas cobre o lutador nem o alvo.
+
+### 20.4 Dia da luta
+- A sala fica atrás do **mesmo pontilhado** que já escurece a sala na prévia; o HUD mostra a plaquinha "today".
+- A prévia ganha a folhinha grande `ui_day_badge` (40x40) **presa com fita crepe** no canto de cima à esquerda (offset -10,-12),
+  por cima da borda: cabeçalho "HOJE" 1x branco, número do dia em `txt_hero` dentro do círculo de caneta.
+- Dois botões **diferentes no peso**: **LUTAR!** o vermelho cheio de sempre (`fight_button`); **PASSAR O POSTO** de contorno
+  roxo sobre `d1` (`ui_button_pass_*` + `icon_pass_post`, texto `p2`). Roxo = Legado, que é o que ele rende. O contorno deixa a
+  escolha clara e diminui o clique sem querer (a confirmação continua obrigatória). Sem botão de voltar a treinar.
+- Fora do dia, o botão roxo da sala segue igual e só troca o texto; sugestão: ícone `icon_pass_post` também ali, para a mesma
+  ação ter o mesmo desenho. "PASSAR O POSTO" + ícone cabem em 103 px (o botão tem 115).
+
+### 20.5 Retrato da luta por luva (B1)
+`portrait_player` (velha) + `portrait_player_glove_l1..l4`: mesmo recorte, fundo e virada; só a luva muda. Regra igual à das
+folhas: id = `portrait_player` + sufixo da luva equipada; vale no topo da luta e na prévia (inclusive a do dia).
+O `portrait_player` regerado saiu idêntico ao arquivo de antes.
+
+### 20.6 Placeholder / precisa de pixel artist
+- A folhinha e a folha arrancada são retângulos girados por código: falta a folha dobrar de verdade e um rasgo desenhado.
+- O círculo de caneta é uma elipse com espessura variável; à mão ficaria com traço de marcador (começo e fim sobrepostos).
+- O selo da campanha (roseta) e o `icon_pass_post` (luva → estrela) pedem desenho à mão; manter 40x44 e 16x16.
+- Números da folhinha usam a fonte 5x7; uma fonte de calendário (números condensados) ficaria melhor e é o mesmo pedido da §18.1.
+
+## 21. Fase 5.4 (árvore grande: o mapa que se revela)
+Gerador: `tools/art/make_sprites_fase54.gd` (rodar de uma pasta temporária com `project.godot` vazio; `-- --final` grava no projeto e só
+acrescenta chaves ao manifest, relendo o arquivo na hora). Mockup: `mockups/fase54_mapa_x2.png`. Dados para a UI e o Programador:
+`manifest.json → by_data_id.skill_map` (tela, regras de pintura, neblina, linhas, estados, posições). Peças do mapa em `assets/sprites/ui/map/`.
+
+### 21.1 Ideia visual
+**O quadro de avisos da escola.** No meio, um quadro de **cortiça** com os 12 nós de sempre. Em volta, cada região é um **pedaço de
+material pregado na parede**: concreto (Garagem), azulejo verde (Academia), lona vermelha do ringue (Boxe), tatame azul (Jiu-jitsu) e
+feltro roxo do mural (Campanha). O que sobra é a parede escura. Nó comprado = **plaquinha pregada com tachinha dourada**; linha acesa =
+o **Legado correndo** (roxo, com um pixel branco andando). O resto fica sob **neblina** (ink com nuvem d1 em dither), que recua quando o
+nó aparece. Nenhuma região precisa de texto para ser reconhecida: o material diz.
+
+### 21.2 Tela (640x360, por cima da sala)
+| Peça | Sprite | Lugar |
+|---|---|---|
+| Moldura de madeira com pregos (9-slice) | `ui_map_frame` | (0,0) 640x360 |
+| Barra do topo | `ui_map_topbar` | (5,5) 630x20 |
+| Título | `icon_skill_map` + texto `col_text_1` | ícone (9,7), texto (29,11) |
+| Dica "arraste ou use a roda" | texto `col_text_2` | 12 px depois do título, y 11 |
+| **Legado** (o número herói desta tela) | `icon_legacy_16` + `txt_hero` `col_legacy` | texto termina em x 610, y 8 |
+| Fechar | `ui_map_close_normal/hover/pressed` | (616,7) 16x16 |
+| Janela do mapa | recorte | (5,26) 630x329 |
+| Borda rebaixada (miolo vazio) | `ui_map_viewport_edge` | (4,25) 632x331, por cima do mapa |
+
+Ordem de desenho do mapa: fundo pintado → linhas → neblina → nós → plaquinhas de região e preços → efeitos → cartão.
+
+### 21.3 Fundo e regiões
+- Ladrilhos 32x32 que emendam: `map_tile_wall|center|garage|gym|boxing|bjj|campaign`.
+- **Pintura por células de 8x8, feita uma vez ao abrir**: cada célula pega a região do nó mais perto até 44 px; nó de ligação pinta
+  xadrez das duas regiões; nada perto = parede. Região trancada (Academia antes do 1º discípulo lá; arte não liberada) = parede.
+  Costura de 1 px ink entre materiais, 1 px de luz no topo do recorte e 1 px de sombra na parede embaixo. O recorte sai em degraus de
+  8 px, de propósito: parece pedaço cortado e pregado. Código de referência: `region_grid()` / `paint_regions()` no gerador.
+- Distância mínima entre centros: **40 px** (nó pequeno) e **52 px** (marco). Pedido ao Designer ao escolher as posições.
+
+### 21.4 Nós (3 tamanhos, 4 estados)
+| | Pequeno 24x24 (pivô 12,12) | Marco 38x38 (pivô 19,19) | Ligação 28x24 (pivô 14,12) |
+|---|---|---|---|
+| Comprado | `map_node_s_owned_<tom>` | `map_node_b_owned_<tom>` | `map_node_link_owned_<a>_<b>` |
+| À vista, Legado paga | `map_node_s_buyable` (2 quadros, 2 fps) | `map_node_b_buyable` | `map_node_l_buyable` |
+| À vista, sem Legado | `map_node_s_missing` + `map_node_veil` | `map_node_b_missing` + véu | `map_node_l_missing` + véu |
+| Escondido | não desenha (`_hidden` com "?" = quadro de partida da revelação) | `map_node_b_hidden` | `map_node_l_hidden` |
+| Mouse em cima | `map_node_s_hover` | `map_node_b_hover` | `map_node_l_hover` |
+
+- Forma: **octógono** (plaquinha), diferente dos quadrados da árvore antiga. O marco tem anel duplo e 4 pontas; a ligação tem elos dos
+  dois lados e, comprada, o anel cortado na diagonal com as cores das duas regiões (`<a>_<b>` na ordem garage, gym, boxing, bjj, campaign).
+- Ícone 16x16 sempre no centro (pivô −8,−8). Comprado leva a tachinha dourada no canto de cima à direita.
+- **Tom do anel** (`tone_by_branch_or_region`): Corpo e Boxe = vermelho (`r2/r3`, o Boxe herda a luva); Campanha (ramo e região) = ouro
+  (`y0/y1`); Estilo = roxo (`p1/p2`); Garagem = giz (`g3/white`); Academia = verde (`gr2/gr3`); Jiu-jitsu = azul (`b2/b3`).
+  O fundo diz a região, o anel diz o ramo: o ouro da Campanha em cima do feltro roxo tem contraste de sobra.
+- À vista que o Legado paga = anel `col_buyable` piscando (mesma regra da 5.1). Sem Legado = anel escuro e véu pontilhado no ícone
+  (ainda dá para ler o que é). **Preço**: etiqueta 9-slice embaixo de cada nó à vista, `ui_map_price_ok` (p0, número `col_legacy`) ou
+  `ui_map_price_missing` (d1, número `col_text_2`). Nunca vermelho. Comprado não mostra preço.
+
+### 21.5 Linhas
+Retas de centro a centro em **pixels de Bresenham** (nada de Line2D com antialias nem textura girada):
+
+| Estado | Quando | Desenho |
+|---|---|---|
+| Acesa | os dois comprados | 2 px (`p2` + `p1`) + sombra ink; 1 pixel branco a cada 8, andando 1 px por quadro a 8 fps |
+| À vista | os dois revelados, pelo menos um não comprado | 1 px `g2` + sombra ink |
+| Apagada | um lado escondido | 1 px `g0` tracejado 2/2, **antes da neblina** (some aos poucos dentro dela: diz "tem mais ali") |
+
+### 21.6 Neblina e revelação
+- `map_fog_25|50|75|100` (32x32, Bayer). Por célula de 8x8, pela distância ao nó revelado mais perto: < 40 px limpa; 40–48 = 25%;
+  48–56 = 50%; 56–64 = 75%; além = 100%.
+- **Revelar (≤ 0,5 s):** as células em volta do nó novo descem um nível a cada 0,1 s (0,4 s no total) e `fx_map_reveal` (40x40,
+  6 quadros, 12 fps) toca no centro: a nuvem com "?" se abre em fiapos e ficam 4 faíscas. O nó aparece no quadro 2.
+- **Comprar:** `fx_map_buy` (40x40, 5 quadros, 12 fps): clarão no formato do nó, anel ouro abrindo, faíscas. O anel vira "comprado" no
+  quadro 1; no quadro 2 começam as revelações dos vizinhos, todas juntas. Sem alpha e sem som novo (reaproveitar `buy.wav`).
+
+### 21.7 Plaquinhas de região e cartão
+- `ui_map_region_label_<região>` (9-slice, 13 px, faixa na cor do anel) + `icon_region_<região>_9` + nome 1x. Aparece quando o 1º
+  nó da região fica à vista, uns 30–40 px acima dele, no mundo (anda com o mapa). O centro não tem plaquinha.
+- Cartão: `ui_map_card` (d1, igual à dica) com nome / efeito na cor do tipo / preço, e no pé a faixa roxa `ui_map_card_next` com
+  `icon_calendar` e "VALE NA PRÓXIMA CAMPANHA". Abre ao lado do nó, sempre inteiro dentro da janela do mapa.
+
+### 21.8 Botão da sala
+- `ui_map_button_normal|hover|pressed` 22x22 com `icon_skill_map` (cortiça com 3 tachinhas e barbante). **Lugar: (132,22)**, canto de
+  cima à esquerda da sala, na parede lateral (igual na garagem e na academia). Fica longe do alvo (x 281..362), das faixas de aviso
+  (centradas em x 320, y 22) e da faixa do assistido (y 273..290). O `debug_overlay` também usa (134,24), mas só aparece em debug.
+- Brilho: `ui_map_button_glow` (2 quadros a 2 fps, borda ouro + faísca trocando de canto) **só** quando há nó à vista que o Legado
+  paga. Sem compra: peça normal, parada. A hierarquia da 5.1 não muda: é nível 3, sem texto fixo e sem número.
+- Dica (hover) padrão: "ÁRVORE" + 2ª linha `col_text_2` com quantos nós dá para comprar.
+- Plano B, se o dono não achar o botão: a mesma ação como botão com texto "ÁRVORE" no fim da coluna da esquerda, (7,264) 116x22.
+- Na tela de fim, o botão ÁRVORE pode ganhar `icon_skill_map` à esquerda do texto, para as duas portas terem o mesmo desenho.
+
+### 21.9 Ícones
+- **Regiões:** `icon_region_garage|gym|boxing|bjj|campaign` (16x16) e `_9` (9x9): fachada com portão de aço, halter no azulejo,
+  canto do ringue com 3 cordas, nó da faixa no tatame, folhinha com estrela. Também são o ícone **provisório dos marcos** da região.
+- **Nós novos:** `skill_rope_ready` (corda montada: corda pendurada no prego, com brilho), `skill_prep_day` (+1 dia: folhinha com
+  "+1"), `skill_shout_loud` (Grito mais alto: o megafone do Grito, maior, com 3 ondas).
+- **Nós pequenos usam o ícone do tipo de efeito** (`by_data_id.skill_map.icon_by_effect`), reaproveitando os 12 atuais e os ícones da
+  LOJA dos aparelhos. Os nomes dos tipos novos ali são sugestão; vale o que o Designer puser no `skill_tree.json`.
+- **2ª passada (feita):** os 6 marcos do `fase5.4-design.md` §9 têm ícone próprio 16x16 em `assets/sprites/ui/`:
+  `skill_home_metronome` (gar_metro), `skill_crew_regulars` (gar_crew_start), `skill_coach_notebook` (camp_diary),
+  `skill_standing_fan` (gym_fan), `skill_counter_punch` (box_counter), `skill_firm_base` (bjj_guard).
+- **Qual ícone cada nó usa:** `skill_map.icon_by_node` (os 39 nós do `skill_tree.json` v2) manda; depois `icon_by_effect`
+  (com os nomes reais dos tipos; `art_rule_bonus`/`art_fight_bonus` escolhem pela `requires_art`); por último o campo `icon` do nó.
+- **Mapa real conferido** (`mockups/fase54_mapa_real_x2.png`, `skill_map.map_check`): 741 pares, menor distância 57 px, nenhum
+  abaixo de 40/52; plaquinhas de região não cobrem nó. Ressalva: as linhas `gar_radio–link_mat` e `gar_rope–link_shout` passam a
+  11 px do centro de `body_crew_2` e `body_heavy_hands` (parecem ligadas a eles). Proposta ao Designer: `link_mat` (-6,4) e
+  `link_shout` (-6,-4) (folga de 40 px; painel B do mockup).
+
+### 21.10 Placeholder / precisa de pixel artist
+- Os ladrilhos são ruído por código: um artista faria cortiça com furos de tachinha, concreto com manchas e tatame com costura.
+  A neblina repete a cada 32 px; à mão, ladrilhos de 64 com nuvens desenhadas ficariam bem melhores.
+- A borda das regiões em degraus de 8 px é proposital, mas um recorte desenhado (papel rasgado, lona com bainha) daria mais vida.
+- `fx_map_reveal` e `fx_map_buy` são anéis e pontos calculados; são os efeitos que mais ganham com animação feita à mão.
+- O ícone da corda montada é o mais fraco em 16 px. Manter os tamanhos (24/38/28, ícone 16, ladrilho 32) para trocar só os arquivos.
+
+## 22. Fase 6a (Prólogo e voz: balão, parede da memória, garagem salva)
+Gerador: `tools/art/make_cenario_fase6a.gd` (rodar de uma pasta temporária com `project.godot` vazio; `-- --final` grava no projeto e
+só acrescenta chaves ao manifest, relendo o arquivo na hora). O `make_sprites_fase6a.gd` é do Artista de Personagens (Téo, Osmar, gesto).
+Mockup: `mockups/fase6a_garagem_x2.png`. Dados para a UI: `manifest.json → by_data_id.speech_bubble`, `skip_hold`, `garage_saved_seal`,
+`garage_story_wall`, `coach_point`, `school_symbol`. Posições em 1x. Valores do balão: `docs/cutscenes/balao-e-voz.md` (manda).
+
+### 22.1 Fonte 5x7 (conferida antes de tudo)
+- Minúsculas acentuadas (á à â ã é ê í ó ô õ ú ç) **existiam**, mas o acento encostava na letra (ã e õ viravam borrão). Agora a marca
+  fica 1 linha acima, com 1 linha de folga. O `í` perdeu a bandeirinha (lia como "1"). Entraram `—` e `…` (117 caracteres).
+  Mesmo atlas, mesma ordem, mesma métrica (`lineHeight` 12, `base` 9): nenhuma largura de texto muda.
+- Maiúsculas `Í Â Ã Ç É` renderizam (RAÍZES, COBRANÇA, CINTURÃO). O acento da maiúscula encosta na letra porque a célula não tem
+  mais linhas em cima; lê bem no contexto. Separar exigiria fonte mais alta (mexe em todo o layout): não vale agora.
+- A fonte não tem `▼`: a seta é o sprite `ui_balloon_next`.
+
+### 22.2 Balão
+| Peça | Tamanho | Regra |
+|---|---|---|
+| `ui_balloon` | 9-slice 16x16, cantos 5 | cream, contorno ink com canto de 2 px, sombra dura `d1` embaixo e à direita **dentro** do retângulo w x h |
+| `ui_balloon_tail` (+ `_l`, `_r`) | 7x6 | linha 0 cream em y = by + h - 2 (apaga o contorno); ponta em by + h + 3. `_l`/`_r` só quando a ponta está a menos de 14/15 px da quina |
+| `ui_balloon_tag_<cor>` | 9-slice 8x10 | em (bx + 6, by - 6), largura nome x 6 + 6, nome em minúsculas. **10 px e não 9**: o acento de "téo" precisa de folga. Téo `red` (r2, texto white), Osmar `gold` (y0, texto ink), discípulo `blue` (b3) |
+| `ui_balloon_next` | 5x4, 2 quadros | modo cena (6b) |
+- Texto ink sem sombra, topo da maiúscula em by + 5, linhas a 9 px; 1 linha = 17, 2 linhas = 26 de altura.
+- Na parede creme da academia o balão cream se separa pelo contorno e pela sombra (conferido no mockup).
+- **Proposta de regra extra (DC/UI):** o balão não cobre o `head_anchor` de outro personagem na sala. Sem ela, o "desliza" do Téo
+  em `foco_saco` (x 154..307, y 175..200) tapa a cabeça do Osmar (197,173); com ela, o balão sobe (x 226..379, y 149..174, ponta em y 178).
+- **Segurar ESC** (só na abertura): chip `ui_skip_chip` (apagado) / `_active`, anel `ui_skip_ring` (9 quadros) e tecla `icon_key_esc`;
+  altura 16, canto de baixo à direita da sala (direita em 507, base em 285). Texto sugerido: `esc: pular`.
+
+### 22.3 Parede da memória (garagem, Arco 1)
+Faixa **x 176..256, y 38..87**: ajuste da proposta do DC (180..262, 56..104), porque abaixo de y 92 está o metrônomo (231..249) e
+em y 101 a prateleira. Não encosta no gancho da corda, no pôster, na lâmpada, na corrente (x 335), na pera da parede nem na porta.
+| Objeto | Sprite | Pos (canto sup. esq.) | Quando |
+|---|---|---|---|
+| Aviso de cobrança | `wall_notice_debt` 22x28 | (178,52) | desde o começo até a garagem salva |
+| Ficha amassada | `wall_form_blank` → `wall_form_named` 22x24 | (205,62) | sempre; troca quando a garagem é salva |
+| Foto antiga (Osmar jovem, torta) | `wall_photo_old` 18x21 | (237,67) | sempre (cobre a fotinho pintada no fundo) |
+| Recorte de jornal | `wall_clipping` 20x24 | (236,40) | 1ª vitória da escola |
+| Foto da equipe | `wall_photo_team` 26x21 | (176,54) | garagem salva (no lugar do aviso) |
+| Símbolo pintado | `wall_school_symbol` 32x40 | (344,38) | garagem salva (alto, à direita da corrente) |
+- Nenhum objeto tem texto legível na sala (regra da 5.1). "ESCOLA: NENHUMA" / "ESCOLA: RAÍZES FIGHT CLUB", "AVISO DE COBRANÇA" etc.
+  vão na dica de hover (textos do Roteirista). A ficha "depois" tem o rabisco riscado de vermelho e o nome à mão em caneta azul.
+- Luz da lâmpada aplicada em cada ponto: não mover para longe. Só na garagem; troca de estado sem animação.
+- **Osmar em (196,236)** (decisão do Produtor): balão em cima, sem ajuste (x 132..285, y 138..163), não cobre a parede da memória.
+  Os vizinhos 1 e 2 passam na frente das pernas dele com a equipe cheia (ordem por y): aceito.
+
+### 22.4 Símbolo da escola: Raízes Fight Club
+A lâmpada da garagem, de pé, plantada: bulbo, soquete, uma linha de chão e raízes embaixo. `school_symbol_5/9/16/32` em tinta de
+carimbo azul (b1/b2), como o provisório; `box_big`/`box_small` tiveram a etiqueta retocada (só o símbolo). Na parede, o 16 em 2x:
+bulbo em tinta amarela que afunda no rejunte, raízes em tinta marrom, escorridos. O 5x5 é o limite: lê como "lâmpada com raiz" só de perto.
+
+### 22.5 Selo "garagem salva"
+O próprio aviso de cobrança, despregado, com o carimbo azul da escola. `seal_garage_saved` 52x54 na tela de vitória do cinturão em
+**(418,146)** (à direita das linhas de prêmio), mais uma linha de prêmio `icon_garage_saved` + "GARAGEM SALVA" / "O LUGAR CONTINUA
+NOSSO". Entrada: 2 quadros em 2x e depois 1x, tremida de 1 px, som que já existe. `seal_garage_saved_text` (96x64, com fita) e a fita
+9-slice `ui_seal_garage_band` servem para espaços maiores.
+
+### 22.6 Placeholder / precisa de pixel artist
+- Papéis (aviso, ficha, recorte) são retângulos com riscos: um artista faria o amassado de verdade, a letra à mão e o papel de jornal.
+- As fotos têm 5–10 px de gente: o retrato do Osmar jovem e a foto da equipe pedem desenho à mão (mesmos tamanhos).
+- O símbolo é o que mais pede mão humana: em 5x5 a raiz é um traço. Manter 5/9/16/32 para trocar só os arquivos.
+- O carimbo e a tinta na parede usam falhas por sorteio fixo; à mão ficariam com pressão e borda de carimbo real.
+
+## 23. Fase 6b1 (Passar o posto: porta, luz do dia, caixote do mentor)
+Gerador: `tools/art/make_cenario_fase6b1.gd` (pasta temporária com `project.godot` vazio; `-- --final` grava no projeto, mexe no manifest
+só nas chaves desta fase e junta `docs/arte/manifest-6b1-personagens.json` do Artista, se existir). Pedido: `docs/cutscenes/pedidos-6b1.md` §2.
+Manifest: `by_data_id.garage_door_scene`, `by_data_id.mentor_spot`, `layout.mentor_spot`, `layout.box_slots.jump_rope`.
+
+### 23.1 Peças
+| Sprite | Quadro | Ponto | Camada | Nota |
+|---|---|---|---|---|
+| `garage_door` | 84x**68**, 9 quadros, pivô (0,12) | pos (381,166) → desenha em (381,154) | `sorted` 222 | Borda ink por quadro: 219 (fechada = recorte do fundo), 216, 209, 201, 193, 185, 178, 172, **171**. **Mudança:** o pedido era 84x56; com isso a cabeça de quem está na soleira (quadro dele começa em y 154) aparecia acima da porta. O pivô mantém o `pos` da cena |
+| `garage_door_outside` | 82x52 | (382,168) | `wall` | Dia claro branco (escolha A), y2 em dither embaixo, muro cream do outro lado, calçada cream y 213..219 com meio-fio g3 |
+| `garage_daylight` | 170x70, 3 | (308,220) | `floor` | O próprio chão do `garage_bg` +1 na rampa (miolo junto à porta +2), borda em Bayer 4x4 de 5–7 px |
+| `garage_door_shadow` | 64x32, 4 | (374,214) | `floor` | Assada sobre a luz (quadro 0 sobre a luz 0; 1..3 sobre a luz 2): desenhar depois do `garage_daylight` |
+| `garage_crate` | 26x19, pivô (16,20) | `mentor_spot` | `sorted` 250 | Engradado de feira (ripas com fresta escura, montantes, pregos). Sem fita/etiqueta: não confunde com a caixa da escola |
+| `garage_hung_gloves_old` | 20x34, 4, pivô (17,1) | argola (335,186) | `sorted` 254 | Quadro 0 só sobe 4 e vai 1 px à esquerda (o quadro de 20 px não deixa os 4) |
+
+Quem está do lado de fora contra a luz: tom −1 (silhueta), como na prancha.
+
+### 23.2 Mentor e caixas (conflito resolvido)
+- **`mentor_spot` = (254,252)** (era 268,268). Em 268 o John sentado ia até x ~285, dentro da faixa do alvo (281..362, folga até 273), e tapava a caixa da corda.
+  Em (254,252) ele ocupa x 238..270, y 200..252: encostado no fim do carro, olhando o saco, longe do Osmar (196,236) e do vizinho 2 (220,258).
+  Caixote em (238,232). Com foco na corda/esteira o saco de lado (258,160) fica atrás da cabeça dele pela ordem por y: aceito.
+- **Caixa da corda = (424,287)** (era 258,244): na frente, à direita da caixa da luva (386,280), 6 px de folga entre os cliques. Cobre 5 px da base
+  da esteira encostada (atrás, pela ordem por y; o mesmo caso já aceito da caixa da esteira com o tio 1). Fora do caminho da porta até o saco.
+- **Para o Diretor de Cutscenes:** a cena usa o nome `mentor_spot`, então não quebra, mas o `step_back` agora anda ~55 px (não 35): 0,73 s fica
+  rápido; sugiro ~1,1 s ou 4 passos. A mão do `point_spot` continua apontando o chão em frente ao saco (a direção não muda).
+- Conferência: `mockups/fase6b1_garagem_conferencia_x2.png` (alvo+folga em vermelho, caixa antiga em cinza, caixa nova em amarelo, mentor em azul).
+
+### 23.3 Paletas do discípulo
+Fonte da verdade: `docs/arte/paletas-6b1.md` (o Designer/Programador copia para `data/disciples.json`). Mudanças sobre o alvo do design §6.3:
+`skin_4` → #5a3029/#8c5545/#b8806a e `skin_5` → #422529/#73453f/#a06a5a (o alvo tinha a base da `skin_5` igual ao `br1` e a da `skin_4` quase
+igual ao `br2`: cabelo e sobrancelha sumiam); sobrancelha do `copper` e do `blond` → `br0`. Calções sem mudança.
+
+### 23.4 Fonte
+`Í Ã Ç` (e todas as maiúsculas e minúsculas de `allowed_letters`, inclusive `À/à`) já existem nos dois `.fnt`. Nada acrescentado.
+
+### 23.5 Placeholder / precisa de pixel artist
+- A porta sobe com as lâminas paradas (só a barra anda): um artista animaria o rolo e a lâmina vibrando no tranco.
+- A luz do dia é o chão +1 passo; à mão ganharia poeira no feixe e a borda da sombra do batente.
+- O caixote e as luvas penduradas são pequenos e honestos; o par balançando pede 2 quadros a mais desenhados à mão.

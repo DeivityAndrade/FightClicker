@@ -49,5 +49,8 @@ Texto de botão centralizado, botões centralizados no seu espaço, janelas no m
 nada cortado. O QA reprova a fase se o verificador acusar problema.
 
 ## Testes
+Toda janela de teste (ui_audit, cenas, scripts de QA com janela) abre **no segundo monitor** ou em
+segundo plano, nunca na frente do dono: acrescente `--position 1950,40` ao comando do Godot
+(o monitor 2 começa em x=1920). Testes `--headless` não abrem janela.
 Testes automáticos nunca podem apagar o save real do dono: devem usar um caminho de
 save próprio de teste (ou uma cópia isolada do projeto).

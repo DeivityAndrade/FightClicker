@@ -64,19 +64,19 @@ func rodar_testes() -> void:
 
 func _teste_dados() -> void:
 	var d := FightData.carregar()
-	checar_igual(d.arvore.size(), 12, "12 nós na árvore (10 + 2 de ESTILO)")
+	checar_igual(d.arvore.size(), 39, "39 nós no mapa (12 antigos + 27 novos)")
 	var total := 0
 	var ramos := {}
 	var barato_por_ramo := {}
 	var ate40 := {}
-	for n in d.arvore:
+	for n in d.arvore.filter(func(x): return x.branch != ""):  # os 12 antigos (a 5.4 testa os novos)
 		total += int(n.cost)
 		ramos[n.branch] = true
 		if int(n.cost) <= 10:
 			barato_por_ramo[n.branch] = true
 		if int(n.cost) <= 40:
 			ate40[n.branch] = true
-	checar_igual(total, 3175 + 2400, "custo total 5.575 (3.175 + 2 x 1.200 do ESTILO)")
+	checar_igual(total, 3175 - 200 + 2400, "custo total dos 12 antigos 5.375 (5.4 baixou 2 preços em 100)")
 	checar_igual(ramos.keys().size(), 3, "três ramos (Corpo, Carreira, Estilo)")
 	checar(ramos.has("body") and ramos.has("career") and ramos.has("style"), "ramos body, career e style")
 	checar(not d.no_da_arvore("body_muscle_memory").is_empty() and not d.no_da_arvore("career_scouting").is_empty(),
@@ -147,7 +147,7 @@ func _teste_compra_de_no() -> void:
 func _teste_efeito_de_cada_no() -> void:
 	var d := FightData.carregar()
 	for n in d.arvore:
-		if n.requires_art != "":
+		if n.requires_art != "" or n.branch == "":  # novos nós: test_fase54.gd
 			continue  # nós ESTILO (valem só com a arte): cobertos em test_fase5.gd
 		var gs := _novo("f4_efeito_" + n.id)
 		gs.geradores["neighbor_kid"] = 10
@@ -536,7 +536,7 @@ func _teste_dica_do_verde() -> void:
 func _teste_textos_da_previa() -> void:
 	var gs := _novo("f4_previa_textos")
 	checar_igual(gs.previa().stake_win, "SE VENCER: $50 + 10 FAMA", "sem nós: prêmio sem bônus")
-	checar_igual(gs.previa().stake_lose, "PERDER ENCERRA A CARREIRA (METADE DO LEGADO)", "sem nós: perder = metade")
+	checar_igual(gs.previa().stake_lose, "PERDER ENCERRA A CAMPANHA (METADE DO LEGADO)", "sem nós: perder = metade")
 	checar(not gs.previa().show_percent, "sem nós: sem porcentagem")
 	_ir_para_arvore(gs, 2000)
 	for id in ["career_purse", "career_scouting", "career_crowd", "career_good_loser"]:
@@ -544,7 +544,7 @@ func _teste_textos_da_previa() -> void:
 	gs.nova_carreira()
 	var p: Dictionary = gs.previa()
 	checar_igual(p.stake_win, "SE VENCER: $75 (+50%) + 15 FAMA (+50%)", "prêmio com bônus e (+50%)")
-	checar_igual(p.stake_lose, "PERDER ENCERRA A CARREIRA (75% DO LEGADO)", "perder leva 75%")
+	checar_igual(p.stake_lose, "PERDER ENCERRA A CAMPANHA (75% DO LEGADO)", "perder leva 75%")
 	checar(p.show_percent and p.percent_text.ends_with("%"), "porcentagem: %s" % p.percent_text)
 	for t in p.risks:
 		var chance: float = p.risks[t].chance
@@ -722,7 +722,7 @@ func _teste_cartao_e_resumo() -> void:
 	gs.nova_carreira()
 	checar_igual(cartoes.size(), 1, "nova_carreira_iniciada emitido uma vez")
 	var c: Dictionary = cartoes[0]
-	checar_igual(c.title, "CARREIRA 2 — O QUE VOCÊ TROUXE:", "título do cartão")
+	checar_igual(c.title, "NOVATO: O QUE VOCÊ TROUXE", "título do cartão")
 	checar_igual(c.nodes.size(), 2, "uma linha por nó")
 	checar_igual(c.nodes[0].effect_text, "+100% TREINO POR CLIQUE", "efeito do jab em número")
 	checar_igual(c.nodes[1].effect_text, "+50% DINHEIRO POR VITÓRIA", "efeito da bolsa em número")

@@ -3,7 +3,16 @@ extends RefCounted
 ## Grava e lê o save em JSON, com versão, migração, backup e proteção contra corrupção.
 ## A pasta é escolhida na criação: o jogo usa PASTA_REAL, os testes usam user://test/...
 ##
-## Formato atual (versão 7, Fase 5.1): igual ao v6 mais career.boxes (caixas de equipamento fechadas: [{item, kind, hits}]);
+## Formato atual (versão 12, Fase 6b1): igual ao v11 mais career.disciple ({name, look, campaign}; null na campanha do John),
+## career.mentor_greeted (bool), school.handover (null ou {stage, campaign, scene, draft}), school.mentors (["first"]) e
+## school.roster (lista de quem passou o posto, fora do reset).
+## Versão 11 (Fase 6a): igual ao v10 mais state.school (campanha do 1º lutador, marcos da escola,
+## falas já vistas, último fim) e career.gestured_gloves (níveis de luva que já tiveram o gesto de calçar).
+## Versão 10 (Fase 5.4): árvore grande (career.active_nodes, permanent.tree_last_node).
+## Versão 9 (Fase 5.3): igual ao v8 mais career.campaign_seconds (relógio da campanha, float) e
+## career.fight_day (dia da próxima luta; -1 = sem próxima luta).
+## Versão 8 (Fase 5.2): igual ao v7 mais career.crew_click (Grito da equipe comprado, bool).
+## Versão 7 (Fase 5.1): igual ao v6 mais career.boxes (caixas de equipamento fechadas: [{item, kind, hits}]);
 ## career.glove_level passa a contar as luvas COMPRADAS (abertas + a que está na caixa).
 ## Versão 6 (Fase 5): igual ao v5 mais career.location, career.art, career.art_seconds,
 ## permanent.arts_unlocked, permanent.last_art e ending.summary.art.
@@ -16,7 +25,13 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 7
+const VERSAO_ATUAL := 12
+# Migração v11 -> v12: o discípulo que já existia vira o "Novato" padrão, com o visual padrão. É formato congelado
+# na v12 (não lê data/): mudar o banco de nomes depois não muda quem já foi migrado.
+const NOME_PADRAO_V12 := "Novato"
+const LOOK_PADRAO_V12 := {"skin": "skin_3", "hair_color": "brown", "hair_style": "short", "shorts_color": "green",
+	"top": "none", "top_color": "white", "headband": "none", "headband_color": "red", "socks": "none"}
+const NOME_JOHN_V12 := "John Bullet"
 # Fator de conversão do Legado na migração v3 -> v4 (reescala do design; é formato, não balanceamento).
 const ESCALA_LEGADO_V4 := 10
 # Migração v5 -> v6: dinheiro mínimo de quem já tem o cinturão (= preço da mudança na v6). É formato, não lê data/:
@@ -42,6 +57,11 @@ const MIGRACOES := {
 	4: "_migrar_4_para_5",
 	5: "_migrar_5_para_6",
 	6: "_migrar_6_para_7",
+	7: "_migrar_7_para_8",
+	8: "_migrar_8_para_9",
+	9: "_migrar_9_para_10",
+	10: "_migrar_10_para_11",
+	11: "_migrar_11_para_12",
 }
 
 var pasta: String
@@ -383,3 +403,155 @@ func _guardar_corrompido(p: String) -> String:
 		push_warning("SaveStore: não foi possível renomear o arquivo corrompido %s" % p)
 		return p
 	return destino
+
+
+# v7 (Fase 5.1) -> v8 (Fase 5.2): só acrescenta career.crew_click = false (Grito da equipe não comprado).
+func _migrar_7_para_8(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	carreira["crew_click"] = false
+	estado["career"] = carreira
+	novo["state"] = estado
+	return novo
+
+
+# v8 (Fase 5.2) -> v9 (Fase 5.3): a campanha começa no Dia 1 (campaign_seconds = 0). A migração não lê data/,
+# então fight_day = 0 ("recalcular"): o GameState põe a folga cheia do próximo adversário a partir do Dia 1,
+# ou -1 se a escada já está completa (Kid vencido). Nada mais muda.
+func _migrar_8_para_9(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	carreira["campaign_seconds"] = 0.0
+	carreira["fight_day"] = 0
+	estado["career"] = carreira
+	novo["state"] = estado
+	return novo
+
+
+# v9 (Fase 5.3) -> v10 (Fase 5.4): árvore grande. skill_nodes e Legado ficam iguais (sem reembolso);
+# career.active_nodes = os nós que a campanha atual já tinha (todos os comprados); permanent.tree_last_node = o último.
+func _migrar_9_para_10(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	var perm = estado.get("permanent", {})
+	if not (perm is Dictionary):
+		perm = {}
+	var nos = perm.get("skill_nodes", [])
+	if not (nos is Array):
+		nos = []
+	carreira["active_nodes"] = nos.duplicate()
+	perm["tree_last_node"] = str(nos[-1]) if not nos.is_empty() else ""
+	estado["career"] = carreira
+	estado["permanent"] = perm
+	novo["state"] = estado
+	return novo
+
+
+# v10 (Fase 5.4) -> v11 (Fase 6a): nasce o bloco `school` (fora do reset). A campanha ATUAL vira a do 1º lutador;
+# se há tela de fim pendente, é a PRÓXIMA (o número só sobe no NOVA CAMPANHA). Nenhum marco é criado: a garagem
+# nunca é "salva" por cinturão antigo (belts_won e career.belt não são lidos). Nada mais muda.
+func _migrar_10_para_11(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	var perm = estado.get("permanent", {})
+	if not (perm is Dictionary):
+		perm = {}
+	var n = perm.get("career_number", 1)
+	var numero := 1
+	if (typeof(n) == TYPE_FLOAT or typeof(n) == TYPE_INT) and is_finite(float(n)) and float(n) >= 1.0 and float(n) < 1.0e9:
+		numero = int(n)
+	var fim = estado.get("ending", null)
+	var pendente: bool = fim is Dictionary and str(fim.get("kind", "")) in ["defeat", "retire"]
+	carreira["gestured_gloves"] = []
+	estado["career"] = carreira
+	estado["school"] = {
+		"first_fighter_campaign": numero + (1 if pendente else 0),
+		"milestones": {},
+		"lines_seen": {},
+		"last_end": {"kind": str(fim.kind), "campaign": numero} if pendente else null,
+	}
+	novo["state"] = estado
+	return novo
+
+
+# v11 (Fase 6a) -> v12 (Fase 6b1): nascem o discípulo, mentor_greeted e a lista da escola (design §3.5).
+# N = campanha atual; F = campanha do John; P = fim pendente; U = última campanha encerrada (N se P, senão N - 1).
+# Não mexe em mais nada (Legado, árvore, atributos, calendário, marcos, falas vistas).
+func _migrar_11_para_12(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var carreira = estado.get("career", {})
+	if not (carreira is Dictionary):
+		carreira = {}
+	var perm = estado.get("permanent", {})
+	if not (perm is Dictionary):
+		perm = {}
+	var escola = estado.get("school", {})
+	if not (escola is Dictionary):
+		escola = {}
+	var n := _inteiro_de(perm.get("career_number", 1), 1)
+	var fim = estado.get("ending", null)
+	var pendente: bool = fim is Dictionary and str(fim.get("kind", "")) in ["defeat", "retire"]
+	var f := _inteiro_de(escola.get("first_fighter_campaign", n + (1 if pendente else 0)), n + (1 if pendente else 0))
+	var u := n if pendente else n - 1
+	var ultimo = escola.get("last_end", null)
+	# 1-2: nada de toques no meio de uma campanha antiga; ninguém sentado até a cena.
+	carreira["mentor_greeted"] = true
+	escola["handover"] = null
+	escola["mentors"] = []
+	# 3: o discípulo em andamento (ou com fim pendente) vira o Novato padrão.
+	carreira["disciple"] = {"name": NOME_PADRAO_V12, "look": LOOK_PADRAO_V12.duplicate(), "campaign": n} if n > f else null
+	# 4: uma entrada da lista por campanha encerrada, de F até U.
+	var lista: Array = []
+	for c in range(f, u + 1):
+		var e_john: bool = c == f
+		var fim_tipo := "unknown"
+		if ultimo is Dictionary and _inteiro_de(ultimo.get("campaign", 0), 0) == c and str(ultimo.get("kind", "")) in ["defeat", "retire"]:
+			fim_tipo = str(ultimo.kind)
+		var e := {"campaign": c, "kind": "first" if e_john else "disciple",
+			"name": NOME_JOHN_V12 if e_john else NOME_PADRAO_V12,
+			"look": null if e_john else LOOK_PADRAO_V12.duplicate(), "end": fim_tipo,
+			"wins": -1, "belt": false, "art": "", "opponent": "", "legacy_gained": 0}
+		if pendente and c == n:
+			var resumo = fim.get("summary", {})
+			if not (resumo is Dictionary):
+				resumo = {}
+			e["wins"] = _inteiro_de(resumo.get("wins", 0), 0)
+			e["belt"] = _inteiro_de(resumo.get("belts", 0), 0) > 0
+			e["art"] = str(resumo.get("art", ""))
+			e["opponent"] = str(fim.get("opponent", ""))
+			e["legacy_gained"] = _inteiro_de(fim.get("legacy_gained", 0), 0)
+		lista.append(e)
+	escola["roster"] = lista
+	estado["career"] = carreira
+	estado["school"] = escola
+	novo["state"] = estado
+	return novo
+
+
+func _inteiro_de(v: Variant, padrao: int) -> int:
+	if (typeof(v) == TYPE_FLOAT or typeof(v) == TYPE_INT) and is_finite(float(v)) and absf(float(v)) < 1.0e12:
+		return int(v)
+	return padrao

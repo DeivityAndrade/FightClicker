@@ -31,6 +31,86 @@ Nada aqui adianta fase: cada pedido entra na fase indicada. Poses de personagem 
 | **Programador** | Sistema de fala: letra a letra, pausas na pontuação, blip por 2 letras com nota por vogal, timbre e velocidade por personagem, completar no clique, guardas de clique (valores em `linguagem.md` §7, todos em `data/`). Blips e sons do gesto no gerador `tools/sfx/make_sfx.gd`: `voice_<timbre>`, `strap_rip`, `strap_open`, `tap_glove`, `tap_fist`. Gesto na entrada e na vitória da luta, ao calçar luva e na garagem parada, sempre cancelado pelo clique. `school.milestones` no save (fora do reset), com teste em save de teste. |
 | **UI/UX** | Layout do balão nos dois modos (cena e passivo) e nos 6 estados de auditoria (`linguagem.md` §7.1); regra de nunca cobrir o alvo central. `alinhamento-ui` com 0 problemas. |
 
+### 6a — complemento de 2026-11-13 (depois do escopo aprovado)
+
+Documentos novos: `abertura-6a.md` (abertura na sala viva), `balao-e-voz.md` (especificação final do balão e dos blips; **vale sobre `linguagem.md` §7 onde divergir**) e a seção "Fase 6a" de `gesto-assinatura.md` (onde e quando o gesto toca). Ids seguem `docs/fases/fase6a-design.md`: `first`, `coach`, `open_1..4`, `prologue_seen`.
+
+| Papel | Pedido novo ou ajustado |
+|---|---|
+| **Roteirista** | A abertura proposta (111 letras, ≈ 14 s) cabe com folga; os tempos finais estão em `abertura-6a.md` §3 e substituem os "t aprox." de `fase6a-textos.md` §3. Usar os ids `open_1..4` (hoje `ab_1..4`). Trocar os nomes escolhidos pelo dono (John Bullet, Osmar Brandão, Raízes Fight Club) em todas as falas e objetos. Se reescrever: ordem Osmar, Osmar, John, John, e o balão 4 fazendo sentido com e sem a ficha na parede. Nome de plaquinha até 12 caracteres. |
+| **Artista de Personagens** | Folhas curtas do gesto a **9 fps** (não 10), para os toques caírem com 0,22 s. Treinador: `coach_idle` (encostado no carro), `coach_look` (de lado, olhando a parede), `coach_talk`. `head_anchor` no manifest para o 1º lutador, o discípulo padrão e o treinador (ponto fixo da cabeça na pose parada; o balão usa esse ponto). |
+| **Diretor de Arte** | Peças do balão nas medidas de `balao-e-voz.md` §1 (`ui_balloon` 16x16 com cantos de 5, `ui_balloon_tail` 7x6, `ui_balloon_tag`, `ui_balloon_next`) e cores das plaquinhas. **Ponto do treinador:** proposta (236,238), reserva (160,252). **Parede da memória** (x 180..262, y 56..104): aviso de cobrança em ~(200,62), foto antiga, **ficha amassada** (≤ 24x24; peço que entre) e os lugares do recorte e da foto da equipe. |
+| **Programador** | 15 blips `voice_<first/coach/disciple>_<u/o/a/e/i>`, `strap_rip` e `tap_glove` com os parâmetros de `balao-e-voz.md` §6.3 e §6.4, **gerados depois dos sons antigos** (o ruído tem semente fixa). Posição do balão pelo algoritmo do §3 (`no_cover` = (310,180,52,94)). Abertura como sequência por tempo (`abertura-6a.md` §3 e §6). Gesto nas janelas da seção "Fase 6a" de `gesto-assinatura.md`; 2º toque por temporizador de 0,22 s. Segurar ESC 0,5 s sem conflitar com o ESC de `ui/fluxo.gd`. |
+| **UI/UX** | Capturas extras do balão (`balao-e-voz.md` §7). Indicação `esc: pular` com filete durante a abertura. |
+| **Diretor de Jogo / Designer** | Decidido em 2026-11-13: na sala viva o ESPAÇO só treina e não completa fala (`balao-e-voz.md` §5). Corrigir a frase no escopo §3.1 e no design §5.2. |
+| **Designer** | Confirmar a pose de vitória entrando 0,60 s depois do começo de `outro_seconds`. Avaliar o teto de 3 gestos por período parado. `vowel_steps` lido na ordem u, o, a, e, i. |
+
+### 6a — Prancha de quadros-chave (animatic): pedido de imagem
+
+**Para:** Diretor de Arte (monta a prancha) e Artista de Personagens (poses). **Aprova:** o dono. **Destrava a 6b.**
+**Quando:** depois que existirem o balão, o treinador e as folhas do gesto da 6a, porque a prancha reaproveita os três.
+
+**O que é:** imagens paradas, geradas por script em `tools/art/`, com os cenários e bonecos do jogo. Pose nova entra como **um quadro só, em rascunho** (sem animação, sem sufixos de luva, sem entrar no manifest). Não é arte final: serve para o dono dizer "é isso" ou "muda" antes de alguém produzir as folhas.
+
+**Arquivos pedidos** (em `docs/arte/mockups/`):
+1. `fase6a_prancha_sucessao_x2.png`: 8 quadros, S1 a S8.
+2. `fase6a_prancha_reencontro_x2.png`: 8 quadros, R1 a R8.
+3. `fase6a_prancha_pares_x2.png`: os 3 pares lado a lado (ver "Pares").
+
+**Formato de cada quadro:** a janela de cena **384x272** inteira. Na sucessão é a sala em (128,18); no reencontro é a janela (128,52) da tela de luta, com os pilares e barras `ink` em volta só no R1. Interface apagada. Embaixo de cada quadro, legenda de 2 linhas: número, tempo, plano (1x ou 2x) e o som principal. Balão desenhado com a peça real. Quadro 2x mostra a região de 192x136 ampliada na mesma janela.
+
+**Sucessão** (`primeira-sucessao.md`; garagem zerada, só o saco; Osmar no ponto dele; aviso de cobrança na parede):
+
+| Quadro | Tempo | Plano | O que mostra | Poses |
+|---|---|---|---|---|
+| S1 | 0,0–1,8 | 1x | Último soco no saco, saco balançando forte. John em (303,272). | `fighter_punch`, `bag_l0_hit` (existem) |
+| S2 | 1,8–3,6 | 1x | **Segura o saco com as duas luvas.** Saco parado, rosto cansado. | nova `hold_bag` |
+| S3 | 3,6–6,0 | **2x**, região (222,154,192,136) | Luva esquerda na boca, **abrindo o fecho com os dentes**, fita esticada. | quadro 2 de `fighter_gesture` (6a), rosto `bite` |
+| S4 | 6,6–9,0 | 1x | Luvas **penduradas na argola** do saco (336,186). Mãos nuas. Ele **olha a porta**; sombra de dois pés na fresta de luz. | nova `look_door` sem luvas; `door_gap_shadow`; luvas penduradas |
+| — | — | — | (aqui entra a tela de criar o discípulo; não é quadro da prancha) | — |
+| S5 | parte 2, 0,8–1,3 | 1x | **Porta emperrada na altura do peito**, luz do dia no chão. Discípulo padrão visto **do peito para baixo** em (423,221). | `garage_door` emperrada; discípulo parado, cortado pela porta |
+| S6 | parte 2, 1,3–2,6 | 1x | Discípulo **passando por baixo da porta**. John com sorriso leve. | nova `duck_under`; rosto `smile` |
+| S7 | parte 2, 2,6–4,6 | 1x | John em (268,268), **mão aberta apontando** o lugar em frente ao saco. Balão: "vamos ver sua guarda." Discípulo no meio do caminho. | nova `point_spot`; discípulo em `walk` (1 quadro) |
+| S8 | parte 2, 6,2+ | 1x | **Estado final:** discípulo de guarda em (303,272) com a luva velha; John **sentado no caixote** em (268,266); porta fechada. | `fighter_idle` na paleta do discípulo; nova `sit_rest`; caixote |
+
+**Reencontro** (`reencontro-final.md`; última arena simples: concreto, a lâmpada da garagem em (320,66), círculo de giz, porta de enrolar em x 382..464):
+
+| Quadro | Tempo | Plano | O que mostra | Poses |
+|---|---|---|---|---|
+| R1 | 0,0–2,5 | tela → janela | Holofotes varrendo a entrada, **ninguém**. Pilares fechando. Discípulo de guarda em (296,318). | 3 feixes em rascunho; `fight_player_idle` com o símbolo da escola |
+| R2 | 2,5–5,0 | 1x | Só a lâmpada acesa. Discípulo sozinho à esquerda. **Porta emperrada no peito**; John do peito para baixo em (423,256), luvas caídas. | `final_door` emperrada; corpo dele cortado pela porta |
+| R3 | 5,0–6,4 | **2x**, região (327,123,192,136) | A luva esquerda **sobe e some atrás da borda da porta** (o fecho, sem mostrar a cabeça). | quadro 2 de `fight_player_gesture`, cabeça coberta |
+| R4 | 6,4–8,2 | **2x**, mesma região | **Dois toques** de luva em luva, 2 faíscas. | quadro 7 de `fight_player_gesture` |
+| R5 | 8,2–8,9 | 1x | Ele **passa por baixo da porta**, na mesma pose do S6. | `duck_under` em vista de luta |
+| R6 | 11,0–13,6 | 1x | Sob a lâmpada em (346,318), braços baixos: **o rosto mais velho** e **só o nome**, pequeno, 8 px abaixo dos pés. Sem balão. | John mais velho parado; cartão de nome simples |
+| R7 | 15,8–17,6 | 1x | Ele **olha o símbolo** no discípulo (a cabeça baixa um pouco); brilho no símbolo. A legenda lembra a fala anterior: "então vocês chegaram." | nova `look_emblem` |
+| R8 | 17,6–20,4 | 1x | Ele **arma a guarda**, sorriso leve. Balão: "quero ver o que aprenderam." | guarda de luta, rosto `smile` |
+
+**Pares (a 3ª imagem):** três colunas, sucessão em cima e reencontro embaixo, na mesma escala e com o mesmo recorte de 192x136, para conferir no olho que batem:
+
+| Par | Sucessão | Reencontro | O que tem que ser igual |
+|---|---|---|---|
+| A porta | S5 | R2 | Porta no mesmo x do quadro (382..464), emperrada na mesma altura do corpo; quem chega visto do peito para baixo |
+| O gesto | S3 | R3 + R4 | Mãos na mesma altura do quadro (78 px abaixo do topo do recorte); mesma pose da luva na boca. Lá ele abre, aqui ele aperta |
+| Passar por baixo | S6 | R5 | A mesma pose `duck_under`, uma em 3/4 e a outra de perfil |
+
+Dois ecos que não precisam de recorte, só de conferir nos quadros inteiros: **quem espera fica à esquerda, virado para a direita** (S4 é o John; R2 é o discípulo, no lugar que era dele) e **a fala com o verbo "ver"** (S7 e R8).
+
+**Rascunhos novos que a prancha precisa** (um quadro cada):
+- John, garagem: `hold_bag`, `look_door` (sem luvas), `point_spot`, `sit_rest`.
+- Discípulo padrão, garagem: `duck_under` e um quadro de `walk`.
+- John mais velho, vista de luta: parado de braços baixos, `duck_under`, `look_emblem`, guarda com `smile`; os 2 quadros do gesto reaproveitados com a paleta dele (têmpora e barba grisalhas, luva velha, sem símbolo).
+- Cenário e objetos: `garage_door` emperrada com a luz no chão, `door_gap_shadow`, caixote, fundo da última arena em rascunho, 3 holofotes, cartão de nome, brilho do símbolo (usar o `school_symbol` provisório).
+
+**O que o dono responde olhando a prancha:**
+1. A porta emperrada e o "passar por baixo" leem como a mesma coisa nas duas cenas?
+2. O gesto lê em 1x, ou o corte para 2x é mesmo necessário?
+3. Dá para reconhecer o John mais velho pela silhueta antes do rosto?
+4. A última arena simples serve, ou vai o plano B (um foco de luz em qualquer arena)?
+5. O John sentado no caixote (S8) passa "ele continua com a gente"?
+
+**Fora da prancha:** animação, sons, folhas completas e `data/cutscenes/`. Isso é 6b (sucessão) e 11 (reencontro), e só depois do "sim" do dono. Com os nomes e a humilhação escolhidos, o Diretor de Cutscenes ajusta `primeira-sucessao.md` antes de a 6b começar.
+
 ## Fase 6b — Primeira sucessão
 
 | Papel | Entrega |

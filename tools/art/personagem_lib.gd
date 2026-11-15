@@ -59,6 +59,199 @@ var joints: Array = []
 func _init(pixel_lib) -> void:
 	L = pixel_lib
 
+# ================================================================ DISCÍPULO EM CAMADAS (Fase 6b1)
+## Escopo 6b §4.4. Cada quadro do discípulo vira 3 imagens do MESMO tamanho e pivô:
+##   body  = o corpo inteiro SEM a cabeça (pescoço, tronco, braços, pernas, calção, tênis e luvas);
+##   head  = só o que a cabeça muda no quadro (cabeça, cabelo, contorno dela e a sombra que ela faz no pescoço/ombro);
+##   mask  = máscara (branco) dos pixels do corpo que ficam NA FRENTE da cabeça, perto dela (luva/braço passando na
+##           frente do rosto). Montagem no jogo: body -> head -> body de novo recortado pela mask. Com o visual padrão o
+##           resultado é idêntico ao quadro inteiro (conferido pixel a pixel no gerador).
+## Como sai: capture = true faz cada fight_frame/garage_frame desenhar 2 vezes (com e sem cabeça) e guardar as camadas
+## em `captured` (o quadro devolvido continua o inteiro, então os geradores antigos funcionam igual).
+## Cortes novos (6b2): outro mapa de cabeça (head_34/head_side) com o mesmo corpo -> outra camada head, pela mesma conta.
+## Parte de cima (6b2): body com top != "none" menos body sem top = camada do meio (entre body e head).
+## As âncoras do quadro (cabeça, quadril, peito, giro, vista, rosto) ficam em `anchor` de cada captura.
+var capture := false
+var captured: Array = []
+var _cap_busy := false
+var skip_head := false
+var last_anchor := {}
+const HEAD_ZONE_PAD := 6
+var key_mode := false
+var build_ref := {}   # personagem em uso (ganchos de pose que desenham adereços com a luva dele)
+
+## Cores-chave do discípulo (troca de paleta). Visualmente = o visual padrão (skin_3, castanho, verde), com 1 unidade a
+## mais num canal para nenhuma chave coincidir com a paleta de 45 (luva, tênis, contorno e fita NÃO são trocados).
+## Rampa = mesma posição das rampas originais (a sombra de contato anda na rampa e continua dentro das chaves).
+const KEYS := {
+	"skin": {"names": ["k_sk_d", "k_sk0", "k_sk1", "k_sk2", "k_sk_h"], "hex": ["3b2623", "7a4633", "b97450", "e3a276", "fff3c5"],
+		"slots": ["deep", "shadow", "base", "light", "highlight"]},
+	"hair": {"names": ["ink", "k_hb", "k_h0", "k_h1", "k_h2"], "hex": ["", "3b2722", "6b402a", "9a6036", "c98b4b"],
+		"slots": ["ink", "brow", "dark", "light", "shine"]},
+	"shorts": {"names": ["k_sh_d", "k_sh0", "k_sh1", "k_sh2", "k_sh3"], "hex": ["15101a", "203d33", "306b4a", "5ba25a", "a7d86a"],
+		"slots": ["deep", "dark", "mid", "light", "band"]},
+}
+
+func use_keys() -> void:
+	if key_mode:
+		return
+	for k in KEYS:
+		L.add_ramp(KEYS[k].names, KEYS[k].hex)
+	key_mode = true
+
+func _capture_call(fn: Callable) -> Image:
+	_cap_busy = true
+	var A: Image = fn.call()
+	var ids_a := ids.duplicate()
+	var anc := last_anchor.duplicate(true)
+	var nlog := log_lines.size()
+	skip_head = true
+	var B: Image = fn.call()
+	skip_head = false
+	log_lines.resize(nlog)
+	_cap_busy = false
+	var w := A.get_width()
+	var h := A.get_height()
+	var H := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var Mk := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var x0 := w
+	var y0 := h
+	var x1 := -1
+	var y1 := -1
+	for y in h:
+		for x in w:
+			if ids_a[y * w + x] == HEAD:
+				x0 = mini(x0, x)
+				y0 = mini(y0, y)
+				x1 = maxi(x1, x)
+				y1 = maxi(y1, y)
+	var zone := Rect2i(x0 - HEAD_ZONE_PAD, y0 - HEAD_ZONE_PAD, x1 - x0 + 1 + 2 * HEAD_ZONE_PAD, y1 - y0 + 1 + 2 * HEAD_ZONE_PAD)
+	var white := Color(1, 1, 1, 1)
+	var keys := {}
+	if key_mode:
+		for k in KEYS:
+			for n in KEYS[k].names:
+				if n != "ink":
+					keys[(L.col(n) as Color).to_html(false)] = true
+	for y in h:
+		for x in w:
+			var id := ids_a[y * w + x]
+			var a := A.get_pixel(x, y)
+			if id > HEAD:
+				if x1 >= 0 and zone.has_point(Vector2i(x, y)):
+					Mk.set_pixel(x, y, white)
+			elif id == HEAD:
+				H.set_pixel(x, y, a)
+			elif a != B.get_pixel(x, y):
+				# sombra que a cabeça faz numa peça que NÃO troca de cor (luva de trás, fita): fica no corpo, senão a
+				# camada da cabeça mudaria com a luva. Pele, cabelo, calção e contorno vão para a cabeça.
+				if id != HEAD and id != 0 and key_mode and not keys.has(a.to_html(false)):
+					B.set_pixel(x, y, a)
+				else:
+					H.set_pixel(x, y, a)
+	ids = ids_a
+	anc["head_box"] = [x0, y0, x1 - x0 + 1, y1 - y0 + 1] if x1 >= 0 else []
+	captured.append({"full": A.duplicate(), "body": B, "head": H, "mask": Mk, "anchor": anc})
+	return A
+
+## Monta body -> head -> body pela máscara (para conferir e para os mockups). recolor = {Color chave: Color nova}.
+func compose_layers(body: Image, head: Image, mask: Image, recolor := {}) -> Image:
+	var w := body.get_width()
+	var h := body.get_height()
+	var out := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		for x in w:
+			var c := body.get_pixel(x, y)
+			var hc := head.get_pixel(x, y)
+			if hc.a > 0.0:
+				c = hc
+			if mask.get_pixel(x, y).a > 0.0:
+				c = body.get_pixel(x, y)
+			if c.a > 0.0 and not recolor.is_empty():
+				var hx := c.to_html(false)
+				if recolor.has(hx):
+					c = recolor[hx]
+			out.set_pixel(x, y, c)
+	return out
+
+## Devolve e esvazia as capturas feitas desde a última chamada.
+func capture_take() -> Array:
+	var out := captured
+	captured = []
+	return out
+
+## Espelha a última captura (folhas que o gerador espelha depois de desenhar, ex. fighter_run).
+func capture_flip_last() -> void:
+	if captured.is_empty():
+		return
+	var c: Dictionary = captured[-1]
+	for k in ["full", "body", "head", "mask"]:
+		(c[k] as Image).flip_x()
+	c.anchor["flipped"] = true
+
+## Grava as camadas de UMA folha do discípulo (capturas na ordem dos quadros):
+##   <dir><base><gsuf>_disc_body.png       (uma por luva)
+##   <dir><base>_disc_head_short.png       (cabeça do corte atual; não depende da luva)
+##   <dir><base>_disc_front.png            (máscara; não depende da luva)
+## store guarda cabeça/máscara da 1ª luva para conferir que as outras luvas dão a mesma coisa (report recebe avisos).
+## Confere também body+head+front == quadro inteiro. Devolve a meta da folha (âncoras por quadro).
+func save_layer_sheet(caps: Array, dir: String, base: String, gsuf: String, store: Dictionary, report: Array) -> Dictionary:
+	var bodies := []
+	var heads := []
+	var masks := []
+	var anchors := []
+	for i in caps.size():
+		var c: Dictionary = caps[i]
+		bodies.append(c.body)
+		heads.append(c.head)
+		masks.append(c.mask)
+		anchors.append(c.anchor)
+		var comp := compose_layers(c.body, c.head, c.mask)
+		if comp.get_data() != (c.full as Image).get_data():
+			report.append("AVISO camadas %s%s[%d]: body+head+front difere do quadro inteiro" % [base, gsuf, i])
+	strip(bodies).save_png(dir + base + gsuf + "_disc_body.png")
+	var hs := strip(heads)
+	var ms := strip(masks)
+	if not store.has(base):
+		store[base] = {"head": hs, "mask": ms}
+		hs.save_png(dir + base + "_disc_head_short.png")
+		ms.save_png(dir + base + "_disc_front.png")
+	else:
+		if (store[base].head as Image).get_data() != hs.get_data():
+			var hs0: Image = store[base].head
+			var ex := ""
+			for y in hs.get_height():
+				for x in hs.get_width():
+					if hs.get_pixel(x, y) != hs0.get_pixel(x, y) and ex.length() < 200:
+						ex += " (%d,%d) %s/%s" % [x, y, hs0.get_pixel(x, y).to_html(), hs.get_pixel(x, y).to_html()]
+			report.append("AVISO camadas %s%s: cabeça diferente da luva velha:%s" % [base, gsuf, ex])
+		if (store[base].mask as Image).get_data() != ms.get_data():
+			report.append("AVISO camadas %s%s: máscara diferente da luva velha" % [base, gsuf])
+	var fw: int = (caps[0].body as Image).get_width()
+	var fh: int = (caps[0].body as Image).get_height()
+	var an := []
+	for a in anchors:
+		var d := {}
+		for k in a:
+			var v = a[k]
+			d[k] = v
+		an.append(d)
+	return {"frame_size": [fw, fh], "frames": caps.size(), "anchors": an}
+
+## O gerador pintou algo por cima do quadro inteiro depois (rastro do golpe): leva para a camada body.
+func capture_sync_last(final: Image) -> void:
+	if captured.is_empty():
+		return
+	var c: Dictionary = captured[-1]
+	var A: Image = c.full
+	var B: Image = c.body
+	for y in final.get_height():
+		for x in final.get_width():
+			var f := final.get_pixel(x, y)
+			if f != A.get_pixel(x, y):
+				B.set_pixel(x, y, f)
+				A.set_pixel(x, y, f)
+
 # ================================================================ tela com mapa de partes
 func canvas(w: int, h: int) -> void:
 	cw = w
@@ -298,6 +491,105 @@ const FACES_34 := {
 	"effort": {5: "HHHSsbbsslbbl", 10: "..Sssxxxxss..", 11: "...SSsssss..."},
 }
 
+## ---------------------------------------------------------------- 1º LUTADOR (Fase 6a)
+## O lutador do jogador da Carreira 1 ganha rosto próprio: cabelo preto com topete (um tufo que sobe e avança sobre a
+## testa e uma ponta na nuca) e esparadrapo branco acima da sobrancelha (P). Mesmo tamanho de cabeça; só uma linha a
+## mais em cima (o tufo), por isso a âncora desce 1 px e o centro da cabeça fica no mesmo lugar de antes.
+## Rostos novos da 6a: "bite" (morde o fecho da luva: sobrancelha baixa, boca aberta para a frente, dentes W) e
+## "smile" (sorriso leve, de canto; diferente do "joy" da vitória).
+const PRIMEIRO_HEAD_SIDE := [
+	"........hHH...",
+	"....HHHHHHHH..",
+	"..HHHHhhHHHH..",
+	".HHHHhhhhHHHH.",
+	".HHHHHHHHHHHHH",
+	"HHHHHHHssPPl..",
+	"HHHHHHssbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	".HHEEssssssll.",
+	"HHHHsssssssss.",
+	"..HSssssssss..",
+	"...SSssssmSs..",
+	"....SSsssss...",
+	".....SSSss....",
+]
+const PRIMEIRO_FACES_SIDE := {
+	"normal": {},
+	"pain": {6: "HHHHHHsbbssl..", 7: "HHHEEssxxssl..", 11: "..HSsssssxss..", 12: "...SSsssxxSs.."},
+	"tired": {6: "HHHHHHsssbbl..", 7: "HHHEEssssesl..", 12: "...SSssssxSs..", 13: "....SSsssxs..."},
+	"ko": {6: "HHHHHHsssssl..", 7: "HHHEEsssxxsl..", 12: "...SSssssxSs..", 13: "....SSsssxs..."},
+	"joy": {5: "HHHHHHHsbPPl..", 6: "HHHHHHssssll..", 12: "...SSsssxxxs..", 13: "....SSssxxs..."},
+	"bite": {6: "HHHHHHsssbbl..", 7: "HHHEEssbbxsl..", 12: "...SSsssxWWx..", 13: "....SSsssxx..."},
+	"smile": {7: "HHHEEssssxsl..", 12: "...SSsssssxs..", 13: "....SSssxxs..."},
+}
+const PRIMEIRO_HEAD_34 := [
+	"......hHH....",
+	"..HHHHHHHHHH.",
+	".HHHHhhhHHHHH",
+	"HHHHhhhhhHHHH",
+	"HHHHHHHHHHHHH",
+	"HHHHssllllPPl",
+	"HHHSsbbsslbbl",
+	"HHESsesssles.",
+	"HEsSssssslll.",
+	".HESssssssss.",
+	".HSsssssssSs.",
+	"..SsssmmmSs..",
+	"...SSsssss...",
+	".....SSSs....",
+]
+const PRIMEIRO_FACES_34 := {
+	"normal": {},
+	"effort": {6: "HHHSsbbsslbbl", 11: "..Sssxxxxss..", 12: "...SSsssss..."},
+	"bite": {6: "HHHSsssssllll", 7: "HHESsbbsslbb.", 8: "HEsSsxsssxll.", 11: "..SsssxWWxs..", 12: "...SSsssxs..."},
+	"smile": {11: "..Ssssmmmxs..", 10: ".HSsssssssxs."},
+}
+
+## Identidade de quem usa o corpo do jogador. "primeiro" = 1º lutador (Carreira 1); "disc" = discípulo padrão
+## (Carreira 2+ até a personalização da 6b): troca de paleta fixa (cabelo castanho claro sem topete e sem
+## esparadrapo, calção verde). Os geradores do jogador fazem P.build(identidade(quem) + luva).
+func identidade(quem: String) -> Dictionary:
+	if quem == "disc":
+		if key_mode:   # Fase 6b1: discípulo em camadas, cores-chave (ver KEYS)
+			return {"hair": ["k_h0", "k_h1"], "brow": "k_hb", "skin": ["k_sk0", "k_sk1", "k_sk2"],
+				"shorts": ["k_sh0", "k_sh1", "k_sh2"], "band": "k_sh3", "top": "none"}   # 6b1: sem parte de cima (default_look); a regata é opção da 6b2
+		return {"hair": ["br1", "br2"], "brow": "br0", "shorts": ["gr0", "gr1", "gr2"], "band": "gr3"}
+	return {"hair": ["d1", "g0"], "brow": "ink", "head_side": PRIMEIRO_HEAD_SIDE, "head_34": PRIMEIRO_HEAD_34,
+		"faces_side": PRIMEIRO_FACES_SIDE, "faces_34": PRIMEIRO_FACES_34,
+		"head_anchor_side": Vector2i(7, 8), "head_anchor_34": Vector2i(6, 7),
+		"head_legend_extra": {"P": "white", "W": "white"}}
+
+## Boca (pixel da cabeça) do personagem numa vista, relativa ao centro da cabeça (hd).
+func mouth_offset(b: Dictionary, view: String) -> Vector2:
+	var rows: Array = b.head_side if view == "side" else b.head_34
+	var an: Vector2i = b.head_anchor_side if view == "side" else b.head_anchor_34
+	for j in rows.size():
+		var r: String = rows[j]
+		var i := r.find("m")
+		if i >= 0:
+			return Vector2(i - an.x, j - an.y)
+	return Vector2(2, 4)
+
+## Ponta do fecho da luva (Fase 6a): fita na cor do punho do estilo, do punho da luva até a boca (os dentes),
+## desenhada por cima de tudo (gancho de pose "end"). n = quantos pixels de fita (2 = presa, 3 = esticada).
+func strap_tip(b: Dictionary, mouth: Vector2, cuff: Vector2, n: int) -> void:
+	var st: Dictionary = GLOVE_STYLES.get(b.glove, GLOVE_STYLES["old"])
+	var d := cuff - mouth
+	var steps := maxi(int(round(maxf(absf(d.x), absf(d.y)))), 1)
+	var placed := 0
+	var pts := []
+	for k in range(steps + 1):
+		var p := (mouth + d * (float(k) / float(steps))).round()
+		if pts.is_empty() or pts[-1] != p:
+			pts.append(p)
+	# a fita sai da boca: os n primeiros pixels a partir do dente; o último (no punho) é a costura escura
+	for p in pts:
+		if placed >= n:
+			break
+		put(int(p.x), int(p.y), st.c if placed < n - 1 else st.g, NEAR_GLOVE_TOP + 5)
+		placed += 1
+
 ## Luvas (5 orientações). D/M/L = r0/r1/r2 da luva (a troca de paleta continua valendo),
 ## c/g = punho (claro/escuro), t/T = fita de remendo (só a luva velha; nas outras vira detalhe do estilo).
 const GLOVE_UP := [   # antebraço subindo (guarda): punho embaixo
@@ -372,6 +664,7 @@ const GLOVE_STYLES := {
 	"lona": {"c": "white", "g": "g3"},
 	"couro": {"c": "cream", "g": "br3"},
 	"marca": {"c": "white", "g": "g1"},
+	"campeao": {"c": "white", "g": "g3"},   # L4: azul de competição, punho branco largo, friso dourado
 	"tape": {"c": "g3", "g": "g2"},
 	"worn": {"c": "g3", "g": "g2"},
 	"tape_red": {"c": "g2", "g": "g1", "w": "r2"},   # Brutão: luva preta remendada com fita isolante vermelha
@@ -382,6 +675,15 @@ const GLOVE_STYLES := {
 ## "side" = nós dos dedos para a frente (soco). Escolhido pela direção do antebraço como a luva.
 const FIST_UP := [".sll.", "sslll", "Sssss", "SSsss", ".SSS."]
 const FIST_SIDE := [".ssl.", "Sssll", "Ssssl", "SSsss", ".SSS."]
+## Mão aberta (Fase 6b1: John sem luvas, discípulo chegando). Mesma legenda do punho. "down" = solta ao lado do corpo
+## (dedos para baixo, um pouco curvos); "side" = esticada para a frente, dedos juntos; "diagdown" = apontando o chão à
+## frente (mão espalmada); "up" = palma virada para o rosto, dedos abertos para cima (ele olha a própria mão).
+const OPEN_MAPS := {
+	"down": {"rows": [".sl.", "Ssll", "Sssl", "Ssss", "SsSs", ".S.S"], "anchor": Vector2i(2, 2)},
+	"side": {"rows": ["sll...", "Sslll.", "SSsssl", ".SSSS."], "anchor": Vector2i(1, 1)},
+	"diagdown": {"rows": ["sll..", "Sslll", ".Sssl", "..SSs", "...S."], "anchor": Vector2i(1, 1)},
+	"up": {"rows": ["l.l..", "slsl.", "sssls", "Sssss", "SSsss", ".SSS."], "anchor": Vector2i(2, 3)},
+}
 
 ## Tênis de perfil. toe = ponta do pé na sola (âncora); ankle = onde a canela encaixa.
 const SHOE_FLAT := ["..DMM......", ".DMMMLw....", "DMMMMMMLLD.", "DMMMMMMMMMD", "ccccccccccc"]
@@ -419,7 +721,7 @@ const SL_34 := [[-0.16, -4.4, 4.8], [-0.04, -5.0, 5.4], [0.15, -4.9, 5.1], [0.32
 ##                          (cinturão de pano na cintura), grease (manchas na roupa), shirt_detail "social"|"zip"
 ##                          (botões+colarinho / zíper do agasalho), shoe_maps {tipo: {rows, toe, ankle, ang}} (calçado
 ##                          próprio: chinelo, bota, tênis de cadarço solto)
-##  luva:                   glove "old"|"lona"|"couro"|"marca"|"tape"|"worn"|"tape_red"|"plain"|"fist"(punho nu)|"none",
+##  luva:                   glove "old"|"lona"|"couro"|"marca"|"campeao"|"tape"|"worn"|"tape_red"|"plain"|"fist"(punho nu)|"none",
 ##                          glove_ramp [r0, r1, r2]
 ##  quimono (Fase 5, opcionais; ausentes = resultado idêntico aos anteriores): shirt_detail "gi" (lapela),
 ##                          neck_v (0..0,3: decote em V), sleeve_add / sleeve_add_fore (manga larga),
@@ -562,6 +864,12 @@ func glove_rows(kind: String, style: String) -> Array:
 				"marca":
 					if body and (i + j == (w + h) / 2 - 1 or i + j == (w + h) / 2):
 						c = "y"
+				"campeao":   # L4 (Fase 5.2): friso dourado entre o corpo e o punho branco + selo dourado no lugar da fita
+					var orig := r[i]
+					if orig in ["t", "T"]:
+						c = "y"
+					elif c in ["M", "L", "D"] and _touches_cuff(src, i, j):
+						c = "y"
 				"tape":
 					if body and (j == 3 or j == 4):
 						c = "w"
@@ -571,6 +879,18 @@ func glove_rows(kind: String, style: String) -> Array:
 			nr += c
 		out.append(nr)
 	return out
+
+## Pixel (i,j) do mapa encosta (4-vizinhos) no punho da luva (c/g)?
+func _touches_cuff(src: Array, i: int, j: int) -> bool:
+	for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+		var x: int = i + d.x
+		var y: int = j + d.y
+		if y < 0 or y >= src.size():
+			continue
+		var r: String = src[y]
+		if x >= 0 and x < r.length() and r[x] in ["c", "g"]:
+			return true
+	return false
 
 ## Escolhe a orientação da luva pela direção do antebraço (cotovelo -> mão). Devolve [tipo, espelho].
 func glove_kind(el: Vector2, hand: Vector2) -> Array:
@@ -605,12 +925,45 @@ func draw_glove(id: int, b: Dictionary, el: Vector2, hand: Vector2, far: bool, f
 		var fk := "side" if k in ["side", "diagdown", "diag"] else "up"
 		pmap(id, FIST_SIDE if fk == "side" else FIST_UP, {"S": sk[0], "s": sk[1], "l": sk[2]}, hand, Vector2i(2, 2), 0.0, flip)
 		return "fist_" + fk + (":f" if flip else "")
+	if b.glove == "open":
+		var sk2: Array = b.skin_far if far else b.skin
+		var ok: String = {"up": "up", "diag": "up", "side": "side", "diagdown": "diagdown", "down": "down"}[k]
+		var om: Dictionary = OPEN_MAPS[ok]
+		pmap(id, om.rows, {"S": sk2[0], "s": sk2[1], "l": sk2[2]}, hand, om.anchor, 0.0, flip)
+		return "open_" + ok + (":f" if flip else "")
 	var key := "%s|%s" % [k, b.glove]
 	var cache: Dictionary = b._glove_cache
 	if not cache.has(key):
 		cache[key] = glove_rows(k, b.glove)
 	pmap(id, cache[key], glove_legend(b.glove, b.glove_ramp, far), hand, GLOVE_ANCHOR[k], 0.0, flip)
 	return k + (":f" if flip else "")
+
+## Mão com estilo próprio no quadro (Fase 6b1): "" = a luva do personagem; "fist" = punho nu; "open" = mão aberta;
+## "none" = sem mão (escondida). Mão nua usa a pele de perto (senão a mão fica mais escura que o próprio antebraço).
+func draw_hand(id: int, b: Dictionary, el: Vector2, hand: Vector2, far: bool, force: String, style: String) -> String:
+	if style == "":
+		return draw_glove(id, b, el, hand, far, force)
+	if style == "none":
+		return "none"
+	var keep: String = b.glove
+	b.glove = style
+	var r := draw_glove(id, b, el, hand, false, force)
+	b.glove = keep
+	return r
+
+## Luva SOLTA (sem mão dentro) como adereço da pose: kind = orientação do mapa (up/diag/side/diagdown/down).
+func loose_glove(id: int, b: Dictionary, kind: String, center: Vector2, flip := false, far := false, style := "") -> void:
+	var st: String = style if style != "" else (b.glove if GLOVE_STYLES.has(b.glove) else "old")
+	var ramp: Array = b.glove_ramp
+	pmap(id, glove_rows(kind, st), glove_legend(st, ramp, far), center, GLOVE_ANCHOR[kind], 0.0, flip)
+
+## Cadarço (1 px) de a até b.
+func lace(id: int, a: Vector2, b2: Vector2, c := "cream") -> void:
+	var d := b2 - a
+	var n := maxi(int(ceil(maxf(absf(d.x), absf(d.y)))), 1)
+	for k in range(n + 1):
+		var p := (a + d * (float(k) / float(n))).round()
+		put(int(p.x), int(p.y), c, id)
 
 ## Luva solta (para ícones/testes): imagem com contorno.
 func glove_image(b: Dictionary, kind: String, far := false) -> Image:
@@ -881,6 +1234,8 @@ func mid_34(back: float, front: float) -> float:
 ##  kf/kb (lado para onde o joelho dobra), gkf/gkb (orientação forçada da luva, ex. "side:f"),
 ##  far_glove_front (luva de trás desenhada na frente da cabeça — defesa).
 func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112, 104), pivot := Vector2(56, 98)) -> Image:
+	if capture and not _cap_busy:
+		return _capture_call(func() -> Image: return fight_frame(b, p, tag, size, pivot))
 	canvas(size.x, size.y)
 	var O := pivot
 	var hip: Vector2 = O + p.hip
@@ -911,7 +1266,10 @@ func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112
 	var gkb := draw_glove(FAR_GLOVE_FRONT if p.get("far_glove_front", false) else FAR_GLOVE, b, elb, hb, true, p.get("gkb", ""))
 	torso(b, TORSO, hip, top, "side", p.get("tw", 0.0))
 	limb(TORSO, top - dn * 1.0, hd + rotv(Vector2(-1, 4), hrot), 2.6, 2.4, b.skin)   # pescoço (mesma peça do tronco)
-	pmap(HEAD, head_rows(b, "side", p.get("face", "normal")), head_legend(b), hd, b.head_anchor_side, hrot)
+	if not skip_head:
+		pmap(HEAD, head_rows(b, "side", p.get("face", "normal")), head_legend(b), hd, b.head_anchor_side, hrot)
+	last_anchor = {"view": "side", "head": [hd.x - O.x, hd.y - O.y], "head_rot": hrot, "hip": [hip.x - O.x, hip.y - O.y],
+		"top": [top.x - O.x, top.y - O.y], "tw": p.get("tw", 0.0), "face": p.get("face", "normal")}
 	var ctx := {"hip": hip, "top": top, "dn": dn, "fr": fr, "hd": hd, "sf": sf, "sb": sb, "hb": hb, "elb": elb, "nh": nh, "fh": fh, "hrot": hrot}
 	_hook(p, "after_torso", O, ctx)
 	leg(b, NEAR_THIGH, nh, O + p.get("toef", Vector2(15, -1)), p.get("shoef", "flat"), lt, ls, false, tag + " perna da frente", b.leg_r, p.get("kf", kp_def))
@@ -937,6 +1295,8 @@ func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112
 ##  quando ele vai para dentro da cena), toel/toer + shoel/shoer ("34"|"34ball"), gkl/gkr, tw.
 ## Lado ESQUERDO da tela = mão de trás (mais escura); DIREITO = mão da frente (a que soca o saco).
 func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48, 72), pivot := Vector2(22, 67)) -> Image:
+	if capture and not _cap_busy:
+		return _capture_call(func() -> Image: return garage_frame(b, p, tag, size, pivot))
 	canvas(size.x, size.y)
 	var O := pivot
 	var hip: Vector2 = O + p.hip
@@ -968,7 +1328,10 @@ func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48
 	torso(b, TORSO, hip, top, "34", p.get("tw", 0.0))
 	var hd: Vector2 = O + p.head
 	limb(TORSO, top + Vector2(0, 1), hd + Vector2(0, 4), 2.3, 2.2, skin)
-	pmap(HEAD, head_rows(b, "34", p.get("face", "normal")), head_legend(b), hd, b.head_anchor_34)
+	if not skip_head:
+		pmap(HEAD, head_rows(b, "34", p.get("face", "normal")), head_legend(b), hd, b.head_anchor_34)
+	last_anchor = {"view": "34", "head": [hd.x - O.x, hd.y - O.y], "head_rot": 0.0, "hip": [hip.x - O.x, hip.y - O.y],
+		"top": [top.x - O.x, top.y - O.y], "tw": p.get("tw", 0.0), "face": p.get("face", "normal")}
 	var gctx := {"hip": hip, "top": top, "hd": hd, "sl": shl, "sr": shr, "hl": hdl, "hr": hdr, "elr": elr}
 	_hook(p, "after_torso", O, gctx)
 	# braço esquerdo por cima do tronco
@@ -982,11 +1345,12 @@ func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48
 	limb(NEAR_UP, shl, ell, ar[0], ar[1], skin, o_ul)
 	var wl := ell + (hdl - ell).normalized() * maxf((hdl - ell).length() - 3.5, 1.0)
 	limb(NEAR_FORE, ell, wl, ar[2], ar[3], skin, _g_fore(b))
-	var gkl := draw_glove(NEAR_GLOVE, b, ell, hdl, true, p.get("gkl", "up"))
+	var gkl := draw_hand(NEAR_GLOVE, b, ell, hdl, true, p.get("gkl", "up"), p.get("stl", ""))
+	_hook(p, "after_left", O, gctx)
 	# antebraço + luva direitos na frente
 	var wr := elr + (hdr - elr).normalized() * maxf((hdr - elr).length() - 3.5, 1.0)
 	limb(NEAR_GLOVE_TOP, elr, wr, ar[2], ar[3], skin, _g_fore(b))
-	var gkr := draw_glove(NEAR_GLOVE_TOP + 1, b, elr, hdr, false, p.get("gkr", "up"))
+	var gkr := draw_hand(NEAR_GLOVE_TOP + 1, b, elr, hdr, false, p.get("gkr", "up"), p.get("str", ""))
 	gctx["ell"] = ell
 	_hook(p, "end", O, gctx)
 	joint(TORSO, NEAR_UP, shl, 4.0)

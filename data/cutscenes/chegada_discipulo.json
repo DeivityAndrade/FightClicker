@@ -1,0 +1,124 @@
+{
+  "_nota": "Fase 6b1. Chegada curta do discípulo (sucessões seguintes, e depois de fechar o jogo antes do CONFIRMAR na primeira). Sem fala, sem marco, repete a cada campanha. Storyboard: docs/cutscenes/primeira-sucessao.md (v2, seção 'Chegada curta'). Chaves que começam com _ são comentário. _t = tempo previsto depois do CONFIRMAR, em segundos.",
+  "id": "chegada_discipulo",
+  "version": 1,
+  "once": false,
+  "blocking": true,
+  "register": "cotidiano",
+  "max_seconds": 2.5,
+
+  "trigger": {
+    "event": "handover_started",
+    "requires": { "milestone_present": ["cena_primeira_sucessao"] }
+  },
+
+  "grants": [],
+
+  "stage": {
+    "view": "room",
+    "location": "garage",
+    "window": [128, 18, 384, 272],
+    "hide": ["player", "crew"],
+    "props": {
+      "bag":          { "room_object": "punching_bag" },
+      "gloves":       { "sprite": "garage_hung_gloves_old", "pos": [335, 186], "layer": "sorted", "sort_y": 254, "visible": false },
+      "door_outside": { "sprite": "garage_door_outside", "pos": [382, 168], "layer": "wall", "visible": false },
+      "door":         { "sprite": "garage_door", "pos": [381, 166], "layer": "sorted", "sort_y": 222, "anim": "closed" },
+      "daylight":     { "sprite": "garage_daylight", "pos": [308, 220], "layer": "floor", "visible": false },
+      "door_shadow":  { "sprite": "garage_door_shadow", "pos": [374, 214], "layer": "floor", "visible": false }
+    }
+  },
+
+  "actors": {
+    "disciple": { "character": "current_player", "glove": "none", "pos": [423, 221], "facing": "left", "anim": "stand_bare", "visible": false }
+  },
+
+  "lines": {},
+
+  "steps": [
+    { "_q": "Antes da tela (0 s presos): alguém na porta, luvas no saco", "type": "ui", "hide": "all", "seconds": 0 },
+    { "type": "prop", "id": "bag", "anim": "idle", "frame": 0 },
+    { "type": "prop", "id": "gloves", "visible": true, "anim": "rest" },
+    { "type": "prop", "id": "door_outside", "visible": true },
+    { "type": "prop", "id": "door", "anim": "shake_ajar", "wait": false },
+    { "type": "sound", "id": "door_shake" },
+    { "type": "prop", "id": "daylight", "visible": true, "anim": "sliver" },
+    { "type": "prop", "id": "door_shadow", "visible": true, "frame": 0 },
+
+    { "type": "open_screen", "screen": "customize_disciple", "checkpoint": "depois_criar",
+      "state": {
+        "_nota": "Estado atrás da tela. É também o que o jogo mostra ao abrir um save com handover.stage = creating.",
+        "actors": { "disciple": { "visible": false } },
+        "props": {
+          "bag": { "anim": "idle", "frame": 0 },
+          "gloves": { "visible": true, "anim": "rest" },
+          "door_outside": { "visible": true },
+          "door": { "anim": "ajar" },
+          "daylight": { "visible": true, "anim": "sliver" },
+          "door_shadow": { "visible": true, "frame": 0 }
+        },
+        "camera": { "scale": 1 },
+        "ui": "hide_all"
+      }
+    },
+
+    { "_q": "A porta emperra e ele passa por baixo (0,00-2,37)", "_t": 0.0, "type": "show", "actor": "disciple" },
+    { "_t": 0.0, "type": "parallel", "steps": [
+      { "type": "prop", "id": "door", "anim": "open_jam_fast" },
+      { "type": "prop", "id": "daylight", "anim": "open_fast" },
+      { "type": "sound", "id": "door_roll", "volume": 0.8 },
+      { "type": "sequence", "steps": [
+        { "_nota": "0,1 s (era 0,2): ele começa a dobrar os joelhos enquanto a porta termina de subir; a cabeça só passa embaixo da borda depois do tranco", "type": "wait", "seconds": 0.1 },
+        { "type": "prop", "id": "door_shadow", "frame": 1 },
+        { "type": "parallel", "steps": [
+          { "type": "sequence", "steps": [
+            { "type": "wait", "seconds": 0.1 },
+            { "type": "sound", "id": "door_jam" },
+            { "type": "shake", "px": 1, "frames": 3, "wait": false }
+          ] },
+          { "_t": 0.1, "type": "move", "actor": "disciple", "to": [410, 236], "anim": "duck_under", "seconds": 0.7, "facing": "left" },
+          { "type": "sequence", "steps": [
+            { "type": "wait", "seconds": 0.3 },
+            { "type": "prop", "id": "door_shadow", "frame": 2 },
+            { "type": "wait", "seconds": 0.3 },
+            { "type": "prop", "id": "door_shadow", "frame": 3 },
+            { "type": "wait", "seconds": 0.1 },
+            { "type": "prop", "id": "door_shadow", "visible": false }
+          ] }
+        ] }
+      ] }
+    ] },
+    { "_t": 0.8, "_nota": "112,9 px a 72 px/s (passo apressado) = 1,57 s", "type": "move", "actor": "disciple", "to": [303, 272], "speed": 72, "anim": "walk_bare", "facing": "left" },
+    { "_t": 2.37, "_nota": "Sem tempo para o take_gloves: a troca é seca, junto com a volta da interface", "type": "prop", "id": "gloves", "visible": false },
+    { "type": "sound", "id": "glove_leather" },
+    { "type": "pose", "actor": "disciple", "anim": "idle", "glove": "glove_old", "facing": "right", "loop": true, "wait": false },
+
+    { "_t": 2.37, "type": "return_control" },
+
+    { "type": "wait", "seconds": 0.6 },
+    { "type": "parallel", "steps": [
+      { "type": "prop", "id": "door", "anim": "close" },
+      { "type": "prop", "id": "daylight", "anim": "close" },
+      { "type": "sound", "id": "door_roll", "volume": 0.8 }
+    ] },
+    { "type": "sound", "id": "door_jam", "volume": 0.7 },
+    { "type": "prop", "id": "daylight", "visible": false },
+    { "type": "prop", "id": "door_outside", "visible": false }
+  ],
+
+  "reactions": [],
+
+  "end_state": {
+    "actors": { "disciple": "hand_to_game" },
+    "props": {
+      "bag": "hand_to_game",
+      "gloves": { "visible": false },
+      "door": { "anim": "closed" },
+      "door_outside": { "visible": false },
+      "daylight": { "visible": false },
+      "door_shadow": { "visible": false }
+    },
+    "camera": { "scale": 1 },
+    "ui": "show_all"
+  }
+}

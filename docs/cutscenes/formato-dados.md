@@ -1,6 +1,6 @@
 # Cutscenes — formato de dados (proposta)
 
-Dono: Diretor de Cutscenes. Versão 1 (2026-11-11). **Proposta para o Programador (fase 6b); nenhum arquivo foi criado em `data/`.**
+Dono: Diretor de Cutscenes. **Versão 1.1 (2026-11-14).** As duas primeiras cenas existem: `data/cutscenes/primeira_sucessao.json` e `chegada_discipulo.json`. Escrever as cenas de verdade pediu os acréscimos da **§9**, que valem sobre o resto deste documento. O exemplo da §2 é só ilustrativo: os valores certos são os dos arquivos.
 Objetivo: toda cena é um arquivo em `data/cutscenes/<id>.json`, tocado por **um único player de cena**. Nenhuma cena escrita à mão em código. O Diretor de Cutscenes monta e ajusta as cenas só mexendo nesses arquivos.
 
 Convenções iguais às do resto de `data/`: chaves em inglês `snake_case`, textos em português. Posições em pixels inteiros da base 640x360, personagens pelo ponto dos pés. Tempos em segundos.
@@ -196,3 +196,29 @@ Se a cena não puder tocar na hora (`calm` falso), fica na fila até o próximo 
 - Não tem escolha de diálogo.
 - Não tem zoom suave, rotação nem escala quebrada.
 - Não carrega cenário novo sozinho: usa os fundos e pontos do `manifest.json`.
+
+## 9. Acréscimos da versão 1.1 (6b1)
+
+Tudo aqui é usado pelas cenas da 6b1. O validador precisa conhecer.
+
+| # | Acréscimo | Como é | Por quê |
+|---|---|---|---|
+| 1 | **Comentários** | Toda chave que começa com `_` (`_nota`, `_q`, `_t`) é ignorada pelo player e pelo validador | Marcar quadro e tempo previsto dentro do arquivo |
+| 2 | **Gatilho `handover_started`** | RECEBER NOVO DISCÍPULO apertado, antes do cartão de início (`fase6b1-design.md` §1). Substitui `campaign_started` nas cenas de sucessão | A cena toca antes de a campanha começar |
+| 3 | **Fala por chave** | `lines.<id>` = `{ "speaker", "text_key" }`. A chave é de `data/ui_texts.json`. `text` direto continua aceito, mas não é usado | O Roteirista edita o texto num lugar só. O validador mede o texto da chave (2 linhas de 26) |
+| 4 | **Cena que repete** | `once: false` e sem `milestone` | Chegada curta |
+| 5 | **Objeto da sala como adereço** | `stage.props.<id> = { "room_object": "punching_bag" }` (ou `"lamp"`). A cena manda no objeto que a sala já desenha; `anim` usa os nomes do manifest (`idle`, `hit`, `swing`). `anim` + `frame` = parado naquele quadro | O saco e a lâmpada balançam e param na cena |
+| 6 | **Camadas de adereço** | `layer`: `wall`, `floor` ou `sorted` com `sort_y`. Ordem de desenho: fundo → `wall` → `floor` → sprites por y dos pés (`sorted` entra aqui) | A porta fica na frente de quem está na soleira (y 221) e atrás de quem já entrou |
+| 7 | **Animações de adereço** | `prop.anim` é um nome do mapa `anim` do sprite no manifest (lista de quadros + `fps`). Dura a lista; `wait: false` segue junto | Porta, luz e luvas têm várias animações na mesma folha |
+| 8 | **Parte de uma folha** | `pose.frames: [primeiro, último]` toca só esse trecho, no fps da folha. Uma pose sem laço fica no último quadro até a próxima pose do ator | 3º soco sem recolher; sorriso do John |
+| 9 | **Luva do ator** | `actors.<id>.glove` e `pose.glove`: `"glove_old"`, `"none"` | John tira as luvas; o discípulo calça |
+| 10 | **Estado na tela obrigatória** | `open_screen.state`, no mesmo formato do `end_state`. É aplicado ao **pular** até a tela e ao **abrir o jogo** com `handover.stage = "creating"` | Pular a parte 1 e fechar o jogo no meio |
+| 11 | **Começar do checkpoint** | O player sabe começar uma cena no passo seguinte a um `checkpoint`, depois de aplicar o `state` do `open_screen` | Fechou na criação da primeira sucessão: ao confirmar, toca a `chegada_discipulo` a partir de `depois_criar` |
+| 12 | **`return_control` devolve tudo** | Ele solta os `room_object` e os atores marcados `hand_to_game` no `end_state`. Os passos depois dele só mexem em adereços e sons | O 1º soco vale no mesmo quadro |
+| 13 | **Sons no estado** | `end_state.sounds` e `state.sounds`: `{ "stop": [...], "loop": [...] }` | Laços (`chain_creak`, `lamp_hum`) não sobram ao pular |
+| 14 | **Passos de quem anda** | Folhas de andar têm `step_frames` no manifest; o player toca `step_1`/`step_2` nesses quadros durante um `move` | Não escrever um `sound` por passo |
+| 15 | **Reação e regra do mentor** | A reação `first_click` de `primeira_sucessao` **é** o toque do 1º clique da campanha (`fase6b1-design.md` §4): grava `mentor_greeted`, conta no intervalo de 60 s e segue a guarda de 0,5 s | Não tocar duas vezes |
+
+Conta de tempo do validador: `parallel` vale o filho mais longo; passo com `wait: false` vale 0; `move` com `speed` vale distância ÷ velocidade; `say` vale letras ÷ velocidade + pausas + `hold`; `max_seconds` é a soma das partes antes e depois do `open_screen`.
+
+`reactions.idle_seconds` continua no formato, mas nenhuma cena da 6b1 usa.

@@ -11,6 +11,7 @@ func _novo(nome: String) -> Node:
 	gs.autosave_ativo = false
 	gs.risco_hud_ativo = false
 	gs.dados.crit_chance = 0.0  # sem crítico: o ganho do clique fica exato
+	gs.dados.golden_crew_chance = 0.0  # só a luva x7 (a bolsa é testada em test_fase52)
 	return gs
 
 

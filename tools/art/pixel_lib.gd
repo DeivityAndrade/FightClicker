@@ -56,6 +56,22 @@ func col(n) -> Color:
 		return n
 	return C[n]
 
+## Fase 6b1 (Artista de Personagens): rampas extras de CORES-CHAVE para troca de paleta em tempo real (discípulo em
+## camadas). Ficam fora da paleta de 45: só existem nas folhas em camadas e o jogo troca cada chave pela cor da opção.
+## Sem chamar add_ramp nada muda (todos os geradores antigos dão o mesmo resultado).
+var extra_ramps: Array = []
+
+## names = nomes novos (escuro -> claro); hexes = cor de cada um ("" = nome que já existe na paleta, ex. "ink").
+func add_ramp(names: Array, hexes: Array) -> void:
+	var ri := RAMPS.size() + extra_ramps.size()
+	extra_ramps.append(names)
+	for i in names.size():
+		if hexes[i] != "":
+			C[names[i]] = Color.html("#" + hexes[i])
+		var hx: String = (C[names[i]] as Color).to_html(false)
+		if not _lookup.has(hx):
+			_lookup[hx] = [ri, i]
+
 ## Anda n passos na rampa da cor (n<0 escurece, n>0 clareia).
 func shade(c: Color, n: int) -> Color:
 	var hx := c.to_html(false)
@@ -64,7 +80,7 @@ func shade(c: Color, n: int) -> Color:
 	if hx == _ink_hex:
 		return c   # contorno nunca clareia
 	var info: Array = _lookup[hx]
-	var ramp: Array = RAMPS[info[0]]
+	var ramp: Array = RAMPS[info[0]] if info[0] < RAMPS.size() else extra_ramps[info[0] - RAMPS.size()]
 	var i: int = clampi(info[1] + n, 0, ramp.size() - 1)
 	return C[ramp[i]]
 
@@ -246,6 +262,9 @@ const GLYPHS := {
 	"/": ["....#", "...#.", "...#.", "..#..", ".#...", ".#...", "#...."],
 	"+": [".....", "..#..", "..#..", "#####", "..#..", "..#..", "....."],
 	"-": ["....", "....", "....", "####", "....", "....", "...."],
+	# --- Fase 6a: travessão e reticências de um caractere (falas)
+	"—": [".....", ".....", ".....", "#####", ".....", ".....", "....."],
+	"…": [".....", ".....", ".....", ".....", ".....", ".....", "#.#.#"],
 	"$": ["..#..", ".####", "#.#..", ".###.", "..#.#", "####.", "..#.."],
 	# --- Fase 3: ordinais ("2º ROUND")
 	"º": [".#.", "#.#", ".#.", "...", "###", "...", "..."],
@@ -332,9 +351,12 @@ func _glyph_rows(ch: String) -> Dictionary:
 		for row in m:
 			var s: String = m[row]
 			var r: int = row
+			# Fase 6a: minúscula = marca nas linhas -1..0 (1 linha de folga antes da altura-x; antes encostava na letra)
 			if lower and r < 0:
-				r += 2
+				r += 1
 			out[r] = s.substr(off, w)
+		if ch == "í":
+			out[2] = ".#."   # Fase 6a: sem a bandeirinha, o í lia como 1
 	return out
 
 func glyph_w(ch: String) -> int:

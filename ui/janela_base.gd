@@ -35,7 +35,8 @@ func animar_entrada() -> void:
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(_dim, "modulate:a", 1.0, 0.18)
 	tw.tween_property(painel, "modulate:a", 1.0, 0.14)
-	tw.tween_property(painel, "position:y", 0.0, 0.16).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Pixel inteiro a cada quadro (a regra do alinhamento vale também no meio da animação).
+	tw.tween_method(func(y: float) -> void: painel.position = Vector2(0, roundf(y)), 6.0, 0.0, 0.16).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
 ## Moldura 9-slice (ex.: "ui_window", "ui_end_frame_defeat") no `rect`. Declara ao verificador que a moldura
@@ -95,6 +96,7 @@ func fundo_cor(rect: Rect2, cor: Color) -> ColorRect:
 func retrato(retrato_sprite: String, moldura_sprite: String, x: float, y: float, espelhar: bool) -> void:
 	var quadro := UiTema.textura_rect(painel, moldura_sprite, x, y)
 	var t := UiTema.textura_rect(quadro, retrato_sprite, 2, 2)  # o retrato fica DENTRO da moldura (não é sobreposição)
+	t.texture = UiTema.textura_disc(retrato_sprite)
 	t.flip_h = espelhar
 
 

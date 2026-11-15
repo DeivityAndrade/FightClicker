@@ -1,6 +1,6 @@
 extends SceneTree
 ## Gera os GOLPES do lutador do jogador a partir de tools/art/golpes.json (poses em dados), pelo mesmo esqueleto
-## com IK de make_sprites_jogador.gd (personagem_lib.gd), com as 4 luvas. Não mexe nas folhas existentes.
+## com IK de make_sprites_jogador.gd (personagem_lib.gd), com as 5 luvas (velha, L1 a L4). Não mexe nas folhas existentes.
 ## Para criar ou ajustar um golpe: edite golpes.json e rode de novo (nada de código).
 ## Rodar headless a partir de uma pasta temporária com um project.godot vazio (nunca no projeto):
 ##   godot --headless --path <pasta_tmp> --script <repo>/tools/art/make_golpes_jogador.gd -- <saida> [golpe ...]
@@ -21,7 +21,17 @@ const GLOVES := {
 	"_glove_l1": {"name": "Luva de lona", "style": "lona", "ramp": ["br3", "cream", "white"]},
 	"_glove_l2": {"name": "Luva de couro", "style": "couro", "ramp": ["r0", "br1", "br2"]},
 	"_glove_l3": {"name": "Luva de marca", "style": "marca", "ramp": ["d1", "d2", "g0"]},
+	"_glove_l4": {"name": "Luva de competição", "style": "campeao", "ramp": ["b1", "b2", "b3"]},
 }
+
+## Fase 6a: quem veste o corpo. FC_LUTADOR=disc gera o discípulo padrão (arquivos e ids com "_disc" no fim);
+## sem a variável, o 1º lutador (os arquivos de sempre).
+var QUEM := "disc" if OS.get_environment("FC_LUTADOR") == "disc" else "primeiro"
+var SUF := "_disc" if QUEM == "disc" else ""
+## Fase 6b1: FC_LUTADOR=disc + FC_CAMADAS=1 grava também o discípulo EM CAMADAS em <saida>/disciple/ (ver personagem_lib.gd).
+var CAMADAS := OS.get_environment("FC_CAMADAS") == "1" and QUEM == "disc"
+var cam_meta := {}
+var cam_store := {}
 
 var L
 var P
@@ -326,7 +336,9 @@ func rastro(im: Image, a: Vector2, b: Vector2) -> void:
 
 func make_build(suffix: String) -> Dictionary:
 	var g: Dictionary = GLOVES[suffix]
-	return P.build({"glove": g.style, "glove_ramp": g.ramp})
+	var o: Dictionary = P.identidade(QUEM)
+	o.merge({"glove": g.style, "glove_ramp": g.ramp}, true)
+	return P.build(o)
 
 
 func gen(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> Array:
@@ -342,6 +354,8 @@ func gen(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> Array:
 		var hfp: Vector2 = origem + p.hf
 		if bool(p.get("smear", false)) and i > 0:
 			rastro(im, mao_antes, hfp)
+			if CAMADAS:
+				P.capture_sync_last(im)
 		mao_antes = hfp
 		var idf: int = P.ids[int(hfp.y) * FW + int(hfp.x)]
 		if idf != P.NEAR_GLOVE:
@@ -385,8 +399,14 @@ func _init() -> void:
 	var garagem: Dictionary = dados.get("garage", {})
 	var corda: Dictionary = dados.get("rope", {}).get("corda", {})
 	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
-	for suffix in GLOVES:
-		var b := make_build(suffix)
+	var cam_dir := out_dir + "disciple/"
+	if CAMADAS:
+		P.use_keys()
+		P.capture = true
+		DirAccess.make_dir_recursive_absolute(cam_dir)
+	for gsuf in GLOVES:
+		var b := make_build(gsuf)
+		var suffix: String = gsuf + SUF
 		for nome in todos:
 			if not so_estes.is_empty() and not (nome in so_estes):
 				continue
@@ -394,9 +414,13 @@ func _init() -> void:
 			var fr := gen(b, nome, g, suffix)
 			P.strip(fr).save_png(out_dir + "fight/fight_player_%s%s.png" % [nome, suffix])
 			entradas["fight_player_%s%s" % [nome, suffix]] = entrada(nome, g, suffix)
+			if CAMADAS:
+				cam_meta["fight_player_" + nome] = P.save_layer_sheet(P.capture_take(), cam_dir, "fight_player_" + nome, gsuf, cam_store, report)
 		if not corda.is_empty() and (so_estes.is_empty() or "corda" in so_estes):
 			var frc := gen_corda_corpo(b, corda, suffix)
 			P.strip(frc).save_png(out_dir + "characters/fighter_rope%s.png" % suffix)
+			if CAMADAS:
+				cam_meta["fighter_rope"] = P.save_layer_sheet(P.capture_take(), cam_dir, "fighter_rope", gsuf, cam_store, report)
 			entradas["fighter_rope%s" % suffix] = entrada_corda("res://assets/sprites/characters/fighter_rope%s.png" % suffix, corda,
 				"6 quadros, um giro por clique (ver tools/art/golpes.json, bloco rope). Desenhar rope_lN_swing_back ATRÁS e rope_lN_swing NA FRENTE, mesmo quadro e mesmo pivô. Quadro 5 = repouso.")
 		for nome in reacoes:
@@ -404,6 +428,8 @@ func _init() -> void:
 				continue
 			var gr: Dictionary = reacoes[nome]
 			P.strip(gen(b, nome, gr, suffix)).save_png(out_dir + "fight/fight_player_%s%s.png" % [nome, suffix])
+			if CAMADAS:
+				cam_meta["fight_player_" + nome] = P.save_layer_sheet(P.capture_take(), cam_dir, "fight_player_" + nome, gsuf, cam_store, report)
 			var er := entrada(nome, gr, suffix)
 			er.erase("hit_frame")
 			er.erase("hit_point")
@@ -417,8 +443,10 @@ func _init() -> void:
 			var g: Dictionary = garagem[nome]
 			var r := gen_garage(b, nome, g, suffix)
 			P.strip(r[0]).save_png(out_dir + "characters/fighter_%s%s.png" % [nome, suffix])
+			if CAMADAS:
+				cam_meta["fighter_" + nome] = P.save_layer_sheet(P.capture_take(), cam_dir, "fighter_" + nome, gsuf, cam_store, report)
 			entradas["fighter_%s%s" % [nome, suffix]] = entrada_garage(nome, g, suffix, r[1])
-	if not corda.is_empty() and (so_estes.is_empty() or "corda" in so_estes):
+	if QUEM == "primeiro" and not corda.is_empty() and (so_estes.is_empty() or "corda" in so_estes):
 		DirAccess.make_dir_recursive_absolute(out_dir + "equipment")
 		for nome in ROPES:
 			var frente := corda_sheet(corda, ROPES[nome], "front")
@@ -430,6 +458,10 @@ func _init() -> void:
 				"Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.")
 			entradas[nome_costas] = entrada_corda("res://assets/sprites/equipment/%s.png" % nome_costas, corda,
 				"Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.")
+	if CAMADAS:
+		var fm := FileAccess.open(cam_dir + "camadas_golpes.json", FileAccess.WRITE)
+		fm.store_string(JSON.stringify(cam_meta, "\t"))
+		fm.close()
 	var expandidas := {}
 	for nome in reacoes:
 		expandidas[nome] = {"fps": reacoes[nome].fps, "frames": reacoes[nome].frames}

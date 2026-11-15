@@ -1,6 +1,7 @@
 extends SceneTree
 ## Gera TODAS as folhas do lutador do jogador no padrão novo (personagem_lib.gd), garagem + luta,
-## com as 4 luvas (velha, _glove_l1, _glove_l2, _glove_l3) e o retrato 32x32.
+## com as 5 luvas (velha, _glove_l1, _glove_l2, _glove_l3, _glove_l4) e o retrato 32x32 (um por luva desde a 5.3).
+## Só os retratos: `-- <saida> --so-retratos`.
 ## Rodar headless a partir de uma pasta temporária com um project.godot vazio (nunca no projeto):
 ##   godot --headless --path <pasta_tmp> --script E:/Fightclicker/tools/art/make_sprites_jogador.gd -- <saida> <antigos>
 ##   <saida>   = pasta onde gravar characters/*.png, fight/*.png e relatorio.txt
@@ -20,9 +21,20 @@ const GLOVES := {
 	"_glove_l1": {"name": "Luva de lona", "style": "lona", "ramp": ["br3", "cream", "white"]},
 	"_glove_l2": {"name": "Luva de couro", "style": "couro", "ramp": ["r0", "br1", "br2"]},
 	"_glove_l3": {"name": "Luva de marca", "style": "marca", "ramp": ["d1", "d2", "g0"]},
+	"_glove_l4": {"name": "Luva de competição", "style": "campeao", "ramp": ["b1", "b2", "b3"]},
 }
 const FIGHT_ACTIONS := ["idle", "jab", "heavy", "hit", "dodge", "block", "tired", "victory", "ko"]
 const GARAGE := ["fighter_idle", "fighter_punch", "fighter_rope", "fighter_run"]
+
+## Fase 6a: FC_LUTADOR=disc gera o discípulo padrão (arquivos com "_disc" no fim, sem folha de contato);
+## sem a variável, o 1º lutador (os arquivos de sempre).
+var QUEM := "disc" if OS.get_environment("FC_LUTADOR") == "disc" else "primeiro"
+var SUF := "_disc" if QUEM == "disc" else ""
+## Fase 6b1: FC_LUTADOR=disc + FC_CAMADAS=1 grava também o discípulo EM CAMADAS (cores-chave, corpo/cabeça/máscara) em
+## <saida>/disciple/ e as âncoras por quadro em <saida>/disciple/camadas_jogador.json (ver personagem_lib.gd, "CAMADAS").
+var CAMADAS := OS.get_environment("FC_CAMADAS") == "1" and QUEM == "disc"
+var cam_meta := {}
+var cam_store := {}
 
 var L
 var P
@@ -179,14 +191,20 @@ func garage_poses(id: String) -> Array:
 
 # ================================================================ geração
 func spr(id: String) -> Dictionary:
-	return M.sprites[id]
+	if M.sprites.has(id):
+		return M.sprites[id]
+	# luva nova ainda sem entrada no manifest: mesmas mãos, quadros e pivô da folha sem sufixo
+	var rx := RegEx.create_from_string("_glove_l\\d+$")
+	return M.sprites[rx.sub(id, "")]
 
 func v2(a) -> Vector2:
 	return Vector2(float(a[0]), float(a[1]))
 
 func make_build(suffix: String) -> Dictionary:
 	var g: Dictionary = GLOVES[suffix]
-	return P.build({"glove": g.style, "glove_ramp": g.ramp})
+	var o: Dictionary = P.identidade(QUEM)
+	o.merge({"glove": g.style, "glove_ramp": g.ramp}, true)
+	return P.build(o)
 
 func gen_fight(b: Dictionary, action: String, suffix: String) -> Array:
 	var id := "fight_player_" + action + suffix
@@ -225,6 +243,8 @@ func gen_garage(b: Dictionary, sid: String) -> Array:
 		var im: Image = P.garage_frame(b, p, "%s[%d]" % [sid, i])
 		if sid == "fighter_run":
 			im.flip_x()
+			if CAMADAS:
+				P.capture_flip_last()
 		frames.append(im)
 		i += 1
 	return frames
@@ -235,7 +255,7 @@ func save_sheet(rel: String, id: String, frames: Array) -> void:
 	var want := Vector2i(int(e.frame_size[0]) * int(e.frames), int(e.frame_size[1]))
 	if s.get_size() != want or frames.size() != int(e.frames):
 		report.append("DIVERGÊNCIA %s: folha %s, manifest pede %s (%d quadros)" % [id, str(s.get_size()), str(want), int(e.frames)])
-	s.save_png(out_dir + rel)
+	s.save_png(out_dir + rel.replace(".png", SUF + ".png"))
 
 func make_portrait(b: Dictionary) -> Image:
 	var p := fpose({"head": V(5, -71), "hf": V(16, -55), "hb": V(12, -53)})
@@ -249,6 +269,25 @@ func make_portrait(b: Dictionary) -> Image:
 	L.dither(bg, 0, 28, 32, 4, "b1", 1)
 	bg.blend_rect(crop, Rect2i(0, 0, 32, 32), Vector2i.ZERO)
 	return bg
+
+## Retrato do discípulo em camadas (6b1): o mesmo recorte 32x32 de make_portrait; o fundo vai junto com o corpo.
+func portrait_layers(caps: Array, dir: String, suffix: String) -> Dictionary:
+	var c: Dictionary = caps[0]
+	var hc := V(56, 98) + V(5, -71)
+	var r := Rect2i(int(hc.x) - 15, int(hc.y) - 13, 32, 32)
+	var bg: Image = L.blank(32, 32)
+	L.R(bg, 0, 0, 32, 32, "d1")
+	L.dither(bg, 0, 18, 32, 6, "b0")
+	L.R(bg, 0, 24, 32, 8, "b0")
+	L.dither(bg, 0, 28, 32, 4, "b1", 1)
+	var body: Image = bg.duplicate()
+	body.blend_rect((c.body as Image).get_region(r), Rect2i(0, 0, 32, 32), Vector2i.ZERO)
+	var full: Image = bg.duplicate()
+	full.blend_rect((c.full as Image).get_region(r), Rect2i(0, 0, 32, 32), Vector2i.ZERO)
+	var cc := {"full": full, "body": body, "head": (c.head as Image).get_region(r), "mask": (c.mask as Image).get_region(r), "anchor": c.anchor}
+	var meta: Dictionary = P.save_layer_sheet([cc], dir, "portrait_player", suffix, cam_store, report)
+	meta["crop_of"] = "fight_player (pose do retrato), recorte (%d,%d,32,32) do quadro 112x104" % [r.position.x, r.position.y]
+	return meta
 
 # ================================================================ folha de contato antes/depois
 func checker(dst: Image, x: int, y: int, w: int, h: int, cell: int) -> void:
@@ -298,7 +337,7 @@ func contact_sheet(rows: Array, glove_rows: Array) -> void:
 				x += cr.size.x + 3
 			y += cr.size.y * S + 8
 		y += 14
-	L.text(out, "AS 4 LUVAS (velha, lona, couro, marca) - mesmas cores/detalhes da loja e do cursor", 14, y, "y1", 2, "ink")
+	L.text(out, "AS 5 LUVAS (velha, lona, couro, marca, competicao) - mesmas cores/detalhes da loja e do cursor", 14, y, "y1", 2, "ink")
 	y += 30
 	for gr in glove_rows:
 		var cr: Rect2i = gr[2]
@@ -312,17 +351,33 @@ func contact_sheet(rows: Array, glove_rows: Array) -> void:
 	out.save_png(MOCK)
 
 # ================================================================ main
+## Fase 5.3 (B1): um retrato por luva, mesmo recorte e fundo. portrait_player (velha) + portrait_player_glove_lN.
+## Modo só retratos: `-- <saida> --so-retratos` (não grava folhas nem a folha de contato).
+func save_portraits() -> void:
+	for suffix in GLOVES:
+		make_portrait(make_build(suffix)).save_png(out_dir + "fight/portrait_player" + suffix + SUF + ".png")
+
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0].trim_suffix("/") + "/"
-	old_dir = args[1].trim_suffix("/") + "/"
 	var base: String = get_script().resource_path.get_base_dir()
 	L = load(base + "/pixel_lib.gd").new()
 	P = load(base + "/personagem_lib.gd").new(L)
 	M = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
 	DirAccess.make_dir_recursive_absolute(out_dir + "fight")
+	if args.has("--so-retratos"):
+		save_portraits()
+		print("ok: %d retratos" % GLOVES.size())
+		quit()
+		return
+	old_dir = args[1].trim_suffix("/") + "/"
 	DirAccess.make_dir_recursive_absolute(out_dir + "characters")
 	var newf := {}
+	var cam_dir := out_dir + "disciple/"
+	if CAMADAS:
+		P.use_keys()
+		P.capture = true
+		DirAccess.make_dir_recursive_absolute(cam_dir)
 	for suffix in GLOVES:
 		var b := make_build(suffix)
 		for a in FIGHT_ACTIONS:
@@ -330,14 +385,29 @@ func _init() -> void:
 			var fr := gen_fight(b, a, suffix)
 			save_sheet("fight/" + id + ".png", id, fr)
 			newf[id] = fr
+			if CAMADAS:
+				cam_meta["fight_player_" + a] = P.save_layer_sheet(P.capture_take(), cam_dir, "fight_player_" + a, suffix, cam_store, report)
 		for sid in GARAGE:
 			var id: String = sid + suffix
 			var fr := gen_garage(b, sid)
 			save_sheet("characters/" + id + ".png", id, fr)
 			newf[id] = fr
-		if suffix == "":
-			make_portrait(b).save_png(out_dir + "fight/portrait_player.png")
-	# folha de contato
+			if CAMADAS:
+				cam_meta[sid] = P.save_layer_sheet(P.capture_take(), cam_dir, sid, suffix, cam_store, report)
+		make_portrait(b).save_png(out_dir + "fight/portrait_player" + suffix + SUF + ".png")
+		if CAMADAS:
+			cam_meta["portrait_player"] = portrait_layers(P.capture_take(), cam_dir, suffix)
+	if CAMADAS:
+		var fm := FileAccess.open(cam_dir + "camadas_jogador.json", FileAccess.WRITE)
+		fm.store_string(JSON.stringify(cam_meta, "\t"))
+		fm.close()
+		for l in report:
+			print(l)
+	# folha de contato (só do 1º lutador)
+	if QUEM == "disc":
+		print("ok: %d folhas (discípulo padrão)" % newf.size())
+		quit()
+		return
 	var rows := []
 	var crop_f := Rect2i(8, 8, 96, 96)
 	var crop_g := Rect2i(0, 0, 48, 72)

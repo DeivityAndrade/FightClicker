@@ -25,6 +25,7 @@ func rodar_testes() -> void:
 # B2: delta NaN/infinito/negativo é ignorado e o autosave continua funcionando.
 func _teste_delta_invalido() -> void:
 	var gs := _novo("gs_delta")
+	gs.pular_abertura()  # Fase 6a: a abertura grava o marco no 1º tick; aqui só o autosave conta
 	var salvos := [0]
 	gs.salvo.connect(func(_h: String) -> void: salvos[0] += 1)
 	var antes: float = gs.treino
@@ -134,6 +135,7 @@ func _teste_botoes() -> void:
 # Critério 6: autosave dispara pelo intervalo de data/.
 func _teste_autosave() -> void:
 	var gs := _novo("gs_autosave")
+	gs.pular_abertura()  # Fase 6a: idem
 	var intervalo: float = gs.config.autosave_intervalo_segundos
 	var salvos := [0]
 	gs.salvo.connect(func(_h: String) -> void: salvos[0] += 1)

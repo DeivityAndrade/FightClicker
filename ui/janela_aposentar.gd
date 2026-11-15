@@ -1,6 +1,6 @@
 class_name JanelaAposentar
 extends JanelaBase
-## Confirmação de APOSENTAR: mostra quanto Legado você leva (100% do pote, mais o bônus de sair com o
+## Confirmação de PASSAR O POSTO (antes APOSENTAR): mostra quanto Legado você leva (100% do pote, mais o bônus de sair com o
 ## cinturão), avisa que tudo da carreira se perde e pede para confirmar. Aposentar com o pote zerado é permitido
 ## ("você leva 0 de Legado"). Não muda nada até o jogador confirmar.
 
@@ -10,7 +10,7 @@ signal cancelou
 
 func abrir_com(previa: Dictionary) -> void:
 	moldura("ui_end_frame_retire", Rect2(170, 50, 300, 236))
-	faixa_titulo("retire", Rect2(178, 58, 284, 22), UiTema.txt("retire_confirm_title", "PENDURAR AS LUVAS?"), UiTema.WHITE, 2)
+	faixa_titulo("retire", Rect2(178, 58, 284, 22), UiTema.txt("retire_confirm_title", "PASSAR O POSTO?"), UiTema.WHITE, 2)
 	var luvas := UiTema.nome_luvas_penduradas()
 	var luvas_rect := UiTema.textura_rect(painel, luvas, roundf(320.0 - UiTema.tamanho_quadro(luvas).x / 2.0), 90)
 	luvas_rect.set_meta("ui_pos", "center_h")
@@ -31,10 +31,10 @@ func abrir_com(previa: Dictionary) -> void:
 	y += 4.0
 	divisor(190, y, 260)
 	y += 8.0
-	UiTema.rotulo_centro(painel, UiTema.txt("retire_confirm_lose", "TUDO DESTA CARREIRA SE PERDE"), UiTema.R3, 320.0, y)
+	UiTema.rotulo_centro(painel, UiTema.txt("retire_confirm_lose", "TUDO DESTA CAMPANHA SE PERDE"), UiTema.R3, 320.0, y)
 
-	var sim := botao_texto(Rect2(186, 242, 130, 30), UiTema.txt("retire_yes", "APOSENTAR"), UiTema.P2, "", 1, "ui_button_retire")
+	var sim := botao_texto(Rect2(186, 242, 130, 30), UiTema.txt("retire_yes", "PASSAR"), UiTema.P2, "", 1, "ui_button_retire")
 	sim.pressed.connect(func() -> void: confirmou.emit())
-	var nao := botao_texto(Rect2(324, 242, 130, 30), UiTema.txt("retire_no", "CONTINUAR"))
+	var nao := botao_texto(Rect2(324, 242, 130, 30), UiTema.txt("retire_no", "VOLTAR"))
 	nao.pressed.connect(func() -> void: cancelou.emit())
 	animar_entrada()

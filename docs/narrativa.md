@@ -10,11 +10,14 @@ Identidade 100% original. Nada de nomes, personagens ou falas de outros jogos.
 - Texto nunca trava o loop. Diálogo só em marcos e sempre pulável.
 - Nada de humilhar o jogador. A derrota dói, mas explica e deixa algo.
 
-## Protagonista
-- **Sem nome definido** e sem rosto fixo; cada carreira é um lutador diferente da mesma linhagem.
-- A UI o chama de "Lutador" e "Carreira N". O jogador pode nomeá-lo no futuro (decisão aberta).
-- Fala pouco. Quem fala é o mundo em volta.
-- A garagem guarda marcas dos anteriores: foto na parede, saco velho. Detalhe, não sistema.
+## Protagonista e elenco da origem (Fase 6a, nomes escolhidos pelo dono em 2026-11-13)
+- **John Bullet** é o 1º lutador: fixo, com nome, rosto e gesto ("fecho e dois toques"). Plaquinha "John". Fala pouco e seco, com um sorriso no fim. Vira o primeiro mentor e, mais tarde, o adversário final.
+- **Osmar Brandão** é o treinador original ("seu Osmar"). Voz rouca e lenta; conta histórias que parecem exagero. Sonha em formar um campeão.
+- **Raízes Fight Club** é a escola. O nome nasce na ficha do torneio do bairro, onde John ficou com "ESCOLA: NENHUMA" e o Seu Muralha riu. O 1º cinturão amador salva a garagem e a ficha passa a dizer "ESCOLA: RAÍZES FIGHT CLUB".
+- A partir da Carreira 2, os discípulos têm nome e aparência próprios (personalização na 6b). Até lá, "discípulo padrão" sem nome.
+- A UI ainda usa "Carreira N" para a campanha. O jogador não nomeia John.
+- A garagem guarda marcas da linhagem: aviso de cobrança, foto antiga, ficha, recorte, foto da equipe. Detalhe, não sistema.
+- Textos completos em `docs/fases/fase6a-textos.md`.
 
 ## Tom por local
 
@@ -31,7 +34,7 @@ Escala: cada local sobe um degrau do absurdo, sem quebrar o anterior. A garagem 
 engraçada e triste quando o jogador voltar a ela em outra carreira.
 
 ## Elenco (reservado, entra na Fase 8)
-- **Mentor:** o lutador da carreira anterior. Falas curtas, voz de quem já apanhou. Marcos de progresso.
+- **Mentor:** John Bullet (o 1º lutador) e, depois, os lutadores das carreiras anteriores. Falas curtas, voz de quem já apanhou. Marcos de progresso.
 - **Rival recorrente:** aparece em cada camada; humilha no começo, é o chefe do título mundial. Caricato, nunca cruel.
 - **Gente do bairro** (Fase 2): Vizinho da casa 12, Tio aposentado. Nomes e piadas em `docs/fases/fase2-textos.md`.
 
@@ -76,5 +79,5 @@ Loja do bairro: Prof. Nelson (cobra por hora) e luvas de lona, couro e "de marca
 
 ## Pendências
 - Nome oficial do jogo (Fightclicker é nome de trabalho).
-- Nome do rival e do mentor (Fase 8).
+- Nome do rival (Fase 8). O 1º mentor já tem nome: John Bullet.
 - Vozes dos locais 3 a 6 (escritos quando entrarem).

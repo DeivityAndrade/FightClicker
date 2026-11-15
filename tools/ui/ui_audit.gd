@@ -35,7 +35,7 @@ const ESTADOS_TODOS := [
 	# Fase 4
 	"garagem_metronomo", "garagem_loja_metronomo", "garagem_loja_metronomo_max", "garagem_dica_nos", "garagem_revanche",
 	"cartao_inicio", "previa_revanche", "previa_revanche_porcentagem",
-	"arvore_mista", "arvore_vazia", "arvore_completa", "arvore_dica_compravel", "arvore_dica_trancado", "arvore_compra",
+
 	"vitoria_revanche", "fim_derrota_verde", "luta_numeros", "cartao_clique_fecha",
 	# Fase 4b: aparelhos que chegam e treino assistido
 	"b4_inicio_marcas", "b4_esteira_compravel", "b4_corda_compravel", "b4_corda_sem_treino", "b4_tres_aparelhos",
@@ -48,8 +48,8 @@ const ESTADOS_TODOS := [
 	"f5_mudar_travado", "f5_mudar_sem_dinheiro", "f5_mudar_pronto", "f5_arte_primeira", "f5_academia_chegada", "f5_academia_boxe",
 	"f5_arte_ultima", "f5_gym_boxe_marca", "f5_gym_boneco_foco", "f5_gym_pera_foco", "f5_gym_pera_clique", "f5_gym_descanso",
 	"f5_garagem_boneco_marca", "f5_garagem_boneco_depois", "f5_garagem_pera_marca", "f5_chegada_pera", "f5_chegada_boneco",
-	"f5_chip_jj_max", "f5_teclas_arte", "f5_loja_reserva", "f5_arvore_abas", "f5_arvore_estilo", "f5_arvore_estilo_dica",
-	"f5_arvore_sem_artes", "f5_dica_aposentar", "f5_escada_fim", "f5_previa_tonhao", "f5_luta_tonhao", "f5_previa_kid",
+	"f5_chip_jj_max", "f5_teclas_arte", "f5_loja_reserva", 
+	"f5_dica_aposentar", "f5_escada_fim", "f5_previa_tonhao", "f5_luta_tonhao", "f5_previa_kid",
 	"f5_previa_kid_revanche", "f5_vitoria_cinturao_mudar", "f5_fim_dica_extra", "f5_fim_aposentou_cinturao",
 	"f5_nova_carreira", "f5_nova_carreira_cartao",
 	# Fase 5.1
@@ -57,6 +57,32 @@ const ESTADOS_TODOS := [
 	"f51_hover_atributo", "f51_hover_assist", "f51_marcas", "f51_marca_hover", "f51_marca_trancada", "f51_loja_trancado", "f51_hover_foco",
 	"f51_caixa_0", "f51_caixa_hover", "f51_caixa_1", "f51_caixa_2", "f51_caixa_abrindo", "f51_caixa_aberta", "f51_caixas_varias",
 	"f51_caixa_sem_espaco", "f51_caixa_janela", "f51_caixa_luva", "f51_corda_gancho", "f51_caixa_persiste", "f51_anim_saco", "f51_anim_esteira", "f51_previa",
+	# Fase 5.2
+	"f52_loja_l3_compravel", "f52_loja_l4_sem_dinheiro", "f52_loja_l4_na_caixa", "f52_loja_grito_compravel", "f52_loja_grito_sem_dinheiro",
+	"f52_loja_grito_comprado", "f52_loja_grito_hover", "f52_evento_luva", "f52_evento_bolsa", "f52_bolsa_hover", "f52_bolsa_toast",
+	"f52_caixa_l3", "f52_caixa_l4", "f52_l4_sala", "f52_l4_luta", "f52_destaque_unico", "f52_contador", "f52_critico_menor",
+	# Fase 5.3
+	"f53_hud_facil", "f53_hud_equilibrado", "f53_hud_perigoso", "f53_hud_12_dias", "f53_hud_1_dia", "f53_hud_nome_longo", "f53_hud_dia_virou",
+	"f53_hud_completa", "f53_dica_posto", "f53_dica_posto_curta", "f53_aviso_3_dias", "f53_aviso_1_dia_a", "f53_aviso_1_dia_b",
+	"f53_aviso_nome_longo", "f53_dia_previa", "f53_hud_hoje", "f53_dia_loja_fechada", "f53_dia_passar_confirma", "f53_dia_voltar",
+	"f53_dia_previa_tonhao", "f53_dia_previa_revanche_arte", "f53_fim_campanha_encerrada", "f53_fim_selo_completa", "f53_retrato_l1", "f53_retrato_l2", "f53_retrato_l3",
+	"f53_retrato_l4", "f53_retrato_luta_l4", "f53_loja_grito_sem_rolar",
+	# Fase 5.4: o mapa da árvore grande, o botão da sala e a tela de fim
+	"f54_mapa_inicio", "f54_mapa_meio", "f54_mapa_completo", "f54_mapa_completo_noroeste", "f54_mapa_completo_sudeste",
+	"f54_cartao_compravel", "f54_cartao_sem_legado", "f54_cartao_arte", "f54_cartao_grito_sem_loja", "f54_cartao_comprado",
+	"f54_cartao_ativo", "f54_revelacao", "f54_revelacao_fim", "f54_botao_normal", "f54_botao_brilho", "f54_botao_hover",
+	"f54_botao_gym", "f54_fim_botao", "f54_mapa_do_fim", "f54_fim_volta", "f54_save_antigo",
+	# Fase 6a: prólogo e voz
+	"f6a_esc_chip", "f6a_abertura_gesto", "f6a_abertura_b1", "f6a_abertura_b2", "f6a_abertura_b3", "f6a_abertura_b4", "f6a_abertura_fim",
+	"f6a_osmar_1l", "f6a_osmar_2l", "f6a_osmar_borda", "f6a_john_1l", "f6a_john_2l", "f6a_pergunta", "f6a_john_corda", "f6a_john_esteira",
+	"f6a_gym_sem_osmar", "f6a_gym_john", "f6a_parede_antes", "f6a_hover_ficha", "f6a_hover_aviso", "f6a_parede_recorte", "f6a_parede_depois",
+	"f6a_hover_ficha_depois", "f6a_gesto_sala", "f6a_gesto_curto", "f6a_gesto_cancela", "f6a_gesto_luta", "f6a_gesto_vitoria",
+	"f6a_discipulo_garagem", "f6a_discipulo_previa", "f6a_discipulo_luta", "f6a_vitoria_selo", "f6a_vitoria_sem_selo",
+	# Fase 6b1: passar o posto (cena, tela de criação, chegada, John mentor, nome no lugar de Carreira N)
+	"f6b1_s1", "f6b1_s2", "f6b1_s3", "f6b1_s4", "f6b1_s5", "f6b1_s6", "f6b1_s7", "f6b1_s8", "f6b1_s9", "f6b1_s10", "f6b1_linha",
+	"f6b1_criar", "f6b1_criar_nome14", "f6b1_criar_cores", "f6b1_criar_vazio", "f6b1_chegada", "f6b1_mentor_sentado",
+	"f6b1_mentor_balao", "f6b1_mentor_balao_isso", "f6b1_mentor_toques", "f6b1_fim_botao", "f6b1_fim_nome14", "f6b1_hud_nome14",
+	"f6b1_cartao", "f6b1_arte", "f6b1_luva_hover", "f6b1_save_criacao", "f6b1_pular_anel", "f6b1_pular",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -285,6 +311,12 @@ func _rodar() -> void:
 	await _rodar_fase4b()
 	await _rodar_fase5()
 	await _rodar_fase51()
+	await _rodar_fase52()
+	await _rodar_fase53()
+	await _rodar_fase54()
+	await _rodar_fase6a()
+	await _rodar_fase6b1()
+	await _rodar_fase6b1_pular()
 	_fechar_cena()
 
 
@@ -295,6 +327,7 @@ func _rodar() -> void:
 ## Põe nós comprados e Legado no save de teste (recalcula os bônus, como o carregamento faz).
 func _com_nos(ids: Array, legado: int) -> void:
 	gs.permanente["skill_nodes"] = ids.duplicate()
+	gs.nos_ativos_ids = ids.duplicate()  # Fase 5.4: os efeitos vêm da foto da campanha (active_nodes)
 	gs.permanente["legacy_total"] = legado
 	gs._recalcular_bonus()
 
@@ -440,38 +473,6 @@ func _rodar_fase4() -> void:
 		_cena.get_node("Fluxo").abrir_previa()
 		await _esperar(0.5)
 		await _ver("previa_revanche_porcentagem")
-
-	# Árvore
-	if _quer("arvore_mista") or _quer("arvore_dica_compravel") or _quer("arvore_dica_trancado") or _quer("arvore_compra"):
-		_derrota_pendente(NOS_MISTA, 40)
-		var j: Node = await _abrir_arvore()
-		if _quer("arvore_mista"):
-			await _ver("arvore_mista")
-		if _quer("arvore_dica_compravel"):
-			j.mostrar_dica("body_muscle_memory")
-			await _esperar(0.2)
-			await _ver("arvore_dica_compravel")
-		if _quer("arvore_dica_trancado"):
-			j.mostrar_dica("career_good_loser")
-			await _esperar(0.2)
-			await _ver("arvore_dica_trancado")
-		if _quer("arvore_compra"):
-			j._esconder_dica()
-			var antes: int = gs.legado_disponivel()
-			if not gs.comprar_no("body_muscle_memory"):
-				_problema("AUDIT", "estado arvore_compra", "comprar_no(body_muscle_memory) recusou")
-			await _esperar(0.8)
-			if gs.legado_disponivel() != antes - 30:
-				_problema("AUDIT", "estado arvore_compra", "Legado %d depois da compra, esperava %d" % [gs.legado_disponivel(), antes - 30])
-			await _ver("arvore_compra")
-	if _quer("arvore_vazia"):
-		_derrota_pendente([], 0)
-		await _abrir_arvore()
-		await _ver("arvore_vazia")
-	if _quer("arvore_completa"):
-		_derrota_pendente(NOS_TODOS, 0)
-		await _abrir_arvore()
-		await _ver("arvore_completa")
 
 	# Vitória com revanche (o algoz é o 1º adversário; o jogador é forte e vence)
 	if _quer("vitoria_revanche"):
@@ -868,6 +869,7 @@ func _novo_jogo() -> void:
 	gs.autosave_ativo = false
 	gs.apagar_save()
 	gs.rng.seed = 1
+	gs.pular_abertura()  # Fase 6a: sem a abertura (e sem balão) nos estados antigos; os estados 6a a pedem de volta
 	gs.atributos = {"strength": 300.0, "agility": 60.0, "endurance": 200.0}
 	gs.treino = 1234.0
 	gs.dinheiro = 0.0
@@ -939,6 +941,7 @@ func _ver(nome: String) -> void:
 	_chaves.clear()
 	await _esperar(0.1)
 	_auditar(_cena)
+	_auditar_mapa()
 	await process_frame
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
@@ -1628,27 +1631,6 @@ func _rodar_fase5() -> void:
 		_estado = "f5_loja_reserva"
 		_exigir(gs.reserva_mudanca() > 0.0 and gs.loja_estado(900.0) == "reserve", _estado, "a reserva da mudança deveria recusar o item")
 		await _ver("f5_loja_reserva")
-
-	# --- Árvore: aba ESTILO ---
-	if _quer("f5_arvore_abas") or _quer("f5_arvore_estilo") or _quer("f5_arvore_estilo_dica"):
-		_derrota_pendente(NOS_MISTA, 1500)
-		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
-		var j: Node = await _abrir_arvore()
-		_estado = "f5_arvore_abas"
-		_exigir(j._abas.size() == 2, _estado, "com as artes liberadas a árvore deveria ter as 2 abas")
-		await _ver("f5_arvore_abas")
-		j._abas["style"].pressed.emit()
-		await _esperar(0.4)
-		await _ver("f5_arvore_estilo")
-		j.mostrar_dica("style_boxing")
-		await _esperar(0.2)
-		await _ver("f5_arvore_estilo_dica")
-	if _quer("f5_arvore_sem_artes"):
-		_derrota_pendente(NOS_MISTA, 40)
-		var j: Node = await _abrir_arvore()
-		_exigir(j._abas.is_empty(), "f5_arvore_sem_artes", "sem artes liberadas não existe aba ESTILO")
-		await _ver("f5_arvore_sem_artes")
-
 	# --- Dica de aposentar, escada ---
 	if _quer("f5_dica_aposentar"):
 		_novo_jogo()
@@ -1656,7 +1638,7 @@ func _rodar_fase5() -> void:
 		gs.atributos = {"strength": 300.0, "agility": 60.0, "endurance": 200.0}
 		gs.fama = 200
 		await _abrir()
-		gs._perigo_gym = 400.0
+		gs.segundos_campanha = float(gs.fight_day - 3) * gs._segundos_por_dia()  # Fase 5.3: faltam 2 dias
 		await _esperar(1.3)
 		_estado = "f5_dica_aposentar"
 		_exigir(bool(gs.dica_aposentar().show), _estado, "a dica deveria estar no ar (perigo_gym 400 s)")
@@ -2016,3 +1998,1296 @@ func _rodar_fase51() -> void:
 		_cena.get_node("Fluxo").abrir_previa()
 		await _esperar(0.6)
 		await _ver("f51_previa")
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.2: luvas L3/L4 e Grito da equipe na LOJA, evento dourado por tipo (luva x7 / bolsa), 3 desvios da 5.1
+# ---------------------------------------------------------------------------------------------
+
+func _abrir_loja(rolar_ate_o_fim: bool = false) -> Node:
+	await _abrir()
+	var painel: Node = _cena.get_node("PainelLoja")
+	painel._tab["loja"].botao.pressed.emit()
+	await _esperar(0.2)
+	if rolar_ate_o_fim:
+		painel._rolar_a(painel._rolagem_max)
+	await _esperar(0.1)
+	return painel
+
+
+func _rodar_fase52() -> void:
+	var alguma := false
+	for n in ESTADOS_TODOS:
+		if str(n).begins_with("f52_") and _quer(n):
+			alguma = true
+	if not alguma:
+		return
+
+	# --- LOJA: L3 comprável, L4 sem dinheiro, L4 com a L3 ainda na caixa ---
+	if _quer("f52_loja_l3_compravel"):
+		_novo_jogo()
+		gs.nivel_luva = 2
+		gs.dinheiro = 1500.0
+		await _abrir_loja()
+		_exigir(gs.pode_comprar_luva() and str(gs.proxima_luva().id) == "glove_l3", "f52_loja_l3_compravel", "a L3 esta a venda")
+		await _ver("f52_loja_l3_compravel")
+	if _quer("f52_loja_l4_sem_dinheiro"):
+		_novo_jogo()
+		gs.nivel_luva = 3
+		gs.dinheiro = 300.0
+		await _abrir_loja()
+		_exigir(str(gs.proxima_luva().id) == "glove_l4" and not gs.pode_comprar_luva(), "f52_loja_l4_sem_dinheiro", "a L4 esta a venda sem dinheiro")
+		await _ver("f52_loja_l4_sem_dinheiro")
+	if _quer("f52_loja_l4_na_caixa") or _quer("f52_caixa_l3"):
+		_novo_jogo()
+		gs.nivel_luva = 2
+		gs.dinheiro = 6000.0
+		await _abrir()
+		_exigir(gs.comprar_luva(), "f52_caixa_l3", "comprar a L3")
+		await _esperar(0.8)
+		_exigir(gs.tem_caixa("glove_l3") and _cena.get_node("Sala")._caixas.has("glove_l3"), "f52_caixa_l3", "a caixa da L3 esta na sala")
+		await _ver("f52_caixa_l3")
+		_cena.get_node("PainelLoja")._tab["loja"].botao.pressed.emit()
+		await _esperar(0.2)
+		_exigir(gs.luva_em_caixa() and not gs.pode_comprar_luva(), "f52_loja_l4_na_caixa", "L4 so depois de abrir a caixa da L3")
+		await _ver("f52_loja_l4_na_caixa")
+	if _quer("f52_caixa_l4"):
+		_novo_jogo()
+		gs.nivel_luva = 3
+		gs.dinheiro = 6000.0
+		await _abrir()
+		_exigir(gs.comprar_luva(), "f52_caixa_l4", "comprar a L4")
+		await _esperar(0.8)
+		_exigir(gs.tem_caixa("glove_l4") and _cena.get_node("Sala")._caixas.has("glove_l4"), "f52_caixa_l4", "a caixa da L4 esta na sala")
+		await _ver("f52_caixa_l4")
+
+	# --- LOJA: Grito da equipe ---
+	if _quer("f52_loja_grito_compravel") or _quer("f52_loja_grito_hover") or _quer("f52_loja_grito_comprado"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.dinheiro = 2000.0
+		var painel: Node = await _abrir_loja(true)
+		_exigir(gs.pode_comprar_crew_click(), "f52_loja_grito_compravel", "o Grito esta comprável")
+		await _ver("f52_loja_grito_compravel")
+		if _quer("f52_loja_grito_hover"):
+			painel._sobre("c")
+			await _esperar(0.1)
+			await _ver("f52_loja_grito_hover")
+			painel._sobre("")
+		painel._comprar_crew()
+		await _esperar(0.5)
+		_exigir(gs.crew_click_comprado and painel._crew.botao.disabled, "f52_loja_grito_comprado", "comprado: botao apagado")
+		await _ver("f52_loja_grito_comprado")
+	if _quer("f52_loja_grito_sem_dinheiro"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.dinheiro = 90.0
+		await _abrir_loja(true)
+		_exigir(not gs.pode_comprar_crew_click(), "f52_loja_grito_sem_dinheiro", "sem dinheiro")
+		await _ver("f52_loja_grito_sem_dinheiro")
+
+	# --- Evento dourado: luva x7 e bolsa da torcida ---
+	if _quer("f52_evento_luva") or _quer("f52_evento_bolsa") or _quer("f52_bolsa_hover") or _quer("f52_bolsa_toast"):
+		for tipo in ["frenzy", "crew"]:
+			var nome_ev := "f52_evento_luva" if tipo == "frenzy" else "f52_evento_bolsa"
+			if not (_quer(nome_ev) or (tipo == "crew" and (_quer("f52_bolsa_hover") or _quer("f52_bolsa_toast")))):
+				continue
+			_novo_jogo()
+			await _abrir()
+			var sala: Node = _cena.get_node("Sala")
+			gs.frenesi_restante = 0.0
+			gs.evento_dourado_tipo = tipo
+			gs.evento_dourado_restante = 10.0
+			gs.evento_dourado.emit(10.0)
+			await _esperar(0.3)
+			var esperado: String = gs.dados.golden_crew_sprite if tipo == "crew" else gs.dados.golden_frenzy_sprite
+			_exigir(sala._evento_spr.nome_sprite == esperado, nome_ev, "sprite do evento: " + sala._evento_spr.nome_sprite)
+			await _ver(nome_ev)
+			var centro: Vector2 = sala._evento_rect.get_center()
+			if tipo == "crew":
+				if _quer("f52_bolsa_hover"):
+					sala._hover_em(centro)
+					await _esperar(0.1)
+					_exigir(_dica_inst().visible, "f52_bolsa_hover", "a bolsa da dica no hover")
+					await _ver("f52_bolsa_hover")
+					sala._sair_hover()
+				var treino0: float = gs.treino
+				sala._clique_em(centro)
+				await _esperar(0.35)
+				_exigir(gs.frenesi_restante <= 0.0 and gs.treino > treino0, "f52_bolsa_toast", "a bolsa paga e nao liga o FRENESI (fren %s treino %s->%s restante %s tipo %s)" % [gs.frenesi_restante, treino0, gs.treino, gs.evento_dourado_restante, gs.evento_dourado_tipo])
+				await _ver("f52_bolsa_toast")
+			else:
+				sala._clique_em(centro)
+				await _esperar(0.2)
+				_exigir(gs.frenesi_restante > 0.0, nome_ev, "a luva x7 liga o FRENESI")
+
+	# --- Luva L4 na sala e na luta ---
+	if _quer("f52_l4_sala"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		await _abrir()
+		var sala5: Node = _cena.get_node("Sala")
+		for i in 3:
+			gs.clicar()
+			await _esperar(0.08)
+		_exigir(str(sala5._lutador.nome_sprite).ends_with("_glove_l4") or gs.sufixo_luva() == "_glove_l4", "f52_l4_sala", "lutador com a L4: " + str(sala5._lutador.nome_sprite))
+		await _ver("f52_l4_sala")
+	if _quer("f52_l4_luta"):
+		var achada := _achar_luta(true, true)
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.atributos = achada.atr
+		await _abrir()
+		gs.rng.seed = int(achada.k)
+		var fluxo: Node = _cena.get_node("Fluxo")
+		fluxo.abrir_previa()
+		await _esperar(0.3)
+		fluxo.janela.lutar_pedido.emit()
+		await _esperar(0.25)
+		fluxo.tela._clock = 5.0
+		await _esperar(0.3)
+		await _ver("f52_l4_luta")
+
+	# --- Os 3 desvios da 5.1 ---
+	if _quer("f52_destaque_unico"):
+		_novo_jogo()
+		gs.treino = 5000.0
+		await _abrir()
+		var loja: Node = _cena.get_node("PainelLoja")
+		var vistos := 0
+		for r in loja.find_children("*", "ReferenceRect", true, false):
+			if (r as Control).is_visible_in_tree():
+				vistos += 1
+		_exigir(vistos <= 1, "f52_destaque_unico", "no maximo 1 contorno de destaque visivel (achei %d)" % vistos)
+		await _ver("f52_destaque_unico")
+	if _quer("f52_contador"):
+		_novo_jogo()
+		await _abrir()
+		await _ver("f52_contador")
+	if _quer("f52_critico_menor"):
+		_novo_jogo()
+		await _abrir()
+		var sala6: Node = _cena.get_node("Sala")
+		sala6._pos_clique = Vector2(336, 232)
+		gs.clicou.emit(1500.0, true, "punching_bag", "endurance", "A ESTEIRA GEMEU!")
+		await _esperar(0.2)
+		await _ver("f52_critico_menor")
+
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.3: calendário da campanha (folhinha no HUD, faixas de aviso, prévia do dia, PASSAR O POSTO, retrato por luva)
+# ---------------------------------------------------------------------------------------------
+
+## Garagem com a data da próxima luta daqui a `dias` dias e o risco do HUD forçado (o recálculo periódico fica desligado).
+## `idx` escolhe o adversário (0 Dudu, 1 Brutão...). Chamar ANTES de `_abrir()`.
+func _calendario53(dias: int, risco: String, idx: int = 0) -> void:
+	_novo_jogo()
+	gs.indice_escada = idx
+	gs.risco_hud_ativo = false
+	var spd: float = gs._segundos_por_dia()
+	gs.fight_day = 30
+	gs.segundos_campanha = float(30 - dias - 1) * spd + 1.0
+	gs._definir_risco_hud(str(gs.proximo_adversario().id), risco)
+
+
+func _rodar_fase53() -> void:
+	var alguma := false
+	for n in ESTADOS_TODOS:
+		if str(n).begins_with("f53_") and _quer(n):
+			alguma = true
+	if not alguma:
+		return
+	var fl: Node
+
+	# --- HUD: a folhinha em cada cor de risco, 12 dias (a linha mais larga), 1 dia, nome longo ---
+	for par in [["f53_hud_facil", 11, "easy"], ["f53_hud_equilibrado", 5, "even"], ["f53_hud_perigoso", 4, "hard"],
+			["f53_hud_12_dias", 12, "easy"], ["f53_hud_1_dia", 1, "hard"]]:
+		if _quer(par[0]):
+			_calendario53(par[1], par[2])
+			await _abrir()
+			_exigir(gs.dias_para_luta() == par[1], par[0], "dias para a luta %d" % gs.dias_para_luta())
+			await _ver(par[0])
+	if _quer("f53_hud_nome_longo"):
+		_calendario53(8, "even", 1)  # Brutão do Posto: o nome passa da linha 2 e é abreviado
+		await _abrir()
+		await _ver("f53_hud_nome_longo")
+	if _quer("f53_hud_dia_virou"):
+		_calendario53(6, "easy")
+		await _abrir()
+		gs.dia_mudou.emit(gs.dia_campanha())
+		await _esperar(0.12)  # a folha arrancada no meio da animação
+		await _ver("f53_hud_dia_virou")
+	if _quer("f53_hud_completa"):
+		_novo_jogo()
+		_academia("bjj", ["treadmill", "jump_rope"], 800.0, "punching_bag", gs.lutas.adversarios.size())
+		await _abrir()
+		_exigir(gs.campanha_completa(), "f53_hud_completa", "campanha completa")
+		await _ver("f53_hud_completa")
+
+	# --- Dica de passar o posto (<= 3 dias, vermelho, pote > 0): versão longa e versão curta ---
+	if _quer("f53_dica_posto"):
+		_calendario53(2, "hard")
+		gs.fama = 200
+		await _abrir()
+		_exigir(bool(gs.dica_aposentar().show), "f53_dica_posto", "a dica deveria estar no ar")
+		await _ver("f53_dica_posto")
+	if _quer("f53_dica_posto_curta"):
+		_calendario53(2, "hard")
+		gs.fama = 200000
+		await _abrir()
+		_exigir(bool(gs.dica_aposentar().show), "f53_dica_posto_curta", "a dica deveria estar no ar")
+		await _ver("f53_dica_posto_curta")
+
+	# --- Faixas de aviso: 3 dias (calma) e 1 dia (urgente, 2 quadros) ---
+	if _quer("f53_aviso_3_dias"):
+		_calendario53(3, "even")
+		await _abrir()
+		gs.aviso_data.emit(3)
+		await _esperar(0.45)
+		var faixa3: Control = _cena.find_children("*", "FaixaAviso", true, false)[0]
+		_exigir(faixa3.visible and not faixa3.urgente, "f53_aviso_3_dias", "faixa de 3 dias visível e calma")
+		await _ver("f53_aviso_3_dias")
+	if _quer("f53_aviso_1_dia_a") or _quer("f53_aviso_1_dia_b"):
+		_calendario53(1, "hard")
+		await _abrir()
+		gs.aviso_data.emit(1)
+		await _esperar(0.3)
+		var faixa1: Control = _cena.find_children("*", "FaixaAviso", true, false)[0]
+		_exigir(faixa1.visible and faixa1.urgente, "f53_aviso_1_dia_a", "faixa de 1 dia visível e urgente")
+		await _ver("f53_aviso_1_dia_a")
+		await _esperar(0.5)  # 2 fps: o outro quadro
+		await _ver("f53_aviso_1_dia_b")
+		faixa1.esconder()
+	if _quer("f53_aviso_nome_longo"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 800.0)
+		gs.risco_hud_ativo = false
+		gs.fight_day = 30
+		gs.segundos_campanha = 28.0 * gs._segundos_por_dia() + 1.0
+		await _abrir()
+		gs.aviso_data.emit(1)  # Tonhão do Tatame: o nome mais longo
+		await _esperar(0.3)
+		await _ver("f53_aviso_nome_longo")
+
+	# --- O dia da luta: a prévia abre sozinha, sem X nem Esc; PASSAR O POSTO pede confirmação e VOLTAR devolve a prévia ---
+	if _quer("f53_dia_previa") or _quer("f53_hud_hoje") or _quer("f53_dia_loja_fechada") or _quer("f53_dia_passar_confirma") \
+			or _quer("f53_dia_voltar"):
+		_calendario53(0, "hard")
+		gs.fama = 200
+		await _abrir()
+		fl = _cena.get_node("Fluxo")
+		# A LOJA aberta antes do dia fecha (a aba volta para o TREINO).
+		_cena.get_node("PainelLoja")._trocar_aba("loja")
+		await _esperar(0.9)
+		_exigir(gs.no_dia_da_luta() and not gs.sala_ativa(), "f53_dia_previa", "no dia a sala está parada")
+		_exigir(_eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta, "f53_dia_previa", "a prévia do dia abriu sozinha")
+		if _eh(fl.janela, "JanelaPrevia"):
+			await _ver("f53_dia_previa")
+			# Esc não fecha a prévia do dia.
+			var esc := InputEventKey.new()
+			esc.keycode = KEY_ESCAPE
+			esc.pressed = true
+			fl._unhandled_key_input(esc)
+			await _esperar(0.2)
+			_exigir(_eh(fl.janela, "JanelaPrevia"), "f53_dia_previa", "Esc não pode fechar a prévia do dia")
+			# A folhinha do HUD (hoje) e a LOJA fechada, com a prévia escondida só para a captura.
+			fl.janela.visible = false
+			var loja: Node = _cena.get_node("PainelLoja")
+			_exigir(loja._tab["loja"].botao.disabled and loja._aba == "treino", "f53_dia_loja_fechada", "LOJA fechada no dia")
+			await _ver("f53_hud_hoje")
+			fl.janela.visible = true
+			if _quer("f53_dia_passar_confirma") or _quer("f53_dia_voltar"):
+				fl.janela.passar_pedido.emit()
+				await _esperar(0.4)
+				_exigir(_eh(fl.janela, "JanelaAposentar"), "f53_dia_passar_confirma", "PASSAR O POSTO abre a confirmação")
+				await _ver("f53_dia_passar_confirma")
+				if _eh(fl.janela, "JanelaAposentar"):
+					fl.janela.cancelou.emit()  # VOLTAR
+					await _esperar(0.5)
+					_exigir(_eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta, "f53_dia_voltar", "VOLTAR devolve a prévia do dia")
+					await _ver("f53_dia_voltar")
+	# B1 da QA 5.3: dia da luta + fita da revanche + linha da arte (janela mais alta): a folhinha "HOJE" não pode tocar o retrato.
+	if _quer("f53_dia_previa_revanche_arte"):
+		_calendario53(0, "hard")
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		gs.permanente["last_art"] = "boxing"
+		gs.arte_id = "boxing"
+		gs._atualizar_traco()
+		gs.permanente["revenge_opponent"] = str(gs.proximo_adversario().id)
+		gs.fama = 200
+		await _abrir()
+		fl = _cena.get_node("Fluxo")
+		await _esperar(0.9)
+		var ok_prev: bool = _eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta
+		_exigir(ok_prev, "f53_dia_previa_revanche_arte", "a prévia do dia abriu")
+		if ok_prev:
+			_exigir(bool(gs.previa().get("revenge", false)) and str(gs.previa().get("art_fight_text", "")) != "",
+				"f53_dia_previa_revanche_arte", "o estado deveria ter revanche e traço da arte")
+			var folhinha: Control = null
+			var quadros: Array = []
+			for n in fl.janela.find_children("*", "TextureRect", true, false):
+				var tr: TextureRect = n as TextureRect
+				if tr.get_child_count() > 0 and tr.get_node_or_null("Cabecalho") != null:
+					folhinha = tr
+				elif tr.texture != null and tr.get_child_count() == 1 and tr.get_child(0) is TextureRect \
+						and tr.size.x >= 30.0 and tr.size.x <= 40.0 and tr.size.y >= 30.0 and tr.size.y <= 40.0:
+					quadros.append(tr)
+			_exigir(folhinha != null and quadros.size() == 2, "f53_dia_previa_revanche_arte", "achou a folhinha e os 2 retratos")
+			if folhinha != null:
+				for q in quadros:
+					_exigir(not folhinha.get_global_rect().intersects(q.get_global_rect()), "f53_dia_previa_revanche_arte",
+						"a folhinha HOJE toca o retrato %s" % str(q.get_global_rect()))
+		await _ver("f53_dia_previa_revanche_arte")
+	if _quer("f53_dia_previa_tonhao"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill", "jump_rope"], 800.0)
+		gs.risco_hud_ativo = false
+		gs.fight_day = 40
+		gs.segundos_campanha = 39.0 * gs._segundos_por_dia()
+		await _abrir()
+		fl = _cena.get_node("Fluxo")
+		await _esperar(0.9)
+		_exigir(_eh(fl.janela, "JanelaPrevia") and fl.janela.dia_da_luta, "f53_dia_previa_tonhao", "a prévia do dia abriu")
+		await _ver("f53_dia_previa_tonhao")
+
+	# --- Fim de campanha: derrota (CAMPANHA ENCERRADA / NOVA CAMPANHA) e passar o posto depois do Kid (selo) ---
+	if _quer("f53_fim_campanha_encerrada"):
+		_derrota_pendente([], 12)
+		await _abrir()
+		await _esperar(0.9)
+		await _ver("f53_fim_campanha_encerrada")
+	if _quer("f53_fim_selo_completa"):
+		_novo_jogo()
+		gs.indice_escada = gs.lutas.adversarios.size()
+		gs.cinturao = true
+		gs.fama = 340
+		gs.aposentar()
+		await _abrir()
+		await _esperar(0.9)
+		await _ver("f53_fim_selo_completa")
+
+	# --- Retrato do jogador com a luva equipada (L1 a L4) na prévia, e L4 no topo da luta ---
+	for n in [1, 2, 3, 4]:
+		var nome_r := "f53_retrato_l%d" % n
+		if _quer(nome_r):
+			_novo_jogo()
+			gs.nivel_luva = n
+			await _abrir()
+			_exigir(("portrait_player" + gs.sufixo_luva()) == "portrait_player_glove_l%d" % n, nome_r, "retrato da luva L%d: %s" % [n, ("portrait_player" + gs.sufixo_luva())])
+			_cena.get_node("Fluxo").abrir_previa()
+			await _esperar(0.4)
+			await _ver(nome_r)
+	if _quer("f53_retrato_luta_l4"):
+		var achada53 := _achar_luta(true, true)
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.atributos = achada53.atr
+		await _abrir()
+		gs.rng.seed = int(achada53.k)
+		fl = _cena.get_node("Fluxo")
+		fl.abrir_previa()
+		await _esperar(0.3)
+		fl.janela.lutar_pedido.emit()
+		await _esperar(0.5)
+		await _ver("f53_retrato_luta_l4")
+
+	# --- Grito da equipe visível na LOJA sem rolar ---
+	if _quer("f53_loja_grito_sem_rolar"):
+		_novo_jogo()
+		gs.nivel_luva = 4
+		gs.dinheiro = 2000.0
+		var painel53: Node = await _abrir_loja(false)
+		var janela_loja: Control = painel53._janela_loja
+		var cartao: Control = painel53._crew.cartao
+		var dentro: bool = cartao.get_global_rect().end.y <= janela_loja.get_global_rect().end.y + 0.01 \
+			and cartao.get_global_rect().position.y >= janela_loja.get_global_rect().position.y - 0.01
+		_exigir(dentro and gs.pode_comprar_crew_click(), "f53_loja_grito_sem_rolar", "o cartão do Grito inteiro à vista, sem rolar")
+		await _ver("f53_loja_grito_sem_rolar")
+	gs.risco_hud_ativo = true
+
+
+## Classe da janela pelo nome (o verificador não pode citar classes da UI: elas dependem do autoload GameState na compilação).
+func _eh(no: Object, classe: String) -> bool:
+	return no != null and no.get_script() != null and str(no.get_script().get_global_name()) == classe
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 5.4: mapa da árvore grande, botão da sala, cartão do nó, tela de fim e save antigo
+# ---------------------------------------------------------------------------------------------
+
+## O mapa em posição livre (nós, etiquetas, plaquinhas) é ui_align = ignore no verificador genérico: ele mesmo confere o que
+## está dentro (preço cabe na etiqueta, nó não cobre nó, plaquinha não cobre nó, cartão dentro da janela do mapa).
+func _auditar_mapa() -> void:
+	var fl: Node = _cena.get_node_or_null("Fluxo") if _cena != null else null
+	if fl != null and _eh(fl.janela, "JanelaMapa"):
+		for erro in fl.janela.diagnostico():
+			_problema("MAPA", fl.janela, str(erro))
+
+
+func _mapa() -> Node:
+	return _cena.get_node("Fluxo").janela
+
+
+## Nós comprados + Legado + último nó, com a foto da campanha igual (ativos = todos) ou vazia (comprado nesta campanha).
+func _com_nos54(ids: Array, legado: int, ativos: bool = true) -> void:
+	gs.permanente["skill_nodes"] = ids.duplicate()
+	gs.permanente["legacy_total"] = legado
+	gs.permanente["tree_last_node"] = str(ids.back()) if not ids.is_empty() else ""
+	gs.nos_ativos_ids = ids.duplicate() if ativos else []
+	gs._recalcular_bonus()
+
+
+func _todos_os_nos() -> Array:
+	var r: Array = []
+	for n in gs.lutas.arvore:
+		r.append(str(n.id))
+	return r
+
+
+func _meio54() -> Array:
+	return ["body_jab", "career_purse", "body_crew", "body_muscle_memory", "gar_tape", "gar_radio", "camp_poster",
+		"career_scouting", "career_crowd"]
+
+
+func _rodar_fase54() -> void:
+	# --- Mapa: começo, meio e completo ---
+	if _quer("f54_mapa_inicio"):
+		_novo_jogo()
+		_com_nos54([], 30)
+		await _abrir_arvore()
+		_exigir(_mapa() != null and _eh(_mapa(), "JanelaMapa"), "f54_mapa_inicio", "o botão da sala deveria abrir o mapa")
+		await _ver("f54_mapa_inicio")
+	if _quer("f54_mapa_meio"):
+		_novo_jogo()
+		_garagem_arte("boxing", [], 800.0)
+		_com_nos54(_meio54(), 400)
+		await _abrir_arvore()
+		await _ver("f54_mapa_meio")
+	if _quer("f54_mapa_completo") or _quer("f54_mapa_completo_noroeste") or _quer("f54_mapa_completo_sudeste"):
+		_novo_jogo()
+		_garagem_arte("boxing", [], 800.0)
+		gs.crew_click_comprado = true
+		_com_nos54(_todos_os_nos(), 0)
+		var j: Node = await _abrir_arvore()
+		if _quer("f54_mapa_completo"):
+			await _ver("f54_mapa_completo")
+		if _quer("f54_mapa_completo_noroeste"):
+			j.mover_camera(Vector2i(-9999, -9999))
+			await _esperar(0.2)
+			await _ver("f54_mapa_completo_noroeste")
+		if _quer("f54_mapa_completo_sudeste"):
+			j.mover_camera(Vector2i(9999, 9999))
+			await _esperar(0.2)
+			await _ver("f54_mapa_completo_sudeste")
+
+	# --- Cartão do nó em cada estado ---
+	for def in [
+			["f54_cartao_compravel", "gar_rope", 400, true],
+			["f54_cartao_sem_legado", "body_heavy_hands", 100, true],
+			["f54_cartao_arte", "box_counter", 400, true],
+			["f54_cartao_grito_sem_loja", "link_shout", 600, true],
+			["f54_cartao_comprado", "gar_tape", 400, false],
+			["f54_cartao_ativo", "gar_tape", 400, true]]:
+		if not _quer(def[0]):
+			continue
+		_novo_jogo()
+		_garagem_arte("boxing", [], 800.0)
+		var nos := _meio54()
+		if def[1] == "link_shout":
+			nos = nos + ["gar_rope"]
+		_com_nos54(nos, int(def[2]), bool(def[3]))
+		var j: Node = await _abrir_arvore()
+		j.ir_para(str(def[1]))
+		await _esperar(0.2)
+		j.mostrar_cartao(str(def[1]))
+		await _esperar(0.2)
+		_exigir(j.cartao_aberto() == str(def[1]), str(def[0]), "o cartão de %s deveria estar aberto" % str(def[1]))
+		await _ver(str(def[0]))
+
+	# --- Comprar: o nó acende, os vizinhos aparecem, a neblina recua ---
+	if _quer("f54_revelacao") or _quer("f54_revelacao_fim"):
+		_novo_jogo()
+		_com_nos54(["body_jab", "career_purse"], 30)
+		var j: Node = await _abrir_arvore()
+		j.ir_para("gar_tape")
+		await _esperar(0.2)
+		var antes: int = gs.legado_disponivel()
+		j.clicar_no("gar_tape")
+		await _esperar(0.12)
+		_exigir(gs.legado_disponivel() == antes - 15 and gs.estado_mapa("gar_tape") == "owned", "f54_revelacao",
+			"clicar no nó à vista deveria comprar (Legado %d -> %d)" % [antes, gs.legado_disponivel()])
+		await _ver("f54_revelacao")
+		await _esperar(1.1)
+		_exigir("gar_rope" in j.nos_desenhados() and "gar_radio" in j.nos_desenhados(), "f54_revelacao_fim", "os vizinhos deveriam ter aparecido")
+		_exigir(j.fog_nivel_em("gar_rope") == 0, "f54_revelacao_fim", "a neblina deveria ter recuado em volta do nó novo")
+		await _ver("f54_revelacao_fim")
+
+	# --- Botão da sala: normal, brilhando, com dica, na academia ---
+	if _quer("f54_botao_normal"):
+		_novo_jogo()
+		_com_nos54([], 0)
+		await _abrir()
+		var b: Node = _cena.get_node("BotaoMapa")
+		_estado = "f54_botao_normal"
+		_exigir(not gs.ha_no_compravel() and not b.brilhando(), _estado, "sem nó à vista que o Legado pague o botão fica quieto")
+		await _ver("f54_botao_normal")
+	if _quer("f54_botao_brilho") or _quer("f54_botao_hover"):
+		_novo_jogo()
+		_com_nos54([], 30)
+		await _abrir()
+		var b: Node = _cena.get_node("BotaoMapa")
+		_estado = "f54_botao_brilho"
+		_exigir(gs.ha_no_compravel() and b.brilhando(), _estado, "com nó à vista que o Legado paga o botão brilha")
+		if _quer("f54_botao_brilho"):
+			await _ver("f54_botao_brilho")
+		if _quer("f54_botao_hover"):
+			_dica_em(b.texto_dica(), Vector2(143, 33))
+			await _esperar(0.2)
+			await _ver("f54_botao_hover")
+			_sem_dica()
+	if _quer("f54_botao_gym"):
+		_novo_jogo()
+		_academia("boxing", ["treadmill"], 800.0)
+		_com_nos54(["body_jab"], 20)
+		await _abrir()
+		var b: Node = _cena.get_node("BotaoMapa")
+		_exigir(b.position == Vector2(132, 22) and b.size == Vector2(22, 22), "f54_botao_gym", "botão em (132,22) 22x22")
+		await _ver("f54_botao_gym")
+
+	# --- Tela de fim: o botão ÁRVORE com o ícone, o mapa por ele e a volta ---
+	if _quer("f54_fim_botao") or _quer("f54_mapa_do_fim") or _quer("f54_fim_volta"):
+		_derrota_pendente([], 30)
+		_com_nos54([], 30)
+		gs.fim["legacy_total"] = 30
+		await _abrir()
+		await _esperar(0.9)
+		var fl: Node = _cena.get_node("Fluxo")
+		if _quer("f54_fim_botao"):
+			await _ver("f54_fim_botao")
+		if _quer("f54_mapa_do_fim") or _quer("f54_fim_volta"):
+			fl.janela.arvore_pedido.emit()
+			await _esperar(0.5)
+			_exigir(_eh(fl.janela, "JanelaMapa"), "f54_mapa_do_fim", "o botão ÁRVORE do fim deveria abrir o mesmo mapa")
+			if _quer("f54_mapa_do_fim"):
+				await _ver("f54_mapa_do_fim")
+			if _quer("f54_fim_volta"):
+				fl.janela.clicar_no("body_jab")
+				await _esperar(1.0)
+				fl.janela.fechar_pedido.emit()
+				await _esperar(0.9)
+				_exigir(_eh(fl.janela, "JanelaFim") and gs.tem_fim_pendente(), "f54_fim_volta", "fechar o mapa volta para a tela de fim")
+				await _ver("f54_fim_volta")
+
+	# --- Save antigo (v9, os 12 nós de sempre): abre com eles comprados no centro e os vizinhos à vista ---
+	if _quer("f54_save_antigo"):
+		_fechar_cena()
+		gs.definir_assistido(false)
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PASTA_SAVE))
+		var velhos := ["body_jab", "body_muscle_memory", "body_heavy_hands", "body_crew", "body_crew_2", "career_purse",
+			"career_scouting", "career_purse_2", "career_crowd", "career_good_loser", "style_boxing", "style_bjj"]
+		var doc := {"version": 9, "saved_at_unix": 1730000000, "state": {"career": {"training": 5.0, "art": "boxing"},
+			"permanent": {"legacy_total": 60, "career_number": 4, "skill_nodes": velhos, "arts_unlocked": ["boxing", "bjj"], "last_art": "boxing"},
+			"ending": null}}
+		var f := FileAccess.open(PASTA_SAVE + "save.json", FileAccess.WRITE)
+		f.store_string(JSON.stringify(doc))
+		f.close()
+		gs.inicializar(PASTA_SAVE, CONFIG)
+		gs.autosave_ativo = false
+		_exigir(gs.estado_mapa("body_jab") == "owned" and gs.estado_mapa("style_boxing") == "owned" and gs.legado_disponivel() == 60,
+			"f54_save_antigo", "migração: nós e Legado iguais")
+		_exigir(gs.estado_mapa("gar_tape") == "visible" and gs.estado_mapa("box_counter") == "visible", "f54_save_antigo",
+			"migração: os vizinhos dos nós antigos abrem à vista")
+		await _abrir()
+		var fl: Node = _cena.get_node("Fluxo")
+		fl.abrir_arvore()
+		await _esperar(0.5)
+		_exigir(_eh(fl.janela, "JanelaMapa"), "f54_save_antigo", "o mapa deveria abrir com o save migrado")
+		await _ver("f54_save_antigo")
+		gs.apagar_save()
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 6a: abertura, balão de fala, Osmar, parede da memória, gesto, discípulo e selo da garagem salva
+# ---------------------------------------------------------------------------------------------
+
+const NO_COVER_6A := Rect2(310, 180, 52, 94)
+const UTIL_6A := Rect2(132, 22, 375, 263)
+
+
+## Campanha do 1º lutador (John Bullet): sem sufixo _disc, com gesto.
+func _john() -> void:
+	gs.permanente["career_number"] = 1
+	gs.escola["first_fighter_campaign"] = 1
+
+
+## Faz a abertura voltar a "pendente" (como num save que nunca a viu).
+func _abertura_pendente() -> void:
+	gs.escola["milestones"].erase("prologue_seen")
+	gs._reiniciar_falas()
+
+
+func _balao() -> Node:
+	return _cena._balao
+
+
+## Espera o balão `id` aparecer (até 12 s).
+func _esperar_fala(id: String) -> bool:
+	for i in 240:
+		if _balao().ativo() and str(_balao().id) == id:
+			return true
+		await _esperar(0.05)
+	return false
+
+
+## Mostra uma fala de teste (sem passar pela fila do GameState) e completa a digitação.
+func _falar(speaker: String, texto: String, id: String = "t") -> void:
+	gs.fala_pedida.emit(speaker, texto, id)
+	await _esperar(0.15)
+	_balao().completar()
+	await _esperar(0.1)
+
+
+## O balão não cobre a zona do alvo, fica dentro da sala e não cobre a cabeça do outro personagem.
+func _checar_balao(nome: String, speaker: String) -> void:
+	var b: Node = _balao()
+	_exigir(b.ativo(), nome, "o balão deveria estar na tela")
+	if not b.ativo():
+		return
+	var r: Rect2 = b.retangulo_total()
+	_exigir(not r.intersects(NO_COVER_6A), nome, "o balão cobre a zona do alvo: %s" % _fmt(r))
+	_exigir(UTIL_6A.encloses(r), nome, "o balão sai da sala: %s" % _fmt(r))
+	var sala: Node = _cena.get_node("Sala")
+	for e in sala.cabecas_a_evitar(speaker):
+		_exigir(not r.intersects(e), nome, "o balão cobre a cabeça do outro personagem: %s x %s" % [_fmt(r), _fmt(e)])
+
+
+func _rodar_fase6a() -> void:
+	# --- Segurar ESC: o anel enche e o chip acende; ao completar, a abertura acaba ---
+	if _quer("f6a_esc_chip"):
+		_novo_jogo()
+		_john()
+		_abertura_pendente()
+		await _abrir()
+		_estado = "f6a_esc_chip"
+		_exigir(gs.abertura_estado() == "playing", _estado, "a abertura deveria estar tocando")
+		var chip: Node = null
+		for c in _cena.get_children():
+			if c.get_script() != null and str(c.get_script().resource_path).ends_with("pular_abertura.gd"):
+				chip = c
+		_exigir(chip != null and chip.visible, _estado, "o chip esc: pular deveria aparecer durante a abertura")
+		_tecla(KEY_ESCAPE, true)
+		await _esperar(0.3)
+		_exigir(chip != null and chip._anel.frame >= 3 and chip._anel.frame <= 7, _estado, "o anel deveria estar enchendo (quadro %d)" % chip._anel.frame)
+		await _ver("f6a_esc_chip")
+		await _esperar(0.4)
+		_exigir(gs.abertura_estado() == "over", _estado, "segurar ESC 0,5 s deveria pular a abertura")
+		_exigir(not gs.tem_balao() and not _balao().ativo(), _estado, "pular deveria fechar o balão")
+		_tecla(KEY_ESCAPE, false)
+		await _esperar(0.1)
+		_exigir(not chip.visible, _estado, "o chip some depois da abertura")
+
+	# --- Abertura batida a batida (o saco vale em t = 0; ninguém anda) ---
+	if _quer("f6a_abertura_gesto") or _quer("f6a_abertura_b1") or _quer("f6a_abertura_b4") or _quer("f6a_abertura_fim"):
+		_novo_jogo()
+		_john()
+		_abertura_pendente()
+		await _abrir()
+		_estado = "f6a_abertura_gesto"
+		_exigir(gs.abertura_estado() == "playing" and gs.marco("prologue_seen"), _estado, "marco prologue_seen gravado em t = 0")
+		await _ver("f6a_abertura_gesto")
+		for n in range(1, 5):
+			var id := "open_%d" % n
+			var nome_n := "f6a_abertura_b%d" % n
+			var achou: bool = await _esperar_fala(id)
+			_exigir(achou, nome_n, "o balão %s deveria aparecer" % id)
+			await _esperar(0.25)
+			_balao().completar()
+			await _esperar(0.1)
+			_checar_balao(nome_n, "coach" if n <= 2 else "first")
+			if _quer(nome_n):
+				await _ver(nome_n)
+		for i in 120:
+			if gs.abertura_estado() == "over":
+				break
+			await _esperar(0.1)
+		_exigir(gs.abertura_estado() == "over", "f6a_abertura_fim", "a abertura deveria acabar em até 20 s")
+		await _esperar(0.2)
+		await _ver("f6a_abertura_fim")
+
+	# --- Balões do John e do Osmar na garagem ---
+	if _quer("f6a_osmar_1l") or _quer("f6a_osmar_2l") or _quer("f6a_osmar_borda") or _quer("f6a_john_1l") or _quer("f6a_john_2l") \
+			or _quer("f6a_john_corda") or _quer("f6a_pergunta"):
+		_novo_jogo()
+		_john()
+		await _abrir()
+		await _falar("coach", "chegou outro aviso, john.")
+		_checar_balao("f6a_osmar_1l", "coach")
+		await _ver("f6a_osmar_1l")
+		await _falar("coach", "o aviso saiu da parede.\nainda é nossa, viu?")
+		_checar_balao("f6a_osmar_2l", "coach")
+		await _ver("f6a_osmar_2l")
+		await _falar("coach", "abcdefghijklmnopqrstuvwxyz\nabcdefghijklmnopqrstuvwxyz")
+		_checar_balao("f6a_osmar_borda", "coach")
+		await _ver("f6a_osmar_borda")
+		await _falar("first", "vou botar um nome ali.")
+		_checar_balao("f6a_john_1l", "first")
+		await _ver("f6a_john_1l")
+		await _falar("first", "o muralha riu da ficha:\nescola: nenhuma.")
+		_checar_balao("f6a_john_2l", "first")
+		await _ver("f6a_john_2l")
+		await _falar("first", "tem pergunta, osmar?")
+		await _ver("f6a_pergunta")
+		_balao().fechar_agora()
+		gs.aparelhos_montados_ids = ["punching_bag", "jump_rope"]
+		gs.definir_foco("jump_rope")
+		await _esperar(0.3)
+		await _falar("first", "o muralha riu da ficha:\nescola: nenhuma.")
+		_checar_balao("f6a_john_corda", "first")
+		await _ver("f6a_john_corda")
+
+	# --- Balão do John seguindo a cabeça em todos os focos (esteira, saco) ---
+	if _quer("f6a_john_esteira"):
+		_novo_jogo()
+		_john()
+		await _abrir()
+		gs.aparelhos_montados_ids = ["punching_bag", "jump_rope", "treadmill"]
+		var sala_e: Node = _cena.get_node("Sala")
+		for foco_t in ["treadmill", "punching_bag"]:
+			gs.definir_foco(foco_t)
+			await _esperar(0.3)
+			await _falar("first", "o muralha riu da ficha:\nescola: nenhuma.")
+			_checar_balao("f6a_john_esteira", "first")
+			var cab: Vector2 = sala_e.ponto_cabeca("first")
+			var rt: Rect2 = _balao().retangulo_total()
+			_estado = "f6a_john_esteira"
+			# o balão sobe até y<=178 (regra da zona do alvo); na horizontal ele tem de ficar sobre a cabeça do John
+			_exigir(absf(rt.get_center().x - cab.x) < 6.0,
+				"f6a_john_esteira", "o rabicho não aponta para a cabeça (%s): balão %s, cabeça %s" % [foco_t, _fmt(rt), str(cab)])
+			if foco_t == "treadmill":
+				await _ver("f6a_john_esteira")
+			_balao().fechar_agora()
+
+	# --- Balões na academia ---
+	if _quer("f6a_gym_sem_osmar") or _quer("f6a_gym_john"):
+		_novo_jogo()
+		_john()
+		_academia("boxing", ["treadmill", "jump_rope"], 3000.0)
+		await _abrir()
+		await _esperar(2.0)  # tempo de sobra para qualquer fala de chegada tocar
+		_exigir(not (_balao().ativo() and _balao().speaker == "coach"), "f6a_gym_sem_osmar", "o Osmar não fala na academia (balão: %s)" % str(_balao().id))
+		await _ver("f6a_gym_sem_osmar")
+		await _falar("first", "o muralha riu da ficha:\nescola: nenhuma.")
+		_checar_balao("f6a_gym_john", "first")
+		await _ver("f6a_gym_john")
+
+	# --- Parede da memória: antes, recorte, depois; hovers ---
+	if _quer("f6a_parede_antes") or _quer("f6a_hover_ficha") or _quer("f6a_hover_aviso"):
+		_novo_jogo()
+		_john()
+		await _abrir()
+		var sala: Node = _cena.get_node("Sala")
+		_estado = "f6a_parede_antes"
+		_exigir(sala._parede.notice_debt.sprite.visible and not sala._parede.photo_team.sprite.visible, _estado, "antes: aviso na parede, sem foto da equipe")
+		_exigir(sala._parede.form.sprite.nome_sprite == "wall_form_blank" and not sala._parede.clipping.sprite.visible, _estado, "antes: ficha em branco, sem recorte")
+		_exigir(sala._osmar.visible and sala._osmar.position == Vector2(196, 236), _estado, "Osmar no ponto dele na garagem")
+		await _ver("f6a_parede_antes")
+		if _quer("f6a_hover_ficha"):
+			_dica_inst().ancora_fixa = Vector2(240, 96)
+			sala._hover_em(Vector2(212, 70))
+			await _esperar(0.1)
+			_exigir(_dica_inst().texto_atual() == "ESCOLA: NENHUMA", "f6a_hover_ficha", "dica da ficha: %s" % _dica_inst().texto_atual())
+			await _ver("f6a_hover_ficha")
+			_sem_dica()
+		if _quer("f6a_hover_aviso"):
+			_dica_inst().ancora_fixa = Vector2(230, 96)
+			sala._hover_em(Vector2(185, 60))
+			await _esperar(0.1)
+			_exigir(_dica_inst().texto_atual().begins_with("AVISO DE COBRANÇA"), "f6a_hover_aviso", "dica do aviso: %s" % _dica_inst().texto_atual())
+			await _ver("f6a_hover_aviso")
+			_sem_dica()
+	if _quer("f6a_parede_recorte"):
+		_novo_jogo()
+		_john()
+		gs._gravar_marco("first_school_win", {}, false)
+		await _abrir()
+		_estado = "f6a_parede_recorte"
+		_exigir(_cena.get_node("Sala")._parede.clipping.sprite.visible, _estado, "o recorte aparece depois da 1ª vitória da escola")
+		await _ver("f6a_parede_recorte")
+	if _quer("f6a_parede_depois") or _quer("f6a_hover_ficha_depois"):
+		_novo_jogo()
+		_john()
+		gs._gravar_marco("first_school_win", {}, false)
+		gs._gravar_marco("garage_saved", {"opponent": "x", "by_first": false}, false)
+		gs._gravar_marco("garage_saved_seen", {}, false)
+		await _abrir()
+		var sala2: Node = _cena.get_node("Sala")
+		_estado = "f6a_parede_depois"
+		_exigir(not sala2._parede.notice_debt.sprite.visible and sala2._parede.photo_team.sprite.visible and sala2._parede.school_symbol.sprite.visible,
+			_estado, "depois: aviso saiu; foto da equipe e símbolo aparecem")
+		_exigir(sala2._parede.form.sprite.nome_sprite == "wall_form_named", _estado, "depois: ficha com o nome da escola")
+		await _ver("f6a_parede_depois")
+		if _quer("f6a_hover_ficha_depois"):
+			_dica_inst().ancora_fixa = Vector2(240, 96)
+			sala2._hover_em(Vector2(212, 70))
+			await _esperar(0.1)
+			_exigir(_dica_inst().texto_atual() == "ESCOLA: RAÍZES FIGHT CLUB", "f6a_hover_ficha_depois", "dica da ficha depois: %s" % _dica_inst().texto_atual())
+			await _ver("f6a_hover_ficha_depois")
+			_sem_dica()
+
+	# --- Gesto na sala: completo (luva nova) e curto (sala parada); clique cancela ---
+	if _quer("f6a_gesto_sala") or _quer("f6a_gesto_curto") or _quer("f6a_gesto_cancela"):
+		_novo_jogo()
+		_john()
+		await _abrir()
+		await _esperar(2.5)
+		var sala3: Node = _cena.get_node("Sala")
+		_exigir(not gs.pedir_gesto("glove", 1).is_empty(), "f6a_gesto_sala", "o gesto de calçar a luva deveria ser aceito")
+		await _esperar(0.3 + 0.5)
+		_exigir(sala3._gesto_sprite == "fighter_gesture", "f6a_gesto_sala", "a sala deveria estar tocando fighter_gesture (%s)" % sala3._gesto_sprite)
+		await _ver("f6a_gesto_sala")
+		await _esperar(1.0)
+		_exigir(sala3._gesto_sprite == "", "f6a_gesto_sala", "o gesto completo acaba em ~1,2 s")
+		if _quer("f6a_gesto_curto"):
+			gs._gesto = {}
+			_exigir(not gs.pedir_gesto("idle").is_empty(), "f6a_gesto_curto", "o gesto curto da sala parada deveria ser aceito")
+			await _esperar(0.25)
+			_exigir(sala3._gesto_sprite == "fighter_gesture_short", "f6a_gesto_curto", "a sala deveria estar tocando fighter_gesture_short (%s)" % sala3._gesto_sprite)
+			await _ver("f6a_gesto_curto")
+			await _esperar(0.6)
+		if _quer("f6a_gesto_cancela"):
+			gs._gesto = {}
+			gs.pedir_gesto("idle")
+			await _esperar(0.2)
+			_exigir(sala3._gesto_sprite != "", "f6a_gesto_cancela", "o gesto deveria estar tocando antes do clique")
+			sala3.treinar_pelo_teclado()
+			_exigir(sala3._gesto_sprite == "" and not sala3._gesto.ativo(), "f6a_gesto_cancela", "o clique no saco cancela o gesto no mesmo quadro")
+			await _ver("f6a_gesto_cancela")
+
+	# --- Luta do John: gesto na entrada e na vitória ---
+	if _quer("f6a_gesto_luta") or _quer("f6a_gesto_vitoria"):
+		var achada := _achar_luta(true, true)
+		_novo_jogo()
+		_john()
+		gs.atributos = achada.atr
+		await _abrir()
+		gs.rng.seed = int(achada.k)
+		var fluxo: Node = _cena.get_node("Fluxo")
+		fluxo.abrir_previa()
+		await _esperar(0.3)
+		fluxo.janela.lutar_pedido.emit()
+		await _esperar(0.85)
+		var tela: Node = fluxo.tela
+		_estado = "f6a_gesto_luta"
+		_exigir(tela._gesto_nome.begins_with("fight_player_gesture"), _estado, "a entrada da luta do John tem o gesto (%s)" % tela._gesto_nome)
+		await _ver("f6a_gesto_luta")
+		if _quer("f6a_gesto_vitoria"):
+			var res: Dictionary = gs.luta.result
+			tela._clock = float(res.t_end) + 2.0
+			await _esperar(0.45)
+			await _ver("f6a_gesto_vitoria")
+
+	# --- Discípulo padrão (campanha 2 em diante): folhas _disc, nunca faz o gesto ---
+	if _quer("f6a_discipulo_garagem") or _quer("f6a_discipulo_previa") or _quer("f6a_discipulo_luta"):
+		var achada2 := _achar_luta(true, true)
+		_novo_jogo()
+		gs.atributos = achada2.atr
+		await _abrir()
+		var sala4: Node = _cena.get_node("Sala")
+		_estado = "f6a_discipulo_garagem"
+		_exigir(gs.lutador_atual() == "disciple", _estado, "campanha 2 é do discípulo")
+		_exigir(sala4._lutador.nome_sprite.ends_with("_disc"), _estado, "a sala usa a folha _disc: %s" % sala4._lutador.nome_sprite)
+		_exigir(gs.pedir_gesto("opening").is_empty() and gs.pedir_gesto("fight_intro").is_empty(), _estado, "o discípulo nunca faz o gesto")
+		await _ver("f6a_discipulo_garagem")
+		gs.rng.seed = int(achada2.k)
+		var fl: Node = _cena.get_node("Fluxo")
+		fl.abrir_previa()
+		await _esperar(0.3)
+		await _ver("f6a_discipulo_previa")
+		fl.janela.lutar_pedido.emit()
+		await _esperar(1.0)
+		_estado = "f6a_discipulo_luta"
+		_exigir(fl.tela._l[0].spr.nome_sprite.ends_with("_disc") and fl.tela._l[0].spr.texture != null, _estado, "a luta usa a folha _disc: %s" % fl.tela._l[0].spr.nome_sprite)
+		_exigir(fl.tela._gesto_nome == "", _estado, "sem gesto na luta do discípulo")
+		await _ver("f6a_discipulo_luta")
+
+	# --- Vitória do cinturão: selo da garagem salva (e sem selo quando o marco já existe) ---
+	if _quer("f6a_vitoria_selo"):
+		_novo_jogo()
+		_john()
+		gs.indice_escada = 3
+		gs.fama = 150
+		gs.atributos = {"strength": 5.0e7, "agility": 5.0e7, "endurance": 5.0e7}
+		gs.rng.seed = 7
+		gs.lutar()
+		await _abrir()
+		await _esperar(1.0)
+		_estado = "f6a_vitoria_selo"
+		var jv: Node = _cena.get_node("Fluxo").janela
+		_exigir(jv != null and jv.get_script() != null and str(jv.get_script().resource_path).ends_with("janela_vitoria.gd"), _estado, "a vitória do cinturão deveria estar aberta")
+		_exigir(gs.marco("garage_saved"), _estado, "o cinturão deveria gravar o marco garage_saved")
+		await _ver("f6a_vitoria_selo")
+	if _quer("f6a_vitoria_sem_selo"):
+		_novo_jogo()
+		_john()
+		gs._gravar_marco("garage_saved", {}, false)
+		gs.indice_escada = 3
+		gs.fama = 150
+		gs.atributos = {"strength": 5.0e7, "agility": 5.0e7, "endurance": 5.0e7}
+		gs.rng.seed = 7
+		gs.lutar()
+		await _abrir()
+		await _esperar(1.0)
+		await _ver("f6a_vitoria_sem_selo")
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 6b1: passar o posto (cena, tela de criação, chegada curta, John mentor, nome no lugar de "Carreira N")
+# ---------------------------------------------------------------------------------------------
+
+func _cena_ui() -> Node:
+	for c in _cena.get_children():
+		if _eh(c, "CenaUi"):
+			return c
+	return null
+
+
+## Espera até `seg` segundos depois de `t0` (ms), sem esperar se já passou.
+func _ate(t0: int, seg: float) -> void:
+	var falta := seg - float(Time.get_ticks_msec() - t0) / 1000.0
+	if falta > 0.0:
+		await _esperar(falta)
+
+
+## Campanha 2 (discípulo) encerrada com a tela de fim pendente. `marco`: a cena grande já tocou (sucessão seguinte = chegada curta).
+func _f6b1_fim(nome: String = "", marco: bool = false) -> void:
+	_derrota_pendente(NOS_MISTA, 40)
+	if nome != "":
+		gs.discipulo = {"name": nome, "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+	if marco:
+		gs._gravar_marco("cena_primeira_sucessao", {}, false)
+		gs.escola["mentors"] = ["first"]
+
+
+func _f6b1_janela_criar() -> Node:
+	var fl: Node = _cena.get_node("Fluxo")
+	for i in 80:
+		if fl.janela != null and _eh(fl.janela, "TelaCriarDiscipulo"):
+			return fl.janela
+		await _esperar(0.1)
+	return null
+
+
+func _f6b1_ui_apagada() -> bool:
+	var cu: Node = _cena_ui()
+	for n in cu.alvos:
+		if is_instance_valid(n) and (n as CanvasItem).visible and (n as CanvasItem).modulate.a > 0.05 and not _eh(n, "FaixaAviso"):
+			return false
+	return true
+
+
+func _rodar_fase6b1() -> void:
+	# --- Os quadros-chave S1..S10 da primeira sucessão (tempos do data/cutscenes/primeira_sucessao.json) ---
+	var quer_cena := _quer("f6b1_s1") or _quer("f6b1_s2") or _quer("f6b1_s3") or _quer("f6b1_s4") or _quer("f6b1_s5") \
+		or _quer("f6b1_s6") or _quer("f6b1_s7") or _quer("f6b1_s8") or _quer("f6b1_s9") or _quer("f6b1_s10")
+	if quer_cena:
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.6)
+		var cu: Node = _cena_ui()
+		var sala: Node = _cena.get_node("Sala")
+		var t0 := Time.get_ticks_msec()
+		_exigir(gs.receber_discipulo(), "f6b1_s1", "RECEBER NOVO DISCÍPULO deveria começar a sucessão")
+		_exigir(gs.sucessao_estado() == "scene_1", "f6b1_s1", "estado scene_1 (%s)" % gs.sucessao_estado())
+		await _ate(t0, 1.15)
+		_exigir(_f6b1_ui_apagada(), "f6b1_s1", "a interface deveria estar apagada em S1")
+		_exigir(cu._barras.visible and sala.cena.ator_visivel("first") and not sala._lutador.visible, "f6b1_s1", "faixas pretas, John em cena e o lutador da sala escondido")
+		await _ver("f6b1_s1")
+		await _ate(t0, 2.5)
+		await _ver("f6b1_s2")
+		await _ate(t0, 4.3)
+		_exigir(sala._cam_escala == 2, "f6b1_s3", "o corte de perto é 2x (%d) t=%.2f i=%d" % [sala._cam_escala, cu.player._t, cu.player._i])
+		await _ver("f6b1_s3")
+		await _ate(t0, 7.9)
+		_exigir(sala._cam_escala == 1, "f6b1_s4", "volta ao 1x em S4")
+		await _ver("f6b1_s4")
+		var tela: Node = await _f6b1_janela_criar()
+		_exigir(tela != null and gs.sucessao_estado() == "creating", "f6b1_s5", "a tela de criação deveria abrir (%s)" % gs.sucessao_estado())
+		await _esperar(0.5)
+		await _ver("f6b1_s5")
+		if tela != null:
+			tela._confirmar()
+		_exigir(gs.sucessao_estado() == "scene_2", "f6b1_s6", "CONFIRMAR leva a scene_2 (%s)" % gs.sucessao_estado())
+		var t1 := Time.get_ticks_msec()
+		await _ate(t1, 0.8)
+		await _ver("f6b1_s6")
+		await _ate(t1, 1.9)
+		await _ver("f6b1_s7")
+		await _ate(t1, 4.3)
+		_exigir(_balao().ativo(), "f6b1_s8", "o balão 'vamos ver sua guarda.' deveria estar na tela")
+		_checar_balao_6b1("f6b1_s8", "first")
+		await _ver("f6b1_s8")
+		await _ate(t1, 5.3)
+		await _ver("f6b1_s9")
+		for i in 40:
+			if gs.sucessao_estado() == "none":
+				break
+			await _esperar(0.1)
+		_exigir(gs.sucessao_estado() == "none", "f6b1_s10", "o controle volta em ~6 s (%s)" % gs.sucessao_estado())
+		await _esperar(0.5)
+		_exigir(sala.mentor_visivel() and not sala.cena.ator_visivel("first"), "f6b1_s10", "o John sentado agora é o mentor da sala")
+		_cena.get_node("Fluxo").fechar_cartao_aberto()  # o clique que fecha o cartão "o que você trouxe" não treina
+		await _esperar(0.3)
+		gs.clicar()
+		await _esperar(0.45)
+		_exigir(_balao().ativo() and str(_balao().id) == "cena_suc_isso", "f6b1_s10", "o balão 'isso.' deveria aparecer")
+		_checar_balao_6b1("f6b1_s10", "first")
+		await _ver("f6b1_s10")
+		await _esperar(4.0)
+		_exigir(not _f6b1_ui_apagada(), "f6b1_s10", "a interface voltou")
+
+	# --- Captura da cena a cada 0,5 s (a captura leva ~0,3 s: a série fica em ~0,8 s) ---
+	if _quer("f6b1_linha"):
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.4)
+		var t2 := Time.get_ticks_msec()
+		gs.receber_discipulo()
+		var k := 0
+		for i in 40:
+			await _ate(t2, 0.5 * float(i))
+			if _eh(_cena.get_node("Fluxo").janela, "TelaCriarDiscipulo"):
+				break
+			await _ver("f6b1_linha_a%02d" % k)
+			k += 1
+		var tela2: Node = await _f6b1_janela_criar()
+		if tela2 != null:
+			tela2._confirmar()
+		var t3 := Time.get_ticks_msec()
+		var k2 := 0
+		for i in 14:
+			await _ate(t3, 0.5 * float(i))
+			if gs.sucessao_estado() == "none":
+				break
+			await _ver("f6b1_linha_b%02d" % k2)
+			k2 += 1
+
+	# --- Tela de criação (sucessão seguinte: abre direto) ---
+	if _quer("f6b1_criar") or _quer("f6b1_criar_nome14") or _quer("f6b1_criar_cores") or _quer("f6b1_criar_vazio") or _quer("f6b1_chegada"):
+		_f6b1_fim("Tati Gancho", true)
+		await _abrir()
+		await _esperar(0.5)
+		_exigir(gs.receber_discipulo() and gs.sucessao_estado() == "creating", "f6b1_criar", "a sucessão seguinte abre direto na criação (%s)" % gs.sucessao_estado())
+		var tela3: Node = await _f6b1_janela_criar()
+		_exigir(tela3 != null, "f6b1_criar", "a tela de criação deveria abrir")
+		await _esperar(0.6)
+		_exigir(tela3 != null and tela3._nome.text != "", "f6b1_criar", "o nome já vem sorteado")
+		await _ver("f6b1_criar")
+		if _quer("f6b1_criar_nome14") and tela3 != null:
+			gs.definir_rascunho("name", "MMMMMMMMMMMMMMMMMM")
+			await _esperar(0.2)
+			_exigir(tela3._nome.text.length() == 14, "f6b1_criar_nome14", "o nome corta em 14 letras (%d)" % tela3._nome.text.length())
+			tela3._nome.text = "A1B2C3D4E5F6G7H8I9J0"
+			tela3._ao_digitar(tela3._nome.text)
+			_exigir(tela3._nome.text == "ABCDEFGHIJ", "f6b1_criar_nome14", "colar com números filtra antes de cortar (%s)" % tela3._nome.text)
+			gs.definir_rascunho("name", "MMMMMMMMMMMMMMMMMM")
+			await _esperar(0.1)
+			await _ver("f6b1_criar_nome14")
+		if _quer("f6b1_criar_cores") and tela3 != null:
+			gs.definir_rascunho("skin", "skin_5")
+			gs.definir_rascunho("hair_color", "platinum")
+			gs.definir_rascunho("shorts_color", "white")
+			await _esperar(0.2)
+			await _ver("f6b1_criar_cores")
+			gs.definir_rascunho("skin", "skin_1")
+			gs.definir_rascunho("hair_color", "black")
+			gs.definir_rascunho("shorts_color", "purple")
+			await _esperar(0.2)
+			await _ver("f6b1_criar_cores")
+		if _quer("f6b1_criar_vazio") and tela3 != null:
+			tela3._nome.text = ""
+			tela3._ao_digitar("")
+			tela3._confirmar()
+			await _esperar(0.3)
+			_exigir(gs.sucessao_estado() == "creating" and tela3._nome.text != "", "f6b1_criar_vazio", "nome vazio não confirma e o campo volta a um nome sorteado")
+			await _ver("f6b1_criar_vazio")
+		if _quer("f6b1_chegada") and tela3 != null:
+			var nome_final := "Zeca Chave"
+			gs.definir_rascunho("name", nome_final)
+			tela3._confirmar()
+			_exigir(gs.sucessao_estado() == "arriving", "f6b1_chegada", "CONFIRMAR leva à chegada curta (%s)" % gs.sucessao_estado())
+			await _esperar(1.4)
+			await _ver("f6b1_chegada")
+			for i in 40:
+				if gs.sucessao_estado() == "none":
+					break
+				await _esperar(0.1)
+			_exigir(gs.sucessao_estado() == "none" and gs.nome_lutador() == nome_final, "f6b1_chegada", "a chegada acaba sozinha e o discípulo tem o nome escolhido (%s)" % gs.nome_lutador())
+			await _esperar(0.5)
+			_exigir(_cena.get_node("Sala").mentor_visivel(), "f6b1_chegada", "o John segue sentado depois da chegada")
+
+	# --- Abrir o jogo com a criação em andamento (save): tela sobre a garagem escurecida, sem tocar a cena ---
+	if _quer("f6b1_save_criacao"):
+		_f6b1_fim("Tati Gancho", true)
+		await _abrir()
+		await _esperar(0.4)
+		gs.receber_discipulo()
+		await _esperar(0.3)
+		var snap: Dictionary = gs.para_save()
+		gs.aplicar_save(snap.duplicate(true))
+		await _abrir()
+		await _esperar(1.0)
+		_exigir(gs.sucessao_estado() == "creating", "f6b1_save_criacao", "o save abre na criação (%s)" % gs.sucessao_estado())
+		var t6: Node = await _f6b1_janela_criar()
+		_exigir(t6 != null, "f6b1_save_criacao", "a tela de criação deveria abrir")
+		await _ver("f6b1_save_criacao")
+
+	# --- John mentor sentado no caixote, balão e toques ---
+	if _quer("f6b1_mentor_sentado") or _quer("f6b1_mentor_balao") or _quer("f6b1_mentor_balao_isso") or _quer("f6b1_mentor_toques"):
+		_novo_jogo()
+		gs.escola["mentors"] = ["first"]
+		gs.discipulo = {"name": "Tati Gancho", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		await _abrir()
+		await _esperar(0.6)
+		var sala_m: Node = _cena.get_node("Sala")
+		_exigir(sala_m.mentor_visivel() and sala_m._caixote.visible, "f6b1_mentor_sentado", "John sentado no caixote em mentor_spot")
+		_exigir(sala_m._mentor.position == Vector2(254, 252), "f6b1_mentor_sentado", "pés do mentor em mentor_spot: %s" % str(sala_m._mentor.position))
+		await _ver("f6b1_mentor_sentado")
+		var cu2: Node = _cena_ui()
+		for caso in [["f6b1_mentor_balao", "vamos ver sua guarda."], ["f6b1_mentor_balao_isso", "isso."]]:
+			if _quer(caso[0]):
+				cu2._falar({"ator": "first", "line": "t", "text": caso[1], "seconds": 4.0})
+				await _esperar(0.2)
+				_balao().completar()
+				await _esperar(0.1)
+				_exigir(_balao().ativo(), caso[0], "o balão do John sentado deveria aparecer")
+				_checar_balao_6b1(caso[0], "first")
+				await _ver(caso[0])
+				_balao().fechar_agora()
+		if _quer("f6b1_mentor_toques"):
+			var plano := {"momento": "win_return", "version": "short", "start": 0.0, "duration": 0.44, "taps": [0.11, 0.33],
+				"tap_sound": "tap_fist", "anim": "mentor_first_taps", "guard": 0.0, "cena": "", "com_fala": false}
+			gs.toques_mentor_pedidos.emit(plano)
+			await _esperar(0.2)
+			_exigir(sala_m._mentor_pose == "taps", "f6b1_mentor_toques", "o John faz os toques (%s)" % sala_m._mentor_pose)
+			await _ver("f6b1_mentor_toques")
+			await _esperar(0.5)
+			_exigir(sala_m._mentor_pose == "rest", "f6b1_mentor_toques", "depois dos toques volta ao sit_rest")
+			gs.toques_mentor_pedidos.emit(plano)
+			await _esperar(0.05)
+			gs.toques_mentor_cancelados.emit()
+			_exigir(sala_m._mentor_pose == "rest", "f6b1_mentor_toques", "cancelar volta ao sit_rest na hora")
+
+	# --- Tela de fim com o botão novo; nome de 14 letras no resumo e no HUD ---
+	if _quer("f6b1_fim_botao") or _quer("f6b1_fim_nome14"):
+		_f6b1_fim("Tati Gancho")
+		await _abrir()
+		await _esperar(0.9)
+		var fim_j: Node = _cena.get_node("Fluxo").janela
+		var bt: Button = fim_j.painel.get_node_or_null("BotaoNovoDiscipulo")
+		_exigir(bt != null, "f6b1_fim_botao", "o botão RECEBER NOVO DISCÍPULO deveria existir")
+		if bt != null:
+			_exigir(_texto_botao(bt) in ["RECEBER NOVO DISCÍPULO", "NOVO DISCÍPULO"], "f6b1_fim_botao", "texto do botão: %s" % _texto_botao(bt))
+		await _ver("f6b1_fim_botao")
+		if _quer("f6b1_fim_nome14"):
+			_f6b1_fim("MMMMMMMMMMMMMM")
+			await _abrir()
+			await _esperar(0.9)
+			await _ver("f6b1_fim_nome14")
+	if _quer("f6b1_hud_nome14"):
+		_novo_jogo()
+		gs.discipulo = {"name": "MMMMMMMMMMMMMM", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		await _abrir()
+		await _esperar(0.6)
+		await _ver("f6b1_hud_nome14")
+
+	# --- Cartão "o que você trouxe" e escolha da arte com o nome ---
+	if _quer("f6b1_cartao"):
+		_novo_jogo()
+		gs.discipulo = {"name": "MMMMMMMMMMMMMM", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		_com_nos(NOS_MISTA, 40)
+		await _abrir()
+		await _esperar(0.5)
+		_cena.get_node("Fluxo")._ao_nova_carreira_iniciada(gs.cartao_inicio())
+		await _esperar(0.5)
+		await _ver("f6b1_cartao")
+	if _quer("f6b1_arte"):
+		_f6b1_fim("Tati Gancho")
+		gs.local_id = "gym"
+		gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
+		await _abrir()
+		await _esperar(0.6)
+		gs.nova_carreira()
+		await _esperar(0.8)
+		_exigir(_cena.get_node("Fluxo").janela != null, "f6b1_arte", "a janela de arte deveria estar aberta")
+		await _ver("f6b1_arte")
+
+	# --- Luva inicial: o cartão diz "o par do John" ---
+	if _quer("f6b1_luva_hover"):
+		_novo_jogo()
+		gs.discipulo = {"name": "Tati Gancho", "look": gs.disciples.look_padrao.duplicate(), "campaign": 2}
+		await _abrir()
+		await _abrir_loja()
+		var loja: Node = _cena.get_node("PainelLoja")
+		loja._sobre("la")
+		await _esperar(0.2)
+		_exigir(gs.descricao_luva_inicial().begins_with("O par do John"), "f6b1_luva_hover", "descrição da luva inicial: %s" % gs.descricao_luva_inicial())
+		await _ver("f6b1_luva_hover")
+
+
+## Balão da 6b1: fora da zona do alvo, dentro da sala e sem cobrir a cabeça do Osmar, do lutador nem de ninguém em cena.
+func _checar_balao_6b1(nome: String, speaker: String) -> void:
+	var b: Node = _balao()
+	if not b.ativo():
+		return
+	var r: Rect2 = b.retangulo_total()
+	_exigir(not r.intersects(NO_COVER_6A), nome, "o balão cobre a zona do alvo: %s" % _fmt(r))
+	_exigir(UTIL_6A.encloses(r), nome, "o balão sai da sala: %s" % _fmt(r))
+	var sala: Node = _cena.get_node("Sala")
+	var cabecas: Array = []
+	var o: Vector2 = sala.ponto_cabeca("coach")
+	cabecas.append(Rect2(o.x - 9.0, o.y, 18.0, 18.0))
+	if sala._cena_ativa:
+		cabecas.append_array(sala.cena.cabecas_a_evitar(speaker))
+	else:
+		var l: Vector2 = sala.ponto_cabeca("first")
+		cabecas.append(Rect2(l.x - 9.0, l.y, 18.0, 18.0))
+	for c in cabecas:
+		_exigir(not r.intersects(c), nome, "o balão cobre a cabeça de alguém: %s x %s" % [_fmt(r), _fmt(c)])
+
+
+## PULAR: o anel enche com ESC/ESPAÇO segurado, o botão pula até a tela de criação e, depois dela, até o fim (estado final em ~0,3 s).
+func _rodar_fase6b1_pular() -> void:
+	if not (_quer("f6b1_pular_anel") or _quer("f6b1_pular")):
+		return
+	_f6b1_fim("Tati Gancho")
+	await _abrir()
+	await _esperar(0.5)
+	var cu: Node = _cena_ui()
+	var sala: Node = _cena.get_node("Sala")
+	gs.receber_discipulo()
+	await _esperar(1.0)
+	_exigir(cu._botao.visible and cu._chip.visible, "f6b1_pular_anel", "o botão PULAR e a dica 'SEGURE ESC: PULAR' aparecem durante a cena")
+	cu.player.ler_teclado = false
+	cu.player.segurar_pular(true, 0.25)  # metade dos 0,5 s
+	await _esperar(0.1)
+	_exigir(cu._atlas.region.position.x == 44.0, "f6b1_pular_anel", "o anel está na metade (quadro %d)" % int(cu._atlas.region.position.x / 11.0))
+	await _ver("f6b1_pular_anel")
+	cu.player.segurar_pular(false, 0.0)
+	cu.player.ler_teclado = true
+	if _quer("f6b1_pular"):
+		cu._botao.pressed.emit()  # PULAR até a tela de criação
+		await _esperar(0.5)
+		var tela: Node = await _f6b1_janela_criar()
+		_exigir(tela != null and gs.sucessao_estado() == "creating", "f6b1_pular", "PULAR leva direto à tela de criação (%s)" % gs.sucessao_estado())
+		_exigir(not cu._botao.visible, "f6b1_pular", "na tela de criação não se pula")
+		_exigir(not cu.player.pular(), "f6b1_pular", "pular() na tela de criação não faz nada")
+		tela._confirmar()
+		await _esperar(1.0)
+		cu._botao.pressed.emit()  # PULAR a parte 2: estado final em ~0,3 s
+		await _esperar(0.7)
+		_exigir(gs.sucessao_estado() == "none", "f6b1_pular", "depois de pular a parte 2 o controle volta (%s)" % gs.sucessao_estado())
+		_exigir(sala.mentor_visivel() and sala._caixote.visible and sala._lutador.visible, "f6b1_pular", "estado final: John sentado no caixote e o discípulo de guarda")
+		await _esperar(0.5)
+		_cena.get_node("Fluxo").fechar_cartao_aberto()
+		await _ver("f6b1_pular")

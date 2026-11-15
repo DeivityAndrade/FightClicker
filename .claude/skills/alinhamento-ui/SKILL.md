@@ -20,7 +20,7 @@ Botões com texto são `center` por padrão mesmo sem metadata.
 
 ### 2. Rode o verificador automático
 ```
-E:\testePresidente3\tools\godot\Godot_v4.7.2-stable_win64_console.exe --path E:\Fightclicker --resolution 1280x720 --script res://tools/ui/ui_audit.gd -- --estados todos
+E:\testePresidente3\tools\godot\Godot_v4.7.2-stable_win64_console.exe --path E:\Fightclicker --resolution 1280x720 --position 1950,40 --script res://tools/ui/ui_audit.gd -- --estados todos
 ```
 Ele abre cada tela/estado (garagem, loja, prévia, luta, vitória, fim, aposentar, F12…), usa save de teste isolado e lista problemas com caminho do nó e diferença em pixels (na base 640x360). Ele sai com código 1 se houver problema. Rode com janela (sem `--headless`) para as fontes medirem certo.
 

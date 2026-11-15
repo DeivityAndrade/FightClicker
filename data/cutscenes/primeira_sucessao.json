@@ -1,0 +1,246 @@
+{
+  "_nota": "Fase 6b1. Cena única 'Primeira sucessão'. Storyboard: docs/cutscenes/primeira-sucessao.md (v2, quadros S1-S10 da prancha). Formato: docs/cutscenes/formato-dados.md (v1.1). Chaves que começam com _ são comentário. _t = tempo previsto do passo dentro da parte, em segundos.",
+  "id": "primeira_sucessao",
+  "version": 1,
+  "milestone": "cena_primeira_sucessao",
+  "once": true,
+  "blocking": true,
+  "register": "cotidiano",
+  "max_seconds": 16,
+
+  "trigger": {
+    "event": "handover_started",
+    "requires": { "milestone_missing": ["cena_primeira_sucessao"] }
+  },
+
+  "grants": [
+    { "type": "mentor_in_room", "character": "first_fighter" },
+    { "type": "prop_permanent", "id": "mentor_crate", "sprite": "garage_crate", "point": "mentor_spot", "location": "garage" }
+  ],
+
+  "stage": {
+    "view": "room",
+    "location": "garage",
+    "window": [128, 18, 384, 272],
+    "hide": ["player", "crew", "mentors", "coach"],
+    "props": {
+      "bag":          { "room_object": "punching_bag" },
+      "lamp":         { "room_object": "lamp" },
+      "gloves":       { "sprite": "garage_hung_gloves_old", "pos": [335, 186], "layer": "sorted", "sort_y": 254, "visible": false },
+      "door_outside": { "sprite": "garage_door_outside", "pos": [382, 168], "layer": "wall", "visible": false },
+      "door":         { "sprite": "garage_door", "pos": [381, 166], "layer": "sorted", "sort_y": 222, "anim": "closed" },
+      "daylight":     { "sprite": "garage_daylight", "pos": [308, 220], "layer": "floor", "visible": false },
+      "door_shadow":  { "sprite": "garage_door_shadow", "pos": [374, 214], "layer": "floor", "visible": false }
+    }
+  },
+
+  "actors": {
+    "first":    { "character": "first_fighter", "glove": "glove_old", "pos": [303, 272], "facing": "right", "anim": "idle" },
+    "coach":    { "character": "coach", "pos": [196, 236], "facing": "right", "anim": "idle" },
+    "disciple": { "character": "current_player", "glove": "none", "pos": [423, 221], "facing": "left", "anim": "stand_bare", "visible": false }
+  },
+
+  "lines": {
+    "suc_guarda": { "speaker": "first", "text_key": "suc_guarda" },
+    "suc_isso":   { "speaker": "first", "text_key": "suc_isso" }
+  },
+
+  "steps": [
+    { "_q": "S1 Últimos socos (0,00-1,72)", "_t": 0.0, "type": "ui", "hide": "all", "seconds": 0.3, "wait": false },
+    { "_t": 0.0, "type": "wait", "seconds": 0.4 },
+    { "_t": 0.4, "type": "parallel", "steps": [
+      { "type": "sequence", "steps": [
+        { "type": "pose", "actor": "first", "anim": "punch", "times": 2, "gap": 0.2 },
+        { "type": "wait", "seconds": 0.2 },
+        { "_nota": "3º soco: para no quadro do golpe, não recolhe o braço", "type": "pose", "actor": "first", "anim": "punch", "frames": [0, 2] }
+      ] },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.17 },
+        { "type": "prop", "id": "bag", "anim": "hit", "wait": false },
+        { "type": "sound", "id": "punch_1" },
+        { "type": "sound", "id": "chain_creak", "loop": true, "volume": 0.6 },
+        { "type": "wait", "seconds": 0.53 },
+        { "type": "prop", "id": "bag", "anim": "hit", "wait": false },
+        { "type": "sound", "id": "punch_2" },
+        { "type": "wait", "seconds": 0.53 },
+        { "type": "prop", "id": "bag", "anim": "hit", "wait": false },
+        { "type": "sound", "id": "hit_heavy" },
+        { "type": "prop", "id": "lamp", "anim": "swing", "wait": false }
+      ] }
+    ] },
+
+    { "_q": "S2 Segura o saco (1,72-3,62)", "_t": 1.72, "type": "parallel", "steps": [
+      { "type": "pose", "actor": "first", "anim": "hold_bag", "hold": 1.6 },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.2 },
+        { "type": "sound", "id": "bag_catch" },
+        { "type": "prop", "id": "bag", "anim": "idle", "frame": 0 },
+        { "type": "prop", "id": "lamp", "anim": "idle" },
+        { "type": "sound", "id": "chain_creak", "stop": true, "fade": 0.15 },
+        { "type": "sound", "id": "lamp_hum", "loop": true, "volume": 0.5 }
+      ] }
+    ] },
+
+    { "_q": "S3 Abre o fecho, corte 2x (3,62-6,62)", "_t": 3.62, "type": "camera", "scale": 2, "rect": [222, 154, 192, 136] },
+    { "_t": 3.62, "type": "parallel", "steps": [
+      { "type": "pose", "actor": "first", "anim": "gloves_off" },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.25 },
+        { "type": "sound", "id": "strap_open" },
+        { "type": "wait", "seconds": 0.5 },
+        { "type": "sound", "id": "glove_leather" },
+        { "type": "wait", "seconds": 0.5 },
+        { "type": "sound", "id": "glove_leather", "volume": 0.8 }
+      ] }
+    ] },
+    { "_t": 5.62, "type": "parallel", "steps": [
+      { "type": "pose", "actor": "first", "anim": "hang_gloves" },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.25 },
+        { "type": "prop", "id": "gloves", "visible": true, "anim": "land", "wait": false },
+        { "type": "wait", "seconds": 0.1 },
+        { "type": "sound", "id": "ring_clink" }
+      ] }
+    ] },
+
+    { "_q": "S4 Alguém na porta (6,62-9,00)", "_t": 6.62, "type": "camera", "scale": 1 },
+    { "type": "prop", "id": "door_outside", "visible": true },
+    { "type": "prop", "id": "door", "anim": "shake_ajar", "wait": false },
+    { "type": "sound", "id": "door_shake" },
+    { "type": "prop", "id": "daylight", "visible": true, "anim": "sliver" },
+    { "type": "prop", "id": "door_shadow", "visible": true, "frame": 0 },
+    { "type": "wait", "seconds": 0.5 },
+    { "_t": 7.12, "type": "pose", "actor": "first", "anim": "look_door", "frames": [0, 2], "wait": false },
+    { "type": "wait", "seconds": 0.15 },
+    { "_t": 7.27, "type": "pose", "actor": "coach", "anim": "look", "loop": true, "wait": false },
+    { "type": "wait", "seconds": 1.73 },
+
+    { "_q": "S5 Tela de criação (espera o jogador)", "_t": 9.0, "type": "open_screen", "screen": "customize_disciple", "checkpoint": "depois_criar",
+      "state": {
+        "_nota": "Estado atrás da tela quando a parte 1 é pulada.",
+        "actors": {
+          "first": { "pos": [303, 272], "facing": "right", "glove": "none", "anim": "look_door", "frame": 2 },
+          "coach": { "anim": "look" },
+          "disciple": { "visible": false }
+        },
+        "props": {
+          "bag": { "anim": "idle", "frame": 0 },
+          "lamp": { "anim": "idle" },
+          "gloves": { "visible": true, "anim": "rest" },
+          "door_outside": { "visible": true },
+          "door": { "anim": "ajar" },
+          "daylight": { "visible": true, "anim": "sliver" },
+          "door_shadow": { "visible": true, "frame": 0 }
+        },
+        "camera": { "scale": 1 },
+        "ui": "hide_all",
+        "sounds": { "stop": ["chain_creak"], "loop": ["lamp_hum"] }
+      }
+    },
+
+    { "_q": "S6 A porta emperra (parte 2: 0,00-1,30)", "_t": 0.0, "type": "show", "actor": "disciple" },
+    { "_t": 0.0, "type": "parallel", "steps": [
+      { "type": "prop", "id": "door", "anim": "open_jam" },
+      { "type": "prop", "id": "daylight", "anim": "open" },
+      { "type": "sound", "id": "door_roll" },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.4 },
+        { "type": "prop", "id": "door_shadow", "frame": 1 },
+        { "type": "wait", "seconds": 0.3 },
+        { "type": "sound", "id": "door_jam" },
+        { "type": "shake", "px": 1, "frames": 3 }
+      ] }
+    ] },
+    { "_t": 0.8, "type": "wait", "seconds": 0.5 },
+
+    { "_q": "S7 Passa por baixo (1,30-2,00; ele anda ate 2,59 no bloco seguinte)", "_t": 1.3, "type": "parallel", "steps": [
+      { "type": "move", "actor": "disciple", "to": [410, 236], "anim": "duck_under", "seconds": 0.7, "facing": "left" },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.3 },
+        { "type": "prop", "id": "door_shadow", "frame": 2 },
+        { "type": "wait", "seconds": 0.1 },
+        { "_nota": "John sorri de leve", "type": "pose", "actor": "first", "anim": "look_door", "frames": [3, 3], "wait": false },
+        { "type": "wait", "seconds": 0.2 },
+        { "type": "prop", "id": "door_shadow", "frame": 3 },
+        { "type": "wait", "seconds": 0.1 },
+        { "type": "prop", "id": "door_shadow", "visible": false }
+      ] }
+    ] },
+
+    { "_q": "S7 (fim), S8 'vamos ver sua guarda.' e S9 Pega o par dele (2,00-5,99)", "_t": 2.0, "type": "parallel", "steps": [
+      { "type": "sequence", "steps": [
+        { "_t": 2.0, "type": "move", "actor": "disciple", "to": [392, 258], "speed": 48, "anim": "walk_bare", "facing": "left" },
+        { "_t": 2.59, "type": "move", "actor": "disciple", "to": [303, 272], "speed": 48, "anim": "walk_bare", "facing": "left" },
+        { "_t": 4.47, "type": "parallel", "steps": [
+          { "type": "pose", "actor": "disciple", "anim": "take_gloves", "facing": "right" },
+          { "type": "sequence", "steps": [
+            { "type": "wait", "seconds": 0.2 },
+            { "type": "prop", "id": "gloves", "visible": false },
+            { "type": "wait", "seconds": 0.1 },
+            { "type": "sound", "id": "glove_leather" },
+            { "type": "wait", "seconds": 0.3 },
+            { "type": "sound", "id": "strap_close" }
+          ] }
+        ] },
+        { "_t": 5.27, "type": "pose", "actor": "disciple", "anim": "idle", "glove": "glove_old", "loop": true, "wait": false }
+      ] },
+      { "type": "sequence", "steps": [
+        { "_t": 2.0, "_nota": "52,9 px de (303,272) ao mentor_spot (254,252): 48 px/s", "type": "move", "actor": "first", "to": "mentor_spot", "seconds": 1.1, "anim": "step_back", "facing": "right" },
+        { "_t": 3.1, "type": "pose", "actor": "first", "anim": "point_spot", "facing": "right" },
+        { "_t": 3.4, "type": "say", "line": "suc_guarda", "hold": 1.2 },
+        { "_t": 5.59, "type": "pose", "actor": "first", "anim": "sit_down" },
+        { "_t": 5.99, "type": "pose", "actor": "first", "anim": "sit_rest", "loop": true, "wait": false }
+      ] }
+    ] },
+
+    { "_q": "Controle devolvido (5,99). Daqui em diante o jogador já clica.", "_t": 5.99, "type": "return_control" },
+
+    { "type": "sound", "id": "lamp_hum", "stop": true, "fade": 0.5 },
+    { "type": "pose", "actor": "coach", "anim": "idle", "loop": true, "wait": false },
+    { "type": "wait", "seconds": 0.6 },
+    { "type": "parallel", "steps": [
+      { "type": "prop", "id": "door", "anim": "close" },
+      { "type": "prop", "id": "daylight", "anim": "close" },
+      { "type": "sound", "id": "door_roll", "volume": 0.8 }
+    ] },
+    { "type": "sound", "id": "door_jam", "volume": 0.7 },
+    { "type": "prop", "id": "daylight", "visible": false },
+    { "type": "prop", "id": "door_outside", "visible": false }
+  ],
+
+  "reactions": [
+    { "_q": "S10 1º clique: dois toques de punho e 'isso.'", "when": "first_click", "once": true, "steps": [
+      { "type": "parallel", "steps": [
+        { "type": "pose", "actor": "first", "anim": "mentor_first_taps" },
+        { "type": "say", "line": "suc_isso", "mode": "passive" },
+        { "type": "sequence", "steps": [
+          { "type": "wait", "seconds": 0.11 },
+          { "type": "sound", "id": "tap_fist" },
+          { "type": "wait", "seconds": 0.22 },
+          { "type": "sound", "id": "tap_fist" }
+        ] }
+      ] },
+      { "type": "pose", "actor": "first", "anim": "sit_rest", "loop": true, "wait": false }
+    ] }
+  ],
+
+  "end_state": {
+    "actors": {
+      "first": "hand_to_game",
+      "coach": "hand_to_game",
+      "disciple": "hand_to_game"
+    },
+    "props": {
+      "bag": "hand_to_game",
+      "lamp": "hand_to_game",
+      "gloves": { "visible": false },
+      "door": { "anim": "closed" },
+      "door_outside": { "visible": false },
+      "daylight": { "visible": false },
+      "door_shadow": { "visible": false }
+    },
+    "camera": { "scale": 1 },
+    "ui": "show_all",
+    "sounds": { "stop": ["chain_creak", "lamp_hum"] }
+  }
+}

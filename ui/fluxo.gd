@@ -31,6 +31,8 @@ func _ready() -> void:
 	GameState.carreira_mudou.connect(_ao_carreira_mudou)
 	GameState.nova_carreira_iniciada.connect(_ao_nova_carreira_iniciada)
 	GameState.escolha_arte_pedida.connect(_ao_escolha_arte_pedida)
+	GameState.dia_da_luta_chegou.connect(_ao_dia_da_luta_chegou)
+	GameState.aviso_data.connect(_ao_aviso_data)
 	call_deferred("_checar_pendencias")
 
 
@@ -47,7 +49,7 @@ func ocupado() -> bool:
 
 # --- Prévia e luta ---
 
-func abrir_previa() -> void:
+func abrir_previa(do_dia: bool = false) -> void:
 	if ocupado() or not GameState.pode_lutar():
 		return
 	var dados := GameState.previa()
@@ -56,9 +58,48 @@ func abrir_previa() -> void:
 	var j := JanelaPrevia.new()
 	_abrir(j)
 	_tatica_antes = str(dados.tactic)
-	j.abrir_com(dados)
+	j.abrir_com(dados, do_dia)
 	j.voltar_pedido.connect(_voltar_da_previa)
 	j.lutar_pedido.connect(_lutar)
+	j.passar_pedido.connect(abrir_aposentar_do_dia)
+
+
+# --- Dia da luta (Fase 5.3) ---
+
+## O relógio travou na data: a prévia do dia abre sozinha (sem X, sem Esc, só LUTAR e PASSAR O POSTO). A janela do jogo sem foco
+## faz o ícone da barra de tarefas piscar.
+func _ao_dia_da_luta_chegou() -> void:
+	_pedir_atencao()
+	_checar_dia()
+
+
+func _pedir_atencao() -> void:
+	var w := get_window()
+	if w != null and not w.has_focus() and DisplayServer.get_name() != "headless":
+		DisplayServer.window_request_attention()
+
+
+## Aviso de 1 dia com a janela sem foco: o ícone também pisca.
+func _ao_aviso_data(dias: int) -> void:
+	if dias <= int(GameState.lutas.calendario.get("warn_sound_days", 1)):
+		_pedir_atencao()
+
+
+## Abre a prévia do dia se o jogo está no dia e nada mais ocupa a tela (nem a luta, nem o fim da carreira). Também depois de
+## fechar qualquer janela: VOLTAR da confirmação de PASSAR O POSTO cai aqui e devolve a prévia do dia, não a sala.
+func _checar_dia() -> void:
+	if not is_inside_tree() or ocupado() or tela.visible or not GameState.no_dia_da_luta():
+		return
+	if GameState.tem_fim_pendente() or GameState.tem_luta_pendente() or GameState.escolha_arte_pendente():
+		return
+	abrir_previa(true)
+
+
+func abrir_aposentar_do_dia() -> void:
+	if janela is JanelaPrevia and (janela as JanelaPrevia).dia_da_luta:
+		janela.queue_free()  # a confirmação toma o lugar da prévia do dia; VOLTAR traz ela de volta (`_checar_dia`)
+		janela = null
+	abrir_aposentar()
 
 
 # VOLTAR A TREINAR não custa nada e não muda nada: a tática volta para a que era.
@@ -117,28 +158,46 @@ func _ao_fim_de_carreira(fim: Dictionary) -> void:
 	_abrir_fim(fim)
 
 
-func _abrir_fim(fim: Dictionary) -> void:
+func _abrir_fim(fim: Dictionary, reabrindo: bool = false) -> void:
 	if janela is JanelaFim:
 		return
 	if janela != null:
 		_fechar()
 	var j := JanelaFim.new()
 	_abrir(j)
-	# Som: a derrota já tocou durante a luta; na aposentadoria e ao reabrir o jogo toca ao abrir.
-	j.abrir_com(fim, str(fim.kind) == "retire" or not tela.visible)
-	j.nova_carreira_pedido.connect(func() -> void: GameState.nova_carreira())
+	# Som: a derrota já tocou durante a luta; na aposentadoria e ao reabrir o jogo toca ao abrir. Voltando do mapa: sem som.
+	j.abrir_com(fim, not reabrindo and (str(fim.kind) == "retire" or not tela.visible), reabrindo)
+	j.nova_carreira_pedido.connect(func() -> void: GameState.receber_discipulo())
 	j.arvore_pedido.connect(abrir_arvore)
 
 
-# --- Árvore de habilidades (Fase 4): só entre carreiras, pelo botão ÁRVORE da tela de fim ---
+# --- Árvore grande (Fase 5.4): o mapa abre pelo botão da sala (qualquer hora) e pelo botão ÁRVORE da tela de fim ---
 
 func abrir_arvore() -> void:
-	if not GameState.arvore_aberta():
+	if not GameState.pode_abrir_arvore():
 		return
-	var j := JanelaArvore.new()
+	# Depois de uma derrota a arena continua visível por baixo da tela de fim: a tela de fim ainda pode abrir o mapa.
+	if tela.visible and not (janela is JanelaFim):
+		return
+	if janela != null and not (janela is JanelaFim):
+		return  # só a tela de fim cede o lugar ao mapa; prévia, vitória e confirmações não
+	var j := JanelaMapa.new()
 	_abrir(j)
+	Dica.limpar()
 	j.abrir_com()
-	j.nova_carreira_pedido.connect(func() -> void: GameState.nova_carreira())
+	j.fechar_pedido.connect(_fechar_mapa)
+
+
+## Fecha o mapa (X ou Esc). Quem veio da tela de fim volta para ela (já com o Legado gasto); da sala volta para a sala.
+func _fechar_mapa() -> void:
+	if not (janela is JanelaMapa):
+		return
+	if GameState.tem_fim_pendente():
+		janela.queue_free()
+		janela = null
+		_abrir_fim(GameState.fim, true)
+	else:
+		_fechar()
 
 
 # --- Cartão "o que você trouxe" (começo da carreira) ---
@@ -213,6 +272,24 @@ func _fechar_cartao() -> void:
 	cartao = null
 
 
+# --- Fase 6b1: tela "RECEBER NOVO DISCÍPULO" (a cena de passar o posto pede; só sai pelo CONFIRMAR) ---
+
+func abrir_criar_discipulo() -> void:
+	if janela is TelaCriarDiscipulo or GameState.sucessao_estado() != "creating":
+		return
+	var j := TelaCriarDiscipulo.new()
+	_abrir(j)
+	j.abrir_com()
+	j.confirmou.connect(func() -> void:
+		if janela == j:
+			janela = null
+			j.queue_free()
+			GameState.definir_modal(tela.visible)
+			if _barra != null and not tela.visible:
+				_barra.definir_janela_aberta(false)
+			janela_mudou.emit(ocupado()))
+
+
 # --- Aposentar ---
 
 func abrir_aposentar() -> void:
@@ -232,8 +309,10 @@ func abrir_aposentar() -> void:
 func _ao_carreira_mudou() -> void:
 	if tela.visible and tela.ativa and GameState.luta.is_empty():
 		tela.encerrar()  # o estado foi trocado (ex.: RECARREGAR da depuração)
-	if (janela is JanelaFim or janela is JanelaArvore) and not GameState.tem_fim_pendente():
+	if janela is JanelaFim and not GameState.tem_fim_pendente():
 		_fechar_tudo()  # NOVA CARREIRA: volta para a garagem
+	elif janela is JanelaMapa and not GameState.pode_abrir_arvore():
+		_fechar_tudo()  # o estado trocou por baixo (ex.: RECARREGAR da depuração) e o mapa não pode mais ficar aberto
 	elif janela == null and not tela.visible:
 		_checar_pendencias()
 
@@ -251,6 +330,7 @@ func _checar_pendencias() -> void:
 			_abrir_vitoria(resumo, true)
 	if janela == null and not tela.visible and GameState.escolha_arte_pendente():
 		abrir_escolha_arte()  # fechou o jogo sem escolher a arte: a janela abre de novo antes de tudo
+	_checar_dia()  # fechou o jogo no dia da luta: abre direto na prévia do dia
 
 
 # --- Janelas ---
@@ -275,6 +355,7 @@ func _fechar() -> void:
 	if not tela.visible and _barra != null:
 		_barra.definir_janela_aberta(false)
 	janela_mudou.emit(ocupado())
+	call_deferred("_checar_dia")  # no dia da luta nenhuma janela devolve a sala: a prévia do dia volta
 
 
 ## Fecha a janela e a arena: volta para a garagem.
@@ -292,8 +373,12 @@ func _fechar_tudo() -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		if janela is JanelaPrevia:
-			_voltar_da_previa()
+			if not (janela as JanelaPrevia).dia_da_luta:  # a prévia do dia não fecha com Esc
+				_voltar_da_previa()
 			get_viewport().set_input_as_handled()
 		elif janela is JanelaAposentar:
 			_fechar()
+			get_viewport().set_input_as_handled()
+		elif janela is JanelaMapa:
+			_fechar_mapa()
 			get_viewport().set_input_as_handled()
