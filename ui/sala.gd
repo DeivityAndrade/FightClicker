@@ -326,6 +326,8 @@ func _aplicar_layout() -> void:
 # Lutador parado conforme o foco.
 func _pose_repouso() -> void:
 	var foco := _foco()
+	# Voltar à pose parada encerra qualquer giro da corda: o fim do giro (que zerava a marca) não vai mais chegar.
+	_corda_girando = false
 	_corda_giro.visible = false
 	_corda_costas.visible = false
 	match foco:
@@ -1556,6 +1558,7 @@ func _gesto_comecar(plano: Dictionary) -> void:
 	if UiTema.sprite(nome).is_empty():
 		return
 	_gesto_sprite = nome
+	_corda_girando = false  # o gesto toma o lutador: o giro da corda em andamento acabou
 	_corda_giro.visible = false
 	_corda_costas.visible = false
 	_lutador.definir(nome)
