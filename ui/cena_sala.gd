@@ -19,6 +19,8 @@ var _lacos: Dictionary = {}  # id do som -> AudioStreamPlayer
 var _liberados: Dictionary = {}  # atores entregues ao jogo (o John vira o mentor da sala)
 var _personagens: Dictionary = {}
 var _ativa := false
+var _livre := false  # cena sem controle preso (saída do John)
+static var _paletas: Dictionary = {}
 
 
 func esta_ativa() -> bool:
@@ -28,16 +30,22 @@ func esta_ativa() -> bool:
 # --- Montagem ---
 
 ## Monta o palco: `palco` = stage da cena, `atores` = actors da cena, `personagens` = data/cena_player.json > characters.
-func montar(palco: Dictionary, atores: Dictionary, personagens: Dictionary, id: String = "") -> void:
+## 6c1: `resolvidos` = CenaPlayer.mundo().atores (papel resolvido pelo jogo: personagem, look, posição de nascimento, se existe);
+## `livre` = cena sem controle preso (a saída do John): a sala continua do jogador.
+func montar(palco: Dictionary, atores: Dictionary, personagens: Dictionary, id: String = "", resolvidos: Dictionary = {}, livre: bool = false) -> void:
 	limpar()
 	cena_id = id
 	_ativa = true
+	_livre = livre
 	_personagens = personagens
-	sala.cena_iniciar(palco.get("hide", []))
+	sala.cena_iniciar(palco.get("hide", []), livre)
 	for pid in palco.get("props", {}):
+		var loc := str(palco.props[pid].get("location", ""))
+		if loc != "" and loc != GameState.local_id:
+			continue  # adereço de outro local (formato §9 item 22)
 		_montar_prop(str(pid), palco.props[pid])
 	for aid in atores:
-		_montar_ator(str(aid), atores[aid])
+		_montar_ator(str(aid), atores[aid], resolvidos.get(str(aid), {}))
 
 
 func limpar() -> void:
@@ -67,10 +75,14 @@ func _ponto(v: Variant) -> Vector2:
 func _montar_prop(id: String, d: Dictionary) -> void:
 	if d.has("room_object"):
 		_props[id] = {"sp": null, "sala": str(d.room_object)}
+		if str(d.room_object) == "punching_bag":
+			sala.cena_saco_visivel(bool(d.get("visible", true)))
 		return
 	var sp := AnimSprite.new()
 	sp.definir(str(d.get("sprite", "")))
 	sp.position = _ponto(d.get("pos", [0, 0]))
+	if str(UiTema.sprite(sp.nome_sprite).get("point", "")) != "":
+		sp.position += UiTema.pivo(sp.nome_sprite)  # sprite de ponto (caixote): `pos` é o canto de cima, o pivô é o ponto de pés
 	match str(d.get("layer", "sorted")):
 		"wall":
 			sp.z_index = Z_PAREDE
@@ -81,20 +93,30 @@ func _montar_prop(id: String, d: Dictionary) -> void:
 	sp.visible = bool(d.get("visible", true))
 	add_child(sp)
 	_props[id] = {"sp": sp, "sala": ""}
+	if d.get("frame", null) != null:
+		sp.parar(int(d.frame))
 	if str(d.get("anim", "")) != "":
 		_anim_prop(sp, str(d.anim))
 
 
-func _montar_ator(id: String, d: Dictionary) -> void:
+func _montar_ator(id: String, d: Dictionary, r: Dictionary = {}) -> void:
 	var sombra := Sprite2D.new()
 	sombra.texture = UiTema.textura("floor_shadow")
 	add_child(sombra)
 	var sp := AnimSprite.new()
 	add_child(sp)
-	var a := {"id": id, "char": str(d.get("character", "")), "sp": sp, "sombra": sombra, "pos": _ponto(d.get("pos", [0, 0])),
-		"facing": str(d.get("facing", "right")), "nome": "", "glove": str(d.get("glove", "")), "mov": {}, "visivel": bool(d.get("visible", true))}
+	var existe := bool(r.get("existe", true))
+	var personagem := str(r.get("personagem", ""))
+	if personagem == "":
+		personagem = str(d.get("character", ""))
+	var look = r.get("look", {})
+	var a := {"id": id, "char": personagem, "sp": sp, "sombra": sombra, "pos": _ponto(r.get("pos", d.get("pos", [0, 0]))),
+		"facing": str(r.get("facing", d.get("facing", "right"))), "nome": "", "glove": str(d.get("glove", "")), "mov": {},
+		"visivel": bool(r.get("visible", d.get("visible", true))) and existe, "ausente": not existe,
+		"look": look if look is Dictionary else {}}
 	_atores[id] = a
-	_pose(a, str(d.get("anim", "idle")), true, [], 0.0)
+	if existe:
+		_pose(a, str(r.get("anim", d.get("anim", "idle"))), true, [], 0.0)
 	_posicionar(a)
 
 
@@ -117,7 +139,10 @@ func _nome_folha(char_id: String, anim: String, glove: String) -> String:
 		if not UiTema.sprite(s).is_empty():
 			return s
 	var prefixo := str(_personagens.get(char_id, {}).get("sprite_prefix", ""))
+	var sufixo := GameState.sufixo_aparelhos()  # academia: a folha com a luz dos tubos, se existir (coach_idle_gym)
 	var cand: Array = []
+	if sufixo != "":
+		cand.append(prefixo + "_" + anim + sufixo)
 	if anim == "idle":
 		if char_id == "first_fighter":
 			cand = ["fighter_idle"]
@@ -127,14 +152,17 @@ func _nome_folha(char_id: String, anim: String, glove: String) -> String:
 		cand = ["fighter_punch"]
 	cand.append(prefixo + "_" + anim)
 	cand.append(anim)
+	cand.append(prefixo + "_" + anim + "_left")  # folhas que só existem viradas para a esquerda (look_room, nod)
 	for c in cand:
 		if not UiTema.sprite(str(c)).is_empty():
 			return str(c)
 	return ""
 
 
-func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: float, vezes: int = 1, gap: float = 0.0, quadro: int = -1) -> void:
+func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: float, vezes: int = 1, gap: float = 0.0, quadro: int = -1, folha_ev: String = "") -> void:
 	var nome := _nome_folha(str(a.char), anim, str(a.glove))
+	if nome == "" and folha_ev != "" and not UiTema.sprite(folha_ev).is_empty():
+		nome = folha_ev  # folha resolvida pelo compilador (sprite_aliases)
 	if nome == "":
 		push_warning("CenaSala: sem folha para %s/%s (a pose anterior continua)" % [a.char, anim])
 		return
@@ -143,7 +171,10 @@ func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: f
 	var sp: AnimSprite = a.sp
 	sp.definir(nome)
 	if a.char == "current_player":
-		sp.texture = DiscVisual.textura(nome, _look())
+		var lk: Dictionary = a.get("look", {})
+		sp.texture = DiscVisual.textura(nome, lk if not lk.is_empty() else _look())
+	elif str(_personagens.get(a.char, {}).get("palette", "")) != "":
+		sp.texture = _textura_paleta(nome, str(_personagens[a.char].palette))  # o 2º vizinho: regata vermelha
 	a.nome = nome
 	_aplicar_flip(a)
 	var s := UiTema.sprite(nome)
@@ -169,6 +200,31 @@ func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: f
 		sp.parar(int(seq[0]))
 	else:
 		sp.tocar(seq, fps, em_laco)
+
+
+## Troca exata de cor por pixel (manifest.by_data_id.personagens_6c1.palette_variants.<paleta>.swap), em cache.
+func _textura_paleta(nome: String, paleta: String) -> Texture2D:
+	var chave := nome + "|" + paleta
+	if _paletas.has(chave):
+		return _paletas[chave]
+	var base := UiTema.textura(nome)
+	var troca: Dictionary = UiTema.manifest().get("by_data_id", {}).get("personagens_6c1", {}).get("palette_variants", {}).get(paleta, {}).get("swap", {})
+	if base == null or troca.is_empty():
+		return base
+	var img := base.get_image()
+	img.convert(Image.FORMAT_RGBA8)
+	var mapa := {}
+	for k in troca:
+		mapa[Color(str(k)).to_rgba32()] = Color(str(troca[k]))
+	for y in img.get_height():
+		for x in img.get_width():
+			var c := img.get_pixel(x, y)
+			if c.a > 0.0 and mapa.has(c.to_rgba32()):
+				var n: Color = mapa[c.to_rgba32()]
+				img.set_pixel(x, y, Color(n.r, n.g, n.b, c.a))
+	var t := ImageTexture.create_from_image(img)
+	_paletas[chave] = t
+	return t
 
 
 func _aplicar_flip(a: Dictionary) -> void:
@@ -271,6 +327,8 @@ func evento(ev: Dictionary) -> void:
 			sala.cena_camera(int(ev.get("scale", 1)), ev.get("rect", []))
 		"shake":
 			sala.cena_tremer(int(ev.get("px", 1)), float(ev.get("seconds", 0.1)))
+		"fx":
+			sala.cena_fx(str(ev.get("sprite", "")), ev.get("pos", []))
 
 
 func _evento_ator(tipo: String, ev: Dictionary) -> void:
@@ -280,8 +338,8 @@ func _evento_ator(tipo: String, ev: Dictionary) -> void:
 			(p.sp as AnimSprite).visible = tipo == "show"
 		return
 	var a: Dictionary = _atores.get(str(ev.get("ator", "")), {})
-	if a.is_empty():
-		return
+	if a.is_empty() or bool(a.get("ausente", false)):
+		return  # ator que não existe nesta cena (ex.: sem esteira, sem último que passou o posto): passos pulados
 	if str(ev.get("facing", "")) != "":
 		a.facing = str(ev.facing)
 	match tipo:
@@ -295,7 +353,7 @@ func _evento_ator(tipo: String, ev: Dictionary) -> void:
 				a.glove = str(ev.glove)
 			var anim := str(ev.get("anim", "idle"))
 			_pose(a, anim, bool(ev.get("loop", false)), ev.get("frames", []), 0.5 if bool(ev.get("slow", false)) else 1.0,
-				int(ev.get("times", 1)), float(ev.get("gap", 0.0)))
+				int(ev.get("times", 1)), float(ev.get("gap", 0.0)), -1, str(ev.get("folha", "")))
 			if anim == "sit_down" or anim == "sit_rest":
 				sala.cena_caixote(true)  # o caixote aparece quando o John vai sentar
 		"move":
@@ -318,7 +376,10 @@ func _evento_prop(ev: Dictionary) -> void:
 		var anim := str(ev.get("anim", ""))
 		var q = ev.get("frame", null)
 		if str(p.sala) == "punching_bag":
-			sala.cena_saco(anim, int(q) if q != null else 0)
+			if ev.get("visible", null) != null:
+				sala.cena_saco_visivel(bool(ev.visible))
+			if anim != "" or q != null:
+				sala.cena_saco(anim, int(q) if q != null else 0)
 		elif str(p.sala) == "lamp":
 			sala.cena_lampada(anim)
 		return
@@ -415,6 +476,24 @@ func terminar() -> void:
 	if tinha_john:
 		_liberados["first"] = true  # a reação do 1º clique ainda pode mexer no John da sala
 		_ativa = true
+
+
+## A saída do John acabou (sozinha ou interrompida): o palco some e a sala redesenha pelo que o jogo diz agora.
+func terminar_livre() -> void:
+	for id in _props:
+		var p: Dictionary = _props[id]
+		if p.get("sp", null) != null:
+			(p.sp as Node).queue_free()
+	_props.clear()
+	for id in _atores:
+		(_atores[id].sp as Node).queue_free()
+		(_atores[id].sombra as Node).queue_free()
+	_atores.clear()
+	for id in _lacos.keys():
+		_parar_laco(str(id), 0.3)
+	_ativa = false
+	_livre = false
+	sala.cena_livre_encerrada()
 
 
 ## A reação acabou, foi cancelada ou descartada: nada mais para entregar.

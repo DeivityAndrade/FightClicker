@@ -87,6 +87,11 @@ const ESTADOS_TODOS := [
 	"f6b2_criar", "f6b2_criar_apagadas", "f6b2_criar_nome14", "f6b2_criar_cheio", "f6b2_cortes", "f6b2_partes", "f6b2_faixa_meiao",
 	"f6b2_luta_cheio", "f6b2_luta_regata", "f6b2_mentor2", "f6b2_mentor2_dica", "f6b2_mentor2_balao_osmar", "f6b2_mentor2_balao_john",
 	"f6b2_mentor2_cena", "f6b2_mentor2_chegada",
+	# Fase 6c1: casa nova (cena da 1a chegada a academia, academia cheia, saida do John)
+	"f6c1_chegada_cena", "f6c1_chegada_2x", "f6c1_academia_cheia", "f6c1_saida",
+	"f6c1_academia_balao_osmar", "f6c1_academia_balao_john",
+	"f6c1_saida_gym_J1", "f6c1_saida_gym_J2", "f6c1_saida_gym_J3", "f6c1_saida_gym_J4", "f6c1_saida_gym_J5", "f6c1_saida_gym_J6", "f6c1_saida_gym_J7",
+	"f6c1_saida_gar_J1", "f6c1_saida_gar_J2", "f6c1_saida_gar_J3", "f6c1_saida_gar_J4", "f6c1_saida_gar_J5", "f6c1_saida_gar_J6", "f6c1_saida_gar_J7",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -322,6 +327,8 @@ func _rodar() -> void:
 	await _rodar_fase6b1()
 	await _rodar_fase6b1_pular()
 	await _rodar_fase6b2()
+	await _rodar_fase6c1()
+	await _rodar_fase6c1_extra()
 	_fechar_cena()
 
 
@@ -1500,7 +1507,8 @@ func _rodar_fase5() -> void:
 		await _ver("f5_mudar_pronto")
 		var fl: Node = _cena.get_node("Fluxo")
 		_botao_mudar().pressed.emit()
-		await _esperar(0.5)
+		await _esperar(0.4)
+		await _pular_cena_academia()
 		_estado = "f5_mudar_fluxo"
 		_exigir(gs.local_id == "gym" and gs.dinheiro == 0.0, _estado, "MUDAR deveria levar à academia e cobrar $1.000")
 		_exigir(fl.janela != null and fl.janela.has_method("_escolher") and gs.modal_aberto, _estado, "a 1ª chegada deveria abrir a janela de arte")
@@ -3519,3 +3527,142 @@ func _rodar_fase6b2() -> void:
 ## UiTema só carrega depois dos autoloads: o verificador a pega pelo caminho, na hora de usar.
 func _tema() -> GDScript:
 	return load("res://ui/ui_tema.gd")
+
+# ---------------------------------------------------------------------------------------------
+# Fase 6c1: casa nova
+# ---------------------------------------------------------------------------------------------
+
+## A cena da 1a chegada a academia esta tocando: PULAR (como o jogador) e espera a escolha da arte abrir.
+func _pular_cena_academia() -> void:
+	var cu: Node = _cena_ui()
+	if cu != null and cu.player.pode_pular():
+		cu.player.pular()
+	await _esperar(0.9)
+
+
+## Carreira 3 (John sentado, ultimo em pe) com o cinturao e dinheiro: pronto para MUDAR.
+func _f6c1_preparar() -> void:
+	_novo_jogo()
+	while gs.numero_carreira() < 3:
+		gs.aposentar()
+		gs.receber_discipulo()
+		gs.sucessao_tela_aberta()
+		gs.confirmar_discipulo()
+		gs.sucessao_terminou()
+	gs.indice_escada = 4
+	gs.cinturao = true
+	gs.dinheiro = 1.0e6
+
+
+func _rodar_fase6c1() -> void:
+	if not (_quer("f6c1_chegada_cena") or _quer("f6c1_chegada_2x") or _quer("f6c1_academia_cheia") or _quer("f6c1_saida")):
+		return
+	_f6c1_preparar()
+	await _abrir()
+	await _esperar(0.5)
+	_exigir(gs.mudar(), "f6c1_chegada_cena", "MUDAR para a academia")
+	await _esperar(3.2)
+	var cu: Node = _cena_ui()
+	_exigir(gs.cena_sala == "primeira_academia" and cu._botao.visible, "f6c1_chegada_cena", "a cena toca com o botao PULAR (%s)" % gs.cena_sala)
+	await _ver("f6c1_chegada_cena")
+	await _esperar(2.7)  # A4: corte para 2x
+	await _ver("f6c1_chegada_2x")
+	cu.player.pular()
+	await _esperar(0.9)
+	var fl: Node = _cena.get_node("Fluxo")
+	if fl.janela != null and fl.janela.has_method("_escolher"):
+		fl.janela._escolher(gs.academia.ids_artes()[0])
+	await _esperar(2.0)
+	_estado = "f6c1_academia_cheia"
+	var sala: Node = _cena.get_node("Sala")
+	_exigir(gs.cena_sala == "" and sala._osmar.visible and sala.mentor_visivel() and sala.mentor2_visivel() and sala._caixote.visible, _estado, "academia: Osmar, John no caixote e o ultimo em pe")
+	await _ver("f6c1_academia_cheia")
+	# Saida do John: 1a vitoria na academia arma, o 1o momento calmo toca.
+	gs._gravar_marco("disciple_gym_win", {"opponent": "x"}, false)
+	var t := 0.0
+	while not gs.saida_tocando() and t < 25.0:
+		await _esperar(0.25)
+		t += 0.25
+	_estado = "f6c1_saida"
+	_exigir(gs.saida_tocando() and not cu._botao.visible, _estado, "a saida toca sem botao PULAR e sem prender o controle")
+	await _esperar(6.0)
+	await _ver("f6c1_saida")
+
+const F6C1_QUADROS := [["J1", 0.8], ["J2", 2.2], ["J3", 1.9], ["J4", 1.1], ["J5", 4.8], ["J6", 2.2], ["J7", 2.5]]
+
+
+func _f6c1_algum(prefixo: String) -> bool:
+	for q in F6C1_QUADROS:
+		if _quer(prefixo + q[0]):
+			return true
+	return false
+
+
+## Osmar e os mentores com balao na academia; a saida do John quadro a quadro na academia e na garagem.
+func _rodar_fase6c1_extra() -> void:
+	var quer_gym := _f6c1_algum("f6c1_saida_gym_")
+	var quer_gar := _f6c1_algum("f6c1_saida_gar_")
+	var quer_bal := _quer("f6c1_academia_balao_osmar") or _quer("f6c1_academia_balao_john")
+	if not (quer_gym or quer_gar or quer_bal):
+		return
+	if quer_bal or quer_gym:
+		_f6c1_preparar()
+		await _abrir()
+		await _esperar(0.5)
+		gs.mudar()
+		await _esperar(0.4)
+		await _pular_cena_academia()
+		var fl: Node = _cena.get_node("Fluxo")
+		if fl.janela != null and fl.janela.has_method("_escolher"):
+			fl.janela._escolher(gs.academia.ids_artes()[0])
+		await _esperar(1.5)
+		var sala: Node = _cena.get_node("Sala")
+		if _quer("f6c1_academia_balao_osmar"):
+			await _falar("coach", "agora sim. essa parede e nossa.")
+			_checar_balao("f6c1_academia_balao_osmar", "coach")
+			await _ver("f6c1_academia_balao_osmar")
+			_balao().fechar_agora()
+			await _esperar(0.2)
+		if _quer("f6c1_academia_balao_john"):
+			var cu: Node = _cena_ui()
+			cu._falar({"ator": "first", "line": "t", "text": "vamos ver sua guarda.", "seconds": 4.0})
+			await _esperar(0.2)
+			_balao().completar()
+			await _esperar(0.1)
+			_exigir(sala.mentor_visivel(), "f6c1_academia_balao_john", "John no caixote da academia")
+			await _ver("f6c1_academia_balao_john")
+			_balao().fechar_agora()
+			await _esperar(0.2)
+		if quer_gym:
+			await _f6c1_saida_quadros("f6c1_saida_gym_")
+	if quer_gar:
+		_f6c1_preparar()
+		await _abrir()
+		await _esperar(0.6)
+		await _f6c1_saida_quadros("f6c1_saida_gar_")
+
+
+func _f6c1_saida_quadros(prefixo: String) -> void:
+	_estado = prefixo + "J1"
+	gs._gravar_marco("disciple_gym_win", {"opponent": "x"}, false)
+	var t := 0.0
+	while not gs.saida_tocando() and t < 25.0:
+		await _esperar(0.25)
+		t += 0.25
+	_exigir(gs.saida_tocando(), _estado, "a saida foi pedida")
+	var sala: Node = _cena.get_node("Sala")
+	for q in F6C1_QUADROS:
+		await _esperar(float(q[1]))
+		_estado = prefixo + str(q[0])
+		if _quer(_estado):
+			if str(q[0]) in ["J4", "J5"]:
+				if _balao().ativo():
+					_balao().completar()
+					await _esperar(0.1)
+					_checar_balao_6b1(_estado, str(_balao().speaker))
+			await _ver(_estado)
+	t = 0.0
+	while gs.saida_tocando() and t < 6.0:
+		await _esperar(0.25)
+		t += 0.25
+	_exigir(not gs.saida_tocando() and sala._mentor_quem == "last" and not sala.mentor2_visivel(), _estado, "depois da saida o ultimo senta e o ponto em pe fica vazio")

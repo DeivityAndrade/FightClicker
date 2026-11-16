@@ -1,5 +1,5 @@
 {
-	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último). Fase 5.2 (Diretor de Arte): event_golden_crew, icon_crew_click, caixa da L3/L4 (gerador no scratchpad do Diretor de Arte; ver direcao-visual.md §19). Fase 5.3 (Diretor de Arte): calendário da campanha (folhinha, plaquinhas, faixas de aviso, selo do dia, PASSAR O POSTO, campanha completa) e retrato da luta por luva (direcao-visual.md §20). Fase 5.4 (Diretor de Arte): mapa da árvore grande (materiais por região, neblina, nós pequeno/marco/ligação por estado, linhas, botão da sala, revelação) — direcao-visual.md §21. Fase 6a (Diretor de Arte): balão de fala, segurar ESC, selo garagem salva, objetos do Arco 1 na parede da garagem, símbolo da lâmpada, acentos das minúsculas (direcao-visual.md §22). Fase 6b1 (Diretor de Arte): porta de enrolar animada, lado de fora, luz do dia, sombra na porta, caixote do mentor, luvas penduradas, mentor_spot (direcao-visual.md §23). Fase 6b2 (Artista de Personagens): discípulo em camadas com cortes, regata/camiseta, faixa e meião (docs/arte/manifest-6b2-personagens.json).",
+	"_sobre": "Sprites PLACEHOLDER das Fases 2 (garagem), 3 (lutas), 4 (árvore, Metrônomo, revanche) e 4b (aparelhos que chegam, modo assistido), gerados por tools/art/make_sprites_fase2.gd, make_sprites_fase3.gd, make_sprites_fase4.gd e make_sprites_fase4b.gd (personagens: make_sprites_elenco.gd / make_sprites_jogador.gd). Tudo 1x na resolução base 640x360, filtro nearest. Folhas = quadros lado a lado, da esquerda para a direita. Fase 5 (Academia Boa Esquina, Boxe e Jiu-jitsu): tools/art/make_sprites_fase5.gd. Fase 5.1 (garagem clara, caixa da escola, gancho da corda): tools/art/make_sprites_fase51.gd (rodar por último). Fase 5.2 (Diretor de Arte): event_golden_crew, icon_crew_click, caixa da L3/L4 (gerador no scratchpad do Diretor de Arte; ver direcao-visual.md §19). Fase 5.3 (Diretor de Arte): calendário da campanha (folhinha, plaquinhas, faixas de aviso, selo do dia, PASSAR O POSTO, campanha completa) e retrato da luta por luva (direcao-visual.md §20). Fase 5.4 (Diretor de Arte): mapa da árvore grande (materiais por região, neblina, nós pequeno/marco/ligação por estado, linhas, botão da sala, revelação) — direcao-visual.md §21. Fase 6a (Diretor de Arte): balão de fala, segurar ESC, selo garagem salva, objetos do Arco 1 na parede da garagem, símbolo da lâmpada, acentos das minúsculas (direcao-visual.md §22). Fase 6b1 (Diretor de Arte): porta de enrolar animada, lado de fora, luz do dia, sombra na porta, caixote do mentor, luvas penduradas, mentor_spot (direcao-visual.md §23). Fase 6b2 (Artista de Personagens): discípulo em camadas com cortes, regata/camiseta, faixa e meião (docs/arte/manifest-6b2-personagens.json). Fase 6c1 (Diretor de Arte): metade escura, porta da rua, luz do dia, foto antiga e caixote na academia, bolsa do John, pontos gym_* (direcao-visual.md §25). Fase 6c1 (Artista de Personagens): folhas da chegada à academia e da saída do John (docs/arte/manifest-6c1-personagens.json; variantes de paleta e sugestão de scene_anims em by_data_id.personagens_6c1).",
 	"_como_usar": "Sprite2D/AnimatedSprite2D com centered=false e offset = -pivot; position = posição na sala (coordenadas da tela base 640x360). Ordem de desenho: pelo y dos pés (sort_y = pos.y, ou pos.y + sort_y_offset nos sacos pendurados). Nunca escalar por fator não-inteiro nem rodar.",
 	"base_resolution": [
 		640,
@@ -120,6 +120,122 @@
 				67
 			],
 			"_nota": "Ponto em layout.mentor_2_spot ([x, y], formato dos pontos nomeados). Detalhes completos: by_data_id.mentor_2_spot."
+		},
+		"gym_coach_spot": [
+			196,
+			236
+		],
+		"gym_coach_spot_info": {
+			"location": "gym",
+			"requires_milestone": "cena_primeira_academia",
+			"who": "coach (Osmar)",
+			"sprite": "coach_idle_gym / coach_talk_gym (luz dos tubos)",
+			"facing": "direita",
+			"head_anchor": [
+				1,
+				-63
+			],
+			"head_anchor_abs": [
+				197,
+				173
+			],
+			"sort_y": 236,
+			"occupies": [
+				185,
+				174,
+				25,
+				64
+			],
+			"_nota": "Pés do Osmar na academia: o mesmo ponto da garagem, em frente ao banco pintado. A foto fica à direita da cabeça dele. Detalhes: by_data_id.gym_arrival_scene e direcao-visual.md §25."
+		},
+		"gym_mentor_spot": [
+			254,
+			252
+		],
+		"gym_mentor_spot_info": {
+			"location": "gym",
+			"requires_milestone": "cena_primeira_academia",
+			"role": "seat",
+			"pose": "sit_rest",
+			"facing": "direita",
+			"head_anchor_hint": [
+				5,
+				-51
+			],
+			"sort_y": 252,
+			"crate": {
+				"sprite": "garage_crate_gym",
+				"pos": [
+					238,
+					232
+				],
+				"pivot": [
+					16,
+					20
+				],
+				"layer": "sorted",
+				"sort_y": 250,
+				"visible": "a partir do marco cena_primeira_academia, com gente sentada ou não (substitui o banco do design §4.1)"
+			},
+			"occupies": [
+				238,
+				196,
+				33,
+				58
+			],
+			"_nota": "Pés de quem senta no caixote na academia: o mesmo ponto da garagem. Com o saco de lado (258,160) o saco passa atrás da cabeça dele pela ordem por y, como na garagem."
+		},
+		"gym_mentor_2_spot": [
+			150,
+			262
+		],
+		"gym_mentor_2_spot_info": {
+			"location": "gym",
+			"requires_milestone": "cena_primeira_academia",
+			"role": "stand",
+			"pose": "stand_bare",
+			"sprite": "disciple_stand_bare",
+			"facing": "direita",
+			"head_anchor": [
+				1,
+				-65
+			],
+			"head_anchor_abs": [
+				151,
+				197
+			],
+			"sort_y": 262,
+			"occupies": [
+				138,
+				197,
+				25,
+				67
+			],
+			"_nota": "O último que passou o posto, de pé, encostado na parede esquerda, sobre o tatame. O mesmo ponto da garagem. O caminho até o caixote (104 px para a direita) não cruza a faixa do alvo."
+		},
+		"gym_photo_spot": [
+			212,
+			158
+		],
+		"gym_photo_spot_info": {
+			"location": "gym",
+			"requires_milestone": "cena_primeira_academia",
+			"anchor": "canto de cima à esquerda",
+			"sprite": "wall_photo_old_gym",
+			"frame_in_game": 1,
+			"layer": "wall",
+			"size": [
+				18,
+				21
+			],
+			"object_text": "old_photo_gym",
+			"click_rect": [
+				212,
+				158,
+				18,
+				21
+			],
+			"_nota": "No barrado verde, acima da mochila pintada no banco, à direita da cabeça do Osmar. Fora do saco de lado (x 238..278), da corrente e da faixa do alvo. No jogo, sempre o quadro 1 (torta)."
 		}
 	},
 	"by_data_id": {
@@ -3395,6 +3511,158 @@
 				"baloes": "balão do Osmar (132,132,154,36), do John sentado/de pé e do discípulo no saco não chegam na cabeça dele (y 196..210)"
 			},
 			"note": "Fase 6b2 (Diretor de Arte): o último que passou o posto, da Carreira 3 em diante, enquanto o John está no caixote. De pé, encostado na parede esquerda, atrás do vizinho 1 e à esquerda do Osmar, olhando o saco. Usa a folha que o discípulo em camadas já tem (disciple_stand_bare, virado à direita): nenhuma arte nova. Escolhido em vez de (490,250): lá ficaria atrás do vizinho 3 e do tio 1 e colado na caixa da esteira. Mockup: docs/arte/mockups/fase6b2_mentor2_*.png; texto: direcao-visual.md §24."
+		},
+		"gym_arrival_scene": {
+			"half_dark": {
+				"sprite": "gym_half_dark",
+				"pos": [
+					128,
+					18
+				],
+				"layer": "floor",
+				"note": "Só enquanto o tubo da direita está apagado (A1..A6), junto com gym_tube quadro 1 no tubo da direita. Furo transparente no retângulo da porta (401,116,60,108): ali entra a gym_door escura (quadros 3..5)."
+			},
+			"door": {
+				"sprite": "gym_door",
+				"pos": [
+					401,
+					116
+				],
+				"layer": "wall",
+				"frames_lit": {
+					"closed": 0,
+					"half": 1,
+					"open": 2
+				},
+				"frames_dark": {
+					"closed": 3,
+					"half": 4,
+					"open": 5
+				},
+				"note": "Com o gym_half_dark na tela use as animações *_dark; quando o tubo acende (A7), trocar para o quadro claro equivalente no mesmo tique em que o gym_half_dark some. A rua no vão não escurece. Fora das cenas a porta não é desenhada (o gym_bg já tem a fechada)."
+			},
+			"daylight": {
+				"sprite": "gym_daylight",
+				"pos": [
+					330,
+					220
+				],
+				"layer": "floor",
+				"frame_for_door": {
+					"1": 1,
+					"2": 0,
+					"4": 1,
+					"5": 0
+				},
+				"note": "Desenhar DEPOIS do gym_half_dark (os dois são floor): a luz é o próprio chão 1 passo mais claro, também na metade escura."
+			},
+			"photo": {
+				"sprite": "wall_photo_old_gym",
+				"pos": [
+					212,
+					158
+				],
+				"layer": "wall",
+				"frames": {
+					"0": "reta (A4-A5)",
+					"1": "torta (no jogo, sempre)"
+				}
+			},
+			"crate": {
+				"sprite": "garage_crate_gym",
+				"pos": [
+					238,
+					232
+				],
+				"layer": "sorted",
+				"sort_y": 250
+			},
+			"duffel": {
+				"sprite": "john_duffel",
+				"pos": [
+					268,
+					242
+				],
+				"layer": "sorted",
+				"sort_y": 251,
+				"note": "Só na saída do John, até o grab_frame do john_pick_duffel. Serve nos dois locais (o caixote está no mesmo ponto). Nunca fica na sala."
+			},
+			"draw_order": "gym_bg -> wall (gym_door, wall_photo_old_gym) -> floor (gym_half_dark, depois gym_daylight) -> gym_tube -> sorted por y (caixote 250, bolsa 251, gente)",
+			"_nota": "Fase 6c1 (Diretor de Arte). Pedido: docs/cutscenes/pedidos-6c1.md §2. Tempos e coreografia: data/cutscenes/primeira_academia.json e saida_primeiro_mentor.json."
+		},
+		"_nota_fase6c1_arte": "Fase 6c1 (Diretor de Arte): layout.gym_coach_spot, gym_mentor_spot, gym_mentor_2_spot, gym_photo_spot (+ _info) e by_data_id.gym_arrival_scene. Conferência: docs/arte/mockups/fase6c1_academia_conferencia_x2.png; texto: direcao-visual.md §25.",
+		"personagens_6c1": {
+			"_nota": "Fase 6c1 (Artista de Personagens), juntado por tools/art/merge_manifest_6c1.gd. Fonte: docs/arte/manifest-6c1-personagens.json.",
+			"palette_variants": {
+				"helper_2": {
+					"applies_to": "todas as folhas helper_* (só o helper_2 usa carry_crate/put_crate/stand)",
+					"how": "Troca exata de cor por pixel (from -> to). Só a regata muda: verde (neighbor_1) -> vermelha. Nenhuma outra cor das folhas helper_* é verde ou vermelha (o gerador confere).",
+					"swap": {
+						"#1f3d33": "#5a1a22",
+						"#2f6b4a": "#9c2a2a",
+						"#5aa25a": "#d4473a"
+					}
+				}
+			},
+			"props_in_sheets": {
+				"bolsa": "Bolsa de lona do John 18x11 (mock/fase6c1_bolsa_ref.png): o john_duffel do Diretor de Arte deve ser este mesmo desenho para a troca do grab_frame não pular.",
+				"caixote": "garage_crate (mesmas cores); em put_crate q1 está 2 px acima do lugar final (238,232).",
+				"esteira": "treadmill_l0_idle (enferrujada, da garagem); meio giro = a mesma apertada na largura; de ponta = desenho próprio 24x30 com as mesmas cores.",
+				"foto": "wall_photo_old endireitada (metade direita 1 px acima = a versão 'reta'). O Diretor de Arte pode usar a mesma conta para o quadro 0 do wall_photo_old_gym.",
+				"saco": "bag_l0_idle q0 (saco remendado), sempre, em qualquer nível comprado. Deitado = o corpo sem a argola girado 90 graus (tampa para a frente)."
+			},
+			"scene_anims_sugestao": {
+				"coach": {
+					"hang_photo": "coach_hang_photo",
+					"hold_photo": "coach_hold_photo",
+					"idle@gym": "coach_idle_gym",
+					"look_photo": "coach_look_photo",
+					"nudge_photo": "coach_nudge_photo",
+					"step_back": "coach_step_back",
+					"talk@gym": "coach_talk_gym"
+				},
+				"disciple (current_player / mentor:seat / mentor:last)": {
+					"carry_bag": "disciple_carry_bag_left",
+					"carry_bag_idle": "disciple_carry_bag_idle_left",
+					"carry_crate": "disciple_carry_crate_left",
+					"hang_bag": "disciple_hang_bag",
+					"put_crate": "disciple_put_crate",
+					"sit_down": "disciple_sit_down",
+					"sit_rest": "disciple_sit_rest",
+					"stand_bare": "disciple_stand_bare (já existe)",
+					"walk_bare": "disciple_walk_bare (já existe)"
+				},
+				"first_fighter": {
+					"carry_bag": "john_carry_bag_left",
+					"carry_bag_idle": "john_carry_bag_idle_left",
+					"carry_crate": "john_carry_crate_left",
+					"duck_out": "john_duck_out",
+					"hang_bag": "john_hang_bag",
+					"look_room": "john_look_room_left",
+					"nod": "john_nod_left",
+					"pick_duffel": "john_pick_duffel",
+					"put_crate": "john_put_crate",
+					"sit_down": "john_sit_down",
+					"sit_rest": "john_sit_rest",
+					"stand_up": "john_stand_up",
+					"walk_duffel": "john_walk_duffel"
+				},
+				"helper (esteira)": {
+					"stand": "helper_stand_left",
+					"treadmill_bump": "helper_treadmill_bump_left",
+					"treadmill_carry": "helper_treadmill_carry_left",
+					"treadmill_put": "helper_treadmill_put_left",
+					"treadmill_stuck": "helper_treadmill_stuck_left",
+					"treadmill_turn": "helper_treadmill_turn_left"
+				},
+				"helper_2 (caixote, Carreira 1; mesma folha com palette_variants.helper_2)": {
+					"carry_crate": "helper_carry_crate_left",
+					"put_crate": "helper_put_crate",
+					"sit_down": "CORTE 4 do pedido: o vizinho não senta (put_crate termina e ele fica em helper_stand)",
+					"sit_rest": "CORTE 4",
+					"stand": "helper_stand"
+				}
+			}
 		}
 	},
 	"palette_swap_glove": {
@@ -72076,6 +72344,4597 @@
 				4
 			],
 			"who": "discipulo"
+		},
+		"gym_half_dark": {
+			"file": "res://assets/sprites/gym/gym_half_dark.png",
+			"frame_size": [
+				384,
+				272
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				128,
+				18
+			],
+			"layer": "floor",
+			"note": "Fase 6c1: a metade direita da academia 1 passo mais escura (tubo da direita apagado, A1..A6 da chegada). É o próprio gym_bg -1 de x 340 em diante, com borda em dither ordenado 4x4 de x 300 a 339; transparente à esquerda. Furo transparente no retângulo da porta da rua (401,116,60,108), onde a gym_door escura (quadros 3..5) desenha. Sem alpha parcial. Fica abaixo das pessoas."
+		},
+		"gym_door": {
+			"file": "res://assets/sprites/gym/gym_door.png",
+			"frame_size": [
+				60,
+				108
+			],
+			"frames": 6,
+			"fps": 10.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				401,
+				116
+			],
+			"layer": "wall",
+			"loop": false,
+			"anim": {
+				"closed": [
+					0
+				],
+				"open": [
+					0,
+					1,
+					2
+				],
+				"close": [
+					2,
+					1,
+					0
+				],
+				"opened": [
+					2
+				],
+				"closed_dark": [
+					3
+				],
+				"open_dark": [
+					3,
+					4,
+					5
+				],
+				"close_dark": [
+					5,
+					4,
+					3
+				],
+				"opened_dark": [
+					5
+				]
+			},
+			"note": "Fase 6c1: porta da rua da academia por cima da pintada no gym_bg (batente 401..454, vão 404..451 x 120..219). 0 = fechada (recorte do fundo); 1 = meio aberta, a folha a 45 graus (a mesma face apertada em x 418..451) e a rua na fresta; 2 = aberta para dentro, folha de perfil à direita (x 452..459) e a rua clara no vão (céu branco, fachada cream, y2 em dither, muro e calçada cream na mesma altura da garage_door_outside). 3..5 = os mesmos 1 passo mais escuros, menos a rua: usar enquanto o gym_half_dark estiver na tela. Pedido era 3 quadros; os 3 escuros entraram por causa da metade escura."
+		},
+		"gym_daylight": {
+			"file": "res://assets/sprites/gym/gym_daylight.png",
+			"frame_size": [
+				146,
+				70
+			],
+			"frames": 2,
+			"fps": 10.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				330,
+				220
+			],
+			"layer": "floor",
+			"loop": false,
+			"anim": {
+				"full": [
+					0
+				],
+				"half": [
+					1
+				],
+				"open": [
+					1,
+					0
+				],
+				"close": [
+					0,
+					1
+				]
+			},
+			"note": "Fase 6c1: luz do dia no piso de borracha. O próprio gym_bg 1 passo mais claro (miolo junto à porta 2 passos), trapézio que abre para a esquerda e para a frente (y 221..289, base x 336..470), borda em dither ordenado. 0 = porta aberta; 1 = meio aberta (só a fresta da esquerda). Desenhar depois do gym_half_dark."
+		},
+		"wall_photo_old_gym": {
+			"file": "res://assets/sprites/gym/wall_photo_old_gym.png",
+			"frame_size": [
+				18,
+				21
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				212,
+				158
+			],
+			"point": "gym_photo_spot",
+			"layer": "wall",
+			"z": -45,
+			"loop": false,
+			"anim": {
+				"straight": [
+					0
+				],
+				"tilt": [
+					0,
+					1
+				],
+				"crooked": [
+					1
+				]
+			},
+			"note": "Fase 6c1: a foto antiga na academia (gym_photo_spot, no barrado verde acima da mochila do banco). 0 = reta (a metade direita 1 px acima; a mesma conta das folhas do Artista); 1 = torta, igual à wall_photo_old da garagem. No jogo, sempre o quadro 1."
+		},
+		"john_duffel": {
+			"file": "res://assets/sprites/characters/john_duffel.png",
+			"frame_size": [
+				18,
+				11
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				268,
+				242
+			],
+			"layer": "sorted",
+			"sort_y": 251,
+			"note": "Fase 6c1: bolsa de lona do John no chão, atrás do caixote (268,242). É a docs/arte/mockups/fase6c1_bolsa_ref.png do Artista, pixel a pixel (a bolsa da folha john_pick_duffel não pula no grab_frame). Sem luz pintada, como as folhas do John. Só no começo da saída; nunca fica na sala."
+		},
+		"garage_crate_gym": {
+			"file": "res://assets/sprites/garage/garage_crate_gym.png",
+			"frame_size": [
+				26,
+				19
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				16,
+				20
+			],
+			"pos": [
+				238,
+				232
+			],
+			"layer": "sorted",
+			"sort_y": 250,
+			"point": "gym_mentor_spot",
+			"note": "Fase 6c1: o mesmo caixote do mentor com a luz dos tubos (sem o calor da lâmpada). Regra do sufixo _gym: na academia o jogo usa este no lugar do garage_crate. Visível na academia a partir do marco cena_primeira_academia."
+		},
+		"coach_hang_photo": {
+			"action": "hang_photo",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_hang_photo.png",
+			"fps": 8.0,
+			"frame_size": [
+				64,
+				88
+			],
+			"frames": 8,
+			"frames_note": "0 começa a erguer a moldura; 1 na altura do rosto, girando para a parede; 2 na ponta dos pés, moldura 2 px abaixo do ponto; 3 ENCOSTA (moldura exatamente no gym_photo_spot 212,158 = canto de cima à esquerda; mãos nos cantos de baixo); 4 BATE O PREGO com a palma, uma vez (knock_frame, som nail_knock); 5 SOLTA: a foto vira adereço NESTE quadro (release_frame; a folha não desenha mais a moldura); 6 desce dos pés; 7 braços soltos. A moldura dos quadros 1-4 é desenhada ATRÁS das mãos e do braço (está na parede).",
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-44
+					],
+					"hand_front": [
+						19,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						11,
+						-54
+					],
+					"hand_front": [
+						25,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						17,
+						-56
+					],
+					"hand_front": [
+						30,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						17,
+						-59
+					],
+					"hand_front": [
+						30,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						17,
+						-59
+					],
+					"hand_front": [
+						25,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-55
+					],
+					"hand_front": [
+						24,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-40
+					],
+					"hand_front": [
+						16,
+						-42
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-27
+					],
+					"hand_front": [
+						10,
+						-27
+					]
+				}
+			],
+			"head_anchor": [
+				6,
+				-68
+			],
+			"head_by_frame": [
+				[
+					2,
+					-55
+				],
+				[
+					3,
+					-56
+				],
+				[
+					6,
+					-59
+				],
+				[
+					6,
+					-59
+				],
+				[
+					6,
+					-60
+				],
+				[
+					6,
+					-59
+				],
+				[
+					3,
+					-56
+				],
+				[
+					1,
+					-55
+				]
+			],
+			"knock_frame": 4,
+			"light": "academia (tubos)",
+			"loop": false,
+			"mirror_ok": false,
+			"photo_note": "Canto de cima à esquerda da moldura relativo ao pivô no quadro 3-4 (= gym_photo_spot 212,158 com o Osmar em 196,236).",
+			"photo_rect_rel": [
+				16,
+				-78,
+				18,
+				21
+			],
+			"pivot": [
+				22,
+				83
+			],
+			"pos": [
+				196,
+				236
+			],
+			"release_frame": 5,
+			"scene_name": "hang_photo",
+			"who": "treinador"
+		},
+		"coach_hold_photo": {
+			"action": "hold_photo",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_hold_photo.png",
+			"fps": 4.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "Osmar parado com a moldura da foto antiga nas duas mãos na altura do peito, meio de lado (virada para a parede), olhando a parede à frente. Respiração de 1 px (quadros 2-3).",
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-36
+					],
+					"hand_front": [
+						15,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-36
+					],
+					"hand_front": [
+						15,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-35
+					],
+					"hand_front": [
+						15,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-35
+					],
+					"hand_front": [
+						15,
+						-36
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-63
+			],
+			"head_by_frame": [
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-54
+				],
+				[
+					1,
+					-54
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "hold_photo",
+			"who": "treinador"
+		},
+		"coach_idle_gym": {
+			"action": "idle@gym",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_idle_gym.png",
+			"fps": 3.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "= coach_idle (braços cruzados, respiração lenta) com a LUZ DOS TUBOS da academia aplicada no ponto (196,236) no lugar da lâmpada da garagem. Usar no lugar do coach_idle quando ele está na academia.",
+			"hands": [
+				{
+					"hand_back": [
+						4,
+						-39
+					],
+					"hand_front": [
+						-4,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-39
+					],
+					"hand_front": [
+						-4,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-38
+					],
+					"hand_front": [
+						-4,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-38
+					],
+					"hand_front": [
+						-4,
+						-40
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-63
+			],
+			"head_by_frame": [
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-54
+				],
+				[
+					1,
+					-54
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "idle@gym",
+			"who": "treinador"
+		},
+		"coach_look_photo": {
+			"action": "look_photo",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_look_photo.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 3,
+			"frames_note": "0 braços soltos; 1 mão da frente no queixo, a outra apoia o cotovelo; 2 CABEÇA INCLINADA (14 graus para a foto) olhando a foto. Segurar o quadro 2.",
+			"hands": [
+				{
+					"hand_back": [
+						-7,
+						-27
+					],
+					"hand_front": [
+						10,
+						-27
+					]
+				},
+				{
+					"hand_back": [
+						7,
+						-39
+					],
+					"hand_front": [
+						5,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						7,
+						-39
+					],
+					"hand_front": [
+						5,
+						-47
+					]
+				}
+			],
+			"head_anchor": [
+				2,
+				-63
+			],
+			"head_by_frame": [
+				[
+					2,
+					-55
+				],
+				[
+					2,
+					-55
+				],
+				[
+					2,
+					-55
+				]
+			],
+			"hold_frame": 2,
+			"light": "academia (tubos)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				188,
+				240
+			],
+			"scene_name": "look_photo",
+			"who": "treinador"
+		},
+		"coach_nudge_photo": {
+			"action": "nudge_photo",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_nudge_photo.png",
+			"finger_tip_rel": [
+				33,
+				-60
+			],
+			"fps": 10.0,
+			"frame_size": [
+				64,
+				88
+			],
+			"frames": 4,
+			"frames_note": "Outra mão na cintura. 0 braço da frente sobe; 1 dedo esticado no canto de baixo à direita da moldura (ponta do dedo perto de 229,177); 2 EMPURRA 1 px para baixo: a foto entorta NESTE quadro (nudge_frame: trocar wall_photo_old_gym para crooked); 3 recolhe o braço, satisfeito. A moldura NÃO está na folha (é o adereço da parede).",
+			"hands": [
+				{
+					"hand_back": [
+						-6,
+						-31
+					],
+					"hand_front": [
+						17,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-31
+					],
+					"hand_front": [
+						29,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-31
+					],
+					"hand_front": [
+						29,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-31
+					],
+					"hand_front": [
+						13,
+						-44
+					]
+				}
+			],
+			"head_anchor": [
+				5,
+				-64
+			],
+			"head_by_frame": [
+				[
+					2,
+					-55
+				],
+				[
+					5,
+					-56
+				],
+				[
+					5,
+					-55
+				],
+				[
+					1,
+					-55
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": false,
+			"mirror_ok": false,
+			"nudge_frame": 2,
+			"pivot": [
+				22,
+				83
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "nudge_photo",
+			"who": "treinador"
+		},
+		"coach_step_back": {
+			"action": "step_back",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_step_back.png",
+			"fps": 8.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "Passo curto para trás sem dar as costas à foto: virado para a DIREITA enquanto anda para a esquerda/baixo (196,236)->(188,240). Também serve para voltar (a cena move o ponto). 1 = pé de trás pousa atrás; 3 = pé da frente pousa.",
+			"hands": [
+				{
+					"hand_back": [
+						-7,
+						-28
+					],
+					"hand_front": [
+						11,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-27
+					],
+					"hand_front": [
+						10,
+						-27
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-28
+					],
+					"hand_front": [
+						10,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-28
+					],
+					"hand_front": [
+						11,
+						-28
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-63
+			],
+			"head_by_frame": [
+				[
+					1,
+					-55
+				],
+				[
+					0,
+					-54
+				],
+				[
+					0,
+					-55
+				],
+				[
+					1,
+					-54.5
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "step_back",
+			"step_frames": [
+				1,
+				3
+			],
+			"who": "treinador"
+		},
+		"coach_talk_gym": {
+			"action": "talk@gym",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_talk_gym.png",
+			"fps": 6.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "= coach_talk (um braço cruzado, a outra mão acompanha a fala, boca abre e fecha) com a LUZ DOS TUBOS da academia no ponto (196,236).",
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						13,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						13,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						14,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						13,
+						-46
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-64
+			],
+			"head_by_frame": [
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-56
+				],
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-55
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "talk@gym",
+			"who": "treinador"
+		},
+		"disciple_carry_bag_idle_left": {
+			"action": "carry_bag_idle",
+			"anchors": [
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-57
+					],
+					"head_box": [
+						45,
+						20,
+						13,
+						13
+					],
+					"head_box_max": [
+						44,
+						17,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						-1,
+						-50
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-56
+					],
+					"head_box": [
+						45,
+						21,
+						13,
+						13
+					],
+					"head_box_max": [
+						44,
+						18,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-30
+					],
+					"top": [
+						-1,
+						-49
+					],
+					"tw": 0,
+					"view": "34_left"
+				}
+			],
+			"facing": "esquerda",
+			"file": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_body.png",
+			"fps": 3.0,
+			"frame_size": [
+				104,
+				88
+			],
+			"frames": 2,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Parado em (352,262) virado para a ESQUERDA (para o Osmar) com o saco no ombro; quadro 1 = ajeita o peso, corpo e saco 1 px abaixo.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						9,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-26.2482318878174
+					],
+					"hand_front": [
+						9,
+						-65
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-67
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				52,
+				83
+			],
+			"scene_name": "carry_bag_idle",
+			"who": "discipulo"
+		},
+		"disciple_carry_bag_left": {
+			"action": "carry_bag",
+			"anchors": [
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-2,
+						-57
+					],
+					"head_box": [
+						44,
+						20,
+						13,
+						13
+					],
+					"head_box_max": [
+						43,
+						17,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						-2,
+						-50
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-2,
+						-55.5
+					],
+					"head_box": [
+						44,
+						22,
+						13,
+						13
+					],
+					"head_box_max": [
+						43,
+						19,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-29.5
+					],
+					"top": [
+						-2,
+						-48.5
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-2,
+						-56
+					],
+					"head_box": [
+						44,
+						21,
+						13,
+						13
+					],
+					"head_box_max": [
+						43,
+						18,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-30
+					],
+					"top": [
+						-2,
+						-49
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-2,
+						-57
+					],
+					"head_box": [
+						44,
+						20,
+						13,
+						13
+					],
+					"head_box_max": [
+						43,
+						17,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						-2,
+						-50
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-2,
+						-55.5
+					],
+					"head_box": [
+						44,
+						22,
+						13,
+						13
+					],
+					"head_box_max": [
+						43,
+						19,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-29.5
+					],
+					"top": [
+						-2,
+						-48.5
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-2,
+						-56
+					],
+					"head_box": [
+						44,
+						21,
+						13,
+						13
+					],
+					"head_box_max": [
+						43,
+						18,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-30
+					],
+					"top": [
+						-2,
+						-49
+					],
+					"tw": 0,
+					"view": "34_left"
+				}
+			],
+			"facing": "esquerda",
+			"file": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_body.png",
+			"fps": 10.0,
+			"frame_size": [
+				104,
+				88
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) deitado no ombro de trás, atrás da cabeça (a cabeça aparece inteira); a mão de perto segura o saco por cima, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-10.3811779022217,
+						-27.2482318878174
+					],
+					"hand_front": [
+						8,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-8.30899047851563,
+						-25.7120628356934
+					],
+					"hand_front": [
+						8,
+						-64.5
+					]
+				},
+				{
+					"hand_back": [
+						-9.34555721282959,
+						-26.2030162811279
+					],
+					"hand_front": [
+						8,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-10.3811779022217,
+						-27.2482318878174
+					],
+					"hand_front": [
+						8,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-14.4576196670532,
+						-26.46702003479
+					],
+					"hand_front": [
+						8,
+						-64.5
+					]
+				},
+				{
+					"hand_back": [
+						-12.7780179977417,
+						-26.5637836456299
+					],
+					"hand_front": [
+						8,
+						-65
+					]
+				}
+			],
+			"head_anchor": [
+				-2,
+				-67
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				52,
+				83
+			],
+			"scene_name": "carry_bag",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "discipulo"
+		},
+		"disciple_carry_crate_left": {
+			"action": "carry_crate",
+			"anchors": [
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-57
+					],
+					"head_box": [
+						15,
+						4,
+						13,
+						13
+					],
+					"head_box_max": [
+						14,
+						1,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						-1,
+						-50
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-55.5
+					],
+					"head_box": [
+						15,
+						6,
+						13,
+						13
+					],
+					"head_box_max": [
+						14,
+						3,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-29.5
+					],
+					"top": [
+						-1,
+						-48.5
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-56
+					],
+					"head_box": [
+						15,
+						5,
+						13,
+						13
+					],
+					"head_box_max": [
+						14,
+						2,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-30
+					],
+					"top": [
+						-1,
+						-49
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-57
+					],
+					"head_box": [
+						15,
+						4,
+						13,
+						13
+					],
+					"head_box_max": [
+						14,
+						1,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						-1,
+						-50
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-55.5
+					],
+					"head_box": [
+						15,
+						6,
+						13,
+						13
+					],
+					"head_box_max": [
+						14,
+						3,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-29.5
+					],
+					"top": [
+						-1,
+						-48.5
+					],
+					"tw": 0,
+					"view": "34_left"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						-1,
+						-56
+					],
+					"head_box": [
+						15,
+						5,
+						13,
+						13
+					],
+					"head_box_max": [
+						14,
+						2,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-30
+					],
+					"top": [
+						-1,
+						-49
+					],
+					"tw": 0,
+					"view": "34_left"
+				}
+			],
+			"facing": "esquerda",
+			"file": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_body.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, à frente do peito, tronco 1 px para trás. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-20,
+						-37
+					],
+					"hand_front": [
+						3,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-37
+					],
+					"hand_front": [
+						3,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-67
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "carry_crate",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "discipulo"
+		},
+		"disciple_hang_bag": {
+			"action": "hang_bag",
+			"anchors": [
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						1,
+						-57
+					],
+					"head_box": [
+						47,
+						36,
+						13,
+						13
+					],
+					"head_box_max": [
+						46,
+						33,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						1,
+						-50
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "effort",
+					"flipped": false,
+					"head": [
+						1,
+						-57
+					],
+					"head_box": [
+						47,
+						36,
+						13,
+						13
+					],
+					"head_box_max": [
+						46,
+						33,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						1,
+						-50
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "effort",
+					"flipped": false,
+					"head": [
+						6,
+						-57
+					],
+					"head_box": [
+						52,
+						36,
+						13,
+						13
+					],
+					"head_box_max": [
+						51,
+						33,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						2,
+						-31
+					],
+					"top": [
+						5,
+						-50
+					],
+					"tw": 0.6,
+					"view": "34"
+				},
+				{
+					"face": "effort",
+					"flipped": false,
+					"head": [
+						6,
+						-59
+					],
+					"head_box": [
+						52,
+						34,
+						13,
+						13
+					],
+					"head_box_max": [
+						51,
+						31,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						2,
+						-33
+					],
+					"top": [
+						5,
+						-52
+					],
+					"tw": 0.6,
+					"view": "34"
+				},
+				{
+					"face": "effort",
+					"flipped": false,
+					"head": [
+						6,
+						-59
+					],
+					"head_box": [
+						52,
+						34,
+						13,
+						11
+					],
+					"head_box_max": [
+						51,
+						31,
+						15,
+						14
+					],
+					"head_rot": 0,
+					"hip": [
+						2,
+						-33
+					],
+					"top": [
+						5,
+						-52
+					],
+					"tw": 0.6,
+					"view": "34"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						6,
+						-57
+					],
+					"head_box": [
+						52,
+						36,
+						13,
+						13
+					],
+					"head_box_max": [
+						51,
+						33,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						2,
+						-31
+					],
+					"top": [
+						5,
+						-50
+					],
+					"tw": 0.6,
+					"view": "34"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						1,
+						-57
+					],
+					"head_box": [
+						47,
+						36,
+						13,
+						13
+					],
+					"head_box_max": [
+						46,
+						33,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						1,
+						-50
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						1,
+						-57
+					],
+					"head_box": [
+						47,
+						36,
+						13,
+						13
+					],
+					"head_box_max": [
+						46,
+						33,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						1,
+						-50
+					],
+					"tw": 0,
+					"view": "34"
+				}
+			],
+			"facing": "direita",
+			"file": "res://assets/sprites/disciple/disciple_hang_bag_disc_body.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"frames_note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: saco deitado por cima da cabeça, as duas mãos embaixo; 2 o saco já em pé sobe na frente (argola 9 px abaixo do gancho), mãos no lado de perto; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-66
+					],
+					"hand_front": [
+						10.0696640014648,
+						-27.3084659576416
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-63
+					],
+					"hand_front": [
+						16,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-56
+					],
+					"hand_front": [
+						18,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-64
+					],
+					"hand_front": [
+						18,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-62
+					],
+					"hand_front": [
+						18,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						12,
+						-52
+					],
+					"hand_front": [
+						15,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-31
+					],
+					"hand_front": [
+						13,
+						-33
+					]
+				},
+				{
+					"hand_back": [
+						-5.96374797821045,
+						-27.2271366119385
+					],
+					"hand_front": [
+						9.72568321228027,
+						-27.2753448486328
+					]
+				}
+			],
+			"head_anchor": [
+				6,
+				-69
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_hang_bag_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_hang_bag_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_hang_bag_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_hang_bag_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_hang_bag_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_hang_bag_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_hang_bag_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_hang_bag_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_hang_bag_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_hang_bag_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				52,
+				99
+			],
+			"release_frame": 4,
+			"scene_name": "hang_bag",
+			"who": "discipulo"
+		},
+		"disciple_put_crate": {
+			"action": "put_crate",
+			"anchors": [
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						0,
+						-57
+					],
+					"head_box": [
+						16,
+						4,
+						13,
+						13
+					],
+					"head_box_max": [
+						15,
+						1,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						0,
+						-50
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						2,
+						-49
+					],
+					"head_box": [
+						18,
+						12,
+						13,
+						13
+					],
+					"head_box_max": [
+						17,
+						9,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-5,
+						-24
+					],
+					"top": [
+						-1,
+						-42
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "normal",
+					"flipped": false,
+					"head": [
+						2,
+						-52
+					],
+					"head_box": [
+						18,
+						9,
+						13,
+						13
+					],
+					"head_box_max": [
+						17,
+						6,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-3,
+						-27
+					],
+					"top": [
+						0,
+						-45
+					],
+					"tw": 0,
+					"view": "34"
+				}
+			],
+			"facing": "direita",
+			"file": "res://assets/sprites/disciple/disciple_put_crate_disc_body.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 3,
+			"frames_note": "Em (254,252), termina virado para a DIREITA. 0 girou o corpo (caixote ainda no peito); 1 dobra os joelhos e pousa o caixote atrás de si (2 px acima do lugar final, desenhado atrás das pernas); 2 SOLTA: o caixote vira adereço NESTE quadro (garage_crate em 238,232), meio agachado, mãos abertas. Depois: sit_down a partir do QUADRO 1 (o quadro 0 do sit_down é em pé) ou, para o vizinho, stand.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-36
+					],
+					"hand_front": [
+						19,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-23
+					],
+					"hand_front": [
+						7,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-26
+					],
+					"hand_front": [
+						9,
+						-26
+					]
+				}
+			],
+			"head_anchor": [
+				0,
+				-67
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_put_crate_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_put_crate_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_put_crate_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_put_crate_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_put_crate_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_put_crate_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_put_crate_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_put_crate_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_put_crate_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_put_crate_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				22,
+				67
+			],
+			"release_frame": 2,
+			"scene_name": "put_crate",
+			"who": "discipulo"
+		},
+		"disciple_sit_down": {
+			"action": "sit_down",
+			"anchors": [
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						2,
+						-57
+					],
+					"head_box": [
+						18,
+						4,
+						13,
+						13
+					],
+					"head_box_max": [
+						17,
+						1,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						0,
+						-31
+					],
+					"top": [
+						1,
+						-50
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						2,
+						-52
+					],
+					"head_box": [
+						18,
+						9,
+						13,
+						13
+					],
+					"head_box_max": [
+						17,
+						6,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-3,
+						-27
+					],
+					"top": [
+						0,
+						-45
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						2,
+						-48
+					],
+					"head_box": [
+						18,
+						13,
+						13,
+						13
+					],
+					"head_box_max": [
+						17,
+						10,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-5,
+						-23
+					],
+					"top": [
+						-1,
+						-41
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						1,
+						-47
+					],
+					"head_box": [
+						17,
+						14,
+						13,
+						13
+					],
+					"head_box_max": [
+						16,
+						11,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-6,
+						-22
+					],
+					"top": [
+						-2,
+						-40
+					],
+					"tw": 0,
+					"view": "34"
+				}
+			],
+			"facing": "direita",
+			"file": "res://assets/sprites/disciple/disciple_sit_down_disc_body.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "Discípulo em camadas: as mesmas poses do john_sit_down. 0 baixa o braço; 1 dobra os joelhos; 2 quadril encosta no caixote; 3 sentado (= sit_rest q0). O caixote é adereço, atrás.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-27
+					],
+					"hand_front": [
+						12,
+						-31
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-26
+					],
+					"hand_front": [
+						10,
+						-26
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-22
+					],
+					"hand_front": [
+						9,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-21
+					],
+					"hand_front": [
+						9,
+						-21
+					]
+				}
+			],
+			"head_anchor": [
+				2,
+				-67
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_sit_down_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_sit_down_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_sit_down_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_sit_down_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_sit_down_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_sit_down_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_sit_down_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_sit_down_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_sit_down_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_sit_down_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "sit_down",
+			"who": "discipulo"
+		},
+		"disciple_sit_rest": {
+			"action": "sit_rest",
+			"anchors": [
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						1,
+						-47
+					],
+					"head_box": [
+						17,
+						14,
+						13,
+						13
+					],
+					"head_box_max": [
+						16,
+						11,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-6,
+						-22
+					],
+					"top": [
+						-2,
+						-40
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						1,
+						-48
+					],
+					"head_box": [
+						17,
+						13,
+						13,
+						13
+					],
+					"head_box_max": [
+						16,
+						10,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-6,
+						-22
+					],
+					"top": [
+						-2,
+						-41
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						1,
+						-48
+					],
+					"head_box": [
+						17,
+						13,
+						13,
+						13
+					],
+					"head_box_max": [
+						16,
+						10,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-6,
+						-22
+					],
+					"top": [
+						-2,
+						-41
+					],
+					"tw": 0,
+					"view": "34"
+				},
+				{
+					"face": "smile",
+					"flipped": false,
+					"head": [
+						1,
+						-47
+					],
+					"head_box": [
+						17,
+						14,
+						13,
+						13
+					],
+					"head_box_max": [
+						16,
+						11,
+						15,
+						16
+					],
+					"head_rot": 0,
+					"hip": [
+						-6,
+						-22
+					],
+					"top": [
+						-2,
+						-40
+					],
+					"tw": 0,
+					"view": "34"
+				}
+			],
+			"facing": "direita",
+			"file": "res://assets/sprites/disciple/disciple_sit_rest_disc_body.png",
+			"fps": 3.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "Discípulo em camadas: a pose parada de mentor sentado no caixote (assento a 17 px do chão), antebraços nos joelhos, mãos nuas, olhando o saco. Respiração de 1 px nos ombros (quadros 1-2). Mesmas poses do john_sit_rest.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						1,
+						-21
+					],
+					"hand_front": [
+						9,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-21
+					],
+					"hand_front": [
+						9,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-21
+					],
+					"hand_front": [
+						9,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-21
+					],
+					"hand_front": [
+						9,
+						-21
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-58
+			],
+			"layers": {
+				"band": "res://assets/sprites/disciple/disciple_sit_rest_disc_band.png",
+				"body": "res://assets/sprites/disciple/disciple_sit_rest_disc_body.png",
+				"front_mask": "res://assets/sprites/disciple/disciple_sit_rest_disc_front.png",
+				"head": {
+					"bun": "res://assets/sprites/disciple/disciple_sit_rest_disc_head_bun.png",
+					"buzz": "res://assets/sprites/disciple/disciple_sit_rest_disc_head_buzz.png",
+					"short": "res://assets/sprites/disciple/disciple_sit_rest_disc_head_short.png",
+					"volume": "res://assets/sprites/disciple/disciple_sit_rest_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"head",
+					"band",
+					"front_mask"
+				],
+				"socks": "res://assets/sprites/disciple/disciple_sit_rest_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/disciple_sit_rest_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/disciple_sit_rest_disc_top_tee.png"
+				}
+			},
+			"light": "sem luz pintada (como todas as folhas do discípulo)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "sit_rest",
+			"who": "discipulo"
+		},
+		"helper_carry_crate_left": {
+			"action": "carry_crate",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_carry_crate_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Vizinho (helper_2, na Carreira 1) andando para a ESQUERDA com o caixote nos dois braços. Mesmas poses do john_carry_crate_left.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-20,
+						-37
+					],
+					"hand_front": [
+						3,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-37
+					],
+					"hand_front": [
+						3,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-55.5
+				],
+				[
+					-1,
+					-56
+				],
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-55.5
+				],
+				[
+					-1,
+					-56
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "carry_crate",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "vizinho"
+		},
+		"helper_put_crate": {
+			"action": "put_crate",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/helper_put_crate.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 3,
+			"frames_note": "Vizinho pousa o caixote em (254,252) e termina virado para a DIREITA. 0 girou; 1 dobra os joelhos e pousa atrás de si; 2 SOLTA (o caixote vira adereço). Depois: helper_stand (corte 4 do pedido: o vizinho não senta).",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-36
+					],
+					"hand_front": [
+						19,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-23
+					],
+					"hand_front": [
+						7,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-26
+					],
+					"hand_front": [
+						9,
+						-26
+					]
+				}
+			],
+			"head_anchor": [
+				0,
+				-65
+			],
+			"head_by_frame": [
+				[
+					0,
+					-57
+				],
+				[
+					2,
+					-49
+				],
+				[
+					2,
+					-52
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				22,
+				67
+			],
+			"release_frame": 2,
+			"scene_name": "put_crate",
+			"who": "vizinho"
+		},
+		"helper_stand": {
+			"action": "stand",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/helper_stand.png",
+			"fps": 4.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "Parado virado para a DIREITA, mãos na cintura, respirando (ombros 1 px nos quadros 1-2). Para o helper_2 ao lado do caixote.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-32
+					],
+					"hand_front": [
+						11,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-32
+					],
+					"hand_front": [
+						11,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-32
+					],
+					"hand_front": [
+						11,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-32
+					],
+					"hand_front": [
+						11,
+						-32
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-66
+			],
+			"head_by_frame": [
+				[
+					1,
+					-57
+				],
+				[
+					1,
+					-58
+				],
+				[
+					1,
+					-58
+				],
+				[
+					1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "stand",
+			"who": "vizinho"
+		},
+		"helper_stand_left": {
+			"action": "stand",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_stand_left.png",
+			"fps": 4.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Parado virado para a ESQUERDA, mãos na cintura, respirando. Para o vizinho da esteira em (440,250) (stand do pedido).",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-32
+					],
+					"hand_front": [
+						9,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-32
+					],
+					"hand_front": [
+						9,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-32
+					],
+					"hand_front": [
+						9,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-32
+					],
+					"hand_front": [
+						9,
+						-32
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-66
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-58
+				],
+				[
+					-1,
+					-58
+				],
+				[
+					-1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "stand",
+			"who": "vizinho"
+		},
+		"helper_treadmill_bump_left": {
+			"action": "treadmill_bump",
+			"bump_frame": 3,
+			"carried": "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_treadmill_bump_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				96
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Na soleira (430,222), virado para a ESQUERDA, esteira velha (treadmill_l0) ATRAVESSADA na frente do corpo, 86 px. 0-2 avança 1 px por quadro; 3 BATE nos dois batentes (bump_frame: esteira 1 px acima, tremida, rosto de esforço); 4-5 recua 3 px. O vizinho não sai do ponto: o avanço está dentro da folha. As pontas da esteira passam do vão da porta (404..451): quem cobre as pontas é o batente (ver relatório).",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-28
+					],
+					"hand_front": [
+						5,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-28
+					],
+					"hand_front": [
+						4,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-29
+					],
+					"hand_front": [
+						3,
+						-29
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-28
+					],
+					"hand_front": [
+						5,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-2,
+					-57
+				],
+				[
+					-3,
+					-57
+				],
+				[
+					-3,
+					-56
+				],
+				[
+					-2,
+					-57
+				],
+				[
+					-1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				56,
+				74
+			],
+			"scene_name": "treadmill_bump",
+			"who": "vizinho"
+		},
+		"helper_treadmill_carry_left": {
+			"action": "treadmill_carry",
+			"carried": "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_treadmill_carry_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				96
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Anda com a esteira de ponta na frente do corpo, de (430,222) a (440,250), virado para a ESQUERDA. 1 e 4 = pé pousa.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-12,
+						-27
+					],
+					"hand_front": [
+						7,
+						-27
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-25.5
+					],
+					"hand_front": [
+						7,
+						-25.5
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-26
+					],
+					"hand_front": [
+						7,
+						-26
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-27
+					],
+					"hand_front": [
+						7,
+						-27
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-25.5
+					],
+					"hand_front": [
+						7,
+						-25.5
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-26
+					],
+					"hand_front": [
+						7,
+						-26
+					]
+				}
+			],
+			"head_anchor": [
+				-1.5,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1.5,
+					-57
+				],
+				[
+					-1.5,
+					-55.5
+				],
+				[
+					-1.5,
+					-56
+				],
+				[
+					-1.5,
+					-57
+				],
+				[
+					-1.5,
+					-55.5
+				],
+				[
+					-1.5,
+					-56
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				56,
+				74
+			],
+			"scene_name": "treadmill_carry",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "vizinho"
+		},
+		"helper_treadmill_put_left": {
+			"action": "treadmill_put",
+			"carried": "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_treadmill_put_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				96
+			],
+			"frames": 3,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Em (440,250): 0 abaixa a esteira de ponta dobrando os joelhos; 1 ela gira de volta e encosta no chão no lugar (pivô 445,267); 2 a esteira vira o adereço da sala NESTE quadro (não está na folha), ele endireita.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-12,
+						-22
+					],
+					"hand_front": [
+						7,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-21
+					],
+					"hand_front": [
+						6,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-30
+					],
+					"hand_front": [
+						7,
+						-29
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-2,
+					-51
+				],
+				[
+					-4,
+					-48
+				],
+				[
+					-1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				56,
+				74
+			],
+			"release_frame": 2,
+			"scene_name": "treadmill_put",
+			"who": "vizinho"
+		},
+		"helper_treadmill_stuck_left": {
+			"action": "treadmill_stuck",
+			"carried": "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_treadmill_stuck_left.png",
+			"fps": 4.0,
+			"frame_size": [
+				112,
+				96
+			],
+			"frames": 4,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Parado atrás da esteira atravessada, olha um batente (q1), olha o outro (q2-q3, cabeça virada). Quase sem movimento.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-2,
+					-57
+				],
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": true,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				56,
+				74
+			],
+			"scene_name": "treadmill_stuck",
+			"who": "vizinho"
+		},
+		"helper_treadmill_turn_left": {
+			"action": "treadmill_turn",
+			"carried": "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/helper_treadmill_turn_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				96
+			],
+			"frames": 4,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Gira a esteira para passar de ponta: 0 atravessada (86 px); 1 meio giro (60); 2 (36); 3 de ponta, estreita (24 px, rolo na frente, painel lá atrás).",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-28
+					],
+					"hand_front": [
+						6,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-28
+					],
+					"hand_front": [
+						5,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-28
+					],
+					"hand_front": [
+						4,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-27
+					],
+					"hand_front": [
+						7,
+						-27
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": false,
+			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				56,
+				74
+			],
+			"scene_name": "treadmill_turn",
+			"who": "vizinho"
+		},
+		"john_carry_bag_idle_left": {
+			"action": "john_carry_bag_idle_left",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/john_carry_bag_idle_left.png",
+			"fps": 3.0,
+			"frame_size": [
+				104,
+				88
+			],
+			"frames": 2,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Parado em (352,262) virado para a ESQUERDA (para o Osmar) com o saco no ombro; quadro 1 = ajeita o peso, corpo e saco 1 px abaixo.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						9,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-26.2482318878174
+					],
+					"hand_front": [
+						9,
+						-65
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-56
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				52,
+				83
+			],
+			"scene_name": "carry_bag_idle",
+			"who": "primeiro"
+		},
+		"john_carry_bag_left": {
+			"action": "john_carry_bag_left",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/john_carry_bag_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				104,
+				88
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) deitado no ombro de trás, atrás da cabeça (a cabeça aparece inteira); a mão de perto segura o saco por cima, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-10.3811779022217,
+						-27.2482318878174
+					],
+					"hand_front": [
+						8,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-8.30899047851563,
+						-25.7120628356934
+					],
+					"hand_front": [
+						8,
+						-64.5
+					]
+				},
+				{
+					"hand_back": [
+						-9.34555721282959,
+						-26.2030162811279
+					],
+					"hand_front": [
+						8,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-10.3811779022217,
+						-27.2482318878174
+					],
+					"hand_front": [
+						8,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-14.4576196670532,
+						-26.46702003479
+					],
+					"hand_front": [
+						8,
+						-64.5
+					]
+				},
+				{
+					"hand_back": [
+						-12.7780179977417,
+						-26.5637836456299
+					],
+					"hand_front": [
+						8,
+						-65
+					]
+				}
+			],
+			"head_anchor": [
+				-2,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-2,
+					-57
+				],
+				[
+					-2,
+					-55.5
+				],
+				[
+					-2,
+					-56
+				],
+				[
+					-2,
+					-57
+				],
+				[
+					-2,
+					-55.5
+				],
+				[
+					-2,
+					-56
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				52,
+				83
+			],
+			"scene_name": "carry_bag",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "primeiro"
+		},
+		"john_carry_crate_left": {
+			"action": "john_carry_crate_left",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/john_carry_crate_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, à frente do peito, tronco 1 px para trás. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-20,
+						-37
+					],
+					"hand_front": [
+						3,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-37
+					],
+					"hand_front": [
+						3,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-20,
+						-36
+					],
+					"hand_front": [
+						3,
+						-35
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-55.5
+				],
+				[
+					-1,
+					-56
+				],
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-55.5
+				],
+				[
+					-1,
+					-56
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "carry_crate",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "primeiro"
+		},
+		"john_duck_out": {
+			"action": "john_duck_out",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/john_duck_out.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 7,
+			"frames_note": "Só na garagem: passar por baixo da porta de enrolar SAINDO, virado para a DIREITA, de (410,236) a (423,221). Mesma silhueta do disciple_duck_under (0 dobra os joelhos; 1-3 cabeça passa embaixo da borda, topo da cabeça abaixo de y 171; 4 passo; 5 endireita; 6 de pé), sem mão na borda: a mão de perto segura a alça da bolsa.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-3,
+						-37
+					],
+					"hand_front": [
+						12.4382343292236,
+						-23.5008068084717
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-33
+					],
+					"hand_front": [
+						11.6910095214844,
+						-18.2120628356934
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-31
+					],
+					"hand_front": [
+						12,
+						-16.2000007629395
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-34
+					],
+					"hand_front": [
+						11.3811779022217,
+						-19.2482318878174
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-36
+					],
+					"hand_front": [
+						14.7900533676147,
+						-22.7881450653076
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-40
+					],
+					"hand_front": [
+						12.0974025726318,
+						-26.4437713623047
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-41
+					],
+					"hand_front": [
+						10.3811779022217,
+						-27.2482318878174
+					]
+				}
+			],
+			"head_anchor": [
+				2,
+				-65
+			],
+			"head_by_frame": [
+				[
+					3,
+					-53
+				],
+				[
+					8,
+					-47
+				],
+				[
+					10,
+					-44
+				],
+				[
+					8,
+					-47
+				],
+				[
+					6,
+					-52
+				],
+				[
+					3,
+					-56
+				],
+				[
+					2,
+					-57
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "duck_out",
+			"step_frames": [
+				3,
+				6
+			],
+			"who": "primeiro"
+		},
+		"john_hang_bag": {
+			"action": "john_hang_bag",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/john_hang_bag.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"frames_note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: saco deitado por cima da cabeça, as duas mãos embaixo; 2 o saco já em pé sobe na frente (argola 9 px abaixo do gancho), mãos no lado de perto; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-66
+					],
+					"hand_front": [
+						10.0696640014648,
+						-27.3084659576416
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-63
+					],
+					"hand_front": [
+						16,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-56
+					],
+					"hand_front": [
+						18,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-64
+					],
+					"hand_front": [
+						18,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-62
+					],
+					"hand_front": [
+						18,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						12,
+						-52
+					],
+					"hand_front": [
+						15,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-31
+					],
+					"hand_front": [
+						13,
+						-33
+					]
+				},
+				{
+					"hand_back": [
+						-5.96374797821045,
+						-27.2271366119385
+					],
+					"hand_front": [
+						9.72568321228027,
+						-27.2753448486328
+					]
+				}
+			],
+			"head_anchor": [
+				6,
+				-67
+			],
+			"head_by_frame": [
+				[
+					1,
+					-57
+				],
+				[
+					1,
+					-57
+				],
+				[
+					6,
+					-57
+				],
+				[
+					6,
+					-59
+				],
+				[
+					6,
+					-59
+				],
+				[
+					6,
+					-57
+				],
+				[
+					1,
+					-57
+				],
+				[
+					1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				52,
+				99
+			],
+			"release_frame": 4,
+			"scene_name": "hang_bag",
+			"who": "primeiro"
+		},
+		"john_look_room_left": {
+			"action": "john_look_room_left",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/john_look_room_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 3,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Em (380,246) virado para a ESQUERDA (folha própria, sem espelho), bolsa no ombro. 0 vira o corpo; 1 a cabeça percorre a sala (queixo 1 px acima); 2 parado olhando a sala, rosto smile leve. Segurar o quadro 2 durante as falas.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-8.69100952148438,
+						-27.2120628356934
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				}
+			],
+			"head_anchor": [
+				0,
+				-66
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					0,
+					-58
+				],
+				[
+					-1,
+					-57
+				]
+			],
+			"hold_frame": 2,
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "look_room",
+			"who": "primeiro"
+		},
+		"john_nod_left": {
+			"action": "john_nod_left",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/john_nod_left.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Em (380,246) virado para a ESQUERDA, bolsa no ombro. UM aceno: a cabeça desce 1, 2, volta 1 (e o jogo volta ao look_room q2). Punhos parados.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-9.38117790222168,
+						-27.2482318878174
+					],
+					"hand_front": [
+						5,
+						-41
+					]
+				}
+			],
+			"head_anchor": [
+				-1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					-1,
+					-57
+				],
+				[
+					-1,
+					-56
+				],
+				[
+					-1,
+					-55
+				],
+				[
+					-1,
+					-56
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "nod",
+			"who": "primeiro"
+		},
+		"john_pick_duffel": {
+			"action": "john_pick_duffel",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/john_pick_duffel.png",
+			"fps": 10.0,
+			"frame_size": [
+				56,
+				72
+			],
+			"frames": 6,
+			"frames_note": "No ponto de sentar (254,252), virado para a DIREITA. 0-1 vira e dobra o tronco; 2 agachado, mão da frente na alça da bolsa (john_duffel em 268,242, atrás do caixote); 3 fecha a mão na alça; 4 PEGA (grab_frame: o adereço some; daqui em diante a bolsa está na folha), a bolsa pendurada na mão; 5 bolsa no ombro de trás (= walk_duffel parado). Segurar o quadro 5.",
+			"glove": "none",
+			"grab_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-6,
+						-27
+					],
+					"hand_front": [
+						14,
+						-31
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-24
+					],
+					"hand_front": [
+						18,
+						-24
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-21
+					],
+					"hand_front": [
+						25,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-21
+					],
+					"hand_front": [
+						25,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-26
+					],
+					"hand_front": [
+						17,
+						-33
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-41
+					],
+					"hand_front": [
+						9.38117790222168,
+						-27.2482318878174
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					5,
+					-55
+				],
+				[
+					8,
+					-48
+				],
+				[
+					13,
+					-38
+				],
+				[
+					13,
+					-38
+				],
+				[
+					6,
+					-53
+				],
+				[
+					1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "pick_duffel",
+			"who": "primeiro"
+		},
+		"john_put_crate": {
+			"action": "john_put_crate",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/john_put_crate.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 3,
+			"frames_note": "Em (254,252), termina virado para a DIREITA. 0 girou o corpo (caixote ainda no peito); 1 dobra os joelhos e pousa o caixote atrás de si (2 px acima do lugar final, desenhado atrás das pernas); 2 SOLTA: o caixote vira adereço NESTE quadro (garage_crate em 238,232), meio agachado, mãos abertas. Depois: sit_down a partir do QUADRO 1 (o quadro 0 do sit_down é em pé) ou, para o vizinho, stand.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-36
+					],
+					"hand_front": [
+						19,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-23
+					],
+					"hand_front": [
+						7,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-26
+					],
+					"hand_front": [
+						9,
+						-26
+					]
+				}
+			],
+			"head_anchor": [
+				0,
+				-65
+			],
+			"head_by_frame": [
+				[
+					0,
+					-57
+				],
+				[
+					2,
+					-49
+				],
+				[
+					2,
+					-52
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"release_frame": 2,
+			"scene_name": "put_crate",
+			"who": "primeiro"
+		},
+		"john_stand_up": {
+			"action": "john_stand_up",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/john_stand_up.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "Levanta do caixote: o john_sit_down de trás para frente (0 sentado ... 3 em pé).",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						1,
+						-21
+					],
+					"hand_front": [
+						9,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-22
+					],
+					"hand_front": [
+						9,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-26
+					],
+					"hand_front": [
+						10,
+						-26
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-27
+					],
+					"hand_front": [
+						12,
+						-31
+					]
+				}
+			],
+			"head_anchor": [
+				2,
+				-65
+			],
+			"head_by_frame": [
+				[
+					1,
+					-47
+				],
+				[
+					2,
+					-48
+				],
+				[
+					2,
+					-52
+				],
+				[
+					2,
+					-57
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": false,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "stand_up",
+			"who": "primeiro"
+		},
+		"john_walk_duffel": {
+			"action": "john_walk_duffel",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/john_walk_duffel.png",
+			"fps": 10.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 6,
+			"frames_note": "Andar para a DIREITA sem luvas com a bolsa de lona no ombro de trás: a mão de perto segura a alça na frente do ombro, a bolsa balança 1 px atrás do quadril, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. O 'walk sem luvas' do John. Serve na academia e na garagem.",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-41
+					],
+					"hand_front": [
+						10.3811779022217,
+						-27.2482318878174
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-39.5
+					],
+					"hand_front": [
+						8.30899047851563,
+						-25.7120628356934
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-40
+					],
+					"hand_front": [
+						9.34555721282959,
+						-26.2030162811279
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-41
+					],
+					"hand_front": [
+						10.3811779022217,
+						-27.2482318878174
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-39.5
+					],
+					"hand_front": [
+						14.4576196670532,
+						-26.46702003479
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-40
+					],
+					"hand_front": [
+						12.7780179977417,
+						-26.5637836456299
+					]
+				}
+			],
+			"head_anchor": [
+				2,
+				-65
+			],
+			"head_by_frame": [
+				[
+					2,
+					-57
+				],
+				[
+					2,
+					-55.5
+				],
+				[
+					2,
+					-56
+				],
+				[
+					2,
+					-57
+				],
+				[
+					2,
+					-55.5
+				],
+				[
+					2,
+					-56
+				]
+			],
+			"light": "sem luz pintada (regra das folhas do John da 6b1: servem na academia e na garagem)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"scene_name": "walk_duffel",
+			"step_frames": [
+				1,
+				4
+			],
+			"who": "primeiro"
 		}
 	},
 	"fight_layout": {

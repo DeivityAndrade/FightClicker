@@ -1,0 +1,139 @@
+{
+  "_nota": "Fase 6c1. Ação no cenário 'Saída do John': jogador no controle o tempo todo (0 s presos), sem barras, sem câmera, sem gesto, balões passivos. Prancha: docs/cutscenes/prancha-6c1.md (quadros J1-J8). Formato: docs/cutscenes/formato-dados.md (v1.2, §9). Regras de jogo: docs/fases/fase6c1-design.md §6. Vale na garagem e na academia: os passos com if.location só tocam naquele local. Chaves que começam com _ são comentário. _t = tempo previsto, em segundos.",
+  "id": "saida_primeiro_mentor",
+  "version": 1,
+  "milestone": "cena_saida_primeiro_mentor",
+  "once": true,
+  "blocking": false,
+  "register": "cotidiano",
+  "max_seconds": 14,
+
+  "trigger": {
+    "_nota": "Evento novo (design §6.1-6.2): o GameState avisa quando a saída está devida, a sala está calma e o John está desenhado.",
+    "event": "mentor_leave_due",
+    "requires": { "milestone_missing": ["cena_saida_primeiro_mentor"], "calm": true }
+  },
+
+  "grants": [
+    { "type": "mentor_leaves", "character": "first_fighter" }
+  ],
+
+  "stage": {
+    "view": "room",
+    "_location": "any = o local em que o jogador está (formato §9 item 19).",
+    "location": "any",
+    "window": [128, 18, 384, 272],
+    "_hide": "A cena só assume quem ela mexe. Lutador, equipe, aparelhos e interface continuam vivos.",
+    "hide": ["mentors", "coach"],
+    "props": {
+      "duffel":       { "_nota": "A bolsa dele, atrás do caixote. Some quando ele a pega (daí em diante está nas folhas dele).", "sprite": "john_duffel", "pos": [268, 242], "layer": "sorted", "sort_y": 251, "visible": false },
+      "gym_door":     { "location": "gym", "_nota": "Tubos acesos: quadros claros 0..2.", "sprite": "gym_door", "pos": [401, 116], "layer": "wall", "anim": "closed" },
+      "gym_light":    { "location": "gym", "_nota": "Luz do dia no piso da academia: quadro 1 = porta meio aberta, 0 = aberta.", "sprite": "gym_daylight", "pos": [330, 220], "layer": "floor", "visible": false },
+      "door_outside": { "location": "garage", "sprite": "garage_door_outside", "pos": [382, 168], "layer": "wall", "visible": false },
+      "door":         { "location": "garage", "sprite": "garage_door", "pos": [381, 166], "layer": "sorted", "sort_y": 222, "anim": "closed" },
+      "daylight":     { "location": "garage", "sprite": "garage_daylight", "pos": [308, 220], "layer": "floor", "visible": false }
+    }
+  },
+
+  "actors": {
+    "first": { "_nota": "Nasce onde a sala o desenha: sentado no ponto seat do local (formato §9 item 19). pos é o reserva.", "character": "first_fighter", "glove": "none", "from_room": "seat", "pos": [254, 252], "facing": "right", "anim": "sit_rest" },
+    "coach": { "character": "coach", "from_room": "coach", "pos": [196, 236], "facing": "right", "anim": "idle" },
+    "last":  { "_nota": "O último que passou o posto, em pé. Não existe na Carreira 2: os passos dele são pulados.", "character": "mentor:last", "optional": true, "glove": "none", "from_room": "stand", "pos": [150, 262], "facing": "right", "anim": "stand_bare" }
+  },
+
+  "lines": {
+    "saida_rumo_1":   { "speaker": "first", "text_key": "saida_rumo_1" },
+    "saida_rumo_2":   { "speaker": "first", "text_key": "saida_rumo_2" },
+    "saida_resposta": { "speaker": "coach", "text_key": "saida_resposta" }
+  },
+
+  "steps": [
+    { "_q": "O controle nunca sai do jogador: return_control é o 1º passo (0 s presos).", "_t": 0.0, "type": "return_control" },
+
+    { "_q": "J1 Levanta e pega a bolsa (0,0-1,6)", "_t": 0.0, "type": "prop", "id": "duffel", "visible": true },
+    { "_t": 0.0, "type": "pose", "actor": "first", "anim": "stand_up" },
+    { "_t": 0.4, "type": "parallel", "steps": [
+      { "_nota": "john_pick_duffel: 6 quadros a 10 fps (56x72, pivô 22,67) + 0,6 s parado.", "type": "pose", "actor": "first", "anim": "pick_duffel", "hold": 0.6 },
+      { "type": "sequence", "steps": [
+        { "_nota": "grab_frame 4 = 0,4 s: a bolsa do chão some quando a mão a pega.", "type": "wait", "seconds": 0.4 },
+        { "type": "prop", "id": "duffel", "visible": false },
+        { "type": "sound", "id": "glove_leather", "volume": 0.6 }
+      ] }
+    ] },
+
+    { "_q": "J2 Atravessa a sala por trás do saco (1,6-4,3)", "_t": 1.6, "_nota": "126 px a 48 px/s. y 246-252: atrás do saco (ordem 253) e do lutador (272); nunca cobre o alvo.", "type": "move", "actor": "first", "to": [380, 246], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+
+    { "_q": "J3 Olha a sala (4,3-5,6)", "_t": 4.3, "type": "pose", "actor": "first", "anim": "look_room_left", "facing": "left", "hold": 1.0 },
+
+    { "_q": "J4 'vou procurar meu rumo.' / 'cuidem bem disso aqui.' (5,6-10,0)", "_t": 5.6, "type": "say", "line": "saida_rumo_1", "mode": "passive", "hold": 0.9 },
+    { "_t": 7.7, "type": "say", "line": "saida_rumo_2", "mode": "passive", "hold": 1.1 },
+
+    { "_q": "J5 'vê se manda notícia.' (10,0-12,4)", "_t": 10.0, "_nota": "O Osmar responde sem sair do lugar. Na academia, as folhas _gym (luz dos tubos).", "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "talk", "loop": true, "wait": false },
+    { "_t": 10.0, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "talk_gym", "loop": true, "wait": false },
+    { "_t": 10.0, "type": "say", "line": "saida_resposta", "mode": "passive", "hold": 0.9 },
+    { "_t": 12.0, "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "idle", "loop": true, "wait": false },
+    { "_t": 12.0, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "idle_gym", "loop": true, "wait": false },
+    { "_t": 12.0, "_nota": "Um aceno de cabeça, um só. Não é o gesto dos dois toques.", "type": "pose", "actor": "first", "anim": "nod_left", "facing": "left" },
+
+    { "_q": "J6 Sai. Academia: pela porta da rua (12,4-13,9)", "_t": 12.4, "if": { "location": "gym" }, "type": "sequence", "steps": [
+      { "type": "prop", "id": "gym_door", "anim": "open", "wait": false },
+      { "type": "sound", "id": "gym_door_open", "volume": 0.5 },
+      { "type": "parallel", "steps": [
+        { "_nota": "53 px a 48 px/s", "type": "move", "actor": "first", "to": [428, 224], "seconds": 1.1, "anim": "walk_duffel", "facing": "right" },
+        { "type": "sequence", "steps": [
+          { "type": "wait", "seconds": 0.1 },
+          { "type": "prop", "id": "gym_light", "visible": true, "anim": "open", "wait": false }
+        ] }
+      ] },
+      { "type": "hide", "actor": "first" },
+      { "type": "sound", "id": "gym_door_close", "volume": 0.4 },
+      { "type": "prop", "id": "gym_door", "anim": "close", "wait": false },
+      { "type": "prop", "id": "gym_light", "anim": "close", "wait": false },
+      { "type": "wait", "seconds": 0.2 },
+      { "type": "prop", "id": "gym_light", "visible": false },
+      { "type": "wait", "seconds": 0.1 }
+    ] },
+    { "_q": "J6/J8 Sai. Garagem: por baixo da porta de enrolar, como sempre", "_t": 12.4, "if": { "location": "garage" }, "type": "sequence", "steps": [
+      { "type": "prop", "id": "door_outside", "visible": true },
+      { "type": "prop", "id": "daylight", "visible": true, "anim": "open_fast", "wait": false },
+      { "type": "sound", "id": "door_roll", "volume": 0.7 },
+      { "type": "prop", "id": "door", "anim": "open_jam_fast" },
+      { "type": "sound", "id": "door_jam", "volume": 0.6 },
+      { "type": "move", "actor": "first", "to": [410, 236], "seconds": 0.7, "anim": "walk_duffel", "facing": "right" },
+      { "type": "move", "actor": "first", "to": [423, 221], "seconds": 0.7, "anim": "duck_out", "facing": "right" },
+      { "type": "hide", "actor": "first" },
+      { "type": "parallel", "steps": [
+        { "type": "prop", "id": "door", "anim": "close" },
+        { "type": "prop", "id": "daylight", "anim": "close" },
+        { "type": "sound", "id": "door_roll", "volume": 0.6 }
+      ] },
+      { "type": "prop", "id": "daylight", "visible": false },
+      { "type": "prop", "id": "door_outside", "visible": false }
+    ] },
+
+    { "_q": "J7 O último que passou o posto senta no caixote (13,9-16,5)", "_t": 13.9, "_nota": "seat_spot = ponto de sentar do local (mentor_spot ou gym_mentor_spot). 104 px a 48 px/s.", "type": "move", "actor": "last", "to": "seat_spot", "seconds": 2.2, "anim": "walk_bare", "facing": "right" },
+    { "_t": 16.1, "type": "pose", "actor": "last", "anim": "sit_down" },
+    { "_t": 16.5, "type": "pose", "actor": "last", "anim": "sit_rest", "loop": true, "wait": false }
+  ],
+
+  "reactions": [],
+
+  "end_state": {
+    "_nota": "Vale ao terminar e ao interromper (janela, luta, MUDAR, tela de fim, RECEBER): John fora, o último sentado no caixote (ou o caixote vazio), ponto de pé vazio, balões fechados. Nenhum objeto dele fica.",
+    "actors": {
+      "first": { "visible": false },
+      "coach": "hand_to_game",
+      "last": "hand_to_game"
+    },
+    "props": {
+      "duffel": { "visible": false },
+      "gym_door": { "anim": "closed" },
+      "gym_light": { "visible": false },
+      "door": { "anim": "closed" },
+      "door_outside": { "visible": false },
+      "daylight": { "visible": false }
+    },
+    "camera": { "scale": 1 },
+    "ui": "show_all"
+  }
+}

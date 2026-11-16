@@ -35,7 +35,7 @@ engraçada e triste quando o jogador voltar a ela em outra carreira.
 
 ## Elenco (reservado, entra na Fase 8)
 - **Mentor:** John Bullet (o 1º lutador) e, depois, os lutadores das carreiras anteriores. Falas curtas, voz de quem já apanhou. Marcos de progresso.
-- **Rival recorrente: James Blindado.** Aparece em cada camada; humilha no começo, é o chefe do título mundial. Caricato, nunca cruel.
+- **Rival recorrente: James Blindado.** Entra na 8a, menospreza a escola, passa a se preparar contra ela e termina em respeito. Caricato, nunca cruel. **O campeão mundial é outro personagem (fase 9)** — confirmado pelo dono em 2026-11-15, alinhado a `visao.md` item 11 e `roadmap.md`.
 - **Gente do bairro** (Fase 2): Vizinho da casa 12, Tio aposentado. Nomes e piadas em `docs/fases/fase2-textos.md`.
 
 ## Escada amadora (Fase 3)

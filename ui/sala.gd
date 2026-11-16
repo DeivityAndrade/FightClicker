@@ -119,6 +119,12 @@ var _mentor2_nome := ""
 var _dica_m2 := false  # a dica do 2º mentor está ancorada na parede
 const DICA_M2_X := 138  # x da borda esquerda da dica (dentro da sala útil)
 var _mentor_pose := ""
+# Fase 6c1: quem está no caixote (John ou o último que passou o posto), foto antiga da academia, saco da cena e cena sem controle preso.
+var _mentor_quem := ""  # "first" | "last" (quem a sala desenha sentado)
+var _mentor_chave := ""
+var _mentor_look: Dictionary = {}
+var _cena_livre := false  # a saída do John: o jogador continua no controle, só o stage.hide vale
+var _saco_da_cena := false  # o saco só aparece na cena da academia quando ela o pendura
 var _toques_id := 0
 var _cam_escala := 1
 var _cam_rect := AREA
@@ -156,7 +162,10 @@ func _ready() -> void:
 	GameState.arte_mudou.connect(_ao_arte)
 	GameState.gesto_pedido.connect(_ao_gesto_pedido)
 	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
-	GameState.marco_gravado.connect(func(_id: String) -> void: _atualizar_parede())
+	GameState.marco_gravado.connect(func(_id: String) -> void:
+		_atualizar_parede()
+		_atualizar_osmar()
+		_atualizar_mentor())
 	GameState.abertura_mudou.connect(func(_e: String) -> void: _atualizar_osmar())
 	GameState.toques_mentor_pedidos.connect(_ao_toques_pedidos)
 	GameState.toques_mentor_cancelados.connect(_ao_toques_cancelados)
@@ -452,8 +461,8 @@ func _entrada_pessoa(sp: AnimSprite) -> void:
 # --- Entrada do mouse ---
 
 func _gui_input(event: InputEvent) -> void:
-	if GameState.sucessao_estado() != "none":
-		accept_event()  # Fase 6b1: durante a cena e a criação do discípulo a sala não recebe clique (a campanha está parada)
+	if GameState.sucessao_estado() != "none" or GameState.cena_sala != "":
+		accept_event()  # Fase 6b1 e 6c1 (chegada à academia): durante a cena e a criação do discípulo a sala não recebe clique (a campanha está parada)
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if not ALVO.has_point(event.position + position):
@@ -1040,7 +1049,7 @@ func _ao_local(local: String) -> void:
 		return
 	_aplicar_layout()
 	_atualizar_pessoas(false)
-	if antes != "gym" and local == "gym":
+	if antes != "gym" and local == "gym" and GameState.cena_sala == "":  # 6c1: a cena da 1ª chegada já é a festa da academia
 		_chegada_pendente = true
 		if not GameState.escolha_arte_pendente():
 			_festa_academia()
@@ -1500,21 +1509,35 @@ func _montar_osmar() -> void:
 func _atualizar_osmar() -> void:
 	if _osmar == null:
 		return
-	var na_garagem := GameState.local_id == "garage"
-	var palco := not ("coach" in _cena_oculta)  # na cena grande o Osmar é um ator do palco
-	_osmar.visible = na_garagem and palco
-	_sombra_osmar.visible = na_garagem and palco
-	if not na_garagem:
+	# 6c1: o Osmar é desenhado onde a escola diz (garagem sempre; academia depois do marco da cena), no ponto do local.
+	var pt: Array = GameState.ponto_do_coach()
+	var presente := pt.size() == 2
+	var palco := not ("coach" in _cena_oculta)  # na cena o Osmar é um ator do palco
+	_osmar.visible = presente and palco
+	_sombra_osmar.visible = presente and palco
+	if not presente:
 		return
+	var pos_o := Vector2(float(pt[0]), float(pt[1]))
+	if _osmar.position != pos_o:
+		_osmar.position = pos_o
+		_osmar.z_index = int(pos_o.y)
+		_sombra_osmar.position = pos_o + Vector2(0, -1)
+		_sombra_osmar.z_index = int(pos_o.y) - 1
 	var estado := "idle"
 	if _coach_falando:
 		estado = "talk"
 	elif GameState.abertura_estado() == "playing":
 		estado = "look"
-	if estado == _osmar_estado:
+	var folha := str(OSMAR_FOLHAS[estado])
+	var sufixo := GameState.sufixo_aparelhos()
+	if sufixo != "" and not UiTema.sprite(folha + sufixo).is_empty():
+		folha += sufixo  # academia: a luz dos tubos (coach_idle_gym, coach_talk_gym)
+	elif sufixo != "" and estado == "look":
+		folha = "coach_idle" + sufixo if not UiTema.sprite("coach_idle" + sufixo).is_empty() else folha
+	if folha == _osmar_estado:
 		return
-	_osmar_estado = estado
-	_osmar.definir(str(OSMAR_FOLHAS[estado]))
+	_osmar_estado = folha
+	_osmar.definir(folha)
 	_osmar.tocar([0, 1, 2, 3], float(UiTema.sprite(_osmar.nome_sprite).get("fps", 3.0)), true)
 
 
@@ -1532,7 +1555,9 @@ func ponto_cabeca(speaker: String) -> Vector2:
 	if speaker == "coach":
 		var o: Dictionary = info.get("original_trainer", {})
 		var a: Array = o.get("head_anchor", [1, -63])
-		var p: Array = o.get("pos", [196, 236])
+		var p: Array = GameState.ponto_do_coach()
+		if p.size() != 2:
+			p = o.get("pos", [196, 236])
 		return Vector2(float(p[0]) + float(a[0]), float(p[1]) + float(a[1]))
 	if speaker == "mentor":
 		return cabeca_mentor()
@@ -1553,7 +1578,7 @@ func ponto_cabeca(speaker: String) -> Vector2:
 func cabecas_a_evitar(speaker: String) -> Array:
 	var outro := "first" if speaker == "coach" else "coach"
 	var lista: Array = []
-	if not (outro == "coach" and GameState.local_id != "garage"):
+	if not (outro == "coach" and not GameState.coach_presente()):
 		var h := ponto_cabeca(outro)
 		lista.append(Rect2(h.x - 9.0, h.y, 18.0, 18.0))
 	# Fase 6b1: o John sentado no caixote também é alguém que o balão não pode cobrir (regra do §22.2).
@@ -1641,19 +1666,35 @@ func _montar_parede() -> void:
 		s.z_index = -45 + ordem.find(k)  # a ordem do manifest decide quem fica por cima
 		_mundo.add_child(s)
 		_parede[k] = {"sprite": s, "dados": o}
+	# 6c1: a foto antiga na academia (torta, no gym_photo_spot); só desenhada onde a escola diz (foto_antiga()).
+	if not UiTema.sprite("wall_photo_old_gym").is_empty():
+		var sf := AnimSprite.new()
+		sf.definir("wall_photo_old_gym")
+		sf.z_index = -45 + ordem.find("photo_old")
+		sf.visible = false
+		_mundo.add_child(sf)
+		_parede["photo_old_gym"] = {"sprite": sf, "dados": {}}
 	_atualizar_parede()
 
 
 func _atualizar_parede() -> void:
 	if _parede.is_empty():
 		return
-	var garagem := GameState.local_id == "garage"
+	var garagem := GameState.local_id == "garage" and not ("wall_objects" in _cena_oculta)
 	var salva := GameState.marco("garage_saved_seen")
+	var foto: Dictionary = GameState.foto_antiga() if GameState.local_id != "garage" and not ("wall_objects" in _cena_oculta) else {}
 	for k in _parede:
 		var d: Dictionary = _parede[k]
 		var s: AnimSprite = d.sprite
 		var o: Dictionary = d.dados
 		var ver := garagem
+		if k == "photo_old_gym":
+			s.visible = not foto.is_empty()
+			if not foto.is_empty():
+				var fp: Array = foto.spot
+				s.position = Vector2(float(fp[0]), float(fp[1]))
+				s.parar(1 if bool(foto.get("tilted", true)) else 0)
+			continue
 		match k:
 			"notice_debt":
 				ver = ver and not salva
@@ -1668,7 +1709,7 @@ func _atualizar_parede() -> void:
 
 ## Texto da dica de um objeto da parede sob o ponto (coordenadas da tela base), ou "".
 func _texto_parede(p: Vector2) -> String:
-	var ordem := ["school_symbol", "photo_team", "clipping", "photo_old", "form", "notice_debt"]
+	var ordem := ["school_symbol", "photo_team", "clipping", "photo_old_gym", "photo_old", "form", "notice_debt"]
 	for k in ordem:
 		if not _parede.has(k):
 			continue
@@ -1680,6 +1721,8 @@ func _texto_parede(p: Vector2) -> String:
 			continue
 		var d: DialogosData = GameState.dialogos
 		match k:
+			"photo_old_gym":
+				return d.texto_objeto(str(GameState.foto_antiga().get("object_text", "old_photo_gym")))
 			"notice_debt":
 				return "%s\n%s" % [d.texto_objeto("debt_notice", "title"), d.texto_objeto("debt_notice", "text")]
 			"form":
@@ -1891,14 +1934,41 @@ func _cam_base() -> Vector2:
 
 
 ## A cena assume a sala. `oculta` = stage.hide da cena (player, crew, mentors, coach).
-func cena_iniciar(oculta: Array) -> void:
-	_cena_ativa = true
+## `livre` (6c1, saída do John): o jogador segue no controle; a sala só esconde o que o `stage.hide` pede (foco, câmera e layout ficam).
+func cena_iniciar(oculta: Array, livre: bool = false) -> void:
+	_cena_livre = livre
+	_cena_ativa = not livre
 	_cena_oculta = oculta.duplicate()
 	_caixote_cena = false
-	_aplicar_layout()
+	_saco_da_cena = false
+	if not livre:
+		_aplicar_layout()
 	_atualizar_osmar()
 	_atualizar_mentor()
+	_atualizar_parede()
 	_ocultar_da_cena()
+
+
+## A saída do John acabou (sozinha ou interrompida): a sala redesenha Osmar e mentores pelo que o jogo diz agora.
+func cena_livre_encerrada() -> void:
+	if not _cena_livre:
+		return
+	_cena_livre = false
+	_cena_oculta = []
+	_atualizar_osmar()
+	_atualizar_mentor()
+	_atualizar_parede()
+
+
+## Saco da sala na cena da academia: só aparece quando a cena o pendura.
+func cena_saco_visivel(sim: bool) -> void:
+	_saco_da_cena = sim
+
+
+## Passo `fx` da cena: hoje só a poeira da chegada do saco (fx_arrive_dust_small); outros ids são ignorados.
+func cena_fx(sprite: String, pos: Array) -> void:
+	if sprite == "fx_arrive_dust_small" and pos.size() == 2 and _fx_poeira_pequena != null:
+		_tocar_chegada(_fx_poeira_pequena, Vector2(float(pos[0]), float(pos[1])), 6)
 
 
 ## O controle voltou ao jogador (return_control): a sala é do jogo de novo (as peças da porta ficam no palco até a cena acabar).
@@ -1907,12 +1977,20 @@ func cena_palco_liberado() -> void:
 		return
 	_cena_ativa = false
 	_cena_oculta = []
+	_saco_da_cena = false
 	_lutador.visible = true
+	_saco.visible = true
+	_corrente.visible = true
 	for gid in _pessoas:
 		for d in _pessoas[gid]:
 			d.sprite.visible = d.visivel
 			d.sombra.visible = d.visivel
+	for cx in _caixas.values():
+		if is_instance_valid(cx):
+			(cx as CanvasItem).visible = true
 	_aplicar_layout()
+	_aplicar_metronomo()
+	_sincronizar_caixas()
 	_atualizar_osmar()
 	_atualizar_mentor()
 	cena_camera(1, [])
@@ -1938,12 +2016,12 @@ func cena_tremer(px: int, seg: float) -> void:
 ## Saco do palco: "hit" (folha bag_l0_hit) ou "idle" (quadro parado).
 func cena_saco(anim: String, quadro: int) -> void:
 	if anim == "hit":
-		_saco.definir("bag_l0_hit")
-		_saco.position = UiTema.pos("bag_l0_hit", "centro")
+		_saco.definir(_n("bag_l0_hit"))
+		_saco.position = UiTema.pos(_n("bag_l0_hit"), "centro")
 		_saco.tocar([0, 1, 2, 3], 12.0, false)
 	else:
-		_saco.definir("bag_l0_idle")
-		_saco.position = UiTema.pos("bag_l0_idle", "centro")
+		_saco.definir(_n("bag_l0_idle"))
+		_saco.position = UiTema.pos(_n("bag_l0_idle"), "centro")
 		_saco.parar(maxi(0, quadro))
 
 
@@ -1955,9 +2033,33 @@ func cena_lampada(anim: String) -> void:
 
 
 func _ocultar_da_cena() -> void:
-	if not _cena_ativa:
+	if not _cena_ativa and not _cena_livre:
 		return
-	_seta.visible = false
+	if _cena_ativa:
+		_seta.visible = false
+	if "apparatus" in _cena_oculta:  # 6c1: a academia da chegada começa sem aparelho (o saco volta quando a cena o pendura)
+		_saco.visible = _saco_da_cena
+		_corrente.visible = _saco_da_cena
+		_esteira.visible = false
+		_corda_prego.visible = false
+		_pera.visible = false
+		_boneco.visible = false
+		_metronomo.visible = false
+		for id in _marcas:
+			var m: Dictionary = _marcas[id]
+			m.fita.visible = false
+			m.fantasma.visible = false
+			m.cadeado.visible = false
+	if "boxes" in _cena_oculta:
+		for cx in _caixas.values():
+			if is_instance_valid(cx):
+				(cx as CanvasItem).visible = false
+	if "wall_objects" in _cena_oculta:
+		for k in _parede:
+			(_parede[k].sprite as CanvasItem).visible = false
+	if _cena_ativa:
+		for t in _tubos:  # o tubo da direita da cena (apagado) é do palco: os tubos da sala voltam com ela
+			t.visible = false
 	if "player" in _cena_oculta:
 		_lutador.visible = false
 		_sombra_lutador.visible = false
@@ -2005,7 +2107,9 @@ func _montar_mentor() -> void:
 
 ## Pés do segundo mentor: manifest.layout.mentor_2_spot.
 func ponto_mentor2() -> Vector2:
-	var p: Array = UiTema.manifest().get("layout", {}).get("mentor_2_spot", [150, 262])
+	var p: Array = GameState.ponto_do_local("stand")  # 6c1: o ponto do local (garagem ou academia)
+	if p.size() != 2:
+		p = UiTema.manifest().get("layout", {}).get("mentor_2_spot", [150, 262])
 	return Vector2(float(p[0]), float(p[1]))
 
 
@@ -2028,14 +2132,22 @@ func _area_mentor2() -> Rect2:
 
 ## Pés do mentor sentado: manifest.layout.mentor_spot.
 func ponto_mentor() -> Vector2:
-	var p: Array = UiTema.manifest().get("layout", {}).get("mentor_spot", [254, 252])
+	var p: Array = GameState.ponto_do_local("seat")  # 6c1: o ponto do local (garagem ou academia)
+	if p.size() != 2:
+		p = UiTema.manifest().get("layout", {}).get("mentor_spot", [254, 252])
 	return Vector2(float(p[0]), float(p[1]))
 
 
-## Ponto logo acima da cabeça do mentor sentado: head_anchor da folha john_sit_rest.
+## Ponto logo acima da cabeça do mentor sentado: head_anchor da folha dele (john_sit_rest, ou disciple_sit_rest para o último).
 func cabeca_mentor() -> Vector2:
-	var a: Array = UiTema.sprite(MENTOR_FOLHA).get("head_anchor", [1, -56])
+	var a: Array = UiTema.sprite(_folha_mentor()).get("head_anchor", [1, -56])
 	return ponto_mentor() + Vector2(float(a[0]), float(a[1]))
+
+
+func _folha_mentor() -> String:
+	if _mentor_quem == "last" and not UiTema.sprite("disciple_sit_rest").is_empty():
+		return "disciple_sit_rest"
+	return MENTOR_FOLHA
 
 
 func mentor_visivel() -> bool:
@@ -2045,27 +2157,46 @@ func mentor_visivel() -> bool:
 func _atualizar_mentor() -> void:
 	if _mentor == null:
 		return
-	var garagem := GameState.local_id == "garage"
-	var lista: Array = GameState.mentores_na_sala() if garagem else []
-	var deve := garagem and not lista.is_empty() and not ("mentors" in _cena_oculta)
-	_atualizar_mentor2(lista if deve else [])
-	var caixote := garagem and (deve or _caixote_cena)
+	# 6c1: quem a sala desenha vem de mentores_na_sala() (garagem e academia, antes e depois da saída do John):
+	# `role "seat"` no caixote (John, ou o último que passou o posto depois da saída) e `role "stand"` em pé.
+	var seat := {}
+	var stand := {}
+	if not ("mentors" in _cena_oculta):
+		for m in GameState.mentores_na_sala():
+			if str(m.get("role", "")) == "seat":
+				seat = m
+			elif str(m.get("role", "")) == "stand":
+				stand = m
+	_atualizar_mentor2(stand)
+	# O caixote fica com ou sem gente sentada (assento_visivel); na cena grande ele só aparece quando a cena o pousa.
+	var tex_caixote := UiTema.com_local("garage_crate")
+	var caixote := ((GameState.assento_visivel() or not seat.is_empty()) and not _cena_ativa) or _caixote_cena  # quem senta sempre tem o caixote
 	if _caixote.visible != caixote:
 		_caixote.visible = caixote
-	if deve != _mentor_visivel:
+	if caixote and _caixote.texture != UiTema.textura(tex_caixote):
+		_caixote.texture = UiTema.textura(tex_caixote)
+	var deve := not seat.is_empty()
+	var chave := ""
+	if deve:
+		chave = "%s|%s|%s" % [seat.get("id", ""), JSON.stringify(seat.get("look", {})), str(seat.get("point", []))]
+	if deve != _mentor_visivel or chave != _mentor_chave:
 		_mentor_visivel = deve
+		_mentor_chave = chave
 		_mentor.visible = deve
 		_mentor_sombra.visible = deve
 		if deve:
+			_mentor_quem = str(seat.get("id", "first"))
+			_mentor_look = seat.get("look", {})
+			_mentor.position = ponto_mentor()
+			_mentor.z_index = int(_mentor.position.y)
+			_mentor_sombra.position = _mentor.position + Vector2(0, -1)
+			_mentor_sombra.z_index = _mentor.z_index - 1
 			_mentor_repouso()
 
 
 ## Segundo mentor (6b2): parado em `stand_bare`, sem luvas, com o visual que tinha, virado para o saco. Sem clique nem fala.
-func _atualizar_mentor2(lista: Array) -> void:
-	var d := {}
-	for m in lista:
-		if str(m.get("id", "")) == "second":
-			d = m
+## `d` = o item `role "stand"` de mentores_na_sala(), ou {}.
+func _atualizar_mentor2(d: Dictionary) -> void:
 	if d.is_empty():
 		if _mentor2_visivel:
 			_mentor2_visivel = false
@@ -2078,9 +2209,13 @@ func _atualizar_mentor2(lista: Array) -> void:
 	if str(d.get("facing", "right")) == "left" and str(UiTema.sprite(folha).get("left_variant", "")) != "":
 		folha = str(UiTema.sprite(folha).left_variant)  # folha própria da esquerda, sem espelhar
 	var look: Dictionary = d.get("look", {})
-	var chave := folha + "|" + JSON.stringify(look)
+	var chave := folha + "|" + JSON.stringify(look) + "|" + str(d.get("point", []))
 	if chave != _mentor2_chave:
 		_mentor2_chave = chave
+		_mentor2.position = ponto_mentor2()
+		_mentor2.z_index = int(_mentor2.position.y)
+		_mentor2_sombra.position = _mentor2.position + Vector2(0, -1)
+		_mentor2_sombra.z_index = _mentor2.z_index - 1
 		_mentor2.definir(folha)
 		_mentor2.texture = DiscVisual.textura(folha, look)
 		_mentor2.tocar([0, 1, 2, 3], float(UiTema.sprite(folha).get("fps", 4.0)), true)
@@ -2093,12 +2228,17 @@ func _atualizar_mentor2(lista: Array) -> void:
 
 func _mentor_repouso() -> void:
 	_mentor_pose = "rest"
-	_mentor.definir(MENTOR_FOLHA)
+	var folha := _folha_mentor()
+	_mentor.definir(folha)
+	if folha != MENTOR_FOLHA:
+		_mentor.texture = DiscVisual.textura(folha, _mentor_look)  # o último que passou o posto: o visual dele
 	_mentor.position = ponto_mentor()
-	_mentor.tocar([0, 1, 2, 3], float(UiTema.sprite(MENTOR_FOLHA).get("fps", 3.0)), true)
+	_mentor.tocar([0, 1, 2, 3], float(UiTema.sprite(folha).get("fps", 3.0)), true)
 
 
 func _mentor_toques_pose() -> void:
+	if _mentor_quem != "first":
+		return  # os toques são só do John
 	_mentor_pose = "taps"
 	_mentor.definir(MENTOR_TOQUES)
 	_mentor.position = ponto_mentor()
@@ -2117,7 +2257,7 @@ func cena_mentor_pose(anim: String) -> void:
 
 
 func _ao_toques_pedidos(plano: Dictionary) -> void:
-	if str(plano.get("cena", "")) != "" or not _mentor_visivel:
+	if str(plano.get("cena", "")) != "" or not _mentor_visivel or _mentor_quem != "first":
 		return  # o 1º clique logo depois da cena grande é da reação da cena (CenaPlayer)
 	_toques_id += 1
 	var id := _toques_id

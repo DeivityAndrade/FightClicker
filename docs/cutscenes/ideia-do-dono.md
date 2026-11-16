@@ -52,3 +52,8 @@ O dono decidiu: "o nome do rival pode ser James (e um sobrenome imponente)". Sob
 - John Bullet é uma bala; o contrário dela é a muralha que ela não atravessa. Duelo "bala contra muralha".
 - Primeira escolha foi "James Muralha", trocada no mesmo dia: já existe o Seu Muralha (`opp_tank`, dono do cinturão amador). Ficou a reserva **James Blindado** (14 caracteres, letras comuns da 5x7; o que a bala não fura). Outra reserva: James Bastião.
 - Detalhes em `docs/narrativa.md`. O marcador `[RIVAL]` das cutscenes passa a ser James Blindado.
+
+## 6c: escolhas do dono (2026-11-15)
+O dono aceitou as duas recomendações do Diretor ("Sim, as duas"):
+1. **Saída do John:** no 1º momento calmo depois da 1ª vitória de um discípulo na academia, ou na campanha F+3 (F = campanha do John), o que vier primeiro.
+2. **Rival:** James Blindado entra na 8a, menospreza a escola, passa a se preparar contra ela e termina em respeito. O campeão mundial é outro personagem (fase 9).

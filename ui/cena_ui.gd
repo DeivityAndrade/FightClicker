@@ -49,6 +49,9 @@ func _ready() -> void:
 	player.reacao_cancelada.connect(func(_q: String) -> void: sala.cena.encerrar_reacoes())
 	player.reacoes_descartadas.connect(func() -> void: sala.cena.encerrar_reacoes())
 	GameState.sucessao_mudou.connect(_ao_sucessao)
+	GameState.cena_sala_pedida.connect(_ao_cena_sala_pedida)
+	GameState.saida_mentor_pedida.connect(_ao_saida_pedida)
+	player.baloes_cancelados.connect(_ao_baloes_cancelados)
 	call_deferred("_abrir_jogo")
 
 
@@ -135,7 +138,8 @@ func _process(_delta: float) -> void:
 
 
 func _ao_cena_iniciada(id: String) -> void:
-	sala.cena.montar(player.cena.get("stage", {}), player.cena.get("actors", {}), player.dados.cfg.get("characters", {}), id)
+	sala.cena.montar(player.cena.get("stage", {}), player.cena.get("actors", {}), player.dados.cfg.get("characters", {}), id,
+		player.mundo().atores, not _bloqueante())
 
 
 func _ao_estado_aplicado(estado: Dictionary, origem: String) -> void:
@@ -152,11 +156,16 @@ func _ao_tela_pedida(tela: String, _estado: Dictionary) -> void:
 
 
 func _ao_controle_devolvido() -> void:
+	if not _bloqueante():
+		return  # a saída do John devolve o controle no 1º passo: o palco dela segue até o fim
 	sala.cena.devolver_controle()
 	_ui(true, 0.3)
 
 
 func _ao_cena_terminada(_pulada: bool) -> void:
+	if not _bloqueante():
+		sala.cena.terminar_livre()  # saída do John: acabou (ou foi interrompida); a sala redesenha pelo jogo
+		return
 	sala.cena.terminar()
 	_ui(true, 0.0)
 
@@ -222,7 +231,7 @@ func _falar(ev: Dictionary) -> void:
 	if sala.cena.ator_visivel(ator):
 		cabeca = sala.cena.cabeca_do_ator(ator)
 		evitar = sala.cena.cabecas_a_evitar(ator)
-		if not ("coach" in sala._cena_oculta) and GameState.local_id == "garage" and ator != "coach":
+		if not ("coach" in sala._cena_oculta) and GameState.coach_presente() and ator != "coach":
 			var o := sala.ponto_cabeca("coach")
 			evitar.append(Rect2(o.x - 9.0, o.y, 18.0, 18.0))
 		if sala.mentor_visivel():
@@ -240,3 +249,33 @@ func _falar(ev: Dictionary) -> void:
 		_fala_resta = maxf(float(ev.get("seconds", 0.0)), 0.5)
 	else:
 		_fala_resta = 0.0
+
+
+# --- 6c1: cena da 1ª chegada à academia e saída do John ---
+
+## A cena em cartaz prende o controle (chegada à academia, passar o posto)? A saída do John não.
+func _bloqueante() -> bool:
+	return bool(player.cena.get("blocking", true))
+
+
+## O jogo pediu a cena da 1ª chegada: relógio e cliques já estão parados no GameState até `cena_sala_terminou`.
+func _ao_cena_sala_pedida(id: String) -> void:
+	if not player.iniciar(id):
+		GameState.cena_sala_terminou()
+
+
+## A saída do John começa (marco e `mentor_leaves` já salvos). Sem prender nada: o jogador segue treinando.
+func _ao_saida_pedida() -> void:
+	var id := str(GameState.escola_cfg.get("mentor_leave", {}).get("scene", "saida_primeiro_mentor"))
+	if player.ativa and _bloqueante():
+		GameState.cena_livre_terminou(id)  # há cena grande tocando: sem palco para a saída (o jogo já está no estado final)
+		return
+	if not player.iniciar(id):
+		GameState.cena_livre_terminou(id)
+
+
+## Janela, luta, MUDAR, tela de fim ou RECEBER interromperam a saída: o balão dela fecha na hora.
+func _ao_baloes_cancelados() -> void:
+	_fala_resta = 0.0
+	if balao.ativo() and balao.id.begins_with("cena_"):
+		balao.fechar_agora()

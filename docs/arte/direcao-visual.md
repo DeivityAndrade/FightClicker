@@ -878,3 +878,84 @@ as regras abaixo e não grava se alguma falhar). Nenhum sprite novo.
   ~(0.9, 0.9, 0.95) só nele, ou uma folha com luz assada para este ponto.
 - Uma pose própria de mentor (ombro na parede, braços cruzados, olhar que vira para o saco) daria mais personalidade: 4 quadros, mesmo
   quadro 48x72 e pivô (22,67), com as mesmas camadas do discípulo.
+
+## 25. Fase 6c1 (Casa nova: chegada à academia e saída do John)
+Gerador: `tools/art/make_cenario_fase6c1.gd` (pasta temporária com `project.godot` vazio; `-- --final` grava no projeto e mexe no
+manifest só nas chaves desta fase; sem `--final` = prévia em `<tmp>/out`). A raiz é a pasta acima de `tools/art` (ou `FIGHTCLICKER_ROOT`).
+Ele confere os 4 pontos e não grava o manifest se algum falhar. `-- --busca [--sem-m2] [--min]` procura pontos livres para o Osmar.
+Folhas do Artista: `tools/art/merge_manifest_6c1.gd` (lê `docs/arte/manifest-6c1-personagens.json`; variantes de paleta e a
+sugestão de `scene_anims` vão para `by_data_id.personagens_6c1`). Rodar o merge **depois** do `--final`. Pedido: `docs/cutscenes/pedidos-6c1.md` §2.
+Manifest: `layout.gym_coach_spot`, `gym_mentor_spot`, `gym_mentor_2_spot`, `gym_photo_spot` (cada um `[x, y]`, com `<nome>_info` à parte)
+e `by_data_id.gym_arrival_scene` (ordem de desenho, quadros claros/escuros da porta, luz por quadro da porta).
+
+### 25.1 Peças
+| Sprite | Quadro | Ponto | Camada | Nota |
+|---|---|---|---|---|
+| `gym_half_dark` | 384x272 | (128,18) | `floor` | O `gym_bg` -1 de x 340 em diante, dither Bayer de x 300 a 339. **Furo** transparente no retângulo da porta (401,116,60,108). Com ele, o `gym_tube` quadro 1 no tubo da direita |
+| `gym_door` | 60x108, 6 | (401,116) | `wall` | 0 fechada (= fundo), 1 meio (folha a 45°, rua na fresta), 2 aberta (folha de perfil em x 452..459, rua inteira no vão). **3..5 = os mesmos no escuro** (a rua não escurece): animações `*_dark`. **Mudança:** o pedido era 3 quadros; a metade escura cobriria a porta, então ela tem furo e a porta traz a versão escura |
+| `gym_daylight` | 146x70, 2 | (330,220) | `floor` | O chão +1 (miolo +2), trapézio y 221..289, base x 336..470. 0 = porta aberta, 1 = meio aberta. **Desenhar depois do `gym_half_dark`** |
+| `wall_photo_old_gym` | 18x21, 2 | `gym_photo_spot` | `wall` | 0 reta (a mesma conta das folhas do Artista), 1 torta (= `wall_photo_old`). No jogo, sempre 1 |
+| `john_duffel` | 18x11 | (268,242) | `sorted` 251 | É a `mockups/fase6c1_bolsa_ref.png` do Artista pixel a pixel: no `grab_frame` da `john_pick_duffel` (56x72, pivô 22,67) a bolsa não pula (conferido em `fase6c1_cenario_pecas_x3.png`) |
+| `garage_crate_gym` | 26x19, pivô (16,20) | `gym_mentor_spot` | `sorted` 250 | O caixote com a luz dos tubos. Regra do sufixo `_gym`: na academia o jogo troca sozinho |
+
+A rua no vão fica na mesma altura de tela da `garage_door_outside` (muro em y 198, calçada até 219), com céu branco e uma fachada cream.
+Ordem: `gym_bg` → wall (porta, foto) → floor (`gym_half_dark`, depois `gym_daylight`) → `gym_tube` → sorted. No A7 a porta passa do
+quadro 5 para o 2 no mesmo tique em que o `gym_half_dark` some.
+
+### 25.2 Pontos da academia = os mesmos da garagem
+| Ponto | Valor | Ocupa |
+|---|---|---|
+| `gym_coach_spot` | (196,236) | Osmar x 185..209, y 174..237 |
+| `gym_mentor_spot` | (254,252), caixote em (238,232) | x 238..270, y 196..253 |
+| `gym_mentor_2_spot` | (150,262) | x 138..162, y 197..263 |
+| `gym_photo_spot` | (212,158) | x 212..229, y 158..178, no barrado verde acima da mochila do banco pintado |
+
+Conferido (`mockups/fase6c1_academia_conferencia_x2.png`): fora da faixa do alvo com folga (273..370), fora da `no_cover`, fora dos
+caminhos da porta (428,224) → espera (352,262) → centro (303,272), fora das 4 caixas; a foto não é coberta por ninguém nem pelo saco
+de lado (x 238..278) ou pela corrente; o balão do Osmar (132,132,154,36) não cobre cabeça nenhuma (passa por cima da foto: aceito).
+As folhas do Osmar (`hang_photo`, `nudge_photo`) foram feitas para esta distância entre ele e a foto: mudar um ponto muda os dois.
+
+**O que NÃO dá para cumprir com a equipe máxima (aviso, igual à garagem desde a 6a/6b1):**
+- o vizinho 2 (220,258) cobre 167 px do Osmar e o vizinho 1 (176,284) cobre 67 px das pernas dele;
+- o mentor sentado cobre o saco de lado (258,160) quando o foco não é o saco (619 px), como já aceito na 6b1.
+A busca (`--busca`) mostra que, com equipe máxima, 2º mentor e caixote, **não existe ponto livre para o Osmar em nenhum lugar do chão**;
+tirando o 2º mentor, só a coluna da parede esquerda (x 136..152) fica livre, e aí o 2º mentor não cabe em lugar nenhum. Para chegar a
+0 seria preciso mexer na equipe na academia (pontos próprios da academia para os vizinhos, lidos pelo jogo), o que é código.
+Durante a cena da chegada a equipe está escondida, então a cena não tem esse problema.
+
+### 25.3 Mockups
+`fase6c1_academia_cheia_x1.png` / `_x2.png` (4 caixas; tudo comprado com o boneco no tatame; depois da saída com o último sentado),
+`fase6c1_academia_conferencia_x2.png`, `fase6c1_cenario_pecas_x3.png` (porta 0..5, luz, metade escura, foto, bolsa, caixotes, John
+pegando a bolsa), `fase6c1_cenario_quadros_x1.png` (A1, A3, A6, A7 com as peças finais e as folhas do Artista).
+
+### 25.4 Placeholder / precisa de pixel artist
+- A folha aberta é uma faixa de 8 px; à mão ganharia a espessura com veio, a dobradiça e a sombra no batente.
+- A porta meio aberta é a face pintada apertada por vizinho mais próximo: o vidro aramado fica serrilhado. Pede um desenho próprio.
+- A rua no vão é branca e chapada (escolha "dia claro"); um artista poria poeira no feixe e a borda da sombra do batente no chão.
+- A metade escura é o fundo -1 com dither: à mão, o escuro seguiria a forma da luz do tubo que ficou aceso.
+
+### 25.5 Pontos próprios da equipe na academia: não cabem (estudo, sem gravar no manifest)
+Pedido do Produtor: `by_data_id.gym.people_pos` com a equipe máxima sem ninguém cobrir ninguém, mantendo Osmar, caixote, 2º mentor e foto.
+Modo `-- --equipe` do gerador (busca com volta, pixel a pixel, todos os quadros de cada folha, normal e virada) e `-- --capacidade`.
+Ocupado: Osmar, John sentado e último sentado, caixote, 2º mentor, foto, saco de lado (l0 e l1), esteira encostada, boneco no tatame,
+pera na parede, as 4 caixas em todos os quadros, faixa do alvo com folga (x 273..370), `no_cover`, caminhos porta → espera → centro e
+parada da saída → porta, e a cabeça de ninguém dentro do balão do Osmar. Pés no chão (fora das paredes laterais).
+
+| Situação | Resultado |
+|---|---|
+| Com as 4 caixas | `neighbor_1`, `neighbor_2` e `uncle_1` não têm **nenhum** ponto livre nem sozinhos (nem virados). Cabem juntos no máximo 3 corpos de 25 px (pose estreita como a `disciple_stand_bare`): (175,252), (225,253), (498,288) |
+| Sem caixas (tudo comprado) | no máximo 5 corpos de 25 px, ou 2 a 4 com as folhas atuais (vizinhos e tios têm 34 a 44 px de largura pelos braços) |
+| Sem o caminho da saída | igual: o que trava é o lado esquerdo cheio e as caixas à direita |
+
+Os 3 lugares que sobram são apertados (entre o 2º mentor e o Osmar, entre o Osmar e o caixote, canto da frente à direita).
+Mapa: `mockups/fase6c1_academia_espaco_livre_x2.png`. Nenhuma folha virada ou pose nova resolve sozinha: falta chão, não forma.
+Para ter 0 sobreposições com a equipe inteira é preciso uma destas decisões (Produtor/Designer):
+1. **Menos gente desenhada na academia** (ex.: até 3, nos 3 lugares acima, com uma pose parada estreita de 25 px para os vizinhos e tios;
+   o resto "treina fora"). Folhas novas: `neighbor_N_stand_gym` / `uncle_N_stand_gym`, 48x72, pivô (22,67), braços junto ao corpo.
+2. **Liberar chão:** tirar o 2º mentor ou o Osmar do chão nesta sala (ex.: Osmar só aparece quando fala), ou levar as caixas para outro lugar.
+3. **Aceitar sobreposição só entre pessoas da equipe** (nunca sobre Osmar, mentores, foto, aparelhos e caixas): ainda assim os 3 vizinhos
+   largos precisariam da pose estreita, porque com as caixas não têm lugar nem sozinhos.
+Até a decisão, a academia segue com os pontos da garagem (`people_pos` não foi mexido) e as sobreposições do §25.2.
+
+**Decisão do dono (2026-11-15):** aceitar como na garagem. Na academia a equipe usa os mesmos pontos da garagem; com a equipe
+máxima, as sobreposições da §25.2 ficam como aviso, sem travar. Revisitar quando a academia ganhar arte feita à mão.

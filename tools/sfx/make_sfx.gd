@@ -55,6 +55,14 @@ func _initialize() -> void:
 	_salvar("door_jam", _porta_travando())
 	_salvar("strap_close", _fecho_colando())
 	_salvar("tap_fist", _toque_de_punho())
+	# Fase 6c1 (DEPOIS dos da 6b1, pelo mesmo motivo): chegada à academia.
+	_salvar("gym_door_open", _porta_da_rua(true))
+	_salvar("gym_door_close", _porta_da_rua(false))
+	_salvar("metal_bump", _ferro_batendo())
+	_salvar("crate_down", _caixote_pousando())
+	_salvar("nail_knock", _batida_na_madeira())
+	_salvar("frame_scrape", _moldura_raspando())
+	_salvar("tube_start", _tubo_acendendo())
 	print("sfx gerados em ", PASTA)
 	quit(0)
 
@@ -674,4 +682,132 @@ func _toque_de_punho() -> PackedFloat32Array:
 		lp += (alta - lp) * 0.5
 		var v := sin(fase) * 0.7 * exp(-t * 75.0) + (alta - lp) * 0.7 * exp(-t * 240.0)
 		s[i] = tanh(v * 1.2)
+	return _normalizar(s, 0.6)
+
+
+# --- Fase 6c1 (DEPOIS de todos os antigos: ruído com semente fixa) ---
+
+# Porta de madeira com mola da academia (0,3 s): rangido curto e batida macia. Abrindo: rangido que sobe e estalo de trinco.
+# Fechando: rangido que desce e a batida macia no fim.
+func _porta_da_rua(abrindo: bool) -> PackedFloat32Array:
+	var dur := 0.3
+	var n := int(dur * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var fase := 0.0
+	var lp := 0.0
+	var fim_rangido := 0.19 if abrindo else 0.16
+	for i in n:
+		var t := float(i) / TAXA
+		var x := minf(t / fim_rangido, 1.0)
+		var f := (260.0 + 160.0 * x) if abrindo else (420.0 - 170.0 * x)
+		fase += TAU * f / TAXA
+		var rangido := 0.0
+		if t < fim_rangido:
+			# Dente de serra suave com tremor: madeira esfregando.
+			var ph := fmod(fase / TAU, 1.0)
+			rangido = (ph * 2.0 - 1.0) * 0.45 * sin(PI * x) * (0.75 + 0.25 * sin(TAU * 38.0 * t))
+		lp += (_rng.randf_range(-1.0, 1.0) - lp) * 0.2
+		var v := rangido + lp * 0.12 * sin(PI * x)
+		var t_batida := 0.2 if abrindo else 0.17
+		if t >= t_batida:
+			var te := t - t_batida
+			var corpo := sin(TAU * 120.0 * te)
+			v += corpo * exp(-te * (60.0 if abrindo else 35.0)) * (0.35 if abrindo else 0.75)
+		s[i] = v
+	return _normalizar(s, 0.7)
+
+
+# Ferro oco batendo em madeira (0,25 s), com o chocalho da correia depois.
+func _ferro_batendo() -> PackedFloat32Array:
+	var n := int(0.25 * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var lp := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		var v := sin(TAU * 135.0 * t) * exp(-t * 38.0) * 0.8
+		v += (sin(TAU * 410.0 * t) * 0.35 + sin(TAU * 870.0 * t) * 0.22 + sin(TAU * 1430.0 * t) * 0.1) * exp(-t * 26.0)
+		lp += (_rng.randf_range(-1.0, 1.0) - lp) * 0.45
+		# Chocalho: duas rajadas de ruído depois da batida.
+		var rajada := exp(-pow((t - 0.07) / 0.02, 2.0)) + 0.7 * exp(-pow((t - 0.13) / 0.025, 2.0)) + 0.4 * exp(-pow((t - 0.19) / 0.02, 2.0))
+		v += lp * rajada * 0.35
+		s[i] = tanh(v * 1.2)
+	return _normalizar(s, 0.8)
+
+
+# Caixote de madeira pousando no piso de borracha (0,15 s): batida surda, sem ressonância.
+func _caixote_pousando() -> PackedFloat32Array:
+	var n := int(0.15 * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var fase := 0.0
+	var lp := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		fase += TAU * (115.0 - 45.0 * minf(t / 0.1, 1.0)) / TAXA
+		lp += (_rng.randf_range(-1.0, 1.0) - lp) * 0.3
+		var v := sin(fase) * exp(-t * 32.0) * 0.85 + lp * exp(-t * 110.0) * 0.45
+		s[i] = tanh(v * 1.2)
+	return _normalizar(s, 0.7)
+
+
+# Uma batida seca de palma em madeira (0,1 s). Uma só.
+func _batida_na_madeira() -> PackedFloat32Array:
+	var n := int(0.1 * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var lp := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		var alta := _rng.randf_range(-1.0, 1.0)
+		lp += (alta - lp) * 0.35
+		var v := sin(TAU * 230.0 * t) * exp(-t * 80.0) * 0.7 + (alta - lp) * exp(-t * 180.0) * 0.6 + sin(TAU * 610.0 * t) * exp(-t * 110.0) * 0.25
+		s[i] = tanh(v * 1.2)
+	return _normalizar(s, 0.65)
+
+
+# Moldura raspando na parede (0,25 s): ruído passa-banda que desliza e some.
+func _moldura_raspando() -> PackedFloat32Array:
+	var dur := 0.25
+	var n := int(dur * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var a := 0.0
+	var b := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		var x := t / dur
+		var c := 0.18 + 0.22 * sin(PI * x)  # a banda sobe e desce
+		a += (_rng.randf_range(-1.0, 1.0) - a) * c
+		b += (a - b) * 0.5
+		var env := sin(PI * x) * (0.7 + 0.3 * sin(TAU * 47.0 * t))
+		s[i] = (a - b) * 2.4 * env
+	return _normalizar(s, 0.5)
+
+
+# Reator de lâmpada de tubo (0,5 s): estalos irregulares e zumbido que sobe. Sem batida ritmada.
+func _tubo_acendendo() -> PackedFloat32Array:
+	var dur := 0.5
+	var n := int(dur * TAXA)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	var proximo := 0.03
+	var inicio := -1.0
+	var f := 900.0
+	var fase := 0.0
+	for i in n:
+		var t := float(i) / TAXA
+		var x := t / dur
+		if t >= proximo:
+			inicio = t
+			f = _rng.randf_range(700.0, 1900.0)
+			proximo += _rng.randf_range(0.025, 0.11)  # intervalos irregulares de propósito
+		var estalo := 0.0
+		if inicio >= 0.0:
+			var te := t - inicio
+			estalo = sin(TAU * f * te) * exp(-te * 160.0) * (0.9 - 0.5 * x)
+		fase += TAU * (60.0 + 60.0 * x * x) / TAXA
+		var zumbido := (sin(fase) + 0.5 * sin(fase * 2.0) + 0.25 * sin(fase * 3.0)) * 0.2 * smoothstep(0.1, 0.9, x)
+		s[i] = estalo * 0.7 + zumbido
 	return _normalizar(s, 0.6)

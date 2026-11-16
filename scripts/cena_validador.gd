@@ -54,12 +54,14 @@ func validar_caminho(caminho: String, id_esperado: String = "") -> Dictionary:
 	var tempo := 0.0
 	var exato := false
 	if _erros.is_empty():
-		var comp := dados.compilar(_cena, {"disciple_name": "Novato"})
+		var comp := dados.compilar(_cena, {"disciple_name": "Novato", "pontos_local": _pontos_dos_locais()})
 		tempo = float(comp.duracao_presa)
 		exato = bool(comp.exato)
 		for p in dados.pendencias:
 			_pend_unico(p)
 		var teto := float(_cena.get("max_seconds", 0.0))
+		if not bool(_cena.get("blocking", true)) and tempo > 1.0e-6:
+			_erros.append("cena sem controle preso prende %.2f s (precisa ser 0)" % tempo)
 		if bool(_cena.get("blocking", true)) and tempo > teto + 1.0e-6:
 			if exato:
 				_erros.append("tempo preso %.2f s passa de max_seconds %.2f" % [tempo, teto])
@@ -136,6 +138,8 @@ func _conferir_cena(esperado: String) -> void:
 		_e("start_fight só em cena com view: fight")
 	_conferir_reacoes()
 	_conferir_estado_final()
+	if typeof(c.get("blocking", null)) == TYPE_BOOL and not bool(c.blocking):
+		_conferir_cena_livre(raiz_passos)
 
 
 func _conferir_gatilho() -> void:
@@ -186,6 +190,13 @@ func _conferir_palco() -> void:
 	if str(s.get("location", "")) == "":
 		_e("stage.location vazio")
 	_conferir_retangulo(s.get("window", null), "stage.window")
+	var escondidos = s.get("hide", [])
+	if not (escondidos is Array):
+		_e("stage.hide precisa ser lista")
+	else:
+		for h in escondidos:
+			if not (str(h) in dados.cfg.get("hide_values", [])):
+				_e("stage.hide: valor desconhecido: %s" % str(h))
 	var props = s.get("props", {})
 	if not (props is Dictionary):
 		_e("stage.props precisa ser dicionário")
@@ -226,6 +237,15 @@ func _conferir_atores() -> void:
 		if not dados.personagem_valido(str(x.get("character", ""))):
 			_e("%s: personagem desconhecido: %s" % [onde, str(x.get("character", ""))])
 		_conferir_ponto_inteiro(x.get("pos", null), onde + ".pos")
+		if x.has("fallback") and not dados.personagem_valido(str(x.fallback)):
+			_e("%s: fallback desconhecido: %s" % [onde, str(x.fallback)])
+		if x.has("optional") and typeof(x.optional) != TYPE_BOOL:
+			_e(onde + ": optional precisa ser true ou false")
+		if x.has("from_room") and not (str(x.from_room) in dados.cfg.get("from_room_roles", [])):
+			_e("%s: from_room desconhecido: %s" % [onde, str(x.from_room)])
+		if x.has("requires"):
+			if not (x.requires is Dictionary) or not (str(x.requires.get("owned", "")) != "") or x.requires.size() != 1:
+				_e(onde + ": requires só aceita {owned: aparelho}")
 		if x.has("facing") and not (str(x.facing) in ["left", "right"]):
 			_e(onde + ": facing precisa ser left ou right")
 		if x.has("glove") and not _luva_valida(str(x.glove)):
@@ -367,8 +387,15 @@ func _conferir_passo(p: Dictionary, onde: String, topo: bool) -> void:
 		_e(onde + ": checkpoint vazio")
 	if p.has("if"):
 		var c = p["if"]
-		if not (c is Dictionary) or not c.has("last_campaign_end"):
+		var chaves: Array = dados.cfg.get("if_keys", ["last_campaign_end"])
+		if not (c is Dictionary) or c.is_empty():
 			_e(onde + ": condição if desconhecida")
+		else:
+			for k in c:
+				if not (str(k) in chaves):
+					_e("%s: condição if desconhecida: %s" % [onde, str(k)])
+			if c.has("location") and not (str(c.location) in dados.cfg.get("locations", [])):
+				_e("%s: if.location desconhecido: %s" % [onde, str(c.location)])
 	if tipo == "open_screen" and not topo:
 		_e(onde + ": open_screen só no nível de cima da cena")
 	match tipo:
@@ -525,7 +552,19 @@ func _conferir_pose(p: Dictionary, onde: String) -> void:
 		if p.has(k) and (not _numero(p[k]) or float(p[k]) < 0.0):
 			_e("%s: %s inválido" % [onde, k])
 	var folha := dados.folha_da_pose(char_id, anim)
-	if folha.is_empty():
+	# 6c1: papel de elenco (mentor:seat, mentor:last): confere cada personagem possível (John, discípulo, fallback).
+	var candidatos := dados.candidatos_do_papel(char_id, _cena.get("actors", {}).get(ator_id, {}))
+	if not candidatos.is_empty():
+		folha = {}
+		for cand in candidatos:
+			var fc := dados.folha_da_pose(str(cand), anim)
+			if fc.is_empty():
+				_pend_unico("animação sem arte: %s/%s" % [str(cand), anim])
+			elif folha.is_empty():
+				folha = fc
+		if folha.is_empty():
+			folha = {"sprite": "", "frames": 1 << 30}
+	elif folha.is_empty():
 		_pend_unico("animação sem arte: %s/%s" % [char_id, anim])
 	elif faixa is Array and faixa.size() == 2 and int(faixa[1]) >= int(folha.frames):
 		_e("%s: frames [%d,%d] passa dos %d quadros de %s" % [onde, int(faixa[0]), int(faixa[1]), int(folha.frames), str(folha.sprite)])
@@ -579,3 +618,41 @@ func _conferir_posicao_nomeada(v: Variant, onde: String) -> void:
 func _conferir_retangulo(v: Variant, onde: String) -> void:
 	if not (v is Array) or v.size() != 4 or not _todos_inteiros(v) or int(v[2]) <= 0 or int(v[3]) <= 0:
 		_e("%s precisa ser [x, y, largura, altura] inteiros" % onde)
+
+
+# --- 6c1: cena sem controle preso (formato §9 item 19) ---
+
+# Pontos dos dois locais juntos (o validador não tem um local só): seat/stand/coach resolvem se algum local os define.
+func _pontos_dos_locais() -> Dictionary:
+	var r: Dictionary = {}
+	for local in dados.cfg.get("locations", []):
+		var p := dados.pontos_do_local(str(local))
+		for k in p:
+			if not r.has(k):
+				r[k] = p[k]
+	return r
+
+
+# `blocking: false`: return_control é o 1º passo, e só valem passos passivos (sem ui, camera, shake, open_screen, gesto).
+func _conferir_cena_livre(passos: Array) -> void:
+	if passos.is_empty() or not (passos[0] is Dictionary) or str(passos[0].get("type", "")) != "return_control":
+		_e("cena sem controle preso: return_control precisa ser o 1º passo")
+	var permitidos: Array = dados.cfg.get("free_scene_steps", [])
+	_conferir_passos_livres(passos, "steps", permitidos)
+
+
+func _conferir_passos_livres(lista: Array, onde: String, permitidos: Array) -> void:
+	for i in lista.size():
+		var p = lista[i]
+		if not (p is Dictionary):
+			continue
+		var nome := "%s[%d]" % [onde, i]
+		var tipo := str(p.get("type", ""))
+		if not (tipo in permitidos):
+			_e("%s: passo '%s' não vale em cena sem controle preso" % [nome, tipo])
+		if tipo == "say" and str(p.get("mode", "scene")) != "passive":
+			_e(nome + ": em cena sem controle preso a fala precisa ser mode passive")
+		if tipo == "pose" and str(p.get("anim", "")) in dados.cfg.get("gesture_anims", []):
+			_e(nome + ": gesto do John não vale em cena sem controle preso")
+		if p.get("steps", null) is Array:
+			_conferir_passos_livres(p.steps, nome + ".steps", permitidos)

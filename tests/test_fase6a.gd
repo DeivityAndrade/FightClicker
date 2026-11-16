@@ -112,12 +112,12 @@ func _teste_dados() -> void:
 	for l in d.linhas:
 		if not l.enabled:
 			desligadas.append(l.id)
-	checar_igual(desligadas, ["cl_passar_posto", "cl_arte_1", "cl_arte_2", "cl_arte_3"], "só passar_posto (6b) e arte (6c) desligadas")
+	checar_igual(desligadas, ["cl_passar_posto"], "só passar_posto (6b) desligada; a arte foi ligada na 6c1")
 	var derrota := 0
 	for l in d.linhas:
 		if l.trigger == "after_defeat" and l.repeat == "rest":
 			derrota += 1
-	checar_igual(derrota, 6, "derrota e derrota_recall juntas: 6 variantes no mesmo grupo")
+	checar_igual(derrota, 8, "derrota e derrota_recall juntas: 8 variantes no mesmo grupo (6 da garagem + 2 da academia, 6c1)")
 	checar_igual(d.linha("cl_primeira_derrota").repeat, "once", "primeira derrota é única")
 	for t in ["garage_saved_return", "after_defeat", "glove_new", "fight_won", "gym_arrival", "fight_near", "big_purchase", "box_opened", "idle"]:
 		checar(d.triggers.has(t), "gatilho %s existe" % t)
@@ -205,17 +205,17 @@ func _teste_escolha_pura() -> void:
 	checar_igual(d.candidatas("fight_won", ctx).size(), 3, "revanche: 3 variantes")
 	ctx.params = {"record": true}
 	checar_igual(d.candidatas("fight_won", ctx).size(), 3, "recorde: 3 variantes")
-	ctx = {"campaign": 2, "location": "garage", "lines_seen": {}, "params": {}}
+	ctx = {"campaign": 2, "location": "gym", "milestones": {"cena_primeira_academia": {}}, "lines_seen": {}, "params": {}}
 	checar(d.candidatas("gym_arrival", ctx).size() == 1 and d.candidatas("gym_arrival", ctx)[0].id == "cl_primeira_academia", "1ª academia: só a única")
 	ctx.lines_seen = {"cl_primeira_academia": 1}
-	checar_igual(d.candidatas("gym_arrival", ctx).size(), 3, "academia nas campanhas seguintes: academia_volta (after_line)")
+	checar_igual(d.candidatas("gym_arrival", ctx).size(), 6, "academia nas campanhas seguintes: academia_volta e ac_chegada (after_line)")
 	ctx.campaign = 1
 	checar(d.candidatas("gym_arrival", ctx).is_empty(), "academia_volta não toca na mesma campanha da primeira")
 	# Prioridade: derrota única (9) ganha das repetíveis (5)
 	ctx = {"campaign": 1, "location": "garage", "lines_seen": {}, "params": {}}
 	checar_igual(d.melhor(d.candidatas("after_defeat", ctx), ctx, rng).id, "cl_primeira_derrota", "primeira derrota ganha das 6 variantes")
 	# Desligadas nunca entram
-	checar(d.candidatas("retire", ctx).is_empty() and d.candidatas("art_choice", ctx).is_empty(), "falas de 6b e 6c desligadas")
+	checar(d.candidatas("retire", ctx).is_empty(), "falas de 6b desligadas")
 
 
 func _tem(lista: Array, id: String) -> bool:
@@ -888,21 +888,21 @@ func _teste_correcoes_qa() -> void:
 	var d := DialogosData.carregar()
 	var sem_local: Array = []
 	for l in d.linhas:
-		if l.speaker == "coach" and l.trigger != "opening" and str(l.get("conditions", {}).get("location", "")) != "garage":
+		if l.speaker == "coach" and l.trigger != "opening" and not (str(l.get("conditions", {}).get("location", "garage")) in ["garage", "gym"]):
 			sem_local.append(l.id)
-	checar_igual(sem_local, [], "B1: toda fala do Osmar (fora da abertura) exige location garage")
+	checar_igual(sem_local, [], "B1 (6c1): fala do Osmar só tem local garagem ou academia (quem fala é quem está desenhado)")
 	var g := _pronto("f6a_b1")
 	var falas: Array = []
 	g.fala_pedida.connect(func(_q: String, _t: String, id: String) -> void: falas.append(id))
 	g.cinturao = true
 	g.dinheiro = 1.0e9
 	g.mudar()
-	g.escolher_arte(g.academia.ids_artes()[0])
 	_tickar(g, 6.0)
-	checar(falas.is_empty() and not g.escola.lines_seen.has("cl_primeira_academia"), "B1: academia sem balão e a única não foi gasta")
-	g.disparar_gatilho("gym_arrival", {})
-	_tickar(g, 20.0)
-	checar(falas.is_empty() and g._vaga.is_empty(), "B1: nem a vaga guarda a fala da academia")
+	checar(falas.is_empty() and not g.escola.lines_seen.has("cl_primeira_academia"), "6c1: durante a cena da academia, nenhuma fala e a única não é gasta")
+	g.cena_sala_terminou()
+	g.escolher_arte(g.academia.ids_artes()[0])
+	_tickar(g, 5.0)
+	checar(falas == ["cl_primeira_academia"] and g._vaga.is_empty(), "6c1: depois da cena e da arte, a única toca (Osmar desenhado na academia)")
 	_liberar(g)
 	# B1: abertura num save que começa na academia não faz balão do Osmar
 	var g1b := _novo("f6a_b1_abertura")
