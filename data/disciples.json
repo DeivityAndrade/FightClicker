@@ -176,7 +176,9 @@
 		"tap_interval": 0.22,
 		"anim": "mentor_first_taps",
 		"sound": "tap_fist",
-		"location": "garage"
+		"_doc_6c1": "6c1 (design §4.4): os toques valem onde o John estiver sentado (garagem e academia com o marco da cena).",
+		"locations": ["garage", "gym"],
+		"only_first": true
 	},
 
 	"room_mentors": {
@@ -185,13 +187,32 @@
 		"second_mentor": {
 			"enabled": true,
 			"requires_mentor": "first",
-			"location": "garage",
-			"spot": "mentor_2_spot",
 			"pose": "stand_bare",
 			"glove": "none",
 			"facing": "toward_bag",
 			"bag_x": 320,
-			"hidden_during_scenes": ["primeira_sucessao"]
+			"hidden_during_scenes": ["primeira_sucessao", "primeira_academia"],
+			"_doc_6c1": "6c1: vale nos dois locais (pontos em spots_by_location). Escondido também na primeira_academia (aparece no end_state).",
+			"locations": ["garage", "gym"]
+		},
+		"_doc_6c1": "Fase 6c1 (design §4). Pontos por local e regra depois da saída do John. Na academia, mentores só com o marco cena_primeira_academia.",
+		"spots_by_location": {
+			"garage": { "seat": "mentor_spot", "stand": "mentor_2_spot" },
+			"gym": { "seat": "gym_mentor_spot", "stand": "gym_mentor_2_spot", "requires_milestone": "cena_primeira_academia" }
+		},
+		"seat_prop": {
+			"_doc": "O caixote fica visível com ou sem gente sentada: na garagem desde a primeira sucessão; na academia desde o marco da cena (decisão do Produtor: o caixote carregado na cena substitui o banco).",
+			"garage": { "prop": "mentor_crate", "requires_milestone": "cena_primeira_sucessao" },
+			"gym": { "prop": "mentor_crate", "requires_milestone": "cena_primeira_academia" }
+		},
+		"after_first_leaves": {
+			"_doc": "Depois do marco cena_saida_primeiro_mentor: senta o último que passou o posto (a mesma entrada de segundo_mentor_entrada); o ponto stand fica vazio; ninguém faz os toques.",
+			"milestone": "cena_saida_primeiro_mentor",
+			"seated": "last_passed",
+			"pose": "sit_rest",
+			"glove": "none",
+			"stand_spot": "empty",
+			"taps": false
 		}
 	}
 }

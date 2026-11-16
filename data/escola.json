@@ -1,0 +1,48 @@
+{
+	"version": 1,
+	"_doc": "Fase 6c1 (Casa nova). Regras da escola que não são de discípulo: chegada à academia, presença do Osmar, foto antiga, saída do John e comentário da arte. Dono dos valores: Designer (docs/fases/fase6c1-design.md). Nada aqui é lido pela economia, pela luta ou pelo calendário. A 6c2 acrescenta mural, Honra e hall neste mesmo arquivo.",
+
+	"gym_arrival": {
+		"_doc": "Design §1. A cena toca no MUDAR para a academia com o marco ausente. Marco gravado no mesmo salvar() da mudança. Relógio parado durante a cena.",
+		"location": "gym",
+		"scene": "primeira_academia",
+		"milestone": "cena_primeira_academia",
+		"max_locked_seconds": 15.0,
+		"freeze_campaign": true,
+		"art_choice_after_scene": true,
+		"box_carrier_order": ["first", "last_passed", "neighbor"],
+		"hidden_during_scene": ["player", "crew", "mentors", "coach"]
+	},
+
+	"coach_presence": {
+		"_doc": "Design §3. O Osmar só aparece (e só fala) onde está desenhado. Na academia, só depois do marco da cena. Sem ponto no manifest = não aparece e não fala ali.",
+		"garage": { "spot": "by_data_id.original_trainer.pos", "requires_milestone": "" },
+		"gym": { "spot": "gym_coach_spot", "requires_milestone": "cena_primeira_academia" }
+	},
+
+	"old_photo": {
+		"_doc": "Design §2. A foto acompanha a escola: na garagem sempre; na academia depois do marco. Hover: objects.old_photo (garagem) / objects.old_photo_gym (academia).",
+		"garage": { "spot": "garage_story_wall.objects.photo_old", "requires_milestone": "", "object_text": "old_photo" },
+		"gym": { "spot": "gym_photo_spot", "requires_milestone": "cena_primeira_academia", "object_text": "old_photo_gym", "tilted": true }
+	},
+
+	"mentor_leave": {
+		"_doc": "Design §5. Saída do John. Devida quando: John em school.mentors, discípulo jogando, marco da saída ausente E (marco win_milestone presente OU career_number >= first_fighter_campaign + reserve_campaign_offset). Toca no 1º momento calmo com o John desenhado.",
+		"scene": "saida_primeiro_mentor",
+		"milestone": "cena_saida_primeiro_mentor",
+		"win_milestone": "disciple_gym_win",
+		"win_location": "gym",
+		"reserve_campaign_offset": 3,
+		"locked_seconds": 0.0,
+		"max_seconds": 14.0,
+		"settle_seconds": 2.0,
+		"counts_as_comment": true,
+		"interrupt_on": ["window", "fight", "location_change", "end_screen", "handover"]
+	},
+
+	"art_comment": {
+		"_doc": "Design §4.3. O gatilho art_choice sai quando art_seconds (tempo de sala ativa com a arte) passa deste valor, uma vez por campanha. Não sai no momento da escolha: lá ele perderia sempre para after_defeat e cl_primeira_academia.",
+		"trigger": "art_choice",
+		"after_art_seconds": 60.0
+	}
+}

@@ -1,6 +1,6 @@
 # Cutscenes — formato de dados (proposta)
 
-Dono: Diretor de Cutscenes. **Versão 1.1 (2026-11-14).** As duas primeiras cenas existem: `data/cutscenes/primeira_sucessao.json` e `chegada_discipulo.json`. Escrever as cenas de verdade pediu os acréscimos da **§9**, que valem sobre o resto deste documento. O exemplo da §2 é só ilustrativo: os valores certos são os dos arquivos.
+Dono: Diretor de Cutscenes. **Versão 1.2 (2026-11-15).** A 6c1 (`primeira_academia.json`, `saida_primeiro_mentor.json`) pediu os itens 16 a 24 da §9. Versão 1.1 (2026-11-14): As duas primeiras cenas existem: `data/cutscenes/primeira_sucessao.json` e `chegada_discipulo.json`. Escrever as cenas de verdade pediu os acréscimos da **§9**, que valem sobre o resto deste documento. O exemplo da §2 é só ilustrativo: os valores certos são os dos arquivos.
 Objetivo: toda cena é um arquivo em `data/cutscenes/<id>.json`, tocado por **um único player de cena**. Nenhuma cena escrita à mão em código. O Diretor de Cutscenes monta e ajusta as cenas só mexendo nesses arquivos.
 
 Convenções iguais às do resto de `data/`: chaves em inglês `snake_case`, textos em português. Posições em pixels inteiros da base 640x360, personagens pelo ponto dos pés. Tempos em segundos.
@@ -222,3 +222,21 @@ Tudo aqui é usado pelas cenas da 6b1. O validador precisa conhecer.
 Conta de tempo do validador: `parallel` vale o filho mais longo; passo com `wait: false` vale 0; `move` com `speed` vale distância ÷ velocidade; `say` vale letras ÷ velocidade + pausas + `hold`; `max_seconds` é a soma das partes antes e depois do `open_screen`.
 
 `reactions.idle_seconds` continua no formato, mas nenhuma cena da 6b1 usa.
+
+### Acréscimos da versão 1.2 (6c1)
+
+Usados por `primeira_academia.json` e `saida_primeiro_mentor.json`. Nenhum tipo de passo novo: tudo é campo novo em blocos que já existem. Regras de jogo por trás: `docs/fases/fase6c1-design.md`.
+
+| # | Acréscimo | Como é | Por quê |
+|---|---|---|---|
+| 16 | **Elenco por papel** | `actors.<id>.character` aceita `mentor:seat` (quem senta no caixote: o John; sem ele, o último que passou o posto) e `mentor:last` (o último que passou o posto, com o `look` gravado). `fallback`: personagem usado quando o papel não tem ninguém (ex.: `helper_2`). `optional: true`: sem ninguém e sem `fallback`, o ator não existe e todo passo que o cita é pulado com 0 s. `requires: { "owned": "<aparelho>" }`: o ator só existe se a campanha tem o aparelho. Quem decide é o `GameState` (`elenco_primeira_academia()`) | Uma cena só para os 3 elencos da chegada; a saída funciona com e sem 2º mentor |
+| 17 | **`current_player` na campanha do John** | Resolve para `first_fighter` (folhas `john_*`). As poses pedidas ao lutador existem com os dois prefixos | A chegada pode acontecer na Carreira 1 |
+| 18 | **`helper_2`** | Segundo ajudante do bairro em `data/cena_player.json > characters`: mesmas folhas do `helper`, outra paleta | Dois vizinhos na mesma cena (caixote e esteira) |
+| 19 | **Cena sem controle preso** (`blocking: false`) | (a) `return_control` é o **1º passo**; os passos seguintes mexem em atores e adereços da cena com o jogador no controle (vale sobre o item 12 só nestas cenas). (b) `stage.location: "any"` = o local atual. (c) `stage.hide` lista só quem a cena assume; `actors.<id>.from_room` (`seat`, `stand`, `coach`) faz o ator nascer onde a sala desenha aquele personagem, na pose dele; `pos` é só o reserva. (d) Só valem `wait`, `move`, `pose`, `face`, `show`, `hide`, `sound`, `prop`, `say` com `mode: passive`, `parallel` e `sequence`; o validador reprova `ui`, `camera`, `shake`, `open_screen` e gesto. (e) Interrupção (janela, luta, troca de local, tela de fim, RECEBER) aplica o `end_state` na hora e fecha os balões. (f) `max_seconds` é só documentação: o tempo preso é 0 | Saída do John |
+| 20 | **`stage.hide`: valores novos** | `apparatus` (aparelhos da sala), `boxes` (caixas de aparelho), `wall_objects` (foto, mural) | A academia começa vazia na cena e volta montada no `return_control` |
+| 21 | **Objeto da sala pelo estado atual** | `room_object: "punching_bag"` usa o nível visual e o sufixo do local atual (`bag_lN_idle_gym`). Objeto novo `treadmill` (parada no lado dela). Objeto da sala aceita `visible` | O saco pendurado na cena é o que o jogo desenha depois: sem troca visível |
+| 22 | **Condição por local e pontos por local** | `if: { "location": "gym" }` em qualquer passo; adereço com `location` só existe naquele local (passos que o citam em outro local são pulados). Pontos `seat_spot`, `stand_spot` e `coach_spot` = os pontos do local atual (`disciples.json > room_mentors.spots_by_location`, `escola.json > coach_presence`) | Um arquivo só para a saída na garagem e na academia |
+| 23 | **Gatilho `mentor_leave_due`** | Evento novo em `data/cena_player.json > events`: o `GameState` avisa quando a saída está devida, a sala está calma e o John está desenhado (design §6.1 e §6.2) | Saída do John |
+| 24 | **Passo `fx` executado** | Já existia no formato (§4), hoje só validado. A chegada usa um (`fx_arrive_dust_small` no saco). A cena funciona sem ele | Poeira do saco no gancho |
+
+Estado do validador hoje: `primeira_academia` passa com 0 erros (os campos novos são ignorados e a arte que falta vira pendência). `saida_primeiro_mentor` acusa 3 erros esperados até os itens 22 e 23 entrarem: evento desconhecido e duas condições `if`.

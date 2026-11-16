@@ -1,0 +1,207 @@
+{
+  "_nota": "Fase 6c1. Cena única 'Primeira chegada à academia'. Prancha: docs/cutscenes/prancha-6c1.md (quadros A1-A8). Formato: docs/cutscenes/formato-dados.md (v1.2, §9). Regras de jogo: docs/fases/fase6c1-design.md §1. Chaves que começam com _ são comentário. _t = tempo previsto do passo, em segundos. Sons: os próprios de tools/sfx/make_sfx.gd (pedidos-6c1.md §3). Nomes de pose = sufixo da folha (<prefixo>_<anim>, e _left onde a folha só existe virada para a esquerda); a sugestão de scene_anims está em manifest.by_data_id.personagens_6c1.",
+  "id": "primeira_academia",
+  "version": 1,
+  "milestone": "cena_primeira_academia",
+  "once": true,
+  "blocking": true,
+  "register": "cotidiano",
+  "max_seconds": 15,
+
+  "trigger": {
+    "event": "location_reached",
+    "requires": { "location": "gym", "milestone_missing": ["cena_primeira_academia"] }
+  },
+
+  "grants": [
+    { "_nota": "O caixote vem na mudança e fica na academia (proposta: pedidos-6c1.md §5, troca o banco do design §4.1).", "type": "prop_permanent", "id": "gym_mentor_crate", "sprite": "garage_crate", "point": "gym_mentor_spot", "location": "gym" }
+  ],
+
+  "stage": {
+    "view": "room",
+    "location": "gym",
+    "window": [128, 18, 384, 272],
+    "_hide": "apparatus, boxes e wall_objects são valores novos (formato §9 item 20): a academia começa sem aparelho, sem caixa e sem foto.",
+    "hide": ["player", "crew", "mentors", "coach", "apparatus", "boxes", "wall_objects"],
+    "props": {
+      "shade":     { "_nota": "Metade direita da sala 1 passo mais escura (tubo apagado). Máscara em dither, camada do chão: não escurece gente.", "sprite": "gym_half_dark", "pos": [128, 18], "layer": "floor" },
+      "tube_l":    { "sprite": "gym_tube", "pos": [218, 34], "layer": "wall", "anim": "idle" },
+      "tube_r":    { "_nota": "Quadro 1 = apagado.", "sprite": "gym_tube", "pos": [422, 34], "layer": "wall", "frame": 1 },
+      "door":      { "_nota": "Porta da rua (6 quadros): 0..2 clara, 3..5 escura (animações *_dark) enquanto o shade está na tela. No A7 passa do quadro 5 para o 2 no mesmo tique em que o shade some.", "sprite": "gym_door", "pos": [401, 116], "layer": "wall", "anim": "closed_dark" },
+      "daylight":  { "_nota": "Definido depois do shade: os dois são floor e a luz desenha por cima da metade escura. Quadro 1 = porta meio aberta, 0 = aberta.", "sprite": "gym_daylight", "pos": [330, 220], "layer": "floor", "visible": false },
+      "photo":     { "_nota": "A foto antiga na parede: quadro 0 reta, quadro 1 torta. Ponto = gym_photo_spot proposto.", "sprite": "wall_photo_old_gym", "pos": [212, 158], "layer": "wall", "visible": false },
+      "crate":     { "sprite": "garage_crate_gym", "pos": [238, 232], "layer": "sorted", "sort_y": 250, "visible": false },
+      "bag":       { "_nota": "O saco da sala, no nível e no local atuais (formato §9 item 21).", "room_object": "punching_bag", "visible": false },
+      "treadmill": { "_nota": "A esteira parada no lado direito. Vira objeto da sala quando o player souber (formato §9 item 21).", "sprite": "treadmill_l0_side_gym", "pos": [445, 267], "layer": "sorted", "sort_y": 267, "visible": false }
+    }
+  },
+
+  "actors": {
+    "coach":   { "character": "coach", "pos": [196, 236], "facing": "right", "anim": "hold_photo" },
+    "fighter": { "_nota": "Quem joga a campanha. Na campanha do John resolve para first_fighter (formato §9 item 17).", "character": "current_player", "glove": "none", "pos": [428, 224], "facing": "left", "anim": "carry_bag_left", "visible": false },
+    "box":     { "_nota": "Quem traz o caixote: o John; sem ele, o último que passou o posto; sem ninguém, um vizinho que pousa o caixote e fica em pé (corte 4 do pedido) (formato §9 item 16; design §1.4).", "character": "mentor:seat", "fallback": "helper_2", "glove": "none", "pos": [428, 224], "facing": "left", "anim": "carry_crate_left", "visible": false },
+    "helper":  { "_nota": "Vizinho com a esteira velha (a esteira faz parte das folhas dele). Só existe se a campanha tem esteira (pedidos-6c1.md §6).", "character": "helper", "optional": true, "requires": { "owned": "treadmill" }, "pos": [430, 222], "facing": "left", "anim": "treadmill_stuck_left", "visible": false }
+  },
+
+  "lines": {
+    "aca_agora_sim": { "speaker": "coach", "text_key": "aca_agora_sim" }
+  },
+
+  "steps": [
+    { "_q": "A1 Casa vazia (0,00-1,20)", "_t": 0.0, "type": "ui", "hide": "all", "seconds": 0.3, "wait": false },
+    { "_t": 0.0, "type": "sound", "id": "lamp_hum", "loop": true, "volume": 0.4 },
+    { "_t": 0.0, "type": "wait", "seconds": 0.5 },
+    { "_t": 0.5, "_nota": "Pisca a 12 fps quadro a quadro (o gym_tube está com fps 0 no manifest: a animação flicker tocaria a 0,1 fps).", "type": "prop", "id": "tube_l", "frame": 1 },
+    { "type": "wait", "seconds": 0.08 },
+    { "type": "prop", "id": "tube_l", "frame": 0 },
+    { "type": "wait", "seconds": 0.08 },
+    { "type": "prop", "id": "tube_l", "frame": 1 },
+    { "type": "wait", "seconds": 0.08 },
+    { "type": "prop", "id": "tube_l", "frame": 0 },
+    { "type": "wait", "seconds": 0.16 },
+    { "_t": 0.9, "_nota": "Porta escura (3,4,5) a 10 fps; a luz entra no quadro 4 (meia, quadro 1) e abre no 5 (quadro 0).", "type": "prop", "id": "door", "anim": "open_dark", "wait": false },
+    { "type": "sound", "id": "gym_door_open", "volume": 0.6 },
+    { "type": "wait", "seconds": 0.1 },
+    { "_t": 1.0, "type": "prop", "id": "daylight", "visible": true, "anim": "open", "wait": false },
+    { "_t": 1.0, "type": "wait", "seconds": 0.2 },
+
+    { "_q": "A2 A mudança entra e A3 A esteira não passa (1,20-5,80)", "_t": 1.2, "type": "parallel", "steps": [
+      { "_nota": "Quem traz o caixote: entra primeiro, vai até o ponto, pousa o caixote e senta. Chega antes do corte.", "type": "sequence", "steps": [
+        { "_t": 1.2, "type": "show", "actor": "box" },
+        { "_t": 1.2, "type": "move", "actor": "box", "to": [396, 246], "seconds": 0.8, "anim": "carry_crate_left", "facing": "left" },
+        { "_t": 2.0, "_nota": "142 px a 48 px/s", "type": "move", "actor": "box", "to": "gym_mentor_spot", "seconds": 2.95, "anim": "carry_crate_left", "facing": "left" },
+        { "_t": 4.95, "type": "pose", "actor": "box", "anim": "put_crate", "facing": "right" },
+        { "_t": 5.25, "type": "prop", "id": "crate", "visible": true },
+        { "type": "sound", "id": "crate_down", "volume": 0.6 },
+        { "_t": 5.25, "_nota": "helper_2 -> helper_stand. John e discípulo ainda não têm folha stand sem luva: ficam no último quadro do put_crate (em pé) até o A8, quando o jogo os desenha sentados (pedido ao Programador).", "type": "pose", "actor": "box", "anim": "stand", "facing": "right", "loop": true, "wait": false }
+      ] },
+      { "_nota": "O lutador com o saco remendado no ombro: para em (352,262), fora do recorte do 2x, e olha o Osmar.", "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.8 },
+        { "_t": 2.0, "type": "show", "actor": "fighter" },
+        { "_t": 2.0, "type": "move", "actor": "fighter", "to": [400, 246], "seconds": 0.77, "anim": "carry_bag_left", "facing": "left" },
+        { "_t": 2.77, "_nota": "50,6 px a 48 px/s", "type": "move", "actor": "fighter", "to": [352, 262], "seconds": 1.05, "anim": "carry_bag_left", "facing": "left" },
+        { "_t": 3.82, "type": "pose", "actor": "fighter", "anim": "carry_bag_idle_left", "facing": "left", "loop": true, "wait": false }
+      ] },
+      { "_nota": "Humor ao fundo: a esteira atravessada bate na porta, recua, bate de novo. Depois ele fica parado, coçando a cabeça.", "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 1.8 },
+        { "_t": 3.0, "type": "show", "actor": "helper" },
+        { "_t": 3.0, "type": "pose", "actor": "helper", "anim": "treadmill_bump_left", "wait": false },
+        { "type": "wait", "seconds": 0.4 },
+        { "_t": 3.4, "type": "sound", "id": "metal_bump", "volume": 0.8 },
+        { "type": "shake", "px": 1, "frames": 2, "wait": false },
+        { "type": "wait", "seconds": 0.9 },
+        { "_t": 4.3, "type": "pose", "actor": "helper", "anim": "treadmill_bump_left", "wait": false },
+        { "type": "wait", "seconds": 0.4 },
+        { "_t": 4.7, "type": "sound", "id": "metal_bump", "volume": 0.6 },
+        { "type": "wait", "seconds": 0.5 },
+        { "_t": 5.2, "type": "pose", "actor": "helper", "anim": "treadmill_stuck_left", "loop": true, "wait": false },
+        { "type": "wait", "seconds": 0.6 }
+      ] }
+    ] },
+
+    { "_q": "A4 Pendura a foto, corte 2x (5,80-6,80)", "_t": 5.8, "type": "camera", "scale": 2, "rect": [128, 118, 192, 136] },
+    { "_t": 5.8, "type": "parallel", "steps": [
+      { "type": "pose", "actor": "coach", "anim": "hang_photo" },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.5 },
+        { "_t": 6.3, "_nota": "Uma batida só (duas batidas ritmadas são do John).", "type": "sound", "id": "nail_knock", "volume": 0.7 },
+        { "type": "wait", "seconds": 0.2 },
+        { "_t": 6.5, "type": "prop", "id": "photo", "visible": true, "anim": "straight" },
+        { "type": "sound", "id": "frame_scrape", "volume": 0.6 }
+      ] }
+    ] },
+
+    { "_q": "A5 Passo atrás (6,80-8,20)", "_t": 6.8, "type": "move", "actor": "coach", "to": [188, 240], "seconds": 0.5, "anim": "step_back", "facing": "right" },
+    { "_t": 7.3, "_nota": "A pausa da cena: 0,9 s olhando a foto reta, cabeça inclinada (folha de 0,3 s + 0,6 s parado).", "type": "pose", "actor": "coach", "anim": "look_photo", "hold": 0.6 },
+
+    { "_q": "A6 Entorta: 'agora sim.' (8,20-10,40)", "_t": 8.2, "type": "move", "actor": "coach", "to": "gym_coach_spot", "seconds": 0.3, "anim": "step_back", "facing": "right" },
+    { "_t": 8.5, "type": "parallel", "steps": [
+      { "type": "pose", "actor": "coach", "anim": "nudge_photo" },
+      { "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.2 },
+        { "_t": 8.7, "_nota": "Quadro 1 = torta (a animação tilt tem fps 0 no manifest e duraria 2 s).", "type": "prop", "id": "photo", "frame": 1 },
+        { "type": "sound", "id": "frame_scrape", "volume": 0.8 }
+      ] }
+    ] },
+    { "_t": 8.9, "type": "say", "line": "aca_agora_sim", "hold": 1.05 },
+
+    { "_q": "A7 O outro tubo acende (10,40-12,90)", "_t": 10.4, "type": "camera", "scale": 1 },
+    { "_nota": "Mesmo tique: a metade escura some e a porta passa do quadro 5 (escuro) para o 2 (claro).", "type": "prop", "id": "shade", "visible": false },
+    { "type": "prop", "id": "door", "frame": 2 },
+    { "type": "sound", "id": "tube_start", "volume": 0.6 },
+    { "_t": 10.4, "type": "pose", "actor": "coach", "anim": "idle_gym", "loop": true, "wait": false },
+    { "_t": 10.4, "type": "parallel", "steps": [
+      { "_nota": "O tubo da direita pisca a 12 fps quadro a quadro e fica aceso (gym_tube tem fps 0 no manifest).", "type": "sequence", "steps": [
+        { "_t": 10.4, "type": "prop", "id": "tube_r", "frame": 0 },
+        { "type": "wait", "seconds": 0.08 },
+        { "type": "prop", "id": "tube_r", "frame": 1 },
+        { "type": "wait", "seconds": 0.08 },
+        { "type": "prop", "id": "tube_r", "frame": 0 },
+        { "type": "wait", "seconds": 0.08 },
+        { "type": "prop", "id": "tube_r", "frame": 1 },
+        { "type": "wait", "seconds": 0.08 },
+        { "type": "prop", "id": "tube_r", "frame": 0 }
+      ] },
+      { "_nota": "O lutador anda até o lugar dele e pendura o saco no gancho (336,183).", "type": "sequence", "steps": [
+        { "_t": 10.4, "_nota": "50,0 px a 48 px/s", "type": "move", "actor": "fighter", "to": [303, 272], "seconds": 1.05, "anim": "carry_bag_left", "facing": "left" },
+        { "_t": 11.45, "type": "parallel", "steps": [
+          { "type": "pose", "actor": "fighter", "anim": "hang_bag", "facing": "right" },
+          { "type": "sequence", "steps": [
+            { "type": "wait", "seconds": 0.4 },
+            { "_t": 11.85, "type": "prop", "id": "bag", "visible": true, "anim": "hit", "wait": false },
+            { "type": "sound", "id": "ring_clink" },
+            { "type": "sound", "id": "bag_catch", "volume": 0.8 },
+            { "_nota": "Poeira da chegada (a mesma da esteira da 4b). Passo fx: hoje só validado; a cena funciona sem ele.", "type": "fx", "sprite": "fx_arrive_dust_small", "pos": [336, 262] }
+          ] }
+        ] },
+        { "_t": 12.25, "type": "pose", "actor": "fighter", "anim": "idle", "facing": "right", "loop": true, "wait": false }
+      ] },
+      { "_nota": "O ajudante vira a esteira de lado, passa e encosta no lugar dela.", "type": "sequence", "steps": [
+        { "type": "wait", "seconds": 0.3 },
+        { "_t": 10.7, "type": "pose", "actor": "helper", "anim": "treadmill_turn_left" },
+        { "_t": 11.1, "type": "move", "actor": "helper", "to": [440, 250], "seconds": 0.8, "anim": "treadmill_carry_left", "facing": "left" },
+        { "_t": 11.9, "type": "pose", "actor": "helper", "anim": "treadmill_put_left" },
+        { "_t": 12.2, "type": "prop", "id": "treadmill", "visible": true },
+        { "type": "pose", "actor": "helper", "anim": "stand_left", "loop": true, "wait": false }
+      ] }
+    ] },
+    { "_t": 12.25, "_nota": "Um respiro com a academia inteira antes da interface.", "type": "wait", "seconds": 0.65 },
+
+    { "_q": "A8 A interface volta (12,90). O jogo abre a escolha da arte, se pendente.", "_t": 12.9, "type": "return_control" },
+
+    { "type": "sound", "id": "lamp_hum", "stop": true, "fade": 0.5 },
+    { "type": "wait", "seconds": 0.6 },
+    { "type": "sound", "id": "gym_door_close", "volume": 0.5 },
+    { "_nota": "Porta clara 2,1,0 e luz 0,1 a 10 fps: a luz some quando a porta chega no 0.", "type": "prop", "id": "door", "anim": "close", "wait": false },
+    { "type": "prop", "id": "daylight", "anim": "close", "wait": false },
+    { "type": "wait", "seconds": 0.2 },
+    { "type": "prop", "id": "daylight", "visible": false },
+    { "type": "wait", "seconds": 0.1 }
+  ],
+
+  "reactions": [],
+
+  "end_state": {
+    "_nota": "Academia montada: os dois tubos acesos, Osmar no gym_coach_spot, mentores nos pontos (o 2º mentor entra aqui, design §1.4), foto torta e caixote desenhados pelo jogo (marco), equipe e aparelhos de volta. Os vizinhos que ajudaram somem com a volta da equipe.",
+    "actors": {
+      "coach": "hand_to_game",
+      "fighter": "hand_to_game",
+      "box": "hand_to_game",
+      "helper": "hand_to_game"
+    },
+    "props": {
+      "shade": { "visible": false },
+      "tube_l": { "anim": "idle" },
+      "tube_r": { "anim": "idle" },
+      "door": { "anim": "closed" },
+      "daylight": { "visible": false },
+      "photo": { "visible": false },
+      "crate": { "visible": false },
+      "bag": "hand_to_game",
+      "treadmill": { "visible": false }
+    },
+    "camera": { "scale": 1 },
+    "ui": "show_all",
+    "sounds": { "stop": ["lamp_hum"] }
+  }
+}

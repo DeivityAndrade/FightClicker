@@ -42,6 +42,7 @@ func _com_cinturao(nome: String, dinheiro: float = 1000.0) -> Node:
 func _na_academia(nome: String, arte: String = "") -> Node:
 	var gs := _com_cinturao(nome)
 	gs.mudar()
+	gs.cena_sala_terminou()
 	if arte != "":
 		gs.escolher_arte(arte)
 	return gs
@@ -168,6 +169,7 @@ func _teste_mudanca() -> void:
 	gs.escolha_arte_pedida.connect(func(p): pedidos.append(p))
 	checar_igual(gs.estado_mudanca(), "ready", "cinturão e $1.500: pronto")
 	checar(gs.mudar(), "muda")
+	gs.cena_sala_terminou()
 	checar_igual(gs.dinheiro, 500.0, "desconta $1.000 uma vez só")
 	checar(not gs.mudar(), "não muda duas vezes")
 	checar_igual(gs.dinheiro, 500.0, "segundo MUDAR não gasta")
@@ -207,6 +209,7 @@ func _teste_multiplicador_do_local() -> void:
 	var equipe = gs.producao_total()
 	checar_igual([clique, auto, equipe], [1.0, 1.0, 10.0], "garagem: 1 por clique, 10/s com 10 vizinhos")
 	gs.mudar()
+	gs.cena_sala_terminou()
 	gs.permanente["arts_unlocked"] = []  # isola o multiplicador do local: sem janela de arte e sem arte
 	checar_igual([gs.por_clique(), gs.por_auto_soco(), gs.producao_total()], [2.0, 2.0, 20.0], "academia: clique, auto-soco e equipe x2")
 	var antes: float = gs.treino
@@ -243,6 +246,7 @@ func _teste_reserva_da_loja() -> void:
 	gs.dinheiro = 1100.0
 	checar(gs.pode_comprar_metronomo(), "Metrônomo ($80) deixa $1.020: ok")
 	gs.mudar()
+	gs.cena_sala_terminou()
 	checar_igual(gs.reserva_mudanca(), 0.0, "depois de mudar a LOJA volta ao normal")
 	gs.dinheiro = 130.0
 	checar(gs.pode_comprar_luva(), "depois de mudar compra a luva com $130")
@@ -567,6 +571,7 @@ func _teste_escada_da_academia() -> void:
 	g0.indice_escada = 3
 	checar(not g0.cinturao and g0.proximo_adversario().id == "opp_tank", "antes de vencer o Muralha não há cinturão")
 	gs.mudar()
+	gs.cena_sala_terminou()
 	gs.escolher_arte("boxing")
 	gs.atributos = {"strength": 1.0e9, "agility": 1.0e9, "endurance": 1.0e9}
 	checar_igual(gs.estado_escada(), "fight", "na academia: luta")
@@ -684,6 +689,7 @@ func _teste_dados_mudam_o_jogo() -> void:
 	checar(not gs.mudar(), "preço do JSON: $399 não paga $400")
 	gs.dinheiro = 400.0
 	checar(gs.mudar() and gs.dinheiro == 0.0, "preço do JSON: $400 muda")
+	gs.cena_sala_terminou()
 	checar_igual(gs.por_clique(), 3.0, "multiplicador do JSON: x3")
 	gs.escolher_arte("boxing")
 	checar_igual(gs.por_clique(), 3.0 * 2.0, "regra do Boxe do JSON: +100%")
@@ -794,6 +800,7 @@ func _teste_migracao_v5() -> void:
 	checar_igual([g2.dinheiro, g2.cinturao, g2.local_id, g2.estado_mudanca(), g2.precisa_mudar()], [1000.0, true, "garage", "ready", true],
 		"v5 com cinturão e $0: $1.000 e o MUDAR")
 	checar(g2.mudar(), "e dá para mudar")
+	g2.cena_sala_terminou()
 	_liberar(g2)
 	# Cinturão com dinheiro de sobra: não mexe.
 	var p3 := pasta_limpa("f5_mig_cinturao_rico")

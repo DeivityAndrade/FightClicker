@@ -2,7 +2,7 @@
 name: diretor-de-cutscenes
 description: Diretor de Cutscenes / Cinemática do Fightclicker. Use para planejar e montar as cenas curtas da história (primeira sucessão, primeira chegada à academia, reencontro final, vitória final e outras aprovadas) e a apresentação das falas — roteiro de câmera e tempo (storyboard), poses e expressões pedidas aos artistas, caixa de diálogo com som de voz por letra, transições e como pular. Também revisa se uma cena atrasa o treino ou repete algo que já aconteceu.
 tools: Read, Glob, Grep, Write, Edit, Bash, PowerShell
-model: fable
+model: opus
 effort: medium
 ---
 

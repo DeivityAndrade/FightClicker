@@ -163,7 +163,7 @@ func _teste_nome_e_sorteio() -> void:
 func _teste_validador() -> void:
 	var v := CenaValidador.novo()
 	var ids := CenaDados.ids_das_cenas()
-	checar_igual(ids, ["chegada_discipulo", "primeira_sucessao"], "o validador lê as 2 cenas e ignora data/cutscenes/_rascunhos/")
+	checar_igual(ids, ["chegada_discipulo", "primeira_academia", "primeira_sucessao", "saida_primeiro_mentor"], "o validador lê as 4 cenas (6c1 acrescentou 2) e ignora data/cutscenes/_rascunhos/")
 	for r in v.validar_tudo():
 		checar_igual(r.erros, [], "cena %s sem erros do validador" % r.id)
 		for p in r.pendencias:

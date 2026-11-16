@@ -20,6 +20,12 @@ var sprites: Dictionary = {}  # manifest.sprites
 var layout: Dictionary = {}  # manifest.layout
 ## O que a compilação não conseguiu resolver por falta de arte (anim, sprite, ponto): vira pendência, não erro.
 var pendencias: Array[String] = []
+## Pontos do local atual da cena (6c1, formato §9 item 22): {seat_spot, stand_spot, coach_spot}. Vem do contexto da compilação.
+var _pontos_local: Dictionary = {}
+## Personagem já resolvido de cada ator (papéis mentor:seat, current_player...) e atores que não existem nesta cena.
+var _personagens: Dictionary = {}
+var _ausentes: Array = []
+var _local := ""
 
 
 static func novo(dados_dialogos: DialogosData = null, dados_textos: Dictionary = {}) -> CenaDados:
@@ -143,12 +149,23 @@ func personagem_valido(id: String) -> bool:
 
 ## Voz do balão do ator (first, coach, disciple).
 func voz_do_ator(cena: Dictionary, ator: String) -> String:
-	var char_id := str(cena.get("actors", {}).get(ator, {}).get("character", ""))
+	var char_id := personagem_do_ator(cena, ator)
 	return str(personagem(char_id).get("voice", "first"))
 
 
+## Personagem do ator: o papel já resolvido pelo jogo (`ctx.personagens`, 6c1) ou o `character` escrito na cena.
+func personagem_do_ator(cena: Dictionary, ator: String) -> String:
+	if _personagens.has(ator):
+		return str(_personagens[ator])
+	return str(cena.get("actors", {}).get(ator, {}).get("character", ""))
+
+
 ## Ponto nomeado → [x, y]. Procura em data/cena_player.json e em manifest.layout.points. [] se não existe.
+## `seat_spot`, `stand_spot` e `coach_spot` valem o ponto do local atual (contexto da compilação, formato §9 item 22).
 func ponto(nome: String) -> Array:
+	var loc = _pontos_local.get(nome, null)
+	if loc is Array and loc.size() == 2:
+		return loc
 	# O manifest manda (layout.<nome>, ex.: mentor_spot); data/cena_player.json é o reserva.
 	var q = layout.get(nome, null)
 	if q is Array and q.size() == 2:
@@ -156,6 +173,26 @@ func ponto(nome: String) -> Array:
 	var p = cfg.get("points", {}).get(nome, null)
 	if p is Array and p.size() == 2:
 		return p
+	return []
+
+
+## Ponto dado por caminho no manifest ("by_data_id.original_trainer.pos", "garage_story_wall.objects.photo_old") ou por
+## nome de ponto ("gym_coach_spot"). Procura na raiz, em `by_data_id` e em `layout`. Se o caminho cai num bloco
+## com `pos`, usa o `pos`. [] se não existe.
+func ponto_caminho(caminho: String) -> Array:
+	if caminho == "":
+		return []
+	if not caminho.contains("."):
+		return ponto(caminho)
+	var raizes: Array = [_manifesto_cache, _manifesto_cache.get("by_data_id", {}), _manifesto_cache.get("layout", {})]
+	for raiz in raizes:
+		var atual: Variant = raiz
+		for parte in caminho.split("."):
+			atual = atual.get(parte, null) if atual is Dictionary else null
+		if atual is Dictionary and atual.get("pos", null) is Array:
+			atual = atual.pos
+		if atual is Array and atual.size() == 2:
+			return [int(atual[0]), int(atual[1])]
 	return []
 
 
@@ -223,16 +260,24 @@ func duracao_anim_adereco(sprite: String, anim: String) -> float:
 
 # --- Compilação ---
 
-## Compila a cena. `ctx` (opcional): {last_campaign_end, milestones, disciple_name}. Devolve:
+## Compila a cena. `ctx` (opcional): {last_campaign_end, milestones, disciple_name, e na 6c1: location, pontos_local
+## {seat_spot, stand_spot, coach_spot}, personagens {ator: personagem resolvido}, ausentes [atores que não existem]}. Devolve:
 ## {id, eventos, segmentos [{duracao}], duracao_presa, exato, retorno {seg, t}, telas [{seg, t, tela, checkpoint, state}],
 ##  checkpoints {nome: {seg, t, state}}, reacoes [{when, once, seconds, eventos, duracao}], falas {id: {speaker, text, voice}}}
 func compilar(cena: Dictionary, ctx: Dictionary = {}) -> Dictionary:
 	pendencias = []
+	_local = str(ctx.get("location", ""))
+	_pontos_local = ctx.get("pontos_local", {}) if ctx.get("pontos_local", {}) is Dictionary else {}
+	_personagens = ctx.get("personagens", {}) if ctx.get("personagens", {}) is Dictionary else {}
+	_ausentes = ctx.get("ausentes", []) if ctx.get("ausentes", []) is Array else []
 	var passos: Array = _passos_da_cena(cena, ctx)
 	var estado := {"eventos": [], "pos": {}, "exato": true, "seg": 0, "cena": cena, "ctx": ctx, "ordem": 0}
 	for id in cena.get("actors", {}):
 		var a: Dictionary = cena.actors[id]
 		estado.pos[id] = resolver_posicao(a.get("pos", [0, 0]))
+		var sala := str(a.get("from_room", ""))
+		if sala != "" and not ponto(sala + "_spot").is_empty():
+			estado.pos[id] = resolver_posicao(sala + "_spot")  # nasce onde a sala desenha aquele personagem
 	var segmentos: Array = []
 	var telas: Array = []
 	var checkpoints := {}
@@ -317,6 +362,9 @@ func _passa_condicao(passo: Dictionary, ctx: Dictionary) -> bool:
 		return true
 	if c.has("last_campaign_end") and str(ctx.get("last_campaign_end", "")) != str(c.last_campaign_end):
 		return false
+	# Sem `location` no contexto (validador) a condição passa: todos os ramos entram na conta.
+	if c.has("location") and ctx.has("location") and str(ctx.get("location", "")) != str(c.location):
+		return false
 	return true
 
 
@@ -334,6 +382,15 @@ func _emitir(estado: Dictionary, t: float, tipo: String, campos: Dictionary) -> 
 func _passo(p: Dictionary, t: float, estado: Dictionary) -> float:
 	var tipo := str(p.get("type", ""))
 	var cena: Dictionary = estado.cena
+	# 6c1: passo de ator que não existe nesta cena (papel vazio) ou de adereço de outro local = pulado, 0 s.
+	var quem := str(p.get("actor", ""))
+	if tipo == "say":
+		quem = str(cena.get("lines", {}).get(str(p.get("line", "")), {}).get("speaker", ""))
+	if quem != "" and quem in _ausentes:
+		return t
+	var adereco := str(p.get("id", "")) if tipo == "prop" else str(p.get("prop", ""))
+	if adereco != "" and tipo in ["prop", "show", "hide"] and _adereco_de_outro_local(cena, adereco):
+		return t
 	match tipo:
 		"wait":
 			return t + float(p.get("seconds", 0.0))
@@ -438,8 +495,15 @@ func _pose(p: Dictionary, t: float, estado: Dictionary) -> float:
 	var cena: Dictionary = estado.cena
 	var ator := str(p.get("actor", ""))
 	var anim := str(p.get("anim", ""))
-	var char_id := str(cena.get("actors", {}).get(ator, {}).get("character", ""))
+	var char_id := personagem_do_ator(cena, ator)
 	var folha := folha_da_pose(char_id, anim)
+	var faltou := ""  # 6c1: papel sem personagem resolvido (validador): confere cada personagem possível
+	for cand in candidatos_do_papel(char_id, cena.get("actors", {}).get(ator, {})):
+		var fc := folha_da_pose(cand, anim)
+		if fc.is_empty():
+			faltou = cand
+		elif folha.is_empty():
+			folha = fc
 	var fps := float(folha.get("fps", cfg.get("timing", {}).get("default_fps", 10.0)))
 	var base := 0.0
 	var faixa = p.get("frames", null)
@@ -450,7 +514,7 @@ func _pose(p: Dictionary, t: float, estado: Dictionary) -> float:
 	else:
 		base = float(cfg.get("timing", {}).get("default_pose_seconds", 0.5))
 		estado.exato = false
-		pendencias.append("animação sem arte: %s/%s" % [char_id, anim])
+		pendencias.append("animação sem arte: %s/%s" % [char_id if faltou == "" else faltou, anim])
 	var vezes := maxi(1, int(p.get("times", 1)))
 	var dur := base * vezes + float(p.get("gap", 0.0)) * (vezes - 1)
 	if bool(p.get("loop", false)):
@@ -459,6 +523,7 @@ func _pose(p: Dictionary, t: float, estado: Dictionary) -> float:
 	var campos := {"ator": ator, "anim": anim, "loop": bool(p.get("loop", false)), "times": vezes, "gap": float(p.get("gap", 0.0)),
 		"hold": float(p.get("hold", 0.0)), "face": str(p.get("face", "")), "facing": str(p.get("facing", "")),
 		"frames": faixa if faixa is Array else [], "glove": str(p.get("glove", "")), "slow": bool(p.get("slow", false)), "seconds": dur}
+	campos["folha"] = str(folha.get("sprite", ""))  # folha já resolvida (alias por personagem), a UI usa se quiser
 	_emitir(estado, t, "pose", campos)
 	return t + dur
 
@@ -497,3 +562,46 @@ func _duracao_objeto_da_sala(objeto: String, anim: String) -> float:
 	if m.has("sprite"):
 		return duracao_anim_adereco(str(m.sprite), anim)
 	return -1.0
+
+
+# Adereço com `location` só existe naquele local (formato §9 item 22). Sem local no contexto, existe.
+func _adereco_de_outro_local(cena: Dictionary, id: String) -> bool:
+	var def: Dictionary = cena.get("stage", {}).get("props", {}).get(id, {})
+	return _local != "" and str(def.get("location", "")) != "" and str(def.location) != _local
+
+
+## Pontos do local (`seat_spot`, `stand_spot`, `coach_spot`) a partir de `disciples.json > room_mentors.spots_by_location`
+## e `escola.json > coach_presence`. Sem os blocos (null) lê os arquivos. Ponto sem definição fica de fora.
+func pontos_do_local(local: String, spots: Dictionary = {}, coach: Dictionary = {}) -> Dictionary:
+	if spots.is_empty():
+		var d := _ler_json("res://data/disciples.json")
+		var rm = d.get("room_mentors", {})
+		spots = rm.get("spots_by_location", {}) if rm is Dictionary else {}
+	if coach.is_empty():
+		coach = _ler_json("res://data/escola.json").get("coach_presence", {})
+	var r := {}
+	var s = spots.get(local, {})
+	if s is Dictionary:
+		for papel in ["seat", "stand"]:
+			var p := ponto(str(s.get(papel, "")))
+			if not p.is_empty():
+				r[papel + "_spot"] = p
+	var c = coach.get(local, {})
+	if c is Dictionary:
+		var p2 := ponto_caminho(str(c.get("spot", "")))
+		if not p2.is_empty():
+			r["coach_spot"] = p2
+	return r
+
+
+## Personagens possíveis de um papel de elenco (`mentor:seat`, `mentor:last`) ainda não resolvido pelo jogo, mais o `fallback` do ator.
+## [] se `char_id` não é papel ou já foi resolvido. Serve ao validador (formato §9 item 16).
+func candidatos_do_papel(char_id: String, ator_def: Dictionary = {}) -> Array:
+	var r: Array = []
+	if not (char_id in cfg.get("cast_roles", [])):
+		return r
+	for c in cfg.get("role_candidates", {}).get(char_id, []):
+		r.append(str(c))
+	if ator_def.has("fallback") and not (str(ator_def.fallback) in r):
+		r.append(str(ator_def.fallback))
+	return r

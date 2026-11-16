@@ -9,7 +9,12 @@
 	},
 
 	"points": {
-		"mentor_spot": [254, 252]
+		"mentor_spot": [254, 252],
+		"_doc_6c1": "Reserva dos pontos da academia (6c1): o manifest.layout manda quando tiver o ponto; senão vale este. Valores propostos em docs/cutscenes/pedidos-6c1.md.",
+		"gym_coach_spot": [196, 236],
+		"gym_mentor_spot": [254, 252],
+		"gym_mentor_2_spot": [150, 262],
+		"gym_photo_spot": [212, 158]
 	},
 
 	"characters": {
@@ -17,15 +22,17 @@
 		"first_fighter_old": { "sprite_prefix": "john_old", "cast": "first", "voice": "first", "can_gesture": true },
 		"coach": { "sprite_prefix": "coach", "cast": "coach", "voice": "coach", "can_gesture": false },
 		"current_player": { "sprite_prefix": "disciple", "cast": "", "voice": "disciple", "can_gesture": false },
-		"helper": { "sprite_prefix": "helper", "cast": "", "voice": "disciple", "can_gesture": false }
+		"helper": { "sprite_prefix": "helper", "cast": "", "voice": "disciple", "can_gesture": false },
+		"helper_2": { "sprite_prefix": "helper", "cast": "", "voice": "disciple", "can_gesture": false, "palette": "helper_2" }
 	},
 	"room_objects": {
 		"punching_bag": { "idle": "bag_l0_idle", "hit": "bag_l0_hit" },
-		"lamp": { "sprite": "lamp" }
+		"lamp": { "sprite": "lamp" },
+		"treadmill": { "idle": "treadmill_l0_side" }
 	},
 	"sprite_aliases": {
-		"first_fighter": { "punch": "fighter_punch", "idle": "fighter_idle" },
-		"current_player": { "idle": "fighter_idle_disc", "punch": "fighter_punch_disc" }
+		"first_fighter": { "punch": "fighter_punch", "idle": "fighter_idle", "stand": "john_sit_rest" },
+		"current_player": { "idle": "fighter_idle_disc", "punch": "fighter_punch_disc", "stand": "disciple_sit_rest" }
 	},
 	"character_patterns": ["mentor:", "opp_"],
 	"gesture_anims": ["gesture", "gesture_short", "mentor_first_taps"],
@@ -40,11 +47,11 @@
 
 	"step_types": {
 		"executed": ["wait", "say", "move", "pose", "face", "show", "hide", "sound", "camera", "ui", "prop", "shake",
-			"open_screen", "return_control", "parallel", "sequence"],
-		"validated_only": ["frame", "fx", "light", "name_card", "photo", "start_fight"]
+			"open_screen", "return_control", "parallel", "sequence", "fx"],
+		"validated_only": ["frame", "light", "name_card", "photo", "start_fight"]
 	},
 
-	"events": ["handover_started", "campaign_started", "location_reached", "returned_to_room", "fight_intro", "fight_won"],
+	"events": ["handover_started", "campaign_started", "location_reached", "returned_to_room", "fight_intro", "fight_won", "mentor_leave_due"],
 	"requires": ["milestone_missing", "milestone_present", "campaign_min", "campaigns_finished_min", "location", "opponent", "calm"],
 	"grants": ["mentor_in_room", "mentor_leaves", "photo", "reveal_opponent", "prop_permanent"],
 	"registers": {
@@ -57,6 +64,15 @@
 	"ui_parts": ["hud", "panels", "bottom_bar"],
 	"reaction_events": ["first_click", "idle_seconds"],
 	"end_state_hand": "hand_to_game",
+
+	"_doc_6c1": "Formato v1.2 (6c1, formato-dados.md §9 itens 16 a 24): condição if por local, adereços por local, papéis de elenco, valores de stage.hide e cena sem controle preso.",
+	"if_keys": ["last_campaign_end", "location"],
+	"locations": ["garage", "gym"],
+	"hide_values": ["player", "crew", "mentors", "coach", "apparatus", "boxes", "wall_objects"],
+	"cast_roles": ["mentor:seat", "mentor:last"],
+	"role_candidates": { "mentor:seat": ["first_fighter", "current_player"], "mentor:last": ["current_player"] },
+	"from_room_roles": ["seat", "stand", "coach"],
+	"free_scene_steps": ["wait", "move", "pose", "face", "show", "hide", "sound", "prop", "say", "fx", "parallel", "sequence", "return_control"],
 
 	"draft_folder": "_rascunhos"
 }

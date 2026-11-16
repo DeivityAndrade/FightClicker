@@ -214,7 +214,7 @@ func _teste_segundo_mentor() -> void:
 		["Disc2", "stand_bare", "none", "right", [150, 262]], "John + 1: 2º mentor parado, sem luvas, virado ao saco, no mentor_2_spot")
 	checar_igual(m.look, _entrada(2, "retire").look, "visual gravado no roster, os 9 campos")
 	var na_sala: Array = gs.mentores_na_sala()
-	checar_igual([na_sala.size(), na_sala[0].id, na_sala[1].id, na_sala[1].spot], [2, "first", "second", "mentor_2_spot"], "mentores_na_sala devolve os 2")
+	checar_igual([na_sala.size(), na_sala[0].id, na_sala[1].id, na_sala[1].spot], [2, "first", "last", "mentor_2_spot"], "mentores_na_sala devolve os 2")
 	# John + 3: pega o último.
 	gs.escola.roster = [{"campaign": 1, "kind": "first", "name": "John", "look": null, "end": "retire"},
 		_entrada(2, "retire"), _entrada(3, "defeat"), _entrada(4, "retire")]

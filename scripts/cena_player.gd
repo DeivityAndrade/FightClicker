@@ -26,6 +26,9 @@ signal reacao_terminada(quando: String)
 signal reacao_cancelada(quando: String)
 signal reacoes_descartadas()
 signal passo_ignorado(tipo: String)
+## Cena sem controle preso interrompida (janela, luta, troca de local, tela de fim, RECEBER; 6c1): o `end_state` já foi
+## aplicado (estado_aplicado, origem "final") e a interface fecha os balões da cena.
+signal baloes_cancelados()
 
 const EPS := 1.0e-6
 
@@ -47,6 +50,7 @@ var _armadas: Array = []
 var _corredores: Array = []  # reações tocando: {quando, eventos, t, i, dur}
 var _mundo: Dictionary = {}
 var _ignorados: Dictionary = {}
+var _elenco: Dictionary = {}  # 6c1: {personagens, ausentes, info} dos atores desta cena (papéis resolvidos pelo jogo)
 
 
 func _init(p_gs: Node = null, p_dados: CenaDados = null) -> void:
@@ -77,7 +81,8 @@ func iniciar(id: String, desde_checkpoint: String = "") -> bool:
 	if cena.is_empty():
 		push_warning("CenaPlayer: cena inexistente: " + id)
 		return false
-	comp = dados.compilar(cena, _contexto())
+	_elenco = _resolver_elenco(cena)
+	comp = dados.compilar(cena, _contexto(cena))
 	_mundo = _mundo_inicial()
 	_seg = 0
 	_t = 0.0
@@ -104,12 +109,14 @@ func iniciar(id: String, desde_checkpoint: String = "") -> bool:
 	return true
 
 
-func _contexto() -> Dictionary:
+func _contexto(c: Dictionary = {}) -> Dictionary:
 	if gs == null:
 		return {}
 	var fim_anterior = gs.escola.get("last_end", null)
+	var el := _resolver_elenco(c if not c.is_empty() else cena)
 	return {"last_campaign_end": str(fim_anterior.get("kind", "")) if fim_anterior is Dictionary else "",
-		"milestones": gs.escola.get("milestones", {}), "disciple_name": str(gs.nome_lutador()).to_lower()}
+		"milestones": gs.escola.get("milestones", {}), "disciple_name": str(gs.nome_lutador()).to_lower(),
+		"location": gs.local_id, "pontos_local": gs.pontos_do_local(), "personagens": el.personagens, "ausentes": el.ausentes}
 
 
 ## Estado do palco ao abrir a tela de uma cena, SEM tocar a cena: serve para abrir um save que fechou na tela de criação.
@@ -120,7 +127,7 @@ func estado_da_tela(id: String) -> Dictionary:
 	var c := CenaDados.carregar_cena(id)
 	if c.is_empty():
 		return {}
-	var k := dados.compilar(c, _contexto())
+	var k := dados.compilar(c, _contexto(c))
 	if k.telas.is_empty():
 		return {}
 	return {"tela": str(k.telas[0].tela), "estado": k.telas[0].state, "palco": c.get("stage", {}), "atores": c.get("actors", {})}
@@ -138,8 +145,12 @@ func _mundo_inicial() -> Dictionary:
 	var m := {"atores": {}, "adereços": {}, "camera": {"scale": 1}, "ui": "show_all", "sons_em_laco": [], "liberados": []}
 	for id in cena.get("actors", {}):
 		var a: Dictionary = cena.actors[id]
-		m.atores[id] = {"pos": a.get("pos", [0, 0]), "facing": a.get("facing", "right"), "anim": a.get("anim", "idle"),
-			"glove": a.get("glove", ""), "visible": bool(a.get("visible", true))}
+		var info: Dictionary = _elenco.get("info", {}).get(id, {})
+		var existe: bool = not (id in _elenco.get("ausentes", []))
+		m.atores[id] = {"pos": info.get("pos", a.get("pos", [0, 0])), "facing": info.get("facing", a.get("facing", "right")),
+			"anim": info.get("anim", a.get("anim", "idle")), "glove": a.get("glove", ""), "visible": bool(a.get("visible", true)) and existe,
+			"existe": existe, "personagem": str(_elenco.get("personagens", {}).get(id, a.get("character", ""))),
+			"look": info.get("look", {}), "nome": str(info.get("name", ""))}
 	for id in cena.get("stage", {}).get("props", {}):
 		var p: Dictionary = cena.stage.props[id]
 		m["adereços"][id] = {"visible": bool(p.get("visible", true)), "anim": p.get("anim", ""), "frame": p.get("frame", null)}
@@ -168,6 +179,8 @@ func _ligar_gs() -> void:
 		gs.toques_mentor_cancelados.connect(_ao_cancelar_toques)
 	if not gs.sucessao_mudou.is_connected(_ao_mudar_sucessao):
 		gs.sucessao_mudou.connect(_ao_mudar_sucessao)
+	if not gs.saida_mentor_interrompida.is_connected(interromper):
+		gs.saida_mentor_interrompida.connect(interromper)
 
 
 func _parar_tudo() -> void:
@@ -224,7 +237,7 @@ func _executar(ev: Dictionary) -> void:
 			tela_pedida.emit(str(ev.tela), ev.get("state", {}))
 		"return_control":
 			_devolver_controle()
-		"pose", "move", "face", "show", "hide", "sound", "camera", "ui", "prop", "shake", "say":
+		"pose", "move", "face", "show", "hide", "sound", "camera", "ui", "prop", "shake", "say", "fx":
 			_espelhar(ev)
 			evento.emit(ev)
 		_:
@@ -331,6 +344,7 @@ func _devolver_controle() -> void:
 	controle_devolvido.emit()
 	if gs != null:
 		gs.sucessao_terminou()
+		gs.cena_sala_terminou()  # 6c1: a chegada à academia devolve o relógio e abre a escolha da arte (no-op fora dela)
 
 
 func _terminar(pulada: bool) -> void:
@@ -338,6 +352,8 @@ func _terminar(pulada: bool) -> void:
 		return
 	ativa = false
 	cena_terminada.emit(pulada)
+	if gs != null and not pulada and not bool(cena.get("blocking", true)):
+		gs.cena_livre_terminou(str(comp.get("id", "")))  # 6c1: a saída do John acabou sozinha
 
 
 # --- Pular ---
@@ -420,7 +436,7 @@ func _disparar_reacao(quando: String) -> void:
 func _tick_reacoes(delta: float) -> void:
 	if gs != null and not _armadas.is_empty():
 		var local := str(cena.get("stage", {}).get("location", ""))
-		if not gs.luta.is_empty() or (local != "" and gs.local_id != local):
+		if not gs.luta.is_empty() or (local != "" and local != "any" and gs.local_id != local):
 			_armadas.clear()  # luta ou troca de local antes do 1º clique: a sala fica no end_state
 			reacoes_descartadas.emit()
 		else:
@@ -450,3 +466,67 @@ func _cancelar_corredor(r: Dictionary) -> void:
 		if str(ev.tipo) == "pose" and bool(ev.get("loop", false)):
 			_executar(ev)
 	reacao_cancelada.emit(str(r.quando))
+
+
+# --- 6c1: elenco por papel e cena sem controle preso ---
+
+## Resolve o elenco da cena com o que o jogo sabe (formato §9 itens 16, 17 e 19c): {personagens {ator: personagem},
+## ausentes [atores], info {ator: {look, name, pos, facing, anim}}}. Sem jogo, ninguém é trocado nem ausente.
+func _resolver_elenco(c: Dictionary) -> Dictionary:
+	var r := {"personagens": {}, "ausentes": [], "info": {}}
+	if gs == null:
+		return r
+	for id in c.get("actors", {}):
+		var a: Dictionary = c.actors[id]
+		var personagem := str(a.get("character", ""))
+		var info := {}
+		var existe := true
+		var req = a.get("requires", {})
+		if req is Dictionary and req.has("owned") and not gs.aparelho_montado(str(req.owned)):
+			existe = false
+		var sala := str(a.get("from_room", ""))
+		if existe and sala != "":
+			var quem: Dictionary = gs.papel_da_sala(sala)
+			existe = not quem.is_empty()
+			# O papel tem que ser do personagem que a cena espera (o John no `seat`, o último no `stand`).
+			if existe and personagem.begins_with("first_fighter") and str(quem.id) != "first":
+				existe = false
+			if existe and personagem == "mentor:last" and str(quem.id) != "last":
+				existe = false
+			if existe:
+				info = {"pos": quem.point, "facing": quem.facing, "anim": quem.pose, "look": quem.look, "name": quem.name}
+		if existe and personagem == "current_player":
+			if gs.lutador_atual() == "first":
+				personagem = "first_fighter"
+			else:
+				info["look"] = gs.visual_lutador()
+				info["name"] = gs.nome_lutador()
+		elif existe and personagem in dados.cfg.get("cast_roles", []):
+			var m: Dictionary = gs.papel_do_elenco(personagem)
+			if m.is_empty():
+				existe = false
+				if a.has("fallback"):
+					personagem = str(a.fallback)
+					existe = true
+			else:
+				personagem = str(m.character)
+				info["look"] = m.look
+				info["name"] = m.name
+		r.personagens[str(id)] = personagem
+		if not existe:
+			r.ausentes.append(str(id))
+		if not info.is_empty():
+			r.info[str(id)] = info
+	return r
+
+
+## O jogo interrompeu a cena sem controle preso (janela, luta, troca de local, tela de fim, RECEBER): aplica o
+## `end_state` na hora, avisa a interface para fechar os balões e termina. false se não há cena dessas tocando.
+func interromper() -> bool:
+	if not ativa or bool(cena.get("blocking", true)):
+		return false
+	_aplicar_estado(cena.get("end_state", {}), "final")
+	_mundo["camera"] = {"scale": 1}
+	baloes_cancelados.emit()
+	_terminar(true)
+	return true
