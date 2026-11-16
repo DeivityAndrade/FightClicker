@@ -44,5 +44,41 @@
 		"_doc": "Design §4.3. O gatilho art_choice sai quando art_seconds (tempo de sala ativa com a arte) passa deste valor, uma vez por campanha. Não sai no momento da escolha: lá ele perderia sempre para after_defeat e cl_primeira_academia.",
 		"trigger": "art_choice",
 		"after_art_seconds": 60.0
+	},
+
+	"_6c2": {
+		"_doc": "Fase 6c2 (Mais longe que eu). Honra, mural, símbolo e falas de mentor. Nenhum número de economia/luta muda.",
+		"honor_sources": {
+			"fight_won": 3,
+			"revenge_win": 5,
+			"personal_record": 2,
+			"milestone": 4,
+			"cena_primeira_academia": 5,
+			"cena_saida_primeiro_mentor": 6,
+			"belt_amateur": 8
+		},
+		"mural_states": ["empty", "john_only", "john_left", "with_disciple", "symbol_unlocked", "mural_upgraded"],
+		"symbol_spec": {
+			"size_px": 12,
+			"offset_x": 18,
+			"offset_y": 22,
+			"colors": {"primary": "r2", "secondary": "y0"},
+			"visible_location": "gym",
+			"unlock_node": "hall_symbol_chest"
+		},
+		"portrait_variants": {
+			"default_garage": {"key": "old_photo", "priority": 0},
+			"default_gym": {"key": "old_photo_gym", "priority": 10, "requires_milestone": "cena_primeira_academia"},
+			"john_left": {"key": "old_photo_john", "priority": 20, "requires_milestone": "cena_saida_primeiro_mentor"},
+			"name_wall": {"key": "old_photo_name", "priority": 30, "requires_node": "hall_name_wall"},
+			"story": {"key": "old_photo_story", "priority": 40, "requires_node": "hall_photo_story"},
+			"legacy": {"key": "old_photo_legacy", "priority": 50, "requires_node": "hall_legacy_whisper"}
+		},
+		"mentor_comments": {
+			"personal_record_interval": 120.0,
+			"revenge_win_interval": 60.0,
+			"priority": 6,
+			"campaign_cap": 3
+		}
 	}
 }

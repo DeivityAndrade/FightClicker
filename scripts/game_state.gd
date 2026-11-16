@@ -76,6 +76,12 @@ signal cena_sala_pedida(id: String)  # a cena de uma vez na vida deve tocar agor
 signal saida_mentor_pedida()  # a saída do John começa (cena sem controle preso); marco e `mentor_leaves` já salvos
 signal saida_mentor_interrompida()  # janela, luta, MUDAR, tela de fim ou RECEBER: a cena aplica o end_state na hora
 
+# Fase 6c2 (Mais longe que eu): Honra, árvore do hall, mural e símbolo (contrato: docs/fases/fase6c2-design.md §8.3)
+signal honor_changed(balance: float)  # qualquer ganho ou gasto de Honra
+signal hall_node_bought(node_id: String)  # compra bem-sucedida na árvore do hall
+signal mural_updated(state: String)  # mudança de estado do mural
+signal symbol_unlocked()  # primeira vez que hall_symbol_chest é comprado
+
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
 const PASTA_SAVE_TESTES := "user://test/autoload/"
@@ -217,6 +223,7 @@ var _toque_vitoria := -1.0  # >= 0: segundos de sala ativa desde a vitória; -1 
 
 # Fase 6c1 (nada disto vai para o save: o que importa fica nos marcos da escola)
 var escola_cfg: Dictionary = {}  # data/escola.json
+var hall_tree: Dictionary = {}  # Fase 6c2: data/skill_tree_hall.json
 var cena_sala := ""  # "" | "primeira_academia": a cena de chegada está tocando (relógio e cliques parados)
 var _saida_tocando := false  # a saída do John está tocando agora
 var _saida_inicio := 0.0  # _t_real do começo da saída
@@ -257,6 +264,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 	config = GameConfig.carregar(caminho_config)
 	disciples = dados_discipulos if dados_discipulos != null else DiscipulosData.carregar()
 	escola_cfg = _ler_json_dados("res://data/escola.json")
+	hall_tree = _ler_json_dados("res://data/skill_tree_hall.json")
 	_rng_sucessao.randomize()
 	dialogos = dados_dialogos if dados_dialogos != null else DialogosData.carregar()
 	_rng_fala.randomize()
@@ -1538,6 +1546,14 @@ func concluir_luta() -> Dictionary:
 		indice_escada += 1
 		if opp.belt:
 			cinturao = true
+		# Fase 6c2: Honra por vitória (3), revanche (5) e cinturão amador (8).
+		var fontes_6c2: Dictionary = escola_cfg.get("_6c2", {}).get("honor_sources", {})
+		if not fontes_6c2.is_empty():
+			honor_gain("fight_won", float(fontes_6c2.get("fight_won", 3)))
+			if bool(snap.result.get("revenge", false)):
+				honor_gain("revenge_win", float(fontes_6c2.get("revenge_win", 5)))
+			if opp.belt:
+				honor_gain("belt_amateur", float(fontes_6c2.get("belt_amateur", 8)))
 		# Fase 6a: marcos da escola, gravados no mesmo save do prêmio. A garagem só é salva por vitória AO VIVO
 		# sobre o adversário do cinturão (qualquer lutador da escola); nunca por belts_won.
 		var recorde := int(permanente.best_wins) > 0 and indice_escada > int(permanente.best_wins)
@@ -3770,6 +3786,25 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 	elif not fim.is_empty():
 		r["last_end"] = {"kind": str(fim.kind), "campaign": int(fim.career_number)}
 	_validar_escola_6b(s, r)
+	# Fase 6c2: Honra e árvore do hall. Ausente ou inválido recebe default trivial (0 e []).
+	var hb = s.get("honor_balance", null)
+	if (typeof(hb) == TYPE_FLOAT or typeof(hb) == TYPE_INT) and is_finite(float(hb)):
+		r["honor_balance"] = maxf(float(hb), 0.0)
+	else:
+		r["honor_balance"] = 0.0
+	var hn = s.get("hall_nodes", [])
+	if hn is Array:
+		var validos: Array = []
+		for x in hn:
+			var nid := str(x)
+			if nid != "" and not (nid in validos):
+				validos.append(nid)
+		r["hall_nodes"] = validos
+	elif s.has("hall_nodes"):
+		_avisar("Nós do hall inválidos: zerados.")
+		r["hall_nodes"] = []
+	else:
+		r["hall_nodes"] = []
 	return r
 
 
@@ -3946,6 +3981,7 @@ func receber_discipulo() -> bool:
 	if fim.is_empty() or sucessao != "none":
 		return false
 	_interromper_saida()  # 6c1: RECEBER termina a saída do John na hora
+	hall_reset()  # 6c2: Honra e nós do hall resetam (exceto símbolo)
 	var nova := numero_carreira() + 1
 	if nova <= int(escola.get("first_fighter_campaign", 1)):
 		return nova_carreira()
@@ -4520,3 +4556,164 @@ func _interromper_saida() -> void:
 func cena_livre_terminou(id: String) -> void:
 	if id == str(escola_cfg.get("mentor_leave", {}).get("scene", "saida_primeiro_mentor")):
 		saida_terminou()
+
+
+# --- Fase 6c2 (Mais longe que eu): Honra, árvore do hall, mural e símbolo ---
+# Contrato: docs/fases/fase6c2-design.md §8.2. Dados em data/skill_tree_hall.json e data/escola.json > _6c2.
+
+## Saldo atual de Honra (intra-campanha). Zera no RECEBER.
+func honor_balance() -> float:
+	return float(escola.get("honor_balance", 0))
+
+
+## Ids dos nós comprados na árvore do hall nesta campanha. Perde tudo exceto hall_symbol_chest no RECEBER.
+func hall_nodes_comprados() -> Array:
+	var n = escola.get("hall_nodes", [])
+	return n.duplicate() if n is Array else []
+
+
+## true se o nó hall_symbol_chest foi comprado alguma vez (persiste entre campanhas).
+func simbolo_desbloqueado() -> bool:
+	return "hall_symbol_chest" in hall_nodes_comprados()
+
+
+## Estado derivado do mural: empty | john_only | john_left | with_disciple | symbol_unlocked | mural_upgraded.
+func mural_estado() -> String:
+	var nodes := hall_nodes_comprados()
+	# Nós do hall têm prioridade sobre estados narrativos (design §3.1).
+	if "hall_mural_update" in nodes:
+		return "mural_upgraded"
+	if "hall_symbol_chest" in nodes:
+		return "symbol_unlocked"
+	var tem_john := marco("cena_primeira_academia") or marco("cena_saida_primeiro_mentor")
+	var tem_saida := marco("cena_saida_primeiro_mentor")
+	var tem_discipulo := false
+	var lista = escola.get("roster", [])
+	if lista is Array:
+		for e in lista:
+			if e is Dictionary and str(e.get("kind", "")) == "disciple":
+				tem_discipulo = true
+				break
+	if not tem_john:
+		return "empty"
+	if tem_discipulo:
+		return "with_disciple"
+	if tem_saida:
+		return "john_left"
+	return "john_only"
+
+
+## Texto atual do mural conforme estado (§3.1).
+func mural_texto() -> String:
+	match mural_estado():
+		"empty":
+			return texto_ui("mural_empty_text", "")
+		"john_only":
+			return texto_ui("mural_john_text", "")
+		"john_left":
+			return texto_ui("mural_john_text", "") + "\n" + texto_ui("mural_mentors_text", "")
+		"with_disciple", "symbol_unlocked", "mural_upgraded":
+			var ultimo := ""
+			var lista = escola.get("roster", [])
+			if lista is Array:
+				for i in range(lista.size() - 1, -1, -1):
+					var e = lista[i]
+					if e is Dictionary and str(e.get("kind", "")) == "disciple":
+						ultimo = str(e.get("name", ""))
+						break
+			if ultimo != "":
+				return texto_ui("mural_john_text", "") + "\n" + \
+					preencher("{nome} seguiu o nosso", {"nome": ultimo})
+			return texto_ui("mural_john_text", "") + "\n" + texto_ui("mural_mentors_text", "")
+	return ""
+
+
+## Variação ativa do hover da foto antiga (§4). Prioridade: maior número ganha.
+func portrait_variant() -> String:
+	var cfg: Dictionary = escola_cfg.get("_6c2", {}).get("portrait_variants", {})
+	var melhor := ""
+	var melhor_prio := -1
+	for chave in cfg:
+		var v: Dictionary = cfg[chave]
+		if not (v is Dictionary):
+			continue
+		var prio := int(v.get("priority", 0))
+		if prio <= melhor_prio:
+			continue
+		var req_m := str(v.get("requires_milestone", ""))
+		if req_m != "" and not marco(req_m):
+			continue
+		var req_n := str(v.get("requires_node", ""))
+		if req_n != "" and not (req_n in hall_nodes_comprados()):
+			continue
+		melhor = str(v.get("key", ""))
+		melhor_prio = prio
+	if melhor == "":
+		# Fallback: garagem usa old_photo; academia usa old_photo_gym se marco da academia existe.
+		if local_id == "gym" and marco("cena_primeira_academia"):
+			return "old_photo_gym"
+		return "old_photo"
+	return melhor
+
+
+## Adiciona Honra e dispara sinal. Chamado em concluir_luta, _tick_recordes, etc.
+func honor_gain(source: String, value: float) -> void:
+	if value <= 0.0:
+		return
+	var antes := honor_balance()
+	escola["honor_balance"] = clampf(antes + value, 0.0, VALOR_MAXIMO)
+	honor_changed.emit(honor_balance())
+	salvar()
+
+
+## Compra nó da árvore do hall se saldo suficiente e pré-requisitos ok. Retorna sucesso.
+func hall_buy(node_id: String) -> bool:
+	var node := _hall_node(node_id)
+	if node.is_empty():
+		return false
+	var nodes := hall_nodes_comprados()
+	if node_id in nodes:
+		return false
+	var req := str(node.get("requires", ""))
+	if req != "" and not (req in nodes):
+		return false
+	var custo := float(node.get("cost", 0))
+	if honor_balance() < custo:
+		return false
+	escola["honor_balance"] = clampf(honor_balance() - custo, 0.0, VALOR_MAXIMO)
+	nodes.append(node_id)
+	escola["hall_nodes"] = nodes
+	honor_changed.emit(honor_balance())
+	hall_node_bought.emit(node_id)
+	if node_id == "hall_symbol_chest":
+		symbol_unlocked.emit()
+	_atualizar_mural_por_no(node_id)
+	salvar()
+	return true
+
+
+## Zera saldo e nós da árvore do hall (exceto hall_symbol_chest). Chamado em receber_discipulo.
+func hall_reset() -> void:
+	var nodes := hall_nodes_comprados()
+	var mantidos: Array = []
+	for n in nodes:
+		if n == "hall_symbol_chest":
+			mantidos.append(n)
+	escola["honor_balance"] = 0
+	escola["hall_nodes"] = mantidos
+	honor_changed.emit(0.0)
+	salvar()
+
+
+func _hall_node(id: String) -> Dictionary:
+	var lista = hall_tree.get("nodes", [])
+	if lista is Array:
+		for n in lista:
+			if n is Dictionary and str(n.get("id", "")) == id:
+				return n
+	return {}
+
+
+func _atualizar_mural_por_no(node_id: String) -> void:
+	if node_id in ["hall_symbol_chest", "hall_mural_update"]:
+		mural_updated.emit(mural_estado())

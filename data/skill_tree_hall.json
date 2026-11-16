@@ -1,0 +1,33 @@
+{
+	"version": 1,
+	"currency": "honor",
+	"reset_on": "campaign_end",
+	"branches": [
+		{"id": "hall_roots", "name": "RAÍZES"},
+		{"id": "hall_boxing", "name": "BOXE", "requires_art": "boxing"},
+		{"id": "hall_bjj", "name": "JIU-JITSU", "requires_art": "bjj"},
+		{"id": "hall_future", "name": "EM BREVE", "placeholder": true}
+	],
+	"nodes": [
+		{"id": "hall_echo", "branch": "hall_roots", "tier": 1, "cost": 8, "requires": "", "name": "Eco do salão", "description": "Seu soco volta antes de terminar.", "effect": {"type": "click_bonus", "value": 0.05}, "effect_text": "+{pct}% TREINO POR CLIQUE"},
+		{"id": "hall_floor_creak", "branch": "hall_roots", "tier": 1, "cost": 8, "requires": "", "name": "Piso conhecido", "description": "O chão range no seu passo. A turma sabe.", "effect": {"type": "passive_bonus", "value": 0.05}, "effect_text": "+{pct}% TREINO/S DA EQUIPE"},
+		{"id": "hall_name_wall", "branch": "hall_roots", "tier": 1, "cost": 8, "requires": "", "name": "Nome na parede", "description": "Alguém escreveu seu nome a lápis.", "effect": {"type": "portrait_variant", "value": "name_wall"}, "effect_text": "HOVER DA FOTO: VARIAÇÃO 'NOME'"},
+		{"id": "hall_mentor_nod", "branch": "hall_roots", "tier": 1, "cost": 8, "requires": "", "name": "Aceno do mentor", "description": "Ele te vê. Não precisa falar.", "effect": {"type": "mentor_line_unlock", "value": "hall_nod"}, "effect_text": "MENTOR: ACENO SILENCIOSO"},
+		{"id": "hall_respect_street", "branch": "hall_roots", "tier": 2, "cost": 18, "requires": "hall_echo", "name": "Respeito do bairro", "description": "Seus socos ecoam fora da academia.", "effect": {"type": "click_bonus", "value": 0.05}, "effect_text": "+{pct}% TREINO POR CLIQUE"},
+		{"id": "hall_crew_rhythm", "branch": "hall_roots", "tier": 2, "cost": 18, "requires": "hall_floor_creak", "name": "Ritmo da turma", "description": "A equipe treina no seu tempo.", "effect": {"type": "passive_bonus", "value": 0.05}, "effect_text": "+{pct}% TREINO/S DA EQUIPE"},
+		{"id": "hall_photo_story", "branch": "hall_roots", "tier": 2, "cost": 18, "requires": "hall_name_wall", "name": "História na foto", "description": "A foto antiga conta sua passagem.", "effect": {"type": "portrait_variant", "value": "story"}, "effect_text": "HOVER DA FOTO: VARIAÇÃO 'HISTÓRIA'"},
+		{"id": "hall_mentor_praise", "branch": "hall_roots", "tier": 2, "cost": 18, "requires": "hall_mentor_nod", "name": "Elogio raro", "description": "O mentor falou bem. Uma vez só.", "effect": {"type": "mentor_line_unlock", "value": "hall_praise"}, "effect_text": "MENTOR: ELOGIO RARO"},
+		{"id": "hall_voice_school", "branch": "hall_roots", "tier": 3, "cost": 35, "requires": "hall_respect_street", "name": "Voz na escola", "description": "Sua opinião pesa nas decisões.", "effect": {"type": "click_bonus", "value": 0.05}, "effect_text": "+{pct}% TREINO POR CLIQUE"},
+		{"id": "hall_symbol_chest", "branch": "hall_roots", "tier": 3, "cost": 35, "requires": "hall_crew_rhythm", "name": "Símbolo no peito", "description": "A escola veste você.", "effect": {"type": "symbol_unlock", "value": "school"}, "effect_text": "SÍMBOLO DA ESCOLA NO PEITO"},
+		{"id": "hall_mural_update", "branch": "hall_roots", "tier": 4, "cost": 60, "requires": "hall_voice_school", "name": "Mural atualizado", "description": "Seu nome fica ao lado do John.", "effect": {"type": "mural_upgrade", "value": "disciple"}, "effect_text": "MURAL: SEU NOME AO LADO DO JOHN"},
+		{"id": "hall_legacy_whisper", "branch": "hall_roots", "tier": 4, "cost": 60, "requires": "hall_symbol_chest", "name": "Sussurro do legado", "description": "A próxima campanha já te conhece.", "effect": {"type": "portrait_variant", "value": "legacy"}, "effect_text": "HOVER DA FOTO: VARIAÇÃO 'LEGADO'"},
+		{"id": "hall_box_glove_echo", "branch": "hall_boxing", "tier": 2, "cost": 18, "requires": "hall_echo", "name": "Luva que responde", "description": "A pera devolve o ritmo certo.", "effect": {"type": "art_click_bonus", "art": "boxing", "value": 0.05}, "effect_text": "BOXE: +{pct}% CLIQUE NA ACADEMIA"},
+		{"id": "hall_box_corner_respect", "branch": "hall_boxing", "tier": 3, "cost": 35, "requires": "hall_box_glove_echo", "name": "Canto te reconhece", "description": "O ringue sabe seu nome.", "effect": {"type": "mentor_line_unlock", "value": "hall_box_corner"}, "effect_text": "MENTOR: CANTO DO RINGUE"},
+		{"id": "hall_box_em_soon_1", "branch": "hall_boxing", "tier": 4, "cost": 60, "requires": "hall_box_corner_respect", "name": "Em breve", "description": "Técnicas de campainha e corda.", "effect": {"type": "placeholder", "text": "EM BREVE: TÉCNICAS DE CAMPAINHA"}, "effect_text": "EM BREVE"},
+		{"id": "hall_bjj_mat_memory", "branch": "hall_bjj", "tier": 2, "cost": 18, "requires": "hall_floor_creak", "name": "Memória do tatame", "description": "O chão lembra seu peso.", "effect": {"type": "art_passive_bonus", "art": "bjj", "value": 0.05}, "effect_text": "JIU-JITSU: +{pct}% EQUIPE NA ACADEMIA"},
+		{"id": "hall_bjj_guard_whisper", "branch": "hall_bjj", "tier": 3, "cost": 35, "requires": "hall_bjj_mat_memory", "name": "Guarda sussurrada", "description": "A defesa vem antes do golpe.", "effect": {"type": "mentor_line_unlock", "value": "hall_bjj_guard"}, "effect_text": "MENTOR: GUARDA SUSSURRADA"},
+		{"id": "hall_bjj_em_soon_1", "branch": "hall_bjj", "tier": 4, "cost": 60, "requires": "hall_bjj_guard_whisper", "name": "Em breve", "description": "Passagens e raspagens da escola.", "effect": {"type": "placeholder", "text": "EM BREVE: PASSAGENS DA ESCOLA"}, "effect_text": "EM BREVE"},
+		{"id": "hall_future_muay_thai", "branch": "hall_future", "tier": 1, "cost": 8, "requires": "", "name": "Muay Thai", "description": "Em breve.", "effect": {"type": "placeholder", "text": "EM BREVE: MUAY THAI"}, "effect_text": "EM BREVE"},
+		{"id": "hall_future_judo", "branch": "hall_future", "tier": 1, "cost": 8, "requires": "", "name": "Judô", "description": "Em breve.", "effect": {"type": "placeholder", "text": "EM BREVE: JUDÔ"}, "effect_text": "EM BREVE"}
+	]
+}

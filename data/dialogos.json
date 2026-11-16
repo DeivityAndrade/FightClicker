@@ -40,7 +40,11 @@
 		"box_opened": { "priority": 3, "defer": false, "campaign_cap": 1 },
 		"idle": { "priority": 1, "defer": false, "campaign_cap": 1 },
 		"retire": { "priority": 5, "defer": false },
-		"art_choice": { "priority": 5, "defer": true, "campaign_cap": 1 }
+		"art_choice": { "priority": 5, "defer": true, "campaign_cap": 1 },
+		"personal_record_strength": { "priority": 6, "defer": true, "campaign_cap": 3 },
+		"personal_record_agility": { "priority": 6, "defer": true, "campaign_cap": 3 },
+		"personal_record_endurance": { "priority": 6, "defer": true, "campaign_cap": 3 },
+		"revenge_win": { "priority": 6, "defer": true, "campaign_cap": 3 }
 	},
 	"opening": {
 		"max_seconds": 20, "skip_hold_seconds": 0.5, "gap_between": 0.3, "first_line_at": 1.5,
@@ -110,7 +114,21 @@
 		{ "id": "cl_arte_1", "speaker": "coach", "text": "cada um tem seu jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
 		{ "id": "cl_arte_2", "speaker": "coach", "text": "escolheu? então capricha.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
 		{ "id": "cl_arte_3", "speaker": "coach", "text": "eu lutei de todo jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
-		{ "id": "cl_arte_4", "speaker": "coach", "text": "no meu tempo era só\napanhar e aprender.", "trigger": "art_choice", "repeat": "rest", "group": "arte" }
+		{ "id": "cl_arte_4", "speaker": "coach", "text": "no meu tempo era só\napanhar e aprender.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
+
+		{ "id": "cl_recorde_forca_1", "speaker": "coach", "text": "o saco sentiu.\neu também.", "trigger": "personal_record_strength", "repeat": "rest", "priority": 6, "group": "recorde_forca", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_forca_2", "speaker": "coach", "text": "marca nova.\neu vi.", "trigger": "personal_record_strength", "repeat": "rest", "priority": 6, "group": "recorde_forca", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_forca_3", "speaker": "coach", "text": "passou da minha.\ntá certo.", "trigger": "personal_record_strength", "repeat": "rest", "priority": 6, "group": "recorde_forca", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_agil_1", "speaker": "coach", "text": "rápido assim\neu não era.", "trigger": "personal_record_agility", "repeat": "rest", "priority": 6, "group": "recorde_agil", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_agil_2", "speaker": "coach", "text": "a mão voou.\nanotei.", "trigger": "personal_record_agility", "repeat": "rest", "priority": 6, "group": "recorde_agil", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_agil_3", "speaker": "coach", "text": "mais rápido que\na lembrança.", "trigger": "personal_record_agility", "repeat": "rest", "priority": 6, "group": "recorde_agil", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_resist_1", "speaker": "coach", "text": "aguentou mais\nque eu.", "trigger": "personal_record_endurance", "repeat": "rest", "priority": 6, "group": "recorde_resist", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_resist_2", "speaker": "coach", "text": "fôlego novo.\nbom sinal.", "trigger": "personal_record_endurance", "repeat": "rest", "priority": 6, "group": "recorde_resist", "conditions": { "location": "gym" } },
+		{ "id": "cl_recorde_resist_3", "speaker": "coach", "text": "ficou de pé.\neu caí antes.", "trigger": "personal_record_endurance", "repeat": "rest", "priority": 6, "group": "recorde_resist", "conditions": { "location": "gym" } },
+		{ "id": "cl_revanche_mentor_1", "speaker": "coach", "text": "ele me pegou.\nvocê não.", "trigger": "revenge_win", "repeat": "rest", "priority": 6, "group": "revanche_mentor", "conditions": { "location": "gym" } },
+		{ "id": "cl_revanche_mentor_2", "speaker": "coach", "text": "conta velha.\nvocê quitou.", "trigger": "revenge_win", "repeat": "rest", "priority": 6, "group": "revanche_mentor", "conditions": { "location": "gym" } },
+		{ "id": "cl_revanche_mentor_3", "speaker": "coach", "text": "eu perdi ali.\nvocê trouxe.", "trigger": "revenge_win", "repeat": "rest", "priority": 6, "group": "revanche_mentor", "conditions": { "location": "gym" } },
+		{ "id": "cl_revanche_mentor_4", "speaker": "coach", "text": "foi além de mim.\ntá certo.", "trigger": "revenge_win", "repeat": "rest", "priority": 6, "group": "revanche_mentor", "conditions": { "location": "gym" } }
 	],
 	"objects": {
 		"debt_notice": { "title": "AVISO DE COBRANÇA", "title_alt": "AVISO FINAL", "text": "Aluguel em atraso. Regularize ou desocupe." },

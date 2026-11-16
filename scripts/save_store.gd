@@ -25,7 +25,7 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 12
+const VERSAO_ATUAL := 13
 # Migração v11 -> v12: o discípulo que já existia vira o "Novato" padrão, com o visual padrão. É formato congelado
 # na v12 (não lê data/): mudar o banco de nomes depois não muda quem já foi migrado.
 const NOME_PADRAO_V12 := "Novato"
@@ -62,6 +62,7 @@ const MIGRACOES := {
 	9: "_migrar_9_para_10",
 	10: "_migrar_10_para_11",
 	11: "_migrar_11_para_12",
+	12: "_migrar_12_para_13",
 }
 
 var pasta: String
@@ -555,3 +556,22 @@ func _inteiro_de(v: Variant, padrao: int) -> int:
 	if (typeof(v) == TYPE_FLOAT or typeof(v) == TYPE_INT) and is_finite(float(v)) and absf(float(v)) < 1.0e12:
 		return int(v)
 	return padrao
+
+
+# v12 (Fase 6b1) -> v13 (Fase 6c2): Honra e árvore do hall. Campos novos em school com default trivial.
+# Nada mais muda (carreira, permanent, ending, marcos, mentores, roster, handover).
+func _migrar_12_para_13(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var escola = estado.get("school", {})
+	if not (escola is Dictionary):
+		escola = {}
+	if not escola.has("honor_balance"):
+		escola["honor_balance"] = 0
+	if not escola.has("hall_nodes"):
+		escola["hall_nodes"] = []
+	estado["school"] = escola
+	novo["state"] = estado
+	return novo
