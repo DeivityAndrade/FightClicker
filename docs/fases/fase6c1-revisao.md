@@ -66,3 +66,25 @@ Sim. A sensação pedida era *"esse lugar agora é nosso; o John foi viver a vid
 - Antes de mandar aos testadores, o QA roda uma vez a cópia real do save do dono (critério 5). Nenhum código volta.
 - Os pontos fracos de arte (braço da bolsa, esteira com cara de caixa, cabeça do Osmar, saco grande) ficam anotados para o passe de arte à mão.
 - A 6c2 pode começar agora. Só o texto do John no mural espera a resposta dos testadores sobre a saída.
+
+---
+
+## Correção: carga e foto (2026-11-16)
+
+**Veredito: APROVADA.** Pode integrar o PR #13 na main.
+
+- **Bate com a visão:** as cargas agora leem como carga (braço de trás, objeto, braço da frente), sem atravessar nada. A foto torta que o Osmar acerta ("agora sim.") mantém a sensação de "casa nossa" e fica mais calorosa que entortar de propósito. Onde esta revisão fala em "foto entortada de propósito", vale a decisão nova do dono.
+- **Evidência conferida:** 3201 testes, validador 0 erros (12,90 s presos), `ui_audit` 325 estados / 0 problemas; capturas `fase6c1_qa_foto_torta_para_reta.png` (torta → reta legível no corte 2x), `_chegada_t048_carga_x4.png` e `_saida_gar_pega_bolsa_x6.png` (mão no puxador, sem atravessar).
+
+**Decisão sobre as observações do QA:**
+| Obs. | Decisão | Quem / quando |
+|---|---|---|
+| OBS-A: saco "na ponta da mão", braço quase horizontal | Aceito. Não atravessa nem pula; é só pouco natural. Substitui o item "saco no ombro grande demais" da §5 | Pixel artist humano, no passe de arte à mão |
+| OBS-B: foto torta só 1 px | Aceito. A batida é carregada pelo corte 2x do A4/A6, pelo dedo do Osmar e pelo "agora sim.". Se os testadores não perceberem que estava torta, subir para 2 px (só sprite) | Artista de Personagens, só se os testadores não lerem; senão, passe à mão |
+| OBS-C: `ui_audit` sem estado da foto antes/depois e do hover `old_photo_gym` | Vai para a 6c2: a parede da academia recebe o mural, então os estados entram juntos (foto reta + hover com o texto novo + mural) | UI/UX, na 6c2 |
+
+## Resumo para o Produtor (correção)
+- A correção da 6c1 está **aprovada**; pode integrar o PR #13.
+- Cargas sem atravessar e foto torta → reta funcionam e ficam retas ao reabrir o jogo.
+- Saco "na ponta da mão" e foto torta de 1 px ficam para o pixel artist humano (a foto só sobe para 2 px se os testadores não perceberem).
+- Os estados de `ui_audit` da foto e do hover entram na 6c2, junto com o mural.

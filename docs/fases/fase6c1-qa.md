@@ -77,3 +77,39 @@ Critério 5 do escopo e a migração (save v12, sem v13 na 6c1) conferidos com u
 - Observação: neste save a saída do John já estava devida desde a carga (reserva). Se o dono ficasse na garagem, ela dispararia lá no 1º momento calmo, antes de ir à academia (comportamento previsto no §3 da API); aqui o teste foi feito com a ida à academia primeiro.
 
 **Resultado: critério 5 OK com save real.**
+
+---
+
+## Correção: carga e foto (QA da correção, branch `correcao-6c1` / PR #13)
+
+Rodado com `APPDATA` numa pasta temporária nova a cada comando (save real nunca tocado; o guarda do `run_tests` confirmou "save real igual antes e depois"), janelas com `--position 1950,40`, sem git stash/switch/checkout e sem commit.
+
+### Resultado dos itens pedidos
+| Item | Resultado | Evidência |
+|---|---|---|
+| `tools/run_tests.ps1` | **OK** | 3201 PASS, 0 FAIL, "TODOS OS TESTES PASSARAM" |
+| Validador de cenas | **OK** | `validar_cenas.gd`: 4 cenas, 0 erros, 0 avisos, 0 pendências; `primeira_academia` com 12,90 s presos |
+| `ui_audit -- --estados todos` (1280x720) | **OK** | `ESTADOS 325 \| PROBLEMAS 0` (inclui os 4 estados `f6c1_*` e `f6c1_saida_gar_J1..J7` / `f6c1_saida_gym_J1..J7`). Capturas em `...\Temp\qa6c1c\audit`. Os avisos "Save sem o discípulo" no log vêm de saves de teste do próprio audit, não de erro |
+| A1–A5 da chegada: atravessamento, objeto flutuando/pulando, mão fora da alça | **OK** | Quadros a cada 0,2 s, ampliados (geral x2, carga x4). Caixote: braços por fora, cabeça acima, sem mão dentro da madeira. Saco no ombro: mão na ponta do saco, cabeça livre, o saco não pula entre quadros. Esteira dobrada do vizinho legível como esteira (campanha com esteira montada) |
+| Saída do John, bolsa (garagem e academia) | **OK** | Bolsa no chão, pega (mão desce ao puxador), caminhada com a alça saindo do punho (x6 conferido), sem atravessar a perna/corpo; na academia idem |
+| Foto torta -> reta | **OK** | Entra torta no A4 (quadro 1, lado direito deslocado), reta depois do dedo do Osmar no A6 ("agora sim."), tira `fase6c1_qa_foto_torta_para_reta.png` |
+| Reta depois da cena e ao reabrir | **OK** | `sala._parede["photo_old_gym"].sprite.frame == 0` depois da cena e depois de recarregar o jogo (`gs.inicializar` + nova `main.tscn` sobre o save gravado): PASS nos dois |
+| Garagem: foto não muda | **OK** | Foto da garagem (`photo_old`) frame 0 antes e nas capturas da saída; `escola.json` só mudou `gym.tilted` |
+
+### Capturas (`docs/arte/mockups/`)
+- Chegada geral (x2, a cada 0,2 s): `fase6c1_qa_chegada_t000_geral.png`, `_t016_`, `_t032_`, `_t048_`, `_t064_`, `_t080_geral.png`.
+- Carga ampliada x4: `fase6c1_qa_chegada_t000_carga_x4.png`, `_t024_`, `_t048_`, `_t072_carga_x4.png`.
+- Chegada com a esteira do vizinho (x3): `fase6c1_qa_chegada_esteira_t14.png`, `_t32`, `_t50`, `_t68`.
+- Foto: `fase6c1_qa_foto_torta_para_reta.png` (sequência torta->reta ampliada), `fase6c1_qa_academia_foto_reta.png`, `..._x4.png`, `fase6c1_qa_academia_reaberto_foto_x4.png`.
+- Saída (x2, a cada 0,35 s): `fase6c1_qa_saida_gar_t000..t140.png`, `fase6c1_qa_saida_gym_t000..t112.png`; detalhe da bolsa: `fase6c1_qa_saida_gar_pega_bolsa_x6.png`, `..._bolsa_chao_x2.png`, `..._alca_x6.png`.
+- Scripts que geram tudo (fora dos de produção): `tests/qa_f6c1_corr.gd` (chegada, foto, reabrir, saída nos dois locais; 7 PASS / 0 FAIL) e `tests/qa_f6c1_corr2.gd` (chegada com esteira). Comando: `Godot --path E:\Fightclicker --resolution 1280x720 --position 1950,40 --script res://tests/qa_f6c1_corr.gd` com `APPDATA` temporário.
+
+### Problemas encontrados
+Nenhum bug. Observações pequenas, para o pixel artist humano (já listadas em "Anotado para depois"; não travam):
+- **OBS-A (baixa, Artista):** no `carry_bag_idle` o saco parado fica estendido com o braço quase na horizontal, longe do corpo, mais "segurando na ponta" do que "no ombro". Não atravessa nada e não pula, só pouco natural.
+- **OBS-B (baixa, Artista):** a tilt da foto é sutil (metade direita 1 px abaixo); com a câmera 2x aparece, mas em 1x é difícil de ver. A graça do "torta -> reta" depende do corte 2x do A4/A6.
+- **OBS-C (info, UI/UX):** o `ui_audit` não tem estado próprio para a foto antes/depois da cena nem para o hover `old_photo_gym` com o texto novo ("Era torta. Aqui ficou reta."). A largura do texto é a mesma ordem do antigo e o audit geral passou com 0 problemas, mas vale um estado de hover na 6c2.
+- A amostragem foi a 5 quadros/s da tela real (tempo real do Godot), não quadro a quadro da folha; a conferência por pixel de cada quadro continua sendo a `cross_check` do gerador (101 quadros, 0 px), que não reexecutei.
+
+### Veredito
+**Pronto para o Diretor revisar: sim.** Sem bugs; a correção da 6c1 cumpre os dois pedidos (cargas sem atravessar, foto torta -> reta e persistente), testes verdes, validador 0 erros, `ui_audit` 0 problemas.

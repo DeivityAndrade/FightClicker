@@ -23,7 +23,7 @@
 	"old_photo": {
 		"_doc": "Design §2. A foto acompanha a escola: na garagem sempre; na academia depois do marco. Hover: objects.old_photo (garagem) / objects.old_photo_gym (academia).",
 		"garage": { "spot": "garage_story_wall.objects.photo_old", "requires_milestone": "", "object_text": "old_photo" },
-		"gym": { "spot": "gym_photo_spot", "requires_milestone": "cena_primeira_academia", "object_text": "old_photo_gym", "tilted": true }
+		"gym": { "spot": "gym_photo_spot", "requires_milestone": "cena_primeira_academia", "object_text": "old_photo_gym", "tilted": false }
 	},
 
 	"mentor_leave": {

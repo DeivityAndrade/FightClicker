@@ -14,9 +14,9 @@
 	"props_in_sheets": {
 		"bolsa": "Bolsa de lona do John 18x11 (mock/fase6c1_bolsa_ref.png): o john_duffel do Diretor de Arte deve ser este mesmo desenho para a troca do grab_frame não pular.",
 		"caixote": "garage_crate (mesmas cores); em put_crate q1 está 2 px acima do lugar final (238,232).",
-		"esteira": "treadmill_l0_idle (enferrujada, da garagem); meio giro = a mesma apertada na largura; de ponta = desenho próprio 24x30 com as mesmas cores.",
+		"esteira": "treadmill_l0_idle (enferrujada, da garagem); meio giro = a mesma apertada na largura; carregada (turn q3, carry, put q0) = DOBRADA de lado, desenho próprio 20x40 com as mesmas cores (deque em pé com os rolos, coluna e painel, base).",
 		"foto": "wall_photo_old endireitada (metade direita 1 px acima = a versão 'reta'). O Diretor de Arte pode usar a mesma conta para o quadro 0 do wall_photo_old_gym.",
-		"saco": "bag_l0_idle q0 (saco remendado), sempre, em qualquer nível comprado. Deitado = o corpo sem a argola girado 90 graus (tampa para a frente)."
+		"saco": "bag_l0_idle q0 (saco remendado), sempre, em qualquer nível comprado. No ombro e acima da cabeça (carry_bag, carry_bag_idle, hang_bag q0-1) = o mesmo saco em escala de carregar (36x15, bag_carry no gerador); no gancho (hang_bag q2-3) = o bag_l0_idle q0 inteiro."
 	},
 	"scene_anims_sugestao": {
 		"coach": {
@@ -485,15 +485,25 @@
 			"file": "res://assets/sprites/characters/coach_nudge_photo.png",
 			"finger_tip_rel": [
 				33,
-				-60
+				-59
 			],
+			"finger_tip_rel_by_frame": {
+				"1": [
+					33,
+					-58
+				],
+				"2": [
+					33,
+					-59
+				]
+			},
 			"fps": 10,
 			"frame_size": [
 				64,
 				88
 			],
 			"frames": 4,
-			"frames_note": "Outra mão na cintura. 0 braço da frente sobe; 1 dedo esticado no canto de baixo à direita da moldura (ponta do dedo perto de 229,177); 2 EMPURRA 1 px para baixo: a foto entorta NESTE quadro (nudge_frame: trocar wall_photo_old_gym para crooked); 3 recolhe o braço, satisfeito. A moldura NÃO está na folha (é o adereço da parede).",
+			"frames_note": "Outra mão na cintura. 0 braço da frente sobe; 1 dedo esticado encosta no canto de baixo à direita da moldura TORTA (ponta do dedo perto de 229,178); 2 EMPURRA 1 px para CIMA (ponta perto de 229,177): a foto ENDIREITA neste quadro (nudge_frame: trocar wall_photo_old_gym para straight, quadro 0); 3 recolhe o braço, satisfeito. A moldura NÃO está na folha (é o adereço da parede).",
 			"hands": [
 				{
 					"hand_back": [
@@ -512,7 +522,7 @@
 					],
 					"hand_front": [
 						29.0,
-						-60.0
+						-59.0
 					]
 				},
 				{
@@ -522,7 +532,7 @@
 					],
 					"hand_front": [
 						29.0,
-						-59.0
+						-60.0
 					]
 				},
 				{
@@ -562,6 +572,7 @@
 			"loop": false,
 			"mirror_ok": false,
 			"nudge_frame": 2,
+			"photo_note": "O Osmar DESENTORTA a foto: no quadro 1 o dedo encosta no canto da moldura torta; no nudge_frame (2) ele sobe 1 px e a foto fica reta (wall_photo_old_gym quadro 0).",
 			"pivot": [
 				22.0,
 				83.0
@@ -838,8 +849,8 @@
 						-27.2482318878174
 					],
 					"hand_front": [
-						9.0,
-						-66.0
+						16.0,
+						-59.0
 					]
 				},
 				{
@@ -848,8 +859,8 @@
 						-26.2482318878174
 					],
 					"hand_front": [
-						9.0,
-						-65.0
+						16.0,
+						-58.0
 					]
 				}
 			],
@@ -1090,7 +1101,7 @@
 				88
 			],
 			"frames": 6,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) deitado no ombro de trás, atrás da cabeça (a cabeça aparece inteira); a mão de perto segura o saco por cima, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) em ESCALA DE CARREGAR (36x15, desenhado à parte com as mesmas cores) apoiado no ombro de trás, a boca logo atrás da nuca sem encostar na cabeça e o fundo descendo para trás; a mão de perto fecha na borda de cima, perto da boca, com os dedos por cima do pano, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
 			"glove": "none",
 			"hands": [
 				{
@@ -1099,8 +1110,8 @@
 						-27.2482318878174
 					],
 					"hand_front": [
-						8.0,
-						-66.0
+						15.0,
+						-59.0
 					]
 				},
 				{
@@ -1109,8 +1120,8 @@
 						-25.7120628356934
 					],
 					"hand_front": [
-						8.0,
-						-64.5
+						15.0,
+						-57.0
 					]
 				},
 				{
@@ -1119,8 +1130,8 @@
 						-26.2030162811279
 					],
 					"hand_front": [
-						8.0,
-						-65.0
+						15.0,
+						-58.0
 					]
 				},
 				{
@@ -1129,8 +1140,8 @@
 						-27.2482318878174
 					],
 					"hand_front": [
-						8.0,
-						-66.0
+						15.0,
+						-59.0
 					]
 				},
 				{
@@ -1139,8 +1150,8 @@
 						-26.46702003479
 					],
 					"hand_front": [
-						8.0,
-						-64.5
+						15.0,
+						-57.0
 					]
 				},
 				{
@@ -1149,8 +1160,8 @@
 						-26.5637836456299
 					],
 					"hand_front": [
-						8.0,
-						-65.0
+						15.0,
+						-58.0
 					]
 				}
 			],
@@ -1395,67 +1406,67 @@
 				72
 			],
 			"frames": 6,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, à frente do peito, tronco 1 px para trás. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, na frente da barriga e um pouco à frente do corpo, tronco 1 px para trás. Mãos nas LATERAIS, embaixo: a de perto fecha na quina (dedos por cima da madeira), a de trás aparece do outro lado da tábua; o tronco e o braço de trás ficam atrás do caixote, o braço de perto na frente. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
 			"glove": "none",
 			"hands": [
 				{
 					"hand_back": [
-						-20.0,
-						-37.0
+						-18.0,
+						-32.0
 					],
 					"hand_front": [
-						3.0,
-						-36.0
+						10.0,
+						-31.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-37.0
+						-18.0,
+						-32.0
 					],
 					"hand_front": [
-						3.0,
-						-36.0
+						10.0,
+						-31.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				}
 			],
@@ -1551,9 +1562,9 @@
 					],
 					"head_box_max": [
 						46,
-						33,
+						34,
 						15,
-						16
+						15
 					],
 					"head_rot": 0.0,
 					"hip": [
@@ -1640,13 +1651,13 @@
 						52,
 						34,
 						13,
-						11
+						13
 					],
 					"head_box_max": [
 						51,
 						31,
 						15,
-						14
+						16
 					],
 					"head_rot": 0.0,
 					"hip": [
@@ -1762,13 +1773,13 @@
 				104
 			],
 			"frames": 8,
-			"frames_note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: saco deitado por cima da cabeça, as duas mãos embaixo; 2 o saco já em pé sobe na frente (argola 9 px abaixo do gancho), mãos no lado de perto; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho.",
+			"frames_note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: o mesmo saco de carregar deitado acima da cabeça (1 px de folga), as duas mãos embaixo com os dedos fechados no pano; 2 o saco (agora o bag_l0 inteiro, na escala da sala) sobe na frente (argola 9 px abaixo do gancho), abraçado pelo lado de perto abaixo do queixo; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho.",
 			"glove": "none",
 			"hands": [
 				{
 					"hand_back": [
-						-9.0,
-						-66.0
+						-16.0,
+						-59.0
 					],
 					"hand_front": [
 						10.0696640014648,
@@ -1777,52 +1788,52 @@
 				},
 				{
 					"hand_back": [
-						1.0,
-						-63.0
-					],
-					"hand_front": [
-						16.0,
-						-63.0
-					]
-				},
-				{
-					"hand_back": [
-						16.0,
-						-56.0
-					],
-					"hand_front": [
-						18.0,
-						-48.0
-					]
-				},
-				{
-					"hand_back": [
-						16.0,
-						-64.0
-					],
-					"hand_front": [
-						18.0,
-						-56.0
-					]
-				},
-				{
-					"hand_back": [
-						16.0,
-						-62.0
-					],
-					"hand_front": [
-						18.0,
-						-54.0
-					]
-				},
-				{
-					"hand_back": [
-						12.0,
-						-52.0
+						-3.0,
+						-65.0
 					],
 					"hand_front": [
 						15.0,
-						-45.0
+						-65.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-46.0
+					],
+					"hand_front": [
+						17.0,
+						-40.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-49.0
+					],
+					"hand_front": [
+						17.0,
+						-43.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-47.0
+					],
+					"hand_front": [
+						17.0,
+						-41.0
+					]
+				},
+				{
+					"hand_back": [
+						13.0,
+						-44.0
+					],
+					"hand_front": [
+						15.0,
+						-38.0
 					]
 				},
 				{
@@ -1996,22 +2007,22 @@
 			"hands": [
 				{
 					"hand_back": [
-						-4.0,
-						-36.0
+						-11.0,
+						-31.0
 					],
 					"hand_front": [
-						19.0,
-						-37.0
+						17.0,
+						-32.0
 					]
 				},
 				{
 					"hand_back": [
 						-14.0,
-						-23.0
+						-24.0
 					],
 					"hand_front": [
 						7.0,
-						-23.0
+						-24.0
 					]
 				},
 				{
@@ -2518,62 +2529,62 @@
 			"hands": [
 				{
 					"hand_back": [
-						-20.0,
-						-37.0
+						-18.0,
+						-32.0
 					],
 					"hand_front": [
-						3.0,
-						-36.0
+						10.0,
+						-31.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-37.0
+						-18.0,
+						-32.0
 					],
 					"hand_front": [
-						3.0,
-						-36.0
+						10.0,
+						-31.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				}
 			],
@@ -2637,22 +2648,22 @@
 			"hands": [
 				{
 					"hand_back": [
-						-4.0,
-						-36.0
+						-11.0,
+						-31.0
 					],
 					"hand_front": [
-						19.0,
-						-37.0
+						17.0,
+						-32.0
 					]
 				},
 				{
 					"hand_back": [
 						-14.0,
-						-23.0
+						-24.0
 					],
 					"hand_front": [
 						7.0,
-						-23.0
+						-24.0
 					]
 				},
 				{
@@ -2998,67 +3009,67 @@
 				96
 			],
 			"frames": 6,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Anda com a esteira de ponta na frente do corpo, de (430,222) a (440,250), virado para a ESQUERDA. 1 e 4 = pé pousa.",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Anda com a esteira DOBRADA carregada de lado, um pouco à frente do corpo (o tronco aparece atrás dela; a mão de perto fecha na borda do deque, a de trás segura a coluna), de (430,222) a (440,250), virado para a ESQUERDA. 1 e 4 = pé pousa.",
 			"glove": "none",
 			"hands": [
 				{
 					"hand_back": [
-						-12.0,
+						-14.0,
+						-28.0
+					],
+					"hand_front": [
+						-1.0,
+						-29.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
 						-27.0
 					],
 					"hand_front": [
-						7.0,
-						-27.0
+						-1.0,
+						-28.0
 					]
 				},
 				{
 					"hand_back": [
-						-12.0,
-						-25.5
-					],
-					"hand_front": [
-						7.0,
-						-25.5
-					]
-				},
-				{
-					"hand_back": [
-						-12.0,
-						-26.0
-					],
-					"hand_front": [
-						7.0,
-						-26.0
-					]
-				},
-				{
-					"hand_back": [
-						-12.0,
+						-14.0,
 						-27.0
 					],
 					"hand_front": [
-						7.0,
+						-1.0,
+						-28.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-28.0
+					],
+					"hand_front": [
+						-1.0,
+						-29.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
 						-27.0
+					],
+					"hand_front": [
+						-1.0,
+						-28.0
 					]
 				},
 				{
 					"hand_back": [
-						-12.0,
-						-25.5
+						-14.0,
+						-27.0
 					],
 					"hand_front": [
-						7.0,
-						-25.5
-					]
-				},
-				{
-					"hand_back": [
-						-12.0,
-						-26.0
-					],
-					"hand_front": [
-						7.0,
-						-26.0
+						-1.0,
+						-28.0
 					]
 				}
 			],
@@ -3118,17 +3129,17 @@
 				96
 			],
 			"frames": 3,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Em (440,250): 0 abaixa a esteira de ponta dobrando os joelhos; 1 ela gira de volta e encosta no chão no lugar (pivô 445,267); 2 a esteira vira o adereço da sala NESTE quadro (não está na folha), ele endireita.",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Em (440,250): 0 abaixa a esteira dobrada dobrando os joelhos (base 4 px acima do chão); 1 ela gira de volta e encosta no chão no lugar (pivô 445,267); 2 a esteira vira o adereço da sala NESTE quadro (não está na folha), ele endireita.",
 			"glove": "none",
 			"hands": [
 				{
 					"hand_back": [
-						-12.0,
+						-13.0,
 						-22.0
 					],
 					"hand_front": [
-						7.0,
-						-22.0
+						0.0,
+						-23.0
 					]
 				},
 				{
@@ -3281,7 +3292,7 @@
 				96
 			],
 			"frames": 4,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Gira a esteira para passar de ponta: 0 atravessada (86 px); 1 meio giro (60); 2 (36); 3 de ponta, estreita (24 px, rolo na frente, painel lá atrás).",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Gira a esteira para passar de ponta: 0 atravessada (86 px); 1 meio giro (60); 2 (36); 3 DOBRADA e de lado (20x40: deque em pé com os rolos, coluna e painel, base com rodinhas), na mesma pegada do treadmill_carry.",
 			"glove": "none",
 			"hands": [
 				{
@@ -3316,12 +3327,12 @@
 				},
 				{
 					"hand_back": [
-						-12.0,
-						-27.0
+						-13.0,
+						-28.0
 					],
 					"hand_front": [
-						7.0,
-						-27.0
+						0.0,
+						-29.0
 					]
 				}
 			],
@@ -3377,8 +3388,8 @@
 						-27.2482318878174
 					],
 					"hand_front": [
-						9.0,
-						-66.0
+						16.0,
+						-59.0
 					]
 				},
 				{
@@ -3387,8 +3398,8 @@
 						-26.2482318878174
 					],
 					"hand_front": [
-						9.0,
-						-65.0
+						16.0,
+						-58.0
 					]
 				}
 			],
@@ -3426,7 +3437,7 @@
 				88
 			],
 			"frames": 6,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) deitado no ombro de trás, atrás da cabeça (a cabeça aparece inteira); a mão de perto segura o saco por cima, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) em ESCALA DE CARREGAR (36x15, desenhado à parte com as mesmas cores) apoiado no ombro de trás, a boca logo atrás da nuca sem encostar na cabeça e o fundo descendo para trás; a mão de perto fecha na borda de cima, perto da boca, com os dedos por cima do pano, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
 			"glove": "none",
 			"hands": [
 				{
@@ -3435,8 +3446,8 @@
 						-27.2482318878174
 					],
 					"hand_front": [
-						8.0,
-						-66.0
+						15.0,
+						-59.0
 					]
 				},
 				{
@@ -3445,8 +3456,8 @@
 						-25.7120628356934
 					],
 					"hand_front": [
-						8.0,
-						-64.5
+						15.0,
+						-57.0
 					]
 				},
 				{
@@ -3455,8 +3466,8 @@
 						-26.2030162811279
 					],
 					"hand_front": [
-						8.0,
-						-65.0
+						15.0,
+						-58.0
 					]
 				},
 				{
@@ -3465,8 +3476,8 @@
 						-27.2482318878174
 					],
 					"hand_front": [
-						8.0,
-						-66.0
+						15.0,
+						-59.0
 					]
 				},
 				{
@@ -3475,8 +3486,8 @@
 						-26.46702003479
 					],
 					"hand_front": [
-						8.0,
-						-64.5
+						15.0,
+						-57.0
 					]
 				},
 				{
@@ -3485,8 +3496,8 @@
 						-26.5637836456299
 					],
 					"hand_front": [
-						8.0,
-						-65.0
+						15.0,
+						-58.0
 					]
 				}
 			],
@@ -3544,67 +3555,67 @@
 				72
 			],
 			"frames": 6,
-			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, à frente do peito, tronco 1 px para trás. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
+			"frames_note": "VERSÃO VIRADA PARA A ESQUERDA (desenhada assim; não espelhar). Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, na frente da barriga e um pouco à frente do corpo, tronco 1 px para trás. Mãos nas LATERAIS, embaixo: a de perto fecha na quina (dedos por cima da madeira), a de trás aparece do outro lado da tábua; o tronco e o braço de trás ficam atrás do caixote, o braço de perto na frente. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho.",
 			"glove": "none",
 			"hands": [
 				{
 					"hand_back": [
-						-20.0,
-						-37.0
+						-18.0,
+						-32.0
 					],
 					"hand_front": [
-						3.0,
-						-36.0
+						10.0,
+						-31.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-37.0
+						-18.0,
+						-32.0
 					],
 					"hand_front": [
-						3.0,
-						-36.0
+						10.0,
+						-31.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				},
 				{
 					"hand_back": [
-						-20.0,
-						-36.0
+						-18.0,
+						-31.0
 					],
 					"hand_front": [
-						3.0,
-						-35.0
+						10.0,
+						-30.0
 					]
 				}
 			],
@@ -3794,13 +3805,13 @@
 				104
 			],
 			"frames": 8,
-			"frames_note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: saco deitado por cima da cabeça, as duas mãos embaixo; 2 o saco já em pé sobe na frente (argola 9 px abaixo do gancho), mãos no lado de perto; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho.",
+			"frames_note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: o mesmo saco de carregar deitado acima da cabeça (1 px de folga), as duas mãos embaixo com os dedos fechados no pano; 2 o saco (agora o bag_l0 inteiro, na escala da sala) sobe na frente (argola 9 px abaixo do gancho), abraçado pelo lado de perto abaixo do queixo; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho.",
 			"glove": "none",
 			"hands": [
 				{
 					"hand_back": [
-						-9.0,
-						-66.0
+						-16.0,
+						-59.0
 					],
 					"hand_front": [
 						10.0696640014648,
@@ -3809,52 +3820,52 @@
 				},
 				{
 					"hand_back": [
-						1.0,
-						-63.0
-					],
-					"hand_front": [
-						16.0,
-						-63.0
-					]
-				},
-				{
-					"hand_back": [
-						16.0,
-						-56.0
-					],
-					"hand_front": [
-						18.0,
-						-48.0
-					]
-				},
-				{
-					"hand_back": [
-						16.0,
-						-64.0
-					],
-					"hand_front": [
-						18.0,
-						-56.0
-					]
-				},
-				{
-					"hand_back": [
-						16.0,
-						-62.0
-					],
-					"hand_front": [
-						18.0,
-						-54.0
-					]
-				},
-				{
-					"hand_back": [
-						12.0,
-						-52.0
+						-3.0,
+						-65.0
 					],
 					"hand_front": [
 						15.0,
-						-45.0
+						-65.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-46.0
+					],
+					"hand_front": [
+						17.0,
+						-40.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-49.0
+					],
+					"hand_front": [
+						17.0,
+						-43.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-47.0
+					],
+					"hand_front": [
+						17.0,
+						-41.0
+					]
+				},
+				{
+					"hand_back": [
+						13.0,
+						-44.0
+					],
+					"hand_front": [
+						15.0,
+						-38.0
 					]
 				},
 				{
@@ -4216,22 +4227,22 @@
 			"hands": [
 				{
 					"hand_back": [
-						-4.0,
-						-36.0
+						-11.0,
+						-31.0
 					],
 					"hand_front": [
-						19.0,
-						-37.0
+						17.0,
+						-32.0
 					]
 				},
 				{
 					"hand_back": [
 						-14.0,
-						-23.0
+						-24.0
 					],
 					"hand_front": [
 						7.0,
-						-23.0
+						-24.0
 					]
 				},
 				{
