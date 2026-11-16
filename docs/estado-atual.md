@@ -10,6 +10,7 @@ Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias an
   - QA (`docs/fases/fase6c2-qa.md`): aprovou com ressalvas; **B1–B6 corrigidos** (PAROU NUMA LUTA, símbolo nas costas na luta, mural vazio, seta apagada, plaquinha "beto", linha FALTA pelo atributo destacado).
   - Verificado no fim: `tools/run_tests.ps1` **TODOS OS TESTES PASSARAM** (APPDATA temporário); `ui_audit` 358 estados, 0 problemas (2 rodadas).
   - **Falta:** (1) Diretor escrever `docs/fases/fase6c2-revisao.md` (parou no limite de uso; pedido: decidir se fecha a 6c, perguntas aos testadores, o que vai para o pixel artist, o que vem na 7a); (2) abrir PR de `fase-6c2` para a main e integrar (o dono deixa integrar sempre).
+- **Atenção:** 13 PNGs de `assets/sprites/opponents/opp_leslie/` aparecem modificados e **não foram commitados** (origem desconhecida, provavelmente um gerador rodado por agente). Conferir com `git diff --stat` antes de commitar ou descartar.
 - **Próxima fase:** 7a — Lutas por arte (Boxe e Jiu-jitsu lutam diferente, habilidades passivas, arena da academia).
 
 ## Decisões do dono desta rodada
