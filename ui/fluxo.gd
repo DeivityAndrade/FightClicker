@@ -171,6 +171,22 @@ func _abrir_fim(fim: Dictionary, reabrindo: bool = false) -> void:
 	j.arvore_pedido.connect(abrir_arvore)
 
 
+# --- Fase 6c2: Árvore do Hall (Honra) ---
+
+## Abre a janela da árvore do hall. Só na academia, sem luta/janela/cena pendente.
+func abrir_hall() -> void:
+	if ocupado() or tela.visible:
+		return
+	if GameState.local_id != "gym":
+		return
+	if not GameState.sala_ativa():
+		return
+	var j: Control = preload("res://ui/janela_hall.gd").new()
+	_abrir(j)
+	j.abrir()
+	j.fechar_pedido.connect(_fechar)
+
+
 # --- Árvore grande (Fase 5.4): o mapa abre pelo botão da sala (qualquer hora) e pelo botão ÁRVORE da tela de fim ---
 
 func abrir_arvore() -> void:

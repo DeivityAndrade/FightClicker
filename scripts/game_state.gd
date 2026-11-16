@@ -485,12 +485,44 @@ func por_auto_soco() -> float:
 
 
 func _base_soco() -> float:
-	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _b("click_bonus")) * mult_local()
+	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _b("click_bonus")) * mult_local() * (1.0 + _hall_click_bonus())
 
 
-## Fator que a equipe recebe: (1 + árvore) x local x (1 + Jiu-jitsu).
+## Fator que a equipe recebe: (1 + árvore) x local x (1 + Jiu-jitsu) x (1 + hall_passive).
 func _fator_equipe() -> float:
-	return (1.0 + _b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe())
+	return (1.0 + _b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe()) * (1.0 + _hall_passive_bonus())
+
+
+## Bônus de clique da árvore do hall (soma dos nós click_bonus + art_click_bonus da arte ativa).
+func _hall_click_bonus() -> float:
+	var total := 0.0
+	for id in hall_nodes_comprados():
+		var n := _hall_node(id)
+		if n.is_empty():
+			continue
+		var eff: Dictionary = n.get("effect", {})
+		var t := str(eff.get("type", ""))
+		if t == "click_bonus":
+			total += float(eff.get("value", 0.0))
+		elif t == "art_click_bonus" and str(eff.get("art", "")) == arte_id and local_id == "gym":
+			total += float(eff.get("value", 0.0))
+	return total
+
+
+## Bônus passivo da árvore do hall (soma dos nós passive_bonus + art_passive_bonus da arte ativa).
+func _hall_passive_bonus() -> float:
+	var total := 0.0
+	for id in hall_nodes_comprados():
+		var n := _hall_node(id)
+		if n.is_empty():
+			continue
+		var eff: Dictionary = n.get("effect", {})
+		var t := str(eff.get("type", ""))
+		if t == "passive_bonus":
+			total += float(eff.get("value", 0.0))
+		elif t == "art_passive_bonus" and str(eff.get("art", "")) == arte_id and local_id == "gym":
+			total += float(eff.get("value", 0.0))
+	return total
 
 
 ## Treino/s vindo de todos os geradores (da garagem e pagos).
@@ -1779,6 +1811,7 @@ func _zerar_carreira() -> void:
 	_chave_melhor = ""
 	_finalizar_motivo(false)
 	_motivo_cache = {}
+	escola["campaign_records"] = {}  # Fase 6c2: recordes pessoais zeram na nova campanha
 
 
 # --- Fase 4: árvore de habilidades ---
@@ -2921,9 +2954,31 @@ func _ganhar(valor: float) -> void:
 		var parte: float = valor * float(divisao[atributo])
 		if parte <= 0.0:
 			continue
-		atributos[atributo] = clampf(float(atributos.get(atributo, 0.0)) + parte, 0.0, VALOR_MAXIMO)
+		var antes := float(atributos.get(atributo, 0.0))
+		atributos[atributo] = clampf(antes + parte, 0.0, VALOR_MAXIMO)
 		atributo_mudou.emit(atributo, atributos[atributo])
+		_verificar_recorde_pessoal(atributo, antes, atributos[atributo])
 	_definir_treino(treino + valor)
+
+
+## Fase 6c2: dispara honor_gain(2) quando um atributo supera o máximo anterior desta campanha.
+## O máximo é salvo em escola.campaign_records e zerado no reset da carreira.
+func _verificar_recorde_pessoal(atributo: String, antes: float, depois: float) -> void:
+	if depois <= antes:
+		return
+	var records: Dictionary = escola.get("campaign_records", {})
+	if not (records is Dictionary):
+		records = {}
+	var max_anterior := float(records.get(atributo, 0.0))
+	if antes < max_anterior:
+		return
+	# Novo recorde: atualiza o máximo e ganha Honra.
+	records[atributo] = depois
+	escola["campaign_records"] = records
+	var fontes: Dictionary = escola_cfg.get("_6c2", {}).get("honor_sources", {})
+	var valor := float(fontes.get("personal_record", 2))
+	if valor > 0.0:
+		honor_gain("personal_record_" + atributo, valor)
 
 
 # Gasta saldo (nunca fica negativo; atributo não é tocado).

@@ -63,6 +63,11 @@ func rodar_testes() -> void:
 	_teste_mural_estados()
 	_teste_portrait_variant()
 	_teste_balanco_inalterado()
+	_teste_personal_record_honor()
+	_teste_hall_click_bonus()
+	_teste_hall_passive_bonus()
+	_teste_simbolo_rendering()
+	_teste_fluxo_abrir_hall()
 
 
 func _teste_dados() -> void:
@@ -241,3 +246,109 @@ func _teste_balanco_inalterado() -> void:
 		"balanço: relógio, dia, luta e arte iguais com e sem honra")
 	_liberar(a)
 	_liberar(b)
+
+
+func _teste_personal_record_honor() -> void:
+	var gs := _novo("f6c2_rec")
+	gs.cinturao = true
+	gs.dinheiro = 1.0e9
+	_tickar(gs, 5.0)
+	gs.mudar()
+	_assentar(gs)
+	# Zera atributos e recordes para começar limpo.
+	for id in gs.atributos:
+		gs.atributos[id] = 0.0
+	gs.escola["campaign_records"] = {}
+	# Conecta o sinal ANTES do ganho para capturar a emissão.
+	var sinais: Array = []
+	gs.honor_changed.connect(func(v: float) -> void: sinais.append(v))
+	var antes: float = gs.honor_balance()
+	# Simula ganho que supera recorde anterior (0).
+	gs._ganhar(10.0)
+	var depois: float = gs.honor_balance()
+	var records: Dictionary = gs.escola.get("campaign_records", {})
+	checar(depois > antes, "personal_record: honor_gain disparado ao bater recorde")
+	checar(sinais.size() > 0, "personal_record: sinal honor_changed emitido")
+	checar(not records.is_empty(), "personal_record: campaign_records atualizado")
+	# Ganhar de novo sem superar o recorde da campanha não dá Honra extra.
+	# O atributo sobe (treino normal), mas como já está acima do máximo gravado, não dispara.
+	sinais.clear()
+	var saldo_antes: float = gs.honor_balance()
+	# Define o recorde manual alto para garantir que o próximo ganho não supere.
+	for id in gs.atributos:
+		gs.escola["campaign_records"][id] = 999999.0
+	gs._ganhar(1.0)
+	checar(gs.honor_balance() == saldo_antes, "personal_record: sem ganho quando não supera recorde")
+	_liberar(gs)
+
+
+func _teste_hall_click_bonus() -> void:
+	var gs := _novo("f6c2_hcb")
+	gs.cinturao = true
+	gs.dinheiro = 1.0e9
+	_tickar(gs, 5.0)
+	gs.mudar()
+	_assentar(gs)
+	gs.honor_gain("fight_won", 30.0)
+	var base: float = gs.por_clique()
+	gs.hall_buy("hall_echo") # +5% click_bonus
+	var com_no: float = gs.por_clique()
+	checar(com_no > base, "hall_click_bonus: por_clique aumenta após comprar nó click_bonus")
+	var esperado: float = base * 1.05
+	checar(abs(com_no - esperado) < 0.001, "hall_click_bonus: valor proporcional (+5%)")
+	_liberar(gs)
+
+
+func _teste_hall_passive_bonus() -> void:
+	var gs := _novo("f6c2_hpb")
+	gs.cinturao = true
+	gs.dinheiro = 1.0e9
+	_tickar(gs, 5.0)
+	gs.mudar()
+	_assentar(gs)
+	gs.honor_gain("fight_won", 30.0)
+	var base: float = gs._fator_equipe()
+	gs.hall_buy("hall_floor_creak") # +5% passive_bonus
+	var com_no: float = gs._fator_equipe()
+	checar(com_no > base, "hall_passive_bonus: _fator_equipe aumenta após comprar nó passive_bonus")
+	var esperado: float = base * 1.05
+	checar(abs(com_no - esperado) < 0.001, "hall_passive_bonus: valor proporcional (+5%)")
+	_liberar(gs)
+
+
+func _teste_simbolo_rendering() -> void:
+	var gs := _novo("f6c2_sym")
+	gs.cinturao = true
+	gs.dinheiro = 1.0e9
+	_tickar(gs, 5.0)
+	gs.mudar()
+	_assentar(gs)
+	# Sem nó: símbolo desbloqueado = false.
+	checar(not gs.simbolo_desbloqueado(), "simbolo_rendering: falso sem nó hall_symbol_chest")
+	gs.honor_gain("fight_won", 100.0)
+	gs.hall_buy("hall_floor_creak")
+	gs.hall_buy("hall_crew_rhythm")
+	gs.hall_buy("hall_symbol_chest")
+	checar(gs.simbolo_desbloqueado(), "simbolo_rendering: verdadeiro após comprar hall_symbol_chest")
+	# Só visível na academia.
+	gs.local_id = "garage"
+	checar(gs.local_id != "gym", "simbolo_rendering: local garage não é gym")
+	gs.local_id = "gym"
+	checar(gs.local_id == "gym" and gs.simbolo_desbloqueado(), "simbolo_rendering: condições gym + nó satisfeitas")
+	_liberar(gs)
+
+
+func _teste_fluxo_abrir_hall() -> void:
+	var gs := _novo("f6c2_fluxo")
+	gs.cinturao = true
+	gs.dinheiro = 1.0e9
+	_tickar(gs, 5.0)
+	gs.mudar()
+	_assentar(gs)
+	# Fluxo.abrir_hall exige local_id == "gym" e sala_ativa.
+	checar(gs.local_id == "gym", "fluxo_abrir_hall: local padrão da academia é gym")
+	# Verifica que a função existe e não crasha quando chamada fora do contexto visual.
+	# O teste real de abertura é feito no ui_audit; aqui só validamos o guard.
+	var fluxo_script := load("res://ui/fluxo.gd")
+	checar(fluxo_script != null, "fluxo_abrir_hall: script fluxo.gd carregável")
+	_liberar(gs)

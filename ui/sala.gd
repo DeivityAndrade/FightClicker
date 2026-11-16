@@ -57,6 +57,7 @@ const CORDA_FOLGA_MS := 480  # sem clique por este tempo = a corda assenta
 var _corda_girando := false
 var _corda_ultimo_clique := 0
 var _sombra_lutador: Sprite2D
+var _simbolo_escola: Sprite2D  # Fase 6c2: símbolo no peito do lutador (só na academia com nó desbloqueado)
 var _pessoas: Dictionary = {}  # gerador -> Array[{sprite, sombra, visivel}]
 var _fx_impacto: Array[AnimSprite] = []
 var _fx_critico: Array[AnimSprite] = []
@@ -227,6 +228,13 @@ func _montar() -> void:
 	_sombra_lutador.texture = UiTema.textura("floor_shadow")
 	_mundo.add_child(_sombra_lutador)
 
+	# Fase 6c2: símbolo da escola no peito do lutador (só na academia com nó desbloqueado).
+	_simbolo_escola = Sprite2D.new()
+	_simbolo_escola.texture = load("res://assets/sprites/ui/school_symbol.png")
+	_simbolo_escola.centered = false
+	_simbolo_escola.visible = false
+	_mundo.add_child(_simbolo_escola)
+
 	for gid in _ids_geradores():
 		var lista: Array = []
 		var nomes: Array = UiTema.manifest().get("by_data_id", {}).get(gid, {}).get("people", [])
@@ -381,6 +389,20 @@ func _pose_repouso() -> void:
 	_sombra_lutador.visible = foco != ESTEIRA
 	_sombra_lutador.position = _lutador.position + Vector2(0, -1)
 	_sombra_lutador.z_index = _lutador.z_index - 1
+	_atualizar_simbolo_escola()
+
+
+## Fase 6c2: símbolo da escola no peito do lutador. Só visível na academia com nó desbloqueado.
+## Posição fixa relativa ao centro do lutador: (x+18, y+22). Z-index entre body e glove (_lutador.z_index + 1).
+func _atualizar_simbolo_escola() -> void:
+	if _simbolo_escola == null:
+		return
+	var visivel := GameState.local_id == "gym" and GameState.simbolo_desbloqueado()
+	_simbolo_escola.visible = visivel
+	if not visivel:
+		return
+	_simbolo_escola.position = _lutador.position + Vector2(18, 22)
+	_simbolo_escola.z_index = _lutador.z_index + 1
 
 
 ## Nome do sprite com o sufixo do local (academia: "_gym", se existir no manifest).
@@ -1674,6 +1696,17 @@ func _montar_parede() -> void:
 		sf.visible = false
 		_mundo.add_child(sf)
 		_parede["photo_old_gym"] = {"sprite": sf, "dados": {}}
+	# 6c2: símbolo da escola no peito do lutador (só na academia, após hall_symbol_chest).
+	var sym := TextureRect.new()
+	sym.texture = load("res://assets/sprites/ui/school_symbol.png")
+	sym.size = Vector2(12, 12)
+	sym.stretch_mode = TextureRect.STRETCH_KEEP
+	sym.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sym.z_index = 10  # entre body e glove
+	sym.visible = false
+	sym.set_meta("ui_align", "ignore")
+	_lutador.add_child(sym)
+	_parede["fighter_symbol"] = {"sprite": sym, "dados": {}}
 	_atualizar_parede()
 
 
@@ -1694,6 +1727,16 @@ func _atualizar_parede() -> void:
 				var fp: Array = foto.spot
 				s.position = Vector2(float(fp[0]), float(fp[1]))
 				s.parar(1 if bool(foto.get("tilted", true)) else 0)
+			continue
+		if k == "fighter_symbol":
+			# 6c2: símbolo no peito do lutador, só na academia e se desbloqueado.
+			var sym: TextureRect = s as TextureRect
+			if sym != null:
+				var mostrar := GameState.local_id == "gym" and GameState.simbolo_desbloqueado()
+				sym.visible = mostrar
+				if mostrar:
+					# Posição relativa ao centro do lutador: (+18, +22) conforme spec §6.1.
+					sym.position = Vector2(18, 22)
 			continue
 		match k:
 			"notice_debt":
@@ -1722,7 +1765,9 @@ func _texto_parede(p: Vector2) -> String:
 		var d: DialogosData = GameState.dialogos
 		match k:
 			"photo_old_gym":
-				return d.texto_objeto(str(GameState.foto_antiga().get("object_text", "old_photo_gym")))
+				var variante := GameState.portrait_variant()
+				var chave := variante if variante != "" else "old_photo_gym"
+				return d.texto_objeto(chave)
 			"notice_debt":
 				return "%s\n%s" % [d.texto_objeto("debt_notice", "title"), d.texto_objeto("debt_notice", "text")]
 			"form":
