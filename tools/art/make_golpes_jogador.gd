@@ -464,7 +464,7 @@ func _init() -> void:
 		fm.close()
 	var expandidas := {}
 	for nome in reacoes:
-		expandidas[nome] = {"fps": reacoes[nome].fps, "frames": reacoes[nome].frames}
+		expandidas[nome] = {"fps": reacoes[nome].fps, "frames": reacoes[nome].frames, "ground_frame": reacoes[nome].get("ground_frame", -1)}
 	var fx := FileAccess.open(out_dir + "reacoes_expandidas.json", FileAccess.WRITE)
 	fx.store_string(JSON.stringify(expandidas))
 	fx.close()

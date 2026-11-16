@@ -154,7 +154,7 @@ def disponiveis(tree, comprados, legado):
     for n in tree["nodes"]:
         if n["id"] in comprados:
             continue
-        if n["requires"] and n["requires"] not in comprados:
+        if n.get("requires") and n["requires"] not in comprados:
             continue
         if n["cost"] <= legado:
             out.append(n)
@@ -516,7 +516,7 @@ def sec_precos(tree, career):
     print("| id | ramo | requer | custo | efeito |")
     print("|---|---|---|---|---|")
     for n in tree["nodes"]:
-        print("| %s | %s | %s | %d | %s |" % (n["id"], n["branch"], n["requires"] or "-", n["cost"], n["effect"]))
+        print("| %s | %s | %s | %d | %s |" % (n["id"], n.get("branch", n.get("region", "-")), n.get("requires") or "-", n["cost"], n["effect"]))
     # o que cada renda compra (regra 'barato')
     for nome, L in (("derrota no Brutao", pote[1] // 2), ("derrota no Dinho", pote[2] // 2),
                     ("derrota no Muralha", pote[3] // 2), ("cinturao+aposentar", cint)):
