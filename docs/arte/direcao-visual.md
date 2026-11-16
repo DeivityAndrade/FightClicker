@@ -987,6 +987,7 @@ nas chaves novas; não grava se a conferência do mural falhar). A camada do sí
 
 ### 26.3 Símbolo da escola na roupa (decisão do ponto aberto 5)
 - **Desenho:** o `school_symbol_5` da 6a (a lâmpada de pé com raízes). Não há símbolo novo: o da escola já existe. Em 3/4 é o 5x5 igual; em perfil (luta) e na coxa, a mesma leitura em 3x5.
+- **Na luta (perfil) o símbolo vai nas COSTAS** (correção B2 do QA da 6c2): no peito, de perfil, o braço da guarda tapava quase tudo (0 a 2 px por quadro). Agora o 3x5 fica a 2,5 px da borda das costas, na altura da escápula: 12 px (o desenho inteiro) em quase todos os quadros de todas as poses; só some deitado no K.O. de costas e no começo do K.O. (o corpo está sobre ele). Na garagem (3/4) continua no peito. Mockup: `fase6c2_simbolo_luta_x4.png`.
 - **Com parte de cima (tank/tee):** no peito, abaixo do decote da regata (assim regata e camiseta dão o mesmo desenho; onde a manga da camiseta tapa 1–2 px, fica só o que as duas mostram).
 - **Sem parte de cima: na perna do calção** (coxa da frente), confirmado. No peito nu ele vira tatuagem, e não é isso.
 - **No busto:** aparece só o do peito (entra no recorte). Sem parte de cima o símbolo está na coxa e não aparece no retrato.

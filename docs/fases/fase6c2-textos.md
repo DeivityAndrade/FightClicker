@@ -37,7 +37,7 @@ Derrota: nenhuma linha de Honra (regra do design).
 | hall_wall | PAREDE MAIOR | MAIS 3 RETRATOS CONTAM NO BÔNUS |
 
 Chaves: `hall_<id sem prefixo>_name` / `_desc` (ex.: `hall_box_name`). Nomes até 16 letras. Os números dentro das descrições estão fixos no texto; se o Designer mudar um valor, o texto muda junto.
-Linha da prévia (`hall_notes`): `preview_missing_line` = FALTA ~{n} DE {atributo}.
+Linha da prévia (`hall_notes`): `preview_missing_line` = FALTA UNS {n} DE {atributo} (sem "~": a fonte 5x7 não tem esse sinal).
 
 ## 3. Mural
 | Chave | Texto |

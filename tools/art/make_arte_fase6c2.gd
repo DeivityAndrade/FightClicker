@@ -756,6 +756,27 @@ func symbol_mock() -> void:
 		blend(run, disc("fighter_run" + gl[i] + "_disc_layered", 2, look("skin_3", "brown", "green", "tee", "white")), 2 + i * 50, 4)
 	save_mock(run, "fase6c2_simbolo_luvas_x4.png", 4)
 
+## 6c2 B2: o símbolo na luta (perfil), todos os quadros de todas as poses, camiseta branca (azul) e regata preta (amarelo).
+## Recorte do tronco (x 34..77, y 22..71 do quadro 112x104). Contagem de pixels do símbolo no canto.
+func symbol_fight_mock() -> void:
+	var poses := ["idle", "jab", "heavy", "hook", "uppercut", "body_shot", "block", "dodge", "hit", "hit_head", "hit_body", "hit_up",
+		"tired", "victory", "ko", "ko_back", "ko_knees"]
+	var cr := Rect2i(34, 22, 44, 50)
+	var out: Image = L.blank(16 * 46 + 4, poses.size() * 52 + 12)
+	L.R(out, 0, 0, out.get_width(), out.get_height(), "g0")
+	L.text(out, "SIMBOLO NA LUTA (COSTAS, PERFIL): CAMISETA BRANCA / REGATA PRETA COM LUVA L3", 2, 2, "y1", 1, "ink")
+	for r in poses.size():
+		var e := spr("fight_player_%s_disc_layered" % poses[r])
+		var eg := spr("fight_player_%s_glove_l3_disc_layered" % poses[r])
+		var n := int(e.frames)
+		for q in mini(n, 8):
+			for v in 2:
+				var lk := look("skin_3", "brown", "green", "tee", "white") if v == 0 else look("skin_5", "black", "blue", "tank", "black", "buzz", "red")
+				var id: String = "fight_player_%s_disc_layered" % poses[r] if v == 0 else "fight_player_%s_glove_l3_disc_layered" % poses[r]
+				var f := disc(id, q, lk).get_region(cr)
+				blend(out, f, 2 + (q * 2 + v) * 46, 12 + r * 52)
+	save_mock(out, "fase6c2_simbolo_luta_x4.png", 4)
+
 func busts_mock() -> void:
 	var bl := bust_layers()
 	var cuts := ["short", "buzz", "volume", "bun"]
@@ -956,6 +977,7 @@ func _init() -> void:
 	room_mock(true)
 	screen_mock()
 	symbol_mock()
+	symbol_fight_mock()
 	busts_mock()
 	pieces_mock()
 	if args.has("--manifest"):

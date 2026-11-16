@@ -8,6 +8,7 @@ extends JanelaBase
 
 signal nova_carreira_pedido
 signal arvore_pedido
+signal mural_pedido  # 6c2: o botão MURAL abre o mural (onde o hall compra)
 
 ## Borda direita dos números (a moldura vai de 110 a 530: 20 px de margem dos dois lados do conteúdo).
 const BORDA_DIR := 510.0
@@ -15,6 +16,8 @@ const BORDA_DIR := 510.0
 var sfx: Sfx
 var _botao_arvore: Button
 var _arvore_chamando := false  # há nó para comprar: o botão ÁRVORE respira para chamar o clique
+var _botao_mural: Button
+var _mural_chamando := false  # há nó do hall que a Honra paga: o botão MURAL respira
 var _t := 0.0
 var _legado_ganho: Label
 var _legado_total: Label
@@ -46,7 +49,7 @@ func abrir_com(fim: Dictionary, tocar_som: bool, reabrindo: bool = false) -> voi
 # --- Derrota ---
 
 func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
-	moldura("ui_end_frame_defeat", Rect2(110, 10, 420, 322))
+	moldura("ui_end_frame_defeat", Rect2(110, 10, 420, 326))
 	faixa_titulo("defeat", Rect2(150, 20, 340, 22), str(t.title).to_upper(), UiTema.WHITE, 2)
 	UiTema.rotulo_centro(painel, str(t.support).to_upper(), UiTema.G2, 320.0, 48.0)
 	UiTema.rotulo_centro(painel, UiTema.singular(str(t.who).to_upper()), UiTema.WHITE, 320.0, 62.0)
@@ -92,7 +95,7 @@ func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
 # --- Aposentadoria ---
 
 func _montar_retire(f: Dictionary, t: Dictionary) -> void:
-	moldura("ui_end_frame_retire", Rect2(110, 10, 420, 322))
+	moldura("ui_end_frame_retire", Rect2(110, 10, 420, 326))
 	faixa_titulo("retire", Rect2(150, 20, 340, 22), str(t.title).to_upper(), UiTema.WHITE, 2)
 	UiTema.rotulo_centro(painel, str(t.support).to_upper(), UiTema.P2, 320.0, 48.0)
 	var cinturao := int(f.summary.get("belts", 0)) > 0
@@ -179,23 +182,54 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 	if dica_extra != "":
 		UiTema.rotulo(painel, dica_extra.to_upper(), UiTema.Y1, 152, yy)
 		yy += 11.0
-	# Dois botões do mesmo tamanho, 4 px entre eles, ocupando a largura útil (130..510): ÁRVORE (gastar o Legado) e NOVA CARREIRA.
-	# Quem não quer comprar nada clica 1 vez em NOVA CARREIRA e já está na garagem.
 	var retire := str(f.kind) == "retire"
+	if retire:
+		_linha_honra(f, yy)  # 6c2: "+N HONRA" (nunca na derrota; nunca no HUD)
+	# Três botões na largura útil (130..510), 4 px entre eles: ÁRVORE (gastar o Legado) e MURAL (gastar a Honra no hall), pequenos,
+	# e o principal RECEBER NOVO DISCÍPULO, maior. Quem não quer comprar nada clica 1 vez no principal e já está na garagem.
+	# A fileira tem 1 botão largo de propósito (ui_align_row = free).
+	painel.set_meta("ui_align_row", "free")
 	_arvore_chamando = GameState.ha_no_compravel()
-	# O mesmo desenho das duas portas do mapa: o ícone da árvore (cortiça) à esquerda do texto, o grupo centralizado.
-	_botao_arvore = UiTema.botao(painel, Rect2(130, 286, 188, 32))
-	UiTema.botao_conteudo(_botao_arvore, UiTema.txt("tree_button", "ÁRVORE"), UiTema.Y1 if _arvore_chamando else UiTema.WHITE, 2,
+	_botao_arvore = UiTema.botao(painel, Rect2(130, 290, 94, 32))
+	_botao_arvore.name = "BotaoArvore"
+	UiTema.botao_conteudo(_botao_arvore, UiTema.txt("tree_button", "ÁRVORE"), UiTema.Y1 if _arvore_chamando else UiTema.WHITE, 1,
 		"icon_skill_map", 5.0)
 	_botao_arvore.pressed.connect(func() -> void: arvore_pedido.emit())
-	# Fase 6b1: RECEBER NOVO DISCÍPULO (22 letras). Em escala 2 não cabe nos 188 px do botão: usa NOVO DISCÍPULO (plano B do Roteirista).
+	for n in GameState.hall_lista():
+		if str(n.state) == "buyable":
+			_mural_chamando = true
+	_botao_mural = UiTema.botao(painel, Rect2(228, 290, 94, 32))
+	_botao_mural.name = "BotaoMural"
+	UiTema.botao_conteudo(_botao_mural, UiTema.txt("mural_button", "MURAL"), UiTema.COL_HONOR if _mural_chamando else UiTema.WHITE, 1,
+		"icon_honor", 5.0)
+	_botao_mural.pressed.connect(func() -> void: mural_pedido.emit())
+	# Fase 6b1: RECEBER NOVO DISCÍPULO (22 letras). Em escala 2 não cabe nos 184 px do botão: usa NOVO DISCÍPULO (plano B do Roteirista).
 	var texto_botao := UiTema.txt("new_disciple_button", "RECEBER NOVO DISCÍPULO")
-	if UiTema.largura_visivel(texto_botao) * 2.0 > 188.0 - 12.0:
+	if UiTema.largura_visivel(texto_botao) * 2.0 > 184.0 - 12.0:
 		texto_botao = UiTema.txt("new_disciple_button_short", "NOVO DISCÍPULO")
-	var b := botao_texto(Rect2(322, 286, 188, 32), texto_botao,
+	var b := botao_texto(Rect2(326, 290, 184, 32), texto_botao,
 		UiTema.P2 if retire else UiTema.WHITE, "ui_button_normal", 2, "ui_button_retire" if retire else "")
 	b.name = "BotaoNovoDiscipulo"
 	b.pressed.connect(func() -> void: nova_carreira_pedido.emit())
+
+
+## Honra da saída (design 6c2 §2.3): "+N HONRA" com a roseta e o saldo à direita; com 0 vitórias, o aviso `retire_no_honor`.
+func _linha_honra(f: Dictionary, y: float) -> void:
+	var ganho := int(f.get("honor_gained", 0))
+	if ganho <= 0:
+		UiTema.rotulo(painel, UiTema.txt("retire_no_honor", "HONRA SÓ COM 1 VITÓRIA"), UiTema.G2, 152, y)
+		return
+	var icone := UiTema.textura_rect(painel, "icon_honor", 152, y)
+	icone.name = "IconeHonra"
+	var texto := UiTema.txt("end_honor_gain", "+{n} HONRA", {"n": NumberFormat.fmt(float(ganho))})
+	var l := UiTema.rotulo(painel, texto, UiTema.COL_HONOR, 164, y)
+	l.name = "HonraGanha"
+	var saldo := UiTema.txt("mural_honor_balance", "HONRA: {n}", {"n": NumberFormat.fmt(float(GameState.honra()))})
+	var s := UiTema.rotulo(painel, saldo, UiTema.G3, 0, y)
+	s.position.x = roundf(BORDA_DIR - UiTema.largura_visivel(saldo))
+	if not _reabrindo:
+		l.modulate = Color(1.8, 1.8, 1.8)
+		l.create_tween().tween_property(l, "modulate", Color.WHITE, 0.5)
 
 
 func _process(delta: float) -> void:
@@ -203,6 +237,8 @@ func _process(delta: float) -> void:
 	if _botao_arvore != null and _arvore_chamando:
 		var k := 0.5 + 0.5 * sin(_t * 4.0)
 		_botao_arvore.modulate = Color.WHITE.lerp(Color(1.2, 1.15, 1.0), k)
+	if _botao_mural != null and _mural_chamando:
+		_botao_mural.modulate = Color.WHITE.lerp(Color(1.2, 1.2, 1.25), 0.5 + 0.5 * sin(_t * 4.0))
 
 
 func _posicionar_ganho(texto: String) -> void:

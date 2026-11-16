@@ -40,6 +40,8 @@ var _fundo: NinePatchRect
 var _player: AudioStreamPlayer
 var _rng := RandomNumberGenerator.new()
 var _timbre := "first"
+var _mult_voz := 1.0  # 6c2: o mentor discípulo (speaker "last") usa o timbre do discípulo, mais grave, com a voz de mentor_voice
+var _cps_voz := 0.0
 
 
 func _ready() -> void:
@@ -88,6 +90,11 @@ static func calcular(cabeca: Vector2, w: float, h: float, evitar: Array = []) ->
 			if ponta_y > PONTA_MAX_Y:
 				r.position.y -= ponta_y - PONTA_MAX_Y
 			modo = "sobe"
+			# 6c2: o mentor do caixote tem a cabeça do Osmar ao lado: se ainda toca alguém, sobe mais (até 40 px) até liberar.
+			var extra := 0
+			while _toca(r, evitar) and extra < 40 and r.position.y - 7.0 >= UTIL.position.y:
+				r.position.y -= 1.0
+				extra += 1
 			if _toca(r, evitar) or r.position.y - 6.0 < UTIL.position.y:
 				return {"ok": false}
 	var ponta_x := clampf(cabeca.x, r.position.x + 8.0, r.end.x - 8.0)
@@ -189,12 +196,21 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 	var p: Dictionary = GameState.dialogos.personagem(speaker)
 	var cor_nome := str(by_data.get("tag_by_speaker", {}).get(speaker, "gray"))
 	var nome := str(p.get("short", speaker))
+	if speaker == "last":
+		nome = str(GameState.mentor_do_caixote().get("name", "")).split(" ")[0].to_lower()  # só o primeiro nome, minúsculo, como as outras plaquinhas
 	var tw := float(nome.length() * AVANCO + 6)
 	var tag := UiTema.nine_patch(_raiz, str(by_data.get("tag_by_color", {}).get(cor_nome, "ui_balloon_tag_gray")),
 		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 10.0))
 	var cor_txt := UiTema.WHITE if str(by_data.get("tag_text_color", {}).get(cor_nome, "ink")) == "white" else UiTema.INK
 	UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 	_timbre = str(p.get("voice", speaker))
+	_mult_voz = 1.0
+	_cps_voz = 0.0
+	if speaker == "last":
+		var vm := GameState.voz_do_mentor("disciple", int(GameState.mentor_do_caixote().get("campaign", 0)))
+		_timbre = "disciple"
+		_mult_voz = float(vm.get("base_hz", 200.0)) / maxf(1.0, float(GameState.dialogos.voices.get("disciple", {}).get("base_hz", 260.0)))
+		_cps_voz = float(vm.get("cps", 26.0))
 
 
 func _aplicar_entrada(meia: bool) -> void:
@@ -215,7 +231,7 @@ func _aplicar_entrada(meia: bool) -> void:
 
 func _preparar_tempos(texto: String) -> void:
 	var tp: Dictionary = GameState.dialogos.typing
-	var cps := float(GameState.dialogos.voices.get(_timbre, {}).get("cps", 28.0))
+	var cps := _cps_voz if _cps_voz > 0.0 else float(GameState.dialogos.voices.get(_timbre, {}).get("cps", 28.0))
 	var plano := texto.replace("\n", "")
 	_total_chars = plano.length()
 	_tempos.clear()
@@ -335,7 +351,7 @@ func _blip(b: Dictionary) -> void:
 	var jit := float(tp.get("blip_pitch_jitter", 0.03))
 	_player.stream = f
 	_player.volume_db = float(tp.get("blip_volume_db", -8.0)) + float(b.db)
-	_player.pitch_scale = float(b.mult) * (1.0 + _rng.randf_range(-jit, jit))
+	_player.pitch_scale = float(b.mult) * _mult_voz * (1.0 + _rng.randf_range(-jit, jit))
 	_player.play()  # um tocador só: o blip novo corta o anterior
 
 

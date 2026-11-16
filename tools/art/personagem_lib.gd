@@ -243,7 +243,7 @@ const SYMBOL := {
 	"leg": {"rows": ["AAA", "AAA", ".A.", "AAA", "A.A"], "center": Vector2i(1, 2)},
 }
 const SYMBOL_LEGEND := {"A": "k_sy1"}
-## Peito: t (0 = quadril, 1 = ombro) do centro; s = mid_34 + 1 (3/4) ou front - 2,5 (perfil). Fica abaixo do decote
+## Peito: t (0 = quadril, 1 = ombro) do centro; s = mid_34 + 1 (3/4) ou back + 2,5 (perfil: nas costas, porque o braço da guarda tapa o peito). Fica abaixo do decote
 ## da regata do discípulo (tank_neck 0,68), então regata e camiseta dão o mesmo desenho (o gerador confere).
 const SYMBOL_T := {"34": 0.55, "side": 0.66}
 ## Coxa da frente (G_LEG_L na garagem, NEAR_THIGH na luta): centro a 0,3 do quadril até o joelho, só sobre o calção.
@@ -265,7 +265,7 @@ func _symbol_origin(b: Dictionary, hip: Vector2, d: Vector2, fr: Vector2, sl: Ar
 	else:
 		back += tw * 1.5 * k
 		front += tw * 0.5 * k
-	var sc := (front - 2.5) if view == "side" else (mid_34(back, front) + 1.0)
+	var sc := (back + 2.5) if view == "side" else (mid_34(back, front) + 1.0)   # perfil: nas costas (6c2 B2: na frente o braço da guarda tapa)
 	var p := hip + d * tc + fr * sc
 	var cen: Vector2i = SYMBOL[v].center
 	return Vector2i(int(floor(p.x)) - cen.x, int(floor(p.y)) - cen.y)
@@ -1769,6 +1769,11 @@ func _shirt_detail(b: Dictionary, view: String, t: float, s: float, back: float,
 		if view == "34" and t > 0.9 and t < 0.96 and absf(s - mid) < 3.4:
 			return b.trim
 	match b.shirt_detail:
+		"rubro":   # camisa de futebol rubro-negra: faixas horizontais no tronco sem separar a roupa do corpo
+			if t > 0.30 and t < 0.80 and view == "side":
+				var faixa := int(floor((t - 0.30) * 40.0)) % 8
+				if faixa < 2:
+					return "ink" if absf(s - mid) < 2.0 else "d1"
 		"social":   # carcela com botões + colarinho
 			if view == "34":
 				if absf(s - (mid - 0.5)) < 0.55 and t > 0.3 and t < 0.92:

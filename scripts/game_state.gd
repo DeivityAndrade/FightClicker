@@ -4671,8 +4671,8 @@ func hall_lista() -> Array:
 		var estado := "owned"
 		if not tem_no_hall(id):
 			estado = "closed" if fim.is_empty() else ("buyable" if falta == 0 else "missing")
-		r.append({"id": id, "name": texto_ui("hall_%s_name" % id, str(n.get("name", id))),
-			"cost": custo, "effect_text": texto_ui("hall_%s_desc" % id, str(n.get("effect_text", ""))),
+		r.append({"id": id, "name": texto_ui("%s_name" % id, str(n.get("name", id))),
+			"cost": custo, "effect_text": texto_ui("%s_desc" % id, str(n.get("effect_text", ""))),
 			"state": estado, "missing": 0 if estado == "owned" else falta})
 	return r
 
@@ -4728,11 +4728,19 @@ func _linha_o_que_falta(opp: Dictionary, jog: Array, adv: Array, rotulo: String)
 
 
 func _calcular_falta(jog: Array, adv: Array, tat: String, chave: String) -> Dictionary:
-	var m := motor.motivo(jog, adv, tat)
+	# Mesmo atributo que a prévia realça em vermelho (`destaque`); sem realce, o do motivo da derrota.
+	var atr := motor.destaque(jog, adv)
+	var falta := -1.0
+	if atr != "":
+		falta = motor.falta_para(jog, adv, tat, Luta.ATRIBUTOS.find(atr))
+	else:
+		var m := motor.motivo(jog, adv, tat)
+		atr = str(m.attribute)
+		falta = float(m.faltaram)
 	var texto := ""
-	if float(m.faltaram) >= 0.0:  # -1 = nem 16x o total basta: sem número, sem linha
+	if falta >= 0.0:  # -1 = nem 16x o total basta: sem número, sem linha
 		texto = preencher(texto_ui("preview_missing_line", "FALTA ~{n} DE {atributo}"),
-			{"n": NumberFormat.fmt(Economia.teto3(float(m.faltaram))), "atributo": str(dados.atributo_info(str(m.attribute)).name).to_upper()})
+			{"n": NumberFormat.fmt(Economia.teto3(falta)), "atributo": str(dados.atributo_info(atr).name).to_upper()})
 	return {"chave": chave, "texto": texto}
 
 
@@ -4790,7 +4798,8 @@ func mural() -> Dictionary:
 			wins_texto = preencher(texto_ui("mural_wins", "{n} VITÓRIAS"), {"n": wins})
 		itens.append({"campaign": int(e.campaign), "kind": str(e.kind), "name": str(e.name), "look": e.get("look", null),
 			"art": arte, "wins": wins, "belt": bool(e.get("belt", false)), "end": fim_tipo, "end_key": chave,
-			"end_text": preencher(texto_ui(chave), {"adversario": nome_op.to_upper()}),
+			"end_text": preencher(texto_ui(chave), {"adversario": nome_op.to_upper()}) if (chave != str(fins.get("defeat", "")) or nome_op != "")
+				else texto_ui("mural_end_defeat_unknown", "PAROU NUMA LUTA"),
 			"opponent": oponente, "opponent_name": nome_op, "sealed": honra_e > 0, "honor": honra_e,
 			"symbol": simbolo_na_entrada(e), "extra_key": extra,
 			"career_text": preencher(texto_ui("mural_career", "CARREIRA {n}"), {"n": int(e.campaign)}),

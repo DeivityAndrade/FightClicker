@@ -98,7 +98,9 @@ func _t_dados() -> void:
 	var gs := _novo("c2_dados")
 	for n in gs.hall_lista():
 		checar(n.name != "" and n.effect_text != "" and not n.name.begins_with("hall_"), "no do hall com nome e descricao de ui_texts: " + n.id)
+		checar_igual(n.name, gs.texto_ui(n.id + "_name"), "nome do no vem da chave " + n.id + "_name")
 	checar(gs.dialogos.erros.is_empty(), "dialogos sem erros (falas ml_* validas) " + str(gs.dialogos.erros))
+	checar_igual(gs.hall_lista()[0].name, "FITA FROUXA", "nome final do 1o no do hall")
 	for id in ["ml_revanche_1", "ml_recorde_1", "ml_mais_longe_1"]:
 		checar(bool(gs.dialogos.linha(id).get("enabled", false)), "fala ligada: " + id)
 	_liberar(gs)
@@ -282,7 +284,7 @@ func _t_efeitos_do_hall() -> void:
 	if pv.risk != "easy":
 		gs.aguardar_falta()
 		var pv2 = gs.previa()
-		checar(str(pv2.missing_line).begins_with("FALTA ~") or str(pv2.missing_line) == "", "linha pronta depois do calculo: " + str(pv2.missing_line))
+		checar(str(pv2.missing_line).begins_with("FALTA") or str(pv2.missing_line) == "", "linha pronta depois do calculo: " + str(pv2.missing_line))
 	gs.atributos = {"strength": 1.0e12, "agility": 1.0e12, "endurance": 1.0e12}
 	checar_igual(gs.previa().missing_line, "", "no verde: sem linha")
 	_liberar(gs)
@@ -390,6 +392,7 @@ func _t_falas() -> void:
 	for c in 5:
 		var hz := float(gs_voz.voz_do_mentor("disciple", c).base_hz)
 		checar(hz >= 172.0 and hz <= 228.0, "voz entre 172 e 228 Hz (campanha %d: %s)" % [c, hz])
+	_liberar(gs_voz)
 
 
 # --- simbolo ---
@@ -446,6 +449,9 @@ func _t_mural() -> void:
 		["mural_end_defeat", "mural_end_passed", "mural_end_passed", false], "chaves de fim: parou em, passou o posto, desconhecido")
 	checar(m.entries[1].end_text.contains("DINHO") or m.entries[1].end_text.contains(gs.lutas.adversario("opp_fast").name.to_upper().substr(0, 5)), "parou em {adversario}: " + m.entries[1].end_text)
 	checar_igual(m.entries[3].wins_text, "?", "wins -1: ?")
+	gs.escola.roster.append(_entrada(8, "defeat", 2, 0, ""))
+	checar_igual(gs.mural().entries[4].end_text, "PAROU NUMA LUTA", "derrota sem adversario: texto de reserva")
+	gs.escola.roster.pop_back()
 	checar_igual(m.entries[0].extra_key, "", "sem o marco da saida: sem linha extra do John")
 	gs._gravar_marco("cena_saida_primeiro_mentor", {}, false)
 	checar_igual(gs.mural().entries[0].extra_key, "mural_first_left", "depois da saida: linha extra do John")

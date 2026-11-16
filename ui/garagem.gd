@@ -27,6 +27,7 @@ func _ready() -> void:
 	_dir.info_mudou.connect(_esq.mostrar_info)
 	# Marca de fita no chão/parede e botão de foco trancado: nenhum dos dois treina nem troca o foco, só apontam a compra.
 	_sala.marca_clicada.connect(_apontar_compra)
+	_sala.mural_clicado.connect(func() -> void: _fluxo.abrir_mural())  # 6c2: o mural da parede abre a janela do mural
 	_barra.compra_pedida.connect(_apontar_compra)
 
 	GameState.treino_mudou.connect(func(_v: float) -> void: _sujo = true)

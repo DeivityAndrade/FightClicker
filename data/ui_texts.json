@@ -440,5 +440,8 @@
 	"hall_glove_desc": "COMEÇA COM A LUVA DE LONA CALÇADA",
 	"hall_wall_name": "PAREDE MAIOR",
 	"hall_wall_desc": "MAIS 3 RETRATOS CONTAM NO BÔNUS",
-	"preview_missing_line": "FALTA ~{n} DE {atributo}"
+	"preview_missing_line": "FALTA UNS {n} DE {atributo}",
+	"hall_cost": "{n} DE HONRA",
+	"mural_end_defeat_unknown": "PAROU NUMA LUTA",
+	"mural_empty": "AINDA NINGUÉM PASSOU O POSTO"
 }
