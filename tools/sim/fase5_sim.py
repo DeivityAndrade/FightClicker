@@ -1084,8 +1084,10 @@ DADOS = None
 def _init(quieto=True):
     global DADOS
     DADOS = carregar_5(quieto=quieto)
-    f4.DADOS = DADOS[:6]
-    f4b.DADOS = DADOS[:8]
+    # As fases 4/4b so conhecem os 12 nos antigos (com "requires"); o mapa grande da 5.4 tem outros campos e quebrava as comparacoes.
+    antiga = dict(DADOS[5], nodes=[n for n in DADOS[5]["nodes"] if "requires" in n and not n.get("requires_art")])
+    f4.DADOS = DADOS[:5] + (antiga,)
+    f4b.DADOS = DADOS[:5] + (antiga,) + tuple(DADOS[6:8])
 
 
 def arte_da_carreira(politica, n_com_arte):

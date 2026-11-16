@@ -1142,7 +1142,7 @@ func run_reacoes(caminho: String) -> void:
 			e["hands"] = maos
 			e.erase("hit_frame")
 			e.erase("hit_point")
-			if rea[nome].has("ground_frame"):
+			if int(rea[nome].get("ground_frame", -1)) >= 0:
 				e["ground_frame"] = rea[nome].ground_frame
 			entradas[oid + "_" + nome] = e
 			if not acoes.has(oid):
