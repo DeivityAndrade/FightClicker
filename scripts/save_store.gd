@@ -25,7 +25,12 @@ extends RefCounted
 ## Versão 2 (Fase 2): state = { "career": { training, attributes, focus, generators, upgrades } }.
 ## Versão 1 (Fase 1): state = { "treino": X }.
 
-const VERSAO_ATUAL := 12
+const VERSAO_ATUAL := 13
+# Migração v12 -> v13 (Fase 6c2): Honra retroativa. Formato congelado (não lê data/hall.json): cópia dos valores do
+# fechamento da 6c2; um teste confere que batem com hall.json enquanto a 6c2 está aberta.
+const HONRA_POR_VITORIA_V13 := [1, 2, 3, 4, 5, 7]
+const HONRA_CINTURAO_V13 := 5
+const HONRA_VITORIAS_DESCONHECIDAS_V13 := 1  # wins -1 (entrada migrada da v11): o mínimo de uma saída com 1 vitória
 # Migração v11 -> v12: o discípulo que já existia vira o "Novato" padrão, com o visual padrão. É formato congelado
 # na v12 (não lê data/): mudar o banco de nomes depois não muda quem já foi migrado.
 const NOME_PADRAO_V12 := "Novato"
@@ -62,6 +67,7 @@ const MIGRACOES := {
 	9: "_migrar_9_para_10",
 	10: "_migrar_10_para_11",
 	11: "_migrar_11_para_12",
+	12: "_migrar_12_para_13",
 }
 
 var pasta: String
@@ -549,6 +555,60 @@ func _migrar_11_para_12(doc: Dictionary) -> Dictionary:
 	estado["school"] = escola
 	novo["state"] = estado
 	return novo
+
+
+# v12 (Fase 6b2/6c1) -> v13 (Fase 6c2): nascem a Honra, os nós do hall e `honor` em cada entrada do roster.
+# Honra retroativa só para quem saiu por vontade (end retire): fórmula da §2 do design com as constantes congeladas.
+# Não mexe em mais nada (Legado, árvore, atributos, calendário, marcos, falas vistas).
+func _migrar_12_para_13(doc: Dictionary) -> Dictionary:
+	var novo := doc.duplicate(true)
+	var estado = novo.get("state", {})
+	if not (estado is Dictionary):
+		estado = {}
+	var escola = estado.get("school", {})
+	if not (escola is Dictionary):
+		escola = {}
+	var lista = escola.get("roster", [])
+	if not (lista is Array):
+		lista = []
+	var soma := 0
+	var por_campanha := {}
+	for e in lista:
+		if not (e is Dictionary):
+			continue
+		var h := 0
+		if str(e.get("end", "")) == "retire":
+			h = honra_v13(_inteiro_de(e.get("wins", -1), -1), e.get("belt", false) == true)
+		e["honor"] = h
+		por_campanha[_inteiro_de(e.get("campaign", 0), 0)] = h
+		soma += h
+	escola["roster"] = lista
+	escola["honor"] = soma
+	escola["honor_total"] = soma
+	escola["hall_nodes"] = []
+	# Fim pendente: a Honra dessa saída já está na entrada do roster da campanha pendente.
+	var fim = estado.get("ending", null)
+	if fim is Dictionary:
+		var h_fim := 0
+		if str(fim.get("kind", "")) == "retire":
+			h_fim = int(por_campanha.get(_inteiro_de(fim.get("career_number", 0), 0), 0))
+		fim["honor_gained"] = h_fim
+		estado["ending"] = fim
+	estado["school"] = escola
+	novo["state"] = estado
+	return novo
+
+
+## Honra de uma saída voluntária com as constantes congeladas da v13 (wins -1 = desconhecido).
+func honra_v13(wins: int, belt: bool) -> int:
+	if wins == 0:
+		return 0
+	if wins < 0:
+		return HONRA_VITORIAS_DESCONHECIDAS_V13
+	var total := 0
+	for i in wins:
+		total += int(HONRA_POR_VITORIA_V13[mini(i, HONRA_POR_VITORIA_V13.size() - 1)])
+	return total + (HONRA_CINTURAO_V13 if belt else 0)
 
 
 func _inteiro_de(v: Variant, padrao: int) -> int:

@@ -61,7 +61,7 @@ func rodar_testes() -> void:
 func _teste_dados() -> void:
 	var d := DiscipulosData.carregar()
 	checar_igual(d.erros, [], "disciples.json v2 carrega sem erro")
-	checar_igual(SaveStore.VERSAO_ATUAL, 12, "save continua v12, sem migração nova")
+	checar_igual(SaveStore.VERSAO_ATUAL, 13, "save continua v12, sem migração nova")
 	checar_igual(d.sorteio_cfg.get("avoid_pairs", []).size(), 8, "8 pares evitados")
 	checar_igual(int(d.sorteio_cfg.get("max_rerolls", 0)), 8, "máximo de 8 rodadas")
 	checar_igual(d.passagem_tela.get("rows", []).size(), 10, "10 linhas na tela")
@@ -294,7 +294,7 @@ func _teste_save_6b1() -> void:
 	checar(variou, "SORTEAR passa a variar os campos novos")
 	gs.salvar()
 	var lido = JSON.parse_string(ler(pasta + "save.json"))
-	checar_igual(int(lido.version), 12, "continua v12 depois de salvar")
+	checar_igual(int(lido.version), SaveStore.VERSAO_ATUAL, "continua v12 depois de salvar")
 	_liberar(gs)
 
 

@@ -98,6 +98,8 @@ const KEYS := {
 		"slots": ["deep", "dark", "light"]},
 	"socks": {"names": ["k_so0", "k_so1", "k_so2"], "hex": ["1f3d34", "2f6b4b", "a6d86b"],
 		"slots": ["shadow", "base", "stripe"]},
+	## Fase 6c2: símbolo da escola (visual = carimbo azul b0/b1 da 6a com +1 num canal)
+	"symbol": {"names": ["k_sy0", "k_sy1"], "hex": ["1f2a45", "304a78"], "slots": ["shadow", "base"]},
 }
 
 # ---------------------------------------------------------------- Fase 6b2: cortes, faixa, parte de cima, meião
@@ -229,6 +231,56 @@ const BAND := {
 const BAND_LEGEND := {"F": "k_bd1", "G": "k_bd0"}
 ## Meião (Fase 6b2): da canela (t = SOCK_FROM, 0 = joelho, 1 = tornozelo) até o tênis; 1 px de listra no alto.
 const SOCK_FROM := 0.38
+
+## Fase 6c2 (Diretor de Arte): símbolo da escola Raízes Fight Club na roupa do discípulo (docs/arte/direcao-visual.md §26).
+## É o school_symbol_5 da 6a (a lâmpada de pé com raízes): 3/4 = o 5x5 igual; perfil e coxa = a mesma leitura em 3x5.
+## Uma cor só (estampa), em cor-chave k_sy1 (k_sy0 = a sombra de contato que o finish() faz quando o braço encosta):
+## o jogo troca pela cor da parte de cima (peito) ou do calção (coxa): by_data_id.disciple_palette.school_symbol_source.
+## Simétrico na horizontal (as folhas _left são capturas viradas). center = pixel do mapa que cai no ponto do corpo.
+const SYMBOL := {
+	"34": {"rows": [".AAA.", ".AAA.", "..A..", "AAAAA", "A.A.A"], "center": Vector2i(2, 2)},
+	"side": {"rows": ["AAA", "AAA", ".A.", "AAA", "A.A"], "center": Vector2i(1, 2)},
+	"leg": {"rows": ["AAA", "AAA", ".A.", "AAA", "A.A"], "center": Vector2i(1, 2)},
+}
+const SYMBOL_LEGEND := {"A": "k_sy1"}
+## Peito: t (0 = quadril, 1 = ombro) do centro; s = mid_34 + 1 (3/4) ou front - 2,5 (perfil). Fica abaixo do decote
+## da regata do discípulo (tank_neck 0,68), então regata e camiseta dão o mesmo desenho (o gerador confere).
+const SYMBOL_T := {"34": 0.55, "side": 0.66}
+## Coxa da frente (G_LEG_L na garagem, NEAR_THIGH na luta): centro a 0,3 do quadril até o joelho, só sobre o calção.
+const SYMBOL_LEG_T := 0.3
+
+## Ponto (pixel) do símbolo no peito para este tronco, ou Vector2i(-999, -999) se o build não pede.
+func _symbol_origin(b: Dictionary, hip: Vector2, d: Vector2, fr: Vector2, sl: Array, view: String, tw: float) -> Vector2i:
+	if b.get("school_symbol", "") != "chest":
+		return Vector2i(-999, -999)
+	var v := "side" if view == "side" else "34"
+	var tc: float = SYMBOL_T[v]
+	var bf := _interp_slices(sl, tc)
+	var k := smoothstep(0.45, 0.9, tc)
+	var back := bf.x
+	var front := bf.y
+	if view == "side":
+		front += tw * k
+		back -= tw * 0.5 * k
+	else:
+		back += tw * 1.5 * k
+		front += tw * 0.5 * k
+	var sc := (front - 2.5) if view == "side" else (mid_34(back, front) + 1.0)
+	var p := hip + d * tc + fr * sc
+	var cen: Vector2i = SYMBOL[v].center
+	return Vector2i(int(floor(p.x)) - cen.x, int(floor(p.y)) - cen.y)
+
+## Cor do símbolo no pixel (x, y) para o mapa `v` com canto em `o`, ou null.
+func _symbol_px(v: String, o: Vector2i, x: int, y: int):
+	var rows: Array = SYMBOL[v].rows
+	var gy := y - o.y
+	var gx := x - o.x
+	if gy < 0 or gy >= rows.size() or gx < 0 or gx >= (rows[0] as String).length():
+		return null
+	var ch_: String = (rows[gy] as String)[gx]
+	if ch_ == ".":
+		return null
+	return SYMBOL_LEGEND[ch_]
 
 func use_keys() -> void:
 	if key_mode:
@@ -367,6 +419,10 @@ func _capture_call_6b2(fn: Callable, b: Dictionary) -> Image:
 	var tops := {}
 	for tk in ["tank", "tshirt"]:
 		tops[tk] = _variant(b, fn, {"top": tk, "sock_on": true}, true)
+	# Fase 6c2: símbolo da escola (peito com camiseta e com regata; coxa sem parte de cima)
+	var symC := _variant(b, fn, {"top": "tshirt", "sock_on": true, "school_symbol": "chest"}, true)
+	var symT := _variant(b, fn, {"top": "tank", "sock_on": true, "school_symbol": "chest"}, true)
+	var symL := _variant(b, fn, {"school_symbol": "leg"}, true)
 	var oc := cut_opts("bun")
 	oc.merge({"disc_band": true, "top": "tshirt", "sock_on": true}, true)
 	var chk: Array = _variant(b, fn, oc, false)
@@ -407,6 +463,36 @@ func _capture_call_6b2(fn: Callable, b: Dictionary) -> Image:
 				else:
 					(T[tk] as Image).set_pixel(x, y, c)
 					topzone[i] = 1
+	# Fase 6c2: símbolo = variante com símbolo menos a mesma sem. Peito: camiseta e regata têm de dar o mesmo.
+	var SYC := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var SYL := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var sym_bad := 0
+	var imC: Image = symC[0]
+	var imT: Image = symT[0]
+	var imL: Image = symL[0]
+	var tC: Image = tops["tshirt"][0]
+	var tT: Image = tops["tank"][0]
+	for y in h:
+		for x in w:
+			var c := imC.get_pixel(x, y)
+			var cc := c if c != tC.get_pixel(x, y) else none
+			var ct := imT.get_pixel(x, y)
+			var ctt := ct if ct != tT.get_pixel(x, y) else none
+			# só o que regata e camiseta mostram igual (a manga da camiseta tapa 1-2 px da borda em 11 quadros):
+			# assim a camada nunca pinta por cima de braço ou manga em nenhuma das duas
+			if cc.a > 0.0 and cc == ctt:
+				SYC.set_pixel(x, y, cc)
+			elif cc != ctt:
+				sym_bad += 1
+			var cl := imL.get_pixel(x, y)
+			if cl != B.get_pixel(x, y):
+				SYL.set_pixel(x, y, cl)
+	if symC[1] != tops["tshirt"][1] or symL[1] != ids_b:
+		variants_stats.ids_bad += 1
+	variants_stats["symbol_frames"] = int(variants_stats.get("symbol_frames", 0)) + 1
+	if sym_bad > 0:
+		variants_stats["symbol_bad"] = int(variants_stats.get("symbol_bad", 0)) + 1
+		log_lines.append("NOTA símbolo: regata e camiseta diferem em %d px (fica só o que as duas mostram)" % sym_bad)
 	# cabeças (o short primeiro: é ele que passa sombras para o body, como na 6b1)
 	var Bm: Image = B.duplicate()
 	var heads := {}
@@ -490,7 +576,8 @@ func _capture_call_6b2(fn: Callable, b: Dictionary) -> Image:
 	anc["head_box"] = [box_s.position.x, box_s.position.y, box_s.size.x, box_s.size.y] if box_s.has_area() else []
 	anc["head_box_max"] = [box_m.position.x, box_m.position.y, box_m.size.x, box_m.size.y] if box_m.has_area() else []
 	captured.append({"full": A.duplicate(), "body": Bm, "head": heads.short, "mask": Mk, "anchor": anc,
-		"heads": heads, "band": D, "tops": {"tank": T.tank, "tee": T.tshirt}, "socks": S, "check_px": nd})
+		"heads": heads, "band": D, "tops": {"tank": T.tank, "tee": T.tshirt}, "socks": S, "check_px": nd,
+		"symbols": {"chest": SYC, "leg": SYL}})
 	return A
 
 ## Montagem completa da 6b2 (a mesma que o jogo faz): baixo = body + parte de cima + meião; depois cabeça do corte,
@@ -556,7 +643,7 @@ func capture_flip_last() -> void:
 	for k in ["full", "body", "head", "mask", "band", "socks"]:
 		if c.has(k):
 			(c[k] as Image).flip_x()
-	for k in ["heads", "tops"]:
+	for k in ["heads", "tops", "symbols"]:
 		if c.has(k):
 			for kk in c[k]:
 				if kk != "short":   # heads.short é a mesma imagem de c.head (já virada)
@@ -574,6 +661,8 @@ func capture_crop(c: Dictionary, r: Rect2i) -> Dictionary:
 		out["band"] = (c.band as Image).get_region(r)
 		out["tops"] = {"tank": (c.tops.tank as Image).get_region(r), "tee": (c.tops.tee as Image).get_region(r)}
 		out["socks"] = (c.socks as Image).get_region(r)
+		if c.has("symbols"):
+			out["symbols"] = {"chest": (c.symbols.chest as Image).get_region(r), "leg": (c.symbols.leg as Image).get_region(r)}
 	return out
 
 ## Grava as camadas de UMA folha do discípulo (capturas na ordem dos quadros):
@@ -624,6 +713,9 @@ func save_layer_sheet(caps: Array, dir: String, base: String, gsuf: String, stor
 		extra["top_tank"] = strip(caps.map(func(c): return c.tops.tank))
 		extra["top_tee"] = strip(caps.map(func(c): return c.tops.tee))
 		extra["socks"] = strip(caps.map(func(c): return c.socks))
+		if (caps[0] as Dictionary).has("symbols"):
+			extra["symbol_chest"] = strip(caps.map(func(c): return c.symbols.chest))
+			extra["symbol_leg"] = strip(caps.map(func(c): return c.symbols.leg))
 		var sx: Dictionary = store[base]
 		for k in extra:
 			var im: Image = extra[k]
@@ -631,7 +723,12 @@ func save_layer_sheet(caps: Array, dir: String, base: String, gsuf: String, stor
 				sx[k] = im
 				im.save_png(dir + base + "_disc_" + k + ".png")
 			elif (sx[k] as Image).get_data() != im.get_data():
-				report.append("AVISO camadas %s%s: %s diferente da luva velha" % [base, gsuf, k])
+				if (k as String).begins_with("symbol_") and gsuf != "":
+					# 6c2: a luva da frente passa na frente do peito de jeito diferente (ex. fighter_run): arquivo próprio da luva
+					im.save_png(dir + base + gsuf + "_disc_" + k + ".png")
+					report.append("NOTA camadas %s%s: %s próprio da luva" % [base, gsuf, k])
+				else:
+					report.append("AVISO camadas %s%s: %s diferente da luva velha" % [base, gsuf, k])
 		var bad := 0
 		for c in caps:
 			bad += int(c.get("check_px", 0))
@@ -1497,6 +1594,23 @@ func leg(b: Dictionary, id_th: int, hip: Vector2, toe: Vector2, shoe: String, lt
 	var pants: bool = b.bottom == "pants"
 	limb(id_th, hip, knee, r[0], r[1], skin, {"bulge": 0.7, "bulge_t": 0.45, "bulge_w": 0.3, "bulge_dir": Vector2(1, 0),
 		"cloth": cl, "cloth_t": 1.0 if pants else float(b.shorts_t), "cloth_add": b.get("pants_add", 0.6)})
+	# Fase 6c2: símbolo da escola na coxa da frente, só sobre o calção (sem parte de cima)
+	if b.get("school_symbol", "") == "leg" and (id_th == G_LEG_L or id_th == NEAR_THIGH) and not pants:
+		var pc := (hip + HALF).lerp(knee + HALF, SYMBOL_LEG_T)
+		var cen: Vector2i = SYMBOL.leg.center
+		var o := Vector2i(int(floor(pc.x)) - cen.x, int(floor(pc.y)) - cen.y)
+		var cloth := {}
+		for cn in cl:
+			cloth[(L.col(cn) as Color).to_html(false)] = true
+		for yy in range(o.y, o.y + 5):
+			for xx in range(o.x, o.x + 3):
+				if xx < 0 or yy < 0 or xx >= cw or yy >= ch or ids[yy * cw + xx] != id_th:
+					continue
+				if not cloth.has(img.get_pixel(xx, yy).to_html(false)):
+					continue
+				var lc = _symbol_px("leg", o, xx, yy)
+				if lc != null:
+					put(xx, yy, lc, id_th)
 	var down := rotv(Vector2(0, 1), ang)
 	var so := {"bulge": 1.1, "bulge_t": 0.3, "bulge_w": 0.25, "bulge_dir": Vector2(-1, 0)}
 	if pants:
@@ -1554,6 +1668,8 @@ func torso(b: Dictionary, id: int, hip: Vector2, top: Vector2, view: String, tw 
 	var skn: Array = b.skin
 	var sho: Array = b.shorts
 	var top_kind: String = b.top
+	var sym_o := _symbol_origin(b, hip, d, fr, sl, view, tw)
+	var sym_v := "side" if view == "side" else "34"
 	for y in range(by0, by1 + 1):
 		for x in range(bx0, bx1 + 1):
 			var p := Vector2(x + 0.5, y + 0.5)
@@ -1634,6 +1750,11 @@ func torso(b: Dictionary, id: int, hip: Vector2, top: Vector2, view: String, tw 
 					elif t < waist + 0.1 and fmod(s + 20.0, 3.0) < 1.0 and b.belt.is_empty():
 						c = shirt[0]
 					c = _shirt_detail(b, view, t, s, back, front, db, df, c)
+					# Fase 6c2: símbolo da escola no peito liso da parte de cima
+					if sym_o.x != -999 and t > waist + 0.12:
+						var sc_ = _symbol_px(sym_v, sym_o, x, y)
+						if sc_ != null:
+							c = sc_
 			if not (b.belt as Array).is_empty() and t > waist - 0.05 and t < waist + 0.12:
 				c = _belt_px(b, view, t, s, back, front, db, df, waist)
 			put(x, y, c, id)

@@ -44,5 +44,58 @@
 		"_doc": "Design §4.3. O gatilho art_choice sai quando art_seconds (tempo de sala ativa com a arte) passa deste valor, uma vez por campanha. Não sai no momento da escolha: lá ele perderia sempre para after_defeat e cl_primeira_academia.",
 		"trigger": "art_choice",
 		"after_art_seconds": 60.0
+	},
+
+	"mural": {
+		"_doc": "Fase 6c2 (design 6c2 §5). Objeto na parede da garagem e da academia, ao lado da foto. Abre a qualquer hora na sala (consulta). O hall só compra com a tela de fim pendente. Um retrato por entrada de school.roster, na ordem do roster (o John é a 1ª). A campanha em andamento não entra.",
+		"spot_by_location": { "garage": "mural_spot", "gym": "gym_mural_spot" },
+		"requires_milestone_by_location": { "garage": "", "gym": "cena_primeira_academia" },
+		"object_text": "mural",
+		"portrait_head_scale": 2,
+		"_doc_layout": "columns e rows_per_page são sugestão; o layout final é da UI/UX (alinhamento-ui).",
+		"columns": 5,
+		"rows_per_page": 2,
+		"end_texts": {
+			"_doc": "Chave do texto (ui_texts) por fim. retire com honor > 0 = selo; retire com 0 vitórias = sem selo.",
+			"retire_sealed": "mural_end_retire",
+			"retire_plain": "mural_end_passed",
+			"defeat": "mural_end_defeat",
+			"unknown": "mural_end_passed"
+		},
+		"first_left_text": "mural_first_left",
+		"_doc_first_left": "Linha extra do John depois do marco cena_saida_primeiro_mentor ('foi seguir o rumo dele'). PENDENTE: o texto final espera a pergunta 3 dos testadores da 6c1.",
+		"first_left_milestone": "cena_saida_primeiro_mentor",
+		"wins_unknown_text": "mural_wins_unknown"
+	},
+
+	"mentor_lines": {
+		"_doc": "Fase 6c2 (design 6c2 §6). Falas do mentor do caixote (seat) depois de uma vitória. Uma por vitória, no máximo. Ordem de teste: revanche, recorde, mais_longe. recorde e mais_longe dividem o teto 'marca' (1 por campanha); revanche tem o seu (1 por campanha). Sem mentor sentado, nada. Quando uma fala de mentor é pedida, a fight_won do Osmar não sai nessa vitória.",
+		"trigger": "mentor_won",
+		"speaker": "mentor:seat",
+		"order": ["revanche", "recorde", "mais_longe"],
+		"caps": { "revanche": "revanche", "recorde": "marca", "mais_longe": "marca" },
+		"campaign_cap_per_group": 1,
+		"suppress_coach_fight_won": true,
+		"record_min_wins": 1
+	},
+
+	"mentor_voice": {
+		"_doc": "Fase 6c2 (design 6c2 §6.5). Timbre dos discípulos mentores: base + passo por campanha (variação determinística, igual em toda sessão). O John usa a voz 'first' de dialogos.json.",
+		"base_hz": 200,
+		"step_hz": 14,
+		"steps": [-2, 0, 2, -1, 1],
+		"cps": 26,
+		"vowel_order": "uoaei",
+		"vowel_steps": [0, 2, 4, 5, 7]
+	},
+
+	"school_symbol": {
+		"_doc": "Fase 6c2 (design 6c2 §7). O símbolo vale para discípulos (nunca o John) de campanha >= campanha do 1º cinturão amador da escola: o menor entre o marco garage_saved.campaign e as entradas do roster com belt true (e a campanha atual, se cinturao). Nada vai para o save.",
+		"from_milestone": "garage_saved",
+		"also_roster_belt": true,
+		"never_first": true,
+		"place_with_top": "chest",
+		"place_without_top": "shorts_leg",
+		"_doc_place": "Lugar sem parte de cima: perna do calção (escopo §3 item 18); o Diretor de Arte confirma."
 	}
 }

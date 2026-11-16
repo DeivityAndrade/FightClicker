@@ -1,0 +1,30 @@
+{
+	"version": 1,
+	"_doc": "Fase 6c2 (Mais longe que eu). Honra, bônus do retrato e árvore do hall. Dono dos valores: Designer (docs/fases/fase6c2-design.md). Nomes e textos provisórios: o Roteirista refina em data/ui_texts.json. Honra nunca compra nó de Legado e Legado nunca compra nó do hall.",
+
+	"honor": {
+		"_doc": "Design §2. Só no fim por vontade (end retire, inclusive passar o posto no dia da luta) com wins >= min_wins. Honra = soma de per_win[0..wins-1] (posição na escada; além da lista repete o último) + belt_bonus se a campanha tem o cinturão. Derrota = 0. Nenhum nó (Legado ou hall) multiplica a Honra.",
+		"min_wins": 1,
+		"per_win": [1, 2, 3, 4, 5, 7],
+		"belt_bonus": 5,
+		"retro_unknown_wins": 1
+	},
+
+	"portrait": {
+		"_doc": "Design §3. Retrato com selo = entrada do roster com honor > 0. Cada um dá +per_portrait de TODO o treino (clique, Metrônomo, assistido e equipe), multiplicativo, até max_portraits (o nó hall_wall soma ao teto). Vale da campanha seguinte em diante.",
+		"per_portrait": 0.02,
+		"max_portraits": 5
+	},
+
+	"hall": {
+		"_doc": "Design §4. Lista fixa na janela do MURAL, sem mapa. Compra só com a tela de fim pendente (como a árvore de Legado), sem reembolso, sem pré-requisito. O efeito vale da campanha seguinte em diante.",
+		"nodes": [
+			{ "id": "hall_box",    "cost": 10, "effect": { "type": "box_clicks_minus", "value": 1 },      "name": "Fita frouxa",       "effect_text": "CAIXAS ABREM COM {n} CLIQUE A MENOS" },
+			{ "id": "hall_fund",   "cost": 20, "effect": { "type": "start_training", "value": 500 },     "name": "Vaquinha da escola", "effect_text": "COMEÇA A CAMPANHA COM {n} DE TREINO" },
+			{ "id": "hall_notes",  "cost": 30, "effect": { "type": "preview_detail", "value": 1 },       "name": "Caderno de recordes", "effect_text": "A PRÉVIA MOSTRA O QUE MAIS FALTA" },
+			{ "id": "hall_crew",   "cost": 35, "effect": { "type": "crew_mult", "value": 0.10 },         "name": "Turma da escola",    "effect_text": "+{pct}% TREINO/S DA EQUIPE" },
+			{ "id": "hall_glove",  "cost": 45, "effect": { "type": "start_glove", "value": 1 },          "name": "Luva do mural",      "effect_text": "COMEÇA COM A LUVA DE LONA CALÇADA" },
+			{ "id": "hall_wall",   "cost": 50, "effect": { "type": "portrait_cap_plus", "value": 3 },    "name": "Parede maior",       "effect_text": "+{n} RETRATOS CONTAM NO BÔNUS" }
+		]
+	}
+}

@@ -236,6 +236,84 @@
 				21
 			],
 			"_nota": "No barrado verde, acima da mochila pintada no banco, à direita da cabeça do Osmar. Fora do saco de lado (x 238..278), da corrente e da faixa do alvo. No jogo, na academia, sempre o quadro 0 (reta)."
+		},
+		"mural_spot": [
+			176,
+			128
+		],
+		"gym_mural_spot": [
+			176,
+			128
+		],
+		"mural_spot_info": {
+			"anchor": "canto de cima à esquerda",
+			"size": [
+				55,
+				23
+			],
+			"click_rect": [
+				176,
+				128,
+				54,
+				22
+			],
+			"layer": "wall",
+			"z": -45,
+			"object_text": "mural",
+			"frame_by_roster": {
+				"rule": "quadro = o maior i com roster.size() >= min_entries[i]",
+				"min_entries": [
+					1,
+					2,
+					4,
+					8
+				],
+				"photos_drawn": [
+					1,
+					3,
+					6,
+					10
+				]
+			},
+			"_nota": "Fase 6c2 (Diretor de Arte, direcao-visual §26). Abaixo da prateleira, à esquerda do saco de lado (x 238..278) e da corrente (x 257), fora da faixa do alvo (273..370), acima da cabeça do Osmar (y 174) e longe da foto. O balão do Osmar passa por cima (aceito, como na foto da academia).",
+			"location": "garage",
+			"sprite": "wall_mural",
+			"requires_milestone": ""
+		},
+		"gym_mural_spot_info": {
+			"anchor": "canto de cima à esquerda",
+			"size": [
+				55,
+				23
+			],
+			"click_rect": [
+				176,
+				128,
+				54,
+				22
+			],
+			"layer": "wall",
+			"z": -45,
+			"object_text": "mural",
+			"frame_by_roster": {
+				"rule": "quadro = o maior i com roster.size() >= min_entries[i]",
+				"min_entries": [
+					1,
+					2,
+					4,
+					8
+				],
+				"photos_drawn": [
+					1,
+					3,
+					6,
+					10
+				]
+			},
+			"_nota": "Fase 6c2 (Diretor de Arte, direcao-visual §26). Abaixo da prateleira, à esquerda do saco de lado (x 238..278) e da corrente (x 257), fora da faixa do alvo (273..370), acima da cabeça do Osmar (y 174) e longe da foto. O balão do Osmar passa por cima (aceito, como na foto da academia). Na academia cobre inteiro o quadro de cortiça pintado no gym_bg (178..227, 128..145): o mural da escola toma o lugar do quadro da mensalidade. Foto reta em (212,158), 8 px abaixo.",
+			"location": "gym",
+			"sprite": "wall_mural_gym",
+			"requires_milestone": "cena_primeira_academia"
 		}
 	},
 	"by_data_id": {
@@ -3066,7 +3144,7 @@
 				"fighter_punch_b",
 				"fighter_uppercut"
 			],
-			"compose": "Por quadro (mesmo tamanho e pivô), na ordem de layers.order: 1) body; 2) top.<tank|tee> se look.top != 'none'; 3) socks se look.socks == 'on'; 4) head.<look.hair_style>; 5) band se look.headband != 'none'; 6) front_mask: nos pixels brancos da máscara, desenhar de novo o resultado de 1+2+3 (body com parte de cima e meião), só onde ele tem cor (alfa > 0). Trocar as cores-chave em todas as camadas (antes ou depois de montar: as chaves não se repetem). Com a máscara vazia o passo 6 não faz nada.",
+			"compose": "Por quadro (mesmo tamanho e pivô), na ordem de layers.order: 1) body; 2) top.<tank|tee> se look.top != 'none'; 3) socks se look.socks == 'on'; 3b) school_symbol (Fase 6c2) se o lutador mostra o símbolo (simbolo_no_lutador / simbolo_na_entrada; nunca o John): school_symbol.chest se look.top != 'none', senão school_symbol.leg; 4) head.<look.hair_style>; 5) band se look.headband != 'none'; 6) front_mask: nos pixels brancos da máscara, desenhar de novo o resultado de 1+2+3+3b (body com parte de cima, meião e símbolo), só onde ele tem cor (alfa > 0). Trocar as cores-chave em todas as camadas (antes ou depois de montar: as chaves não se repetem; as do símbolo seguem school_symbol_source). Com a máscara vazia o passo 6 não faz nada.",
 			"cuts": [
 				"short",
 				"buzz",
@@ -3077,16 +3155,18 @@
 				"band": "look.headband (none = não desenhar)",
 				"head": "look.hair_style",
 				"socks": "look.socks (none = não desenhar)",
-				"top": "look.top (none = não desenhar)"
+				"top": "look.top (none = não desenhar)",
+				"school_symbol": "derivado (Fase 6c2): chest se look.top != 'none', leg se 'none'; não vai para o look nem para o save"
 			},
 			"note": "Discípulo em camadas (escopo 6b §4.4, Fase 6b2). Arquivos em assets/sprites/disciple/, todos com o mesmo quadro e pivô da folha da pose: <base>[_glove_lN]_disc_body.png (corpo sem cabeça, peito nu, sem meião; um por luva); <base>_disc_top_tank.png e _top_tee.png (regata/camiseta: só os pixels que a peça muda no tronco e nos braços); <base>_disc_socks.png (meião: só as canelas); <base>_disc_head_<corte>.png (buzz, short, volume, bun); <base>_disc_band.png (faixa: igual para os 4 cortes); <base>_disc_front.png (máscara: corpo que passa na frente da cabeça; vale para os 4 cortes, para a faixa e com qualquer parte de cima). Nenhuma camada depende da luva, só o body. Cada opção é um arquivo por pose; nenhuma combinação vira arquivo. Entrada '<base>[_glove_lN]_disc_layered' (poses que já existiam, same_as = a folha inteira) ou o próprio id (poses da 6b1). anchors[q]: head_box = caixa da cabeça do short, head_box_max = dos 4 cortes juntos. head_anchor = topo do corte mais alto (volume/bun) relativo ao pivô.",
 			"tops": [
 				"tank",
 				"tee"
-			]
+			],
+			"school_symbol_note": "Fase 6c2 (Diretor de Arte): <base>_disc_symbol_chest.png e _symbol_leg.png em todas as poses, folhas _left e retrato 32x32; não dependem da luva, exceto onde a luva da frente passa no peito (fighter_run: <base>_glove_lN_disc_symbol_chest.png). layers.school_symbol de cada entrada já aponta o arquivo certo. É o school_symbol_5 da 6a (3/4) e a mesma lâmpada com raiz em 3x5 (perfil e coxa). Gerado por personagem_lib.gd (_capture_call_6b2)."
 		},
 		"disciple_palette": {
-			"compose": "Por quadro (mesmo tamanho e pivô), na ordem de layers.order: 1) body; 2) top.<tank|tee> se look.top != 'none'; 3) socks se look.socks == 'on'; 4) head.<look.hair_style>; 5) band se look.headband != 'none'; 6) front_mask: nos pixels brancos da máscara, desenhar de novo o resultado de 1+2+3 (body com parte de cima e meião), só onde ele tem cor (alfa > 0). Trocar as cores-chave em todas as camadas (antes ou depois de montar: as chaves não se repetem). Com a máscara vazia o passo 6 não faz nada.",
+			"compose": "Por quadro (mesmo tamanho e pivô), na ordem de layers.order: 1) body; 2) top.<tank|tee> se look.top != 'none'; 3) socks se look.socks == 'on'; 3b) school_symbol (Fase 6c2) se o lutador mostra o símbolo (simbolo_no_lutador / simbolo_na_entrada; nunca o John): school_symbol.chest se look.top != 'none', senão school_symbol.leg; 4) head.<look.hair_style>; 5) band se look.headband != 'none'; 6) front_mask: nos pixels brancos da máscara, desenhar de novo o resultado de 1+2+3+3b (body com parte de cima, meião e símbolo), só onde ele tem cor (alfa > 0). Trocar as cores-chave em todas as camadas (antes ou depois de montar: as chaves não se repetem; as do símbolo seguem school_symbol_source). Com a máscara vazia o passo 6 não faz nada.",
 			"default": {
 				"hair_color": "brown",
 				"headband_color": "red",
@@ -3132,6 +3212,10 @@
 					"deep": "#8f8891",
 					"light": "#f2ece1",
 					"mid": "#d9cdb5"
+				},
+				"school_symbol": {
+					"shadow": "#1f2a45",
+					"base": "#304a78"
 				}
 			},
 			"options": {
@@ -3460,11 +3544,52 @@
 							"mid": "#e0a040"
 						}
 					}
+				],
+				"school_symbol": [
+					{
+						"id": "blue",
+						"ramp": {
+							"shadow": "#1f2a44",
+							"base": "#2f4a78"
+						}
+					},
+					{
+						"id": "yellow",
+						"ramp": {
+							"shadow": "#e0a040",
+							"base": "#f5d26b"
+						}
+					}
 				]
 			},
 			"socks_source": {
 				"field": "shorts_color",
 				"note": "6b2: o meião não tem cor própria. options.socks tem uma entrada por calção (id = id do shorts_color) com shadow = dark, base = mid, stripe = band do calção (data/disciples.json socks.on: source shorts_color, source_slots [dark, mid, band]). Use a entrada com id == look.shorts_color. Com socks 'none' NÃO desenhe a camada socks (não precisa trocar nada para pele)."
+			},
+			"school_symbol_source": {
+				"chest": {
+					"field": "top_color",
+					"map": {
+						"white": "blue",
+						"black": "yellow",
+						"gray": "yellow",
+						"blue": "yellow",
+						"green": "yellow",
+						"yellow": "blue"
+					}
+				},
+				"leg": {
+					"field": "shorts_color",
+					"map": {
+						"green": "yellow",
+						"blue": "yellow",
+						"black": "yellow",
+						"white": "blue",
+						"purple": "yellow",
+						"yellow": "blue"
+					}
+				},
+				"note": "Fase 6c2: a camada school_symbol só tem as chaves keys.school_symbol (shadow = sombra de contato do braço, base). Peito (look.top != 'none'): cor pelo top_color; coxa (sem parte de cima): pelo shorts_color, pelos mapas acima, em options.school_symbol. azul = carimbo da escola (b0/b1), amarelo = a tinta da parede (y0/y1)."
 			}
 		},
 		"mentor_2_spot": {
@@ -37413,6 +37538,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -37421,6 +37547,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_duck_under_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_duck_under_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_duck_under_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_duck_under_disc_symbol_leg.png"
 				}
 			},
 			"left_variant": "disciple_duck_under_left",
@@ -37635,6 +37765,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -37643,6 +37774,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_stand_bare_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_stand_bare_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_stand_bare_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_stand_bare_disc_symbol_leg.png"
 				}
 			},
 			"left_variant": "disciple_stand_bare_left",
@@ -38018,6 +38153,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -38026,6 +38162,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_take_gloves_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_take_gloves_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_take_gloves_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_take_gloves_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -38317,6 +38457,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -38325,6 +38466,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_walk_bare_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_walk_bare_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_walk_bare_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_walk_bare_disc_symbol_leg.png"
 				}
 			},
 			"left_variant": "disciple_walk_bare_left",
@@ -38496,6 +38641,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -38504,6 +38650,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_block_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_block_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_block_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_block_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -38671,6 +38821,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -38679,6 +38830,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_block_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_block_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_block_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_block_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -38846,6 +39001,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -38854,6 +39010,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_block_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_block_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_block_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_block_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -39021,6 +39181,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -39029,6 +39190,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_block_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_block_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_block_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_block_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -39196,6 +39361,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -39204,6 +39370,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_block_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_block_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_block_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_block_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -39582,6 +39752,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -39590,6 +39761,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -39968,6 +40143,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -39976,6 +40152,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -40354,6 +40534,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -40362,6 +40543,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -40740,6 +40925,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -40748,6 +40934,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -41126,6 +41316,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -41134,6 +41325,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_body_shot_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_body_shot_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -41342,6 +41537,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -41350,6 +41546,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -41558,6 +41758,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -41566,6 +41767,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -41774,6 +41979,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -41782,6 +41988,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -41990,6 +42200,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -41998,6 +42209,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -42206,6 +42421,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -42214,6 +42430,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_dodge_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_dodge_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -42469,6 +42689,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -42477,6 +42698,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -42732,6 +42957,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -42740,6 +42966,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -42995,6 +43225,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -43003,6 +43234,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -43258,6 +43493,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -43266,6 +43502,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -43521,6 +43761,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -43529,6 +43770,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_heavy_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_heavy_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -43860,6 +44105,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -43868,6 +44114,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -44199,6 +44449,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -44207,6 +44458,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -44538,6 +44793,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -44546,6 +44802,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -44877,6 +45137,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -44885,6 +45146,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -45216,6 +45481,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -45224,6 +45490,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_body_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_body_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -45391,6 +45661,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -45399,6 +45670,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -45566,6 +45841,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -45574,6 +45850,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -45741,6 +46021,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -45749,6 +46030,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -45916,6 +46201,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -45924,6 +46210,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -46091,6 +46381,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -46099,6 +46390,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -46430,6 +46725,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -46438,6 +46734,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -46769,6 +47069,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -46777,6 +47078,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -47108,6 +47413,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -47116,6 +47422,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -47447,6 +47757,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -47455,6 +47766,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -47786,6 +48101,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -47794,6 +48110,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_head_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_head_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -48125,6 +48445,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -48133,6 +48454,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -48464,6 +48789,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -48472,6 +48798,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -48803,6 +49133,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -48811,6 +49142,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -49142,6 +49477,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -49150,6 +49486,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -49481,6 +49821,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -49489,6 +49830,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hit_up_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hit_up_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -49867,6 +50212,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -49875,6 +50221,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -50253,6 +50603,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -50261,6 +50612,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -50639,6 +50994,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -50647,6 +51003,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -51025,6 +51385,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -51033,6 +51394,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -51411,6 +51776,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -51419,6 +51785,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -51627,6 +51997,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -51635,6 +52006,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -51843,6 +52218,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -51851,6 +52227,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -52059,6 +52439,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -52067,6 +52448,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -52275,6 +52660,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -52283,6 +52669,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -52491,6 +52881,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -52499,6 +52890,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -52713,6 +53108,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -52721,6 +53117,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_jab_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_jab_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -52935,6 +53335,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -52943,6 +53344,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_jab_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_jab_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -53157,6 +53562,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -53165,6 +53571,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_jab_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_jab_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -53379,6 +53789,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -53387,6 +53798,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_jab_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_jab_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -53601,6 +54016,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -53609,6 +54025,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_jab_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_jab_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_jab_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -53941,6 +54361,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -53949,6 +54370,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -54281,6 +54706,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -54289,6 +54715,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -54621,6 +55051,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -54629,6 +55060,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -54961,6 +55396,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -54969,6 +55405,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -55301,6 +55741,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -55309,6 +55750,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_back_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_back_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -55559,6 +56004,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -55567,6 +56013,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -55817,6 +56267,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -55825,6 +56276,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -56075,6 +56530,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -56083,6 +56539,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -56333,6 +56793,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -56341,6 +56802,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -56591,6 +57056,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -56599,6 +57065,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -56931,6 +57401,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -56939,6 +57410,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -57271,6 +57746,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -57279,6 +57755,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -57611,6 +58091,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -57619,6 +58100,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -57951,6 +58436,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -57959,6 +58445,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -58291,6 +58781,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -58299,6 +58790,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_ko_knees_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_ko_knees_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -58507,6 +59002,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -58515,6 +59011,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_tired_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_tired_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -58723,6 +59223,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -58731,6 +59232,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_tired_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_tired_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -58939,6 +59444,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -58947,6 +59453,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_tired_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_tired_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -59155,6 +59665,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -59163,6 +59674,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_tired_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_tired_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -59371,6 +59886,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -59379,6 +59895,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_tired_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_tired_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_tired_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -59757,6 +60277,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -59765,6 +60286,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -60143,6 +60668,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -60151,6 +60677,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -60529,6 +61059,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -60537,6 +61068,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -60915,6 +61450,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -60923,6 +61459,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -61301,6 +61841,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -61309,6 +61850,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -61517,6 +62062,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -61525,6 +62071,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_victory_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_victory_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -61733,6 +62283,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -61741,6 +62292,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_victory_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_victory_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -61949,6 +62504,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -61957,6 +62513,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_victory_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_victory_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -62165,6 +62725,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -62173,6 +62734,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_victory_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_victory_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -62381,6 +62946,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -62389,6 +62955,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fight_player_victory_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fight_player_victory_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fight_player_victory_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -62621,6 +63191,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -62629,6 +63200,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -62867,6 +63442,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -62875,6 +63451,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -63113,6 +63693,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -63121,6 +63702,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -63359,6 +63944,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -63367,6 +63953,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -63605,6 +64195,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -63613,6 +64204,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_hook_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_hook_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_hook_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_hook_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -63784,6 +64379,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -63792,6 +64388,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -63967,6 +64567,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -63975,6 +64576,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -64150,6 +64755,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -64158,6 +64764,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -64333,6 +64943,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -64341,6 +64952,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -64516,6 +65131,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -64524,6 +65140,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_idle_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_idle_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_idle_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_idle_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -64766,6 +65386,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -64774,6 +65395,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -65012,6 +65637,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -65020,6 +65646,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -65258,6 +65888,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -65266,6 +65897,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -65504,6 +66139,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -65512,6 +66148,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -65750,6 +66390,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -65758,6 +66399,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_b_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_b_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -65935,6 +66580,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -65943,6 +66589,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -66120,6 +66770,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -66128,6 +66779,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -66305,6 +66960,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -66313,6 +66969,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -66490,6 +67150,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -66498,6 +67159,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -66675,6 +67340,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -66683,6 +67349,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_punch_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_punch_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_punch_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_punch_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -66949,6 +67619,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -66957,6 +67628,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_rope_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_rope_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_rope_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_rope_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -67223,6 +67898,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -67231,6 +67907,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_rope_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_rope_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_rope_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_rope_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -67497,6 +68177,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -67505,6 +68186,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_rope_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_rope_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_rope_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_rope_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -67771,6 +68456,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -67779,6 +68465,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_rope_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_rope_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_rope_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_rope_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -68045,6 +68735,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -68053,6 +68744,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_rope_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_rope_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_rope_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_rope_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -68224,6 +68919,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -68232,6 +68928,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_run_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_run_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_run_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_run_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -68404,6 +69104,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -68412,6 +69113,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_run_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_run_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_run_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_run_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -68584,6 +69289,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -68592,6 +69298,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_run_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_run_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_run_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_run_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -68764,6 +69474,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -68772,6 +69483,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_run_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_run_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_run_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_run_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -68944,6 +69659,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -68952,6 +69668,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_run_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_run_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_run_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_run_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -69191,6 +69911,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -69199,6 +69920,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -69437,6 +70162,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -69445,6 +70171,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -69683,6 +70413,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -69691,6 +70422,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -69929,6 +70664,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -69937,6 +70673,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -70175,6 +70915,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -70183,6 +70924,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/fighter_uppercut_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/fighter_uppercut_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -71151,6 +71896,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -71159,6 +71905,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/portrait_player_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/portrait_player_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/portrait_player_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/portrait_player_disc_symbol_leg.png"
 				}
 			},
 			"note": "Retrato 32x32 do HUD da luta em camadas (fundo vai no body).",
@@ -71228,6 +71978,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -71236,6 +71987,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/portrait_player_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/portrait_player_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/portrait_player_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/portrait_player_disc_symbol_leg.png"
 				}
 			},
 			"note": "Retrato 32x32 do HUD da luta em camadas (fundo vai no body).",
@@ -71305,6 +72060,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -71313,6 +72069,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/portrait_player_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/portrait_player_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/portrait_player_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/portrait_player_disc_symbol_leg.png"
 				}
 			},
 			"note": "Retrato 32x32 do HUD da luta em camadas (fundo vai no body).",
@@ -71382,6 +72142,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -71390,6 +72151,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/portrait_player_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/portrait_player_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/portrait_player_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/portrait_player_disc_symbol_leg.png"
 				}
 			},
 			"note": "Retrato 32x32 do HUD da luta em camadas (fundo vai no body).",
@@ -71459,6 +72224,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -71467,6 +72233,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/portrait_player_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/portrait_player_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/portrait_player_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/portrait_player_disc_symbol_leg.png"
 				}
 			},
 			"note": "Retrato 32x32 do HUD da luta em camadas (fundo vai no body).",
@@ -71799,6 +72569,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -71807,6 +72578,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_duck_under_left_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_duck_under_left_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_duck_under_left_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_duck_under_left_disc_symbol_leg.png"
 				}
 			},
 			"loop": false,
@@ -72021,6 +72796,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -72029,6 +72805,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_stand_bare_left_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_stand_bare_left_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_stand_bare_left_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_stand_bare_left_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -72321,6 +73101,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -72329,6 +73110,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_walk_bare_left_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_walk_bare_left_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_walk_bare_left_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_walk_bare_left_disc_symbol_leg.png"
 				}
 			},
 			"loop": true,
@@ -73340,6 +74125,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -73348,6 +74134,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_carry_bag_idle_left_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -73641,6 +74431,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -73649,6 +74440,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_carry_bag_left_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -73946,6 +74741,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -73954,6 +74750,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_carry_crate_left_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -74333,6 +75133,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -74341,6 +75142,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_hang_bag_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_hang_bag_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_hang_bag_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_hang_bag_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -74512,6 +75317,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -74520,6 +75326,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_put_crate_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_put_crate_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_put_crate_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_put_crate_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -74732,6 +75542,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -74740,6 +75551,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_sit_down_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_sit_down_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_sit_down_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_sit_down_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -74951,6 +75766,7 @@
 					"body",
 					"top",
 					"socks",
+					"school_symbol",
 					"head",
 					"band",
 					"front_mask"
@@ -74959,6 +75775,10 @@
 				"top": {
 					"tank": "res://assets/sprites/disciple/disciple_sit_rest_disc_top_tank.png",
 					"tee": "res://assets/sprites/disciple/disciple_sit_rest_disc_top_tee.png"
+				},
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/disciple_sit_rest_disc_symbol_chest.png",
+					"leg": "res://assets/sprites/disciple/disciple_sit_rest_disc_symbol_leg.png"
 				}
 			},
 			"light": "sem luz pintada (como todas as folhas do discípulo)",
@@ -76946,6 +77766,399 @@
 				4
 			],
 			"who": "primeiro"
+		},
+		"wall_mural": {
+			"file": "res://assets/sprites/garage/wall_mural.png",
+			"frame_size": [
+				55,
+				23
+			],
+			"frames": 4,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				176,
+				128
+			],
+			"point": "mural_spot",
+			"layer": "wall",
+			"z": -45,
+			"loop": false,
+			"note": "Fase 6c2: MURAL DA ESCOLA na garagem (moldura de madeira, cortiça escura, papel com o carimbo da escola e polaroides presas com alfinete; a 1ª é o John, em sépia; as de quem saiu por cima têm 1 px de prata no pé). Quadro por quantidade de entradas no roster: ver layout.mural_spot_info.frame_by_roster. Recortado sobre o garage_bg com a luz da lâmpada (não mover). Clique/hover: object_text 'mural'."
+		},
+		"wall_mural_gym": {
+			"file": "res://assets/sprites/gym/wall_mural_gym.png",
+			"frame_size": [
+				55,
+				23
+			],
+			"frames": 4,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				176,
+				128
+			],
+			"point": "gym_mural_spot",
+			"layer": "wall",
+			"z": -45,
+			"loop": false,
+			"note": "Fase 6c2: o mesmo mural na academia (luz dos tubos), recortado sobre o gym_bg: cobre o quadro de cortiça pintado. Mesmos quadros do wall_mural."
+		},
+		"ui_mural_portrait_frame": {
+			"file": "res://assets/sprites/ui/mural/ui_mural_portrait_frame.png",
+			"frame_size": [
+				62,
+				66
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"hole": [
+				3,
+				3,
+				56,
+				60
+			],
+			"note": "Moldura de madeira do retrato no MURAL. Furo 56x60 em (3,3): desenhar ui_mural_portrait_bg e o busto em 2x ali, a moldura por cima."
+		},
+		"ui_mural_portrait_frame_first": {
+			"file": "res://assets/sprites/ui/mural/ui_mural_portrait_frame_first.png",
+			"frame_size": [
+				62,
+				66
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"hole": [
+				3,
+				3,
+				56,
+				60
+			],
+			"note": "Moldura do 1º retrato (o John): madeira mais escura com cantoneiras de latão. Mesmo furo."
+		},
+		"ui_mural_portrait_bg": {
+			"file": "res://assets/sprites/ui/mural/ui_mural_portrait_bg.png",
+			"frame_size": [
+				56,
+				60
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fundo de estúdio do retrato (d2 com halo g0 atrás da cabeça, chão d1). Igual para todos."
+		},
+		"ui_mural_seal": {
+			"file": "res://assets/sprites/ui/mural/ui_mural_seal.png",
+			"frame_size": [
+				20,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"anchor_on_frame": [
+				48,
+				48
+			],
+			"note": "SELO 'saiu por cima' (honor > 0): roseta prateada com o símbolo da escola e duas fitas azuis. Canto de cima à esquerda em (48,48) da moldura 62x66 (sai 6 px para fora embaixo, à direita). A linha '+{honor} HONRA' vai em col_honor."
+		},
+		"icon_honor": {
+			"file": "res://assets/sprites/ui/icon_honor.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "HONRA 9x9: roseta prateada com fitas azuis da escola (a mesma do selo, pequena). Cor do número: col_honor (st3). Nunca no HUD da sala."
+		},
+		"icon_honor_16": {
+			"file": "res://assets/sprites/ui/icon_honor_16.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "HONRA 16x16 (tela de fim '+N HONRA', ao lado do Legado; topo do MURAL)."
+		},
+		"ui_honor_chip": {
+			"file": "res://assets/sprites/ui/ui_honor_chip.png",
+			"frame_size": [
+				12,
+				11
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 3,
+				"top": 2,
+				"right": 3,
+				"bottom": 2
+			},
+			"note": "Plaquinha 9-slice da Honra (d1 com filete de aço): 'HONRA: N' ao lado do botão MURAL e o custo/estado de cada nó do hall. Texto 1x: col_honor (custo), gr3 (comprado), r3 (falta), g1 (só no fim)."
+		},
+		"icon_hall_box": {
+			"file": "res://assets/sprites/ui/hall/hall_box.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 6c2, nó do hall (16x16): Fita frouxa: a caixa com a fita soltando. Comprado ou dá para comprar."
+		},
+		"icon_hall_box_gray": {
+			"file": "res://assets/sprites/ui/hall/hall_box_gray.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "O mesmo em cinza (falta Honra ou fora da tela de fim)."
+		},
+		"icon_hall_fund": {
+			"file": "res://assets/sprites/ui/hall/hall_fund.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 6c2, nó do hall (16x16): Vaquinha da escola: lata com a moeda entrando. Comprado ou dá para comprar."
+		},
+		"icon_hall_fund_gray": {
+			"file": "res://assets/sprites/ui/hall/hall_fund_gray.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "O mesmo em cinza (falta Honra ou fora da tela de fim)."
+		},
+		"icon_hall_notes": {
+			"file": "res://assets/sprites/ui/hall/hall_notes.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 6c2, nó do hall (16x16): Caderno de recordes: caderno azul com lápis. Comprado ou dá para comprar."
+		},
+		"icon_hall_notes_gray": {
+			"file": "res://assets/sprites/ui/hall/hall_notes_gray.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "O mesmo em cinza (falta Honra ou fora da tela de fim)."
+		},
+		"icon_hall_crew": {
+			"file": "res://assets/sprites/ui/hall/hall_crew.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 6c2, nó do hall (16x16): Turma da escola: três cabeças. Comprado ou dá para comprar."
+		},
+		"icon_hall_crew_gray": {
+			"file": "res://assets/sprites/ui/hall/hall_crew_gray.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "O mesmo em cinza (falta Honra ou fora da tela de fim)."
+		},
+		"icon_hall_glove": {
+			"file": "res://assets/sprites/ui/hall/hall_glove.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 6c2, nó do hall (16x16): Luva do mural: a luva de lona pendurada no prego. Comprado ou dá para comprar."
+		},
+		"icon_hall_glove_gray": {
+			"file": "res://assets/sprites/ui/hall/hall_glove_gray.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "O mesmo em cinza (falta Honra ou fora da tela de fim)."
+		},
+		"icon_hall_wall": {
+			"file": "res://assets/sprites/ui/hall/hall_wall.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 6c2, nó do hall (16x16): Parede maior: o mural com setas para os lados. Comprado ou dá para comprar."
+		},
+		"icon_hall_wall_gray": {
+			"file": "res://assets/sprites/ui/hall/hall_wall_gray.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "O mesmo em cinza (falta Honra ou fora da tela de fim)."
+		},
+		"mural_portrait_disc": {
+			"file": "res://assets/sprites/disciple/mural_portrait_disc_body.png",
+			"frame_size": [
+				28,
+				30
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"display_scale": 2,
+			"crop_of": "disciple_stand_bare quadro 0, recorte (9,-1,28,30) do quadro 48x72 (pivô 22,67)",
+			"layers": {
+				"body": "res://assets/sprites/disciple/mural_portrait_disc_body.png",
+				"top": {
+					"tank": "res://assets/sprites/disciple/mural_portrait_disc_top_tank.png",
+					"tee": "res://assets/sprites/disciple/mural_portrait_disc_top_tee.png"
+				},
+				"head": {
+					"short": "res://assets/sprites/disciple/mural_portrait_disc_head_short.png",
+					"buzz": "res://assets/sprites/disciple/mural_portrait_disc_head_buzz.png",
+					"volume": "res://assets/sprites/disciple/mural_portrait_disc_head_volume.png",
+					"bun": "res://assets/sprites/disciple/mural_portrait_disc_head_bun.png"
+				},
+				"band": "res://assets/sprites/disciple/mural_portrait_disc_band.png",
+				"front_mask": "res://assets/sprites/disciple/mural_portrait_disc_front.png",
+				"school_symbol": {
+					"chest": "res://assets/sprites/disciple/mural_portrait_disc_symbol_chest.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"school_symbol",
+					"head",
+					"band",
+					"front_mask"
+				]
+			},
+			"palette_swap": "disciple_palette",
+			"who": "discipulo",
+			"note": "Fase 6c2: BUSTO do retrato do MURAL, das camadas do discípulo (mesma montagem e troca de cor de by_data_id.disciple_palette). Mostrar em 2x (56x60) sobre ui_mural_portrait_bg, dentro de ui_mural_portrait_frame. Sem meião (não aparece). Símbolo: só o do peito, se simbolo_na_entrada(e) e look.top != 'none'; sem parte de cima o símbolo fica na coxa e não entra no busto."
+		},
+		"mural_portrait_john": {
+			"file": "res://assets/sprites/characters/mural_portrait_john.png",
+			"frame_size": [
+				28,
+				30
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"display_scale": 2,
+			"crop_of": "john_step_back quadro 0 (sorrindo), mesmo recorte do busto do discípulo",
+			"who": "primeiro",
+			"note": "Fase 6c2: busto do John no MURAL (1º retrato, moldura ui_mural_portrait_frame_first). Nunca tem símbolo."
 		}
 	},
 	"fight_layout": {
@@ -77173,6 +78386,10 @@
 			"col_risk_red": [
 				"r2",
 				"d4473a"
+			],
+			"col_honor": [
+				"st3",
+				"a9b4bf"
 			]
 		},
 		"sizes": {

@@ -959,3 +959,49 @@ Até a decisão, a academia segue com os pontos da garagem (`people_pos` não fo
 
 **Decisão do dono (2026-11-15):** aceitar como na garagem. Na academia a equipe usa os mesmos pontos da garagem; com a equipe
 máxima, as sobreposições da §25.2 ficam como aviso, sem travar. Revisitar quando a academia ganhar arte feita à mão.
+
+## 26. Fase 6c2 (Mais longe que eu: mural, Honra, hall e símbolo na roupa)
+Gerador: `tools/art/make_arte_fase6c2.gd` (pasta temporária com `project.godot` vazio; `-- --final` grava no projeto,
+`--manifest` relê o manifest e mexe só nas chaves desta fase, voltando os números inteiros para int e com CRLF: o diff fica só
+nas chaves novas; não grava se a conferência do mural falhar). A camada do símbolo nas poses sai dos geradores de personagem
+(`personagem_lib.gd`, `_capture_call_6b2`): rodar numa pasta temporária, com `FC_LUTADOR=disc FC_CAMADAS=1`, os geradores
+`make_sprites_jogador.gd`, `make_golpes_jogador.gd`, `make_sprites_fase6b1.gd` e `make_sprites_fase6c1.gd`, e copiar só os
+`*_disc_symbol_*.png`. **Conferido: as 490 camadas que já existiam saem idênticas, byte a byte.**
+
+### 26.1 O objeto do mural (garagem e academia)
+| Sprite | Quadro | Ponto | Nota |
+|---|---|---|---|
+| `wall_mural` | 55x23, 4 quadros | `layout.mural_spot` = (176,128) | Moldura de madeira, cortiça escura, papel com o carimbo da escola (`school_symbol_9`) e polaroides presas com alfinete. A 1ª é o John, em sépia; quem saiu por cima tem 1 px de prata no pé da foto. Luz da lâmpada: o lado esquerdo fica 1 passo mais escuro |
+| `wall_mural_gym` | 55x23, 4 | `layout.gym_mural_spot` = (176,128) | O mesmo com a luz dos tubos. **Cobre inteiro o quadro de cortiça pintado no `gym_bg`** (178..227, 128..145): o mural da escola toma o lugar do quadro da mensalidade |
+- Os dois pontos ficam no formato `[x, y]`; o resto está em `layout.mural_spot_info` / `gym_mural_spot_info` (`click_rect` 54x22, camada `wall`, `object_text` `mural`, marco da academia, regra do quadro).
+- Quadro pelo tamanho do roster: 1 entrada → 0 (só o John); 2–3 → 1; 4–7 → 2; 8+ → 3 (10 fotos). Os 55x23 incluem 1 px de sombra na parede (recortada do fundo de cada sala: não mover).
+- Conferido nas duas salas, com foco no saco e com o saco de lado: fora da faixa do alvo com folga (273..370), da `no_cover`, do saco de lado (238..278) e da corrente (x 257), da prateleira (até y 127) e do metrônomo; nenhum pixel de gente (Osmar, mentor no caixote, 2º mentor, equipe, lutador) cai dentro dele, e ele não cobre a foto (garagem 237,67; academia 212,158, 8 px abaixo). O balão do Osmar passa por cima, como já passa pela foto da academia (aceito).
+- Mockups: `fase6c2_mural_garagem_x2.png`, `fase6c2_mural_academia_x2.png`, `fase6c2_mural_*_conferencia_x3.png`.
+
+### 26.2 Retrato do mural (busto)
+- **Recorte:** 28x30 do quadro 0 da `disciple_stand_bare` (48x72, pivô 22,67), em (9,-1): da faixa do coque (1 px de folga em cima) até o meio da barriga, com os ombros. Mostrar em **2x = 56x60**.
+- `mural_portrait_disc` traz todas as camadas recortadas (body, top tank/tee, 4 cabeças, faixa, front, `school_symbol.chest`), com a mesma montagem e troca de cor do discípulo. Sem meião (não aparece). John: `mural_portrait_john` (mesmo recorte do `john_step_back` q0, sorrindo). Nenhuma folha nova do Artista foi preciso: o recorte é da pose que já existe.
+- Moldura `ui_mural_portrait_frame` 62x66 (furo 56x60 em 3,3) sobre o fundo `ui_mural_portrait_bg`; o John usa `ui_mural_portrait_frame_first` (madeira escura, cantoneiras de latão).
+- **Selo "saiu por cima"** `ui_mural_seal` 20x24: roseta prateada com o símbolo da escola e duas fitas azuis, em (48,48) da moldura (sai um pouco para fora, embaixo à direita).
+- Conferido com os 4 cortes, 5 peles, faixas e partes de cima: `fase6c2_retratos_x2.png`. Tela: `fase6c2_tela_mural_x2.png` (John + 8, 5x2 por página, selo, "parou em", "?", hall ao lado; o layout final é da UI/UX).
+
+### 26.3 Símbolo da escola na roupa (decisão do ponto aberto 5)
+- **Desenho:** o `school_symbol_5` da 6a (a lâmpada de pé com raízes). Não há símbolo novo: o da escola já existe. Em 3/4 é o 5x5 igual; em perfil (luta) e na coxa, a mesma leitura em 3x5.
+- **Com parte de cima (tank/tee):** no peito, abaixo do decote da regata (assim regata e camiseta dão o mesmo desenho; onde a manga da camiseta tapa 1–2 px, fica só o que as duas mostram).
+- **Sem parte de cima: na perna do calção** (coxa da frente), confirmado. No peito nu ele vira tatuagem, e não é isso.
+- **No busto:** aparece só o do peito (entra no recorte). Sem parte de cima o símbolo está na coxa e não aparece no retrato.
+- **Cor:** uma cor (estampa) em cor-chave (`keys.school_symbol`), trocada pela cor da peça: carimbo azul (b0/b1) em camiseta branca ou amarela e em calção branco ou amarelo; tinta amarela (y0/y1) nas outras. Mapa em `disciple_palette.school_symbol_source`.
+- **Camada:** `<base>_disc_symbol_chest.png` e `_symbol_leg.png` em todas as 39 poses em camadas (inclui as `_left` e o retrato 32x32 da luta); `layers.school_symbol` em 139 entradas (todas as luvas). Não depende da luva (conferido: nenhuma luva cobre o peito de outro jeito). Ordem: body, top, socks, **school_symbol**, head, band, front_mask (o passo 6 redesenha o símbolo junto com o "baixo"). O John nunca usa.
+- Mockups: `fase6c2_simbolo_x3.png` (6 cores de camiseta, regata, sem parte de cima por calção, sentado, luta), `fase6c2_simbolo_luvas_x4.png`.
+
+### 26.4 Honra e hall
+- Cor da Honra: **`col_honor` = st3** (prata/aço; ouro é dinheiro, roxo é Legado, rosa é Fama). `icon_honor` 9x9 e `icon_honor_16` (roseta prateada com fitas azuis: a mesma do selo, pequena). Nunca no HUD da sala.
+- `ui_honor_chip` 12x11 (9-slice 3/2/3/2): plaquinha d1 com filete de aço para "HONRA: N" e o custo/estado dos nós.
+- Nós do hall, 16x16 + `_gray`: `icon_hall_box` (caixa com a fita soltando), `icon_hall_fund` (lata com moeda), `icon_hall_notes` (caderno azul com lápis), `icon_hall_crew` (três cabeças), `icon_hall_glove` (luva de lona no prego), `icon_hall_wall` (mural com setas para os lados). Prancha: `fase6c2_pecas_x4.png`.
+
+### 26.5 Placeholder / precisa de pixel artist
+- As polaroides do mural são 6x7 com uma cabeça de 2 px: à mão, cada foto teria uma pose. O ideal seria o mural mostrar os retratos de verdade em miniatura (código).
+- O símbolo em 5x5 no peito lê como "estampa da escola", não como lâmpada; um artista faria a versão de 7x7 para a camiseta e uma de bordado para o calção.
+- Sentado (`disciple_sit_rest`) sem parte de cima, a coxa fica atrás dos braços: o símbolo da perna quase some. Aceito.
+- O busto é recorte de pose de corpo inteiro (braços caídos). Um retrato feito para o mural (ombro virado, olhar para a câmera, luz de estúdio) pediria uma folha `bust` própria com as mesmas camadas.
+- A roseta e os ícones do hall são placeholder honesto; os ícones cinza são conversão por luminância.
