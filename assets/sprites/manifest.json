@@ -33064,7 +33064,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 4
 		},
 		"opp_fast_ko_knees": {
 			"action": "ko_knees",
@@ -33153,7 +33154,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 5
 		},
 		"opp_gym_1_ko_back": {
 			"action": "ko_back",
@@ -33242,7 +33244,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 4
 		},
 		"opp_gym_1_ko_knees": {
 			"action": "ko_knees",
@@ -33331,7 +33334,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 5
 		},
 		"opp_gym_2_ko_back": {
 			"action": "ko_back",
@@ -33420,7 +33424,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 4
 		},
 		"opp_gym_2_ko_knees": {
 			"action": "ko_knees",
@@ -33509,7 +33514,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 5
 		},
 		"opp_strong_ko_back": {
 			"action": "ko_back",
@@ -33598,7 +33604,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 4
 		},
 		"opp_strong_ko_knees": {
 			"action": "ko_knees",
@@ -33687,7 +33694,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 5
 		},
 		"opp_tank_ko_back": {
 			"action": "ko_back",
@@ -33776,7 +33784,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 4
 		},
 		"opp_tank_ko_knees": {
 			"action": "ko_knees",
@@ -33865,7 +33874,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 5
 		},
 		"opp_warmup_ko_back": {
 			"action": "ko_back",
@@ -33954,7 +33964,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 4
 		},
 		"opp_warmup_ko_knees": {
 			"action": "ko_knees",
@@ -34043,7 +34054,8 @@
 			"pivot": [
 				56,
 				98
-			]
+			],
+			"ground_frame": 5
 		},
 		"tape_mark_rope_hi": {
 			"file": "res://assets/sprites/garage/tape_mark_rope_hi.png",
