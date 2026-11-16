@@ -51,6 +51,7 @@ var img_bag_full: Image
 var img_crate: Image
 var img_tm: Image
 var img_tm_end: Image
+var img_tm_fold: Image
 var img_photo: Image
 var img_duffel: Image
 
@@ -159,6 +160,7 @@ func load_props() -> void:
 	img_crate = P.load_png(ROOT + "assets/sprites/garage/garage_crate.png")
 	img_tm = P.load_png(ROOT + "assets/sprites/equipment/treadmill_l0_idle.png")
 	img_tm_end = treadmill_end()
+	img_tm_fold = treadmill_fold()
 	img_photo = photo_straight()
 	img_duffel = duffel()
 
@@ -209,6 +211,62 @@ func treadmill_end() -> Image:
 	im.set_pixel(20, 24, L.col("br2"))
 	return im
 
+## (refeito) Esteira DOBRADA vista de lado (20x40), com as cores da treadmill_l0: o deque levantado em pé (lona escura
+## entre os trilhos, rolo arredondado em cima e embaixo), a coluna colada nele com o painel no alto virado para a
+## frente (+x) e a base com as rodinhas. Desenhada à mão como mapa de pixels.
+const TM_FOLD := [
+	"..kkkkkk............",
+	".kcdddcck...........",
+	".kcbbbbck.kkkkkkkkk.",
+	".kcDDDDbkbkEaaaaaEk.",
+	".kcDDDDbkbkEaddaaEk.",
+	".kcDEDDbkbkEaaaaRRk.",
+	".kcDDDDbkbkkkkkkkkk.",
+	".kcDDrDbkbck........",
+	".kcDDDDbkbck........",
+	".kcEEEEbkbck........",
+	".kcDDDDbkbck........",
+	".kcDDDDbkbck........",
+	".kcDDDrbkbck........",
+	".kcDDDDbkbck........",
+	".kcEEEEbkbck........",
+	".kcDDDDbkbck........",
+	".kcDrDDbkbck........",
+	".kcDDDDbkbck........",
+	".kcDDDDbkRck........",
+	".kcEEEEbkbck........",
+	".kcDDDDbkbck........",
+	".kcDDDDbkbck........",
+	".kcDDrDbkbck........",
+	".kcDDDDbkbck........",
+	".kcEEEEbkbck........",
+	".kcDDDDbkbck........",
+	".kcDDDDbkbck........",
+	".kcRDDDbkbck........",
+	".kcDDDDbkbck........",
+	".kcEEEEbkbck........",
+	".kcDDDDbkbck........",
+	".kcbbbbckbck........",
+	".kcdddcckbck........",
+	"..kkkkkkkbck........",
+	"kkkkkkkkkkkkkkkkkkk.",
+	"kcccccccccccccccccbk",
+	"kbbbbbbbbbbbbbbRbbak",
+	"kkkkkkkkkkkkkkkkkkkk",
+	"..kak.........kak...",
+	"...k...........k....",
+]
+
+func treadmill_fold() -> Image:
+	var lg := {"k": "ink", "a": "st0", "b": "st1", "c": "st2", "d": "st3", "D": "d2", "E": "d1", "r": "br1", "R": "br2"}
+	var im: Image = L.blank(20, TM_FOLD.size())
+	for y in TM_FOLD.size():
+		var r: String = TM_FOLD[y]
+		for x in r.length():
+			if lg.has(r[x]):
+				im.set_pixel(x, y, L.col(lg[r[x]]))
+	return im
+
 ## Esteira de lado "apertada" na largura (meio giro), vizinho mais próximo.
 func tm_squeezed(w: int) -> Image:
 	var s: Image = img_tm.duplicate()
@@ -250,7 +308,12 @@ func _edge(im: Image, x: int, y: int) -> bool:
 
 ## Põe a imagem no mapa de partes (id = profundidade para sombra de contato); o contorno de fora sai e o finish()
 ## refaz o contorno da silhueta junta.
-func put_img(lib, im: Image, tl: Vector2, id: int) -> void:
+## keep (ordem de camadas por quadro): null = por cima de tudo o que já está desenhado; "empty" = só onde o quadro
+## está vazio (o adereço fica ATRÁS de todo o corpo, mas dentro do mapa de partes: contorno e sombra de contato
+## juntos); Array de ids = por cima de tudo MENOS dessas partes (ex.: o braço e a mão da frente ficam na frente).
+## O contorno do adereço fica onde ele passa por cima do corpo (borda nítida entre a madeira e o tronco); onde o
+## quadro está vazio, sai (o finish() refaz o contorno da silhueta junta).
+func put_img(lib, im: Image, tl: Vector2, id: int, keep = null) -> void:
 	var ink: String = (L.col("ink") as Color).to_html(false)
 	var bx := int(round(tl.x))
 	var by := int(round(tl.y))
@@ -259,9 +322,44 @@ func put_img(lib, im: Image, tl: Vector2, id: int) -> void:
 			var c := im.get_pixel(x, y)
 			if c.a < 0.5:
 				continue
-			if c.to_html(false) == ink and _edge(im, x, y):
+			var X := bx + x
+			var Y := by + y
+			if X < 0 or Y < 0 or X >= lib.cw or Y >= lib.ch:
 				continue
-			lib.put(bx + x, by + y, c, id)
+			var cur: int = lib.ids[Y * lib.cw + X]
+			if keep is String and keep == "empty" and cur != 0:
+				continue
+			if keep is Array and cur in keep:
+				continue
+			if c.to_html(false) == ink and _edge(im, x, y) and cur == 0:
+				continue
+			lib.put(X, Y, c, id)
+
+## Ids das partes do corpo (personagem_lib) usados nas regras de camada e na conferência.
+const ID_FAR_UP := 20
+const ID_TORSO := 30
+const ID_HEAD := 40
+const ID_NEAR_ARM := [60, 61, 62]
+const ID_NEAR_HAND := 62
+const ID_FAR_FORE := 70
+const ID_FAR_HAND := 71
+const ID_LEGS := [10, 11, 12, 13, 14, 15]
+const LIFT := 100
+
+## Dedos fechados na borda: 3 pontas de dedo (pele clara) separadas por sombra, a partir de pos para dentro do
+## objeto (dir). Ficam por cima do adereço, com o id da mão (contam como mão na conferência).
+func grip(lib, b: Dictionary, pos: Vector2, dir: Vector2, id: int, n := 3) -> void:
+	var sk: Array = b.skin
+	var d := dir.normalized()
+	var pp := Vector2(-d.y, d.x)
+	var half := n - 1
+	for k in range(-half, half + 1):
+		var q := (pos + pp * float(k)).round()
+		var finger := (k + half) % 2 == 0
+		lib.put(int(q.x), int(q.y), sk[1] if finger else sk[0], id)
+		if finger:
+			var t := (pos + pp * float(k) + d).round()
+			lib.put(int(t.x), int(t.y), sk[2] if k <= 0 else sk[1], id)
 
 ## Adereço ATRÁS de tudo: só onde o quadro está vazio (o contorno do adereço fica).
 func under_img(dst: Image, im: Image, tl: Vector2) -> void:
@@ -286,9 +384,12 @@ func flipped(im: Image) -> Image:
 
 # ================================================================ render
 ## p = pose da garagem + chaves privadas:
-##  _props: [[estágio, imagem, canto rel. ao pivô, id]] (estágio "after_torso" | "after_left" | "end" | "under")
-##  _head_redraw: redesenha pescoço+cabeça depois dos adereços do after_torso (saco atrás da cabeça)
-##  _fingers: [Vector2 rel] dedos da mão de perto por cima do adereço; _strap: [[a, b]] alça (1 px, couro)
+##  _props: [[estágio, imagem, canto rel. ao pivô, id, keep?]] (estágio "after_torso" | "after_left" | "end" | "under");
+##          keep = regra de camada do put_img (null | "empty" | [ids que ficam na frente do adereço])
+##  _lift: ids que sobem LIFT depois dos adereços do "end" (o braço da frente fica na frente do adereço também na
+##         sombra de contato); _grips: [[pos rel, dir, id]] dedos fechados na borda do adereço
+##  _chk: regras da conferência de atravessamento (ver cross_check)
+##  _fingers: [Vector2 rel] dedos da mão de perto por cima do adereço (esteira atravessada); _strap: [[a, b]] alça
 ##  _pre: Callable (toalha do Osmar); _head_rot: graus (cabeça inclinada); _finger: dedo esticado da mão da frente
 func render(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool) -> Dictionary:
 	var size: Vector2i = fr[0]
@@ -307,13 +408,15 @@ func render(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool) -
 		var im: Image = flipped(pr[1]) if fl else pr[1]
 		var rel: Vector2 = pr[2]
 		var id: int = pr[3]
-		(stage[pr[0]] as Array).append(func(lib, O: Vector2, ctx: Dictionary) -> void: put_img(lib, im, O + rel, id))
+		var keep = pr[4] if pr.size() > 4 else null
+		(stage[pr[0]] as Array).append(func(lib, O: Vector2, ctx: Dictionary) -> void: put_img(lib, im, O + rel, id, keep))
 	var face: String = p0.get("face", "normal")
 	var pre = p0.get("_pre", null)
-	var redraw: bool = p0.get("_head_redraw", false)
 	var hrot: float = p0.get("_head_rot", 0.0)
 	var straps: Array = p0.get("_strap", [])
 	var fingers: Array = p0.get("_fingers", [])
+	var grips: Array = p0.get("_grips", [])
+	var lift: Array = p0.get("_lift", [])
 	var finger: bool = p0.get("_finger", false)
 	p["after_torso"] = func(lib, O: Vector2, ctx: Dictionary) -> void:
 		if pre != null:
@@ -327,7 +430,7 @@ func render(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool) -
 				lib.put(int(q.x), int(q.y), "br1", 36)
 		for f in stage.after_torso:
 			(f as Callable).call(lib, O, ctx)
-		if (redraw and not lib.skip_head) or hrot != 0.0:
+		if hrot != 0.0:
 			var hd: Vector2 = ctx.hd
 			lib.limb(lib.TORSO, (ctx.top as Vector2) + V(0, 1), hd + V(0, 4), 2.3, 2.2, b.skin)
 			lib.pmap(lib.HEAD, lib.head_rows(b, "34", face), lib.head_legend(b), hd, b.head_anchor_34, hrot)
@@ -338,7 +441,16 @@ func render(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool) -
 	p["end"] = func(lib, O: Vector2, ctx: Dictionary) -> void:
 		for f in stage.end:
 			(f as Callable).call(lib, O, ctx)
+		if not lift.is_empty():
+			for i in lib.ids.size():
+				if lib.ids[i] in lift:
+					lib.ids[i] = lib.ids[i] + LIFT
+			# as juntas do braço da frente continuam sem sombra de contato com o id novo
+			lib.joint(ID_TORSO, 60 + LIFT, ctx.sl, 4.0)
+			lib.joint(60 + LIFT, 61 + LIFT, ctx.ell, 2.6)
 		var sk: Array = b.skin
+		for g in grips:
+			grip(lib, b, O + (g[0] as Vector2), g[1], g[2])
 		for fp in fingers:
 			var q: Vector2 = O + (fp as Vector2)
 			lib.put(int(q.x) - 1, int(q.y), sk[1], 74)
@@ -369,6 +481,7 @@ func render(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool) -
 			var c: Dictionary = P.captured[-1]
 			under_img(c.full, pim, tl)
 			under_img(c.body, pim, tl)
+	var ids_a: PackedInt32Array = P.ids.duplicate()
 	if left:
 		im.flip_x()
 		if P.capture:
@@ -379,7 +492,95 @@ func render(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool) -
 		for k in ["head", "hip", "top"]:
 			anc[k] = [-float(anc[k][0]), anc[k][1]]
 		anc["view"] = "34_left"
+	if not p0.get("_nochk", false):
+		cross_check(b, p0, tag, fr, left, ids_a, rpiv, fl)
 	return {"im": im, "hands": hands, "anchor": anc}
+
+## Conferência de atravessamento. Para cada quadro com adereço, desenha o mesmo quadro SEM o adereço (B) e compara
+## com o quadro de verdade (A), no mapa de partes:
+##  frente - pixels de uma parte que deveria estar NA FRENTE do adereço (cabeça, mão que segura) cobertos por ele;
+##  atrás  - pixels de uma parte que deveria estar ATRÁS do adereço desenhados por cima dele (dentro da área dele);
+##  dentro - pixels de uma parte que não pode encostar no adereço (a cabeça no saco) dentro da área dele;
+##  funda  - pixels da mão que segura a mais de 3 px da borda do adereço (mão "atravessando" o meio da madeira).
+## Regras por quadro em p0._chk {front, behind, no_overlap, grip}; padrão: cabeça e as duas mãos na frente.
+var chk_rows: Array = []
+
+func cross_check(b: Dictionary, p0: Dictionary, tag: String, fr: Array, left: bool, ids_a: PackedInt32Array, rpiv: Vector2, fl: bool) -> void:
+	var props: Array = p0.get("_props", [])
+	if props.is_empty():
+		return
+	var rules: Dictionary = p0.get("_chk", {})
+	var front: Array = rules.get("front", [ID_HEAD, ID_NEAR_HAND, ID_FAR_HAND])
+	var behind: Array = rules.get("behind", [])
+	var no_ov: Array = rules.get("no_overlap", [])
+	var grip_ids: Array = rules.get("grip", [])
+	var depth: int = rules.get("depth", 3)
+	var size: Vector2i = fr[0]
+	var w := size.x
+	var h := size.y
+	# B: o mesmo quadro sem os adereços (nem dedos por cima)
+	var pB := p0.duplicate()
+	pB["_props"] = []
+	pB.erase("_grips")
+	pB.erase("_fingers")
+	pB.erase("_lift")
+	pB["_nochk"] = true
+	var cap: bool = P.capture
+	P.capture = false
+	var nlog: int = P.log_lines.size()
+	render(b, pB, tag + "#B", fr, left)
+	P.log_lines.resize(nlog)
+	P.capture = cap
+	var ids_b: PackedInt32Array = P.ids.duplicate()
+	# áreas: só os adereços do mapa de partes (fp_lib) e todos (fp_all)
+	var fp_lib := PackedByteArray()
+	fp_lib.resize(w * h)
+	fp_lib.fill(0)
+	var fp_all := fp_lib.duplicate()
+	var prop_ids := {}
+	for pr in props:
+		var im: Image = flipped(pr[1]) if fl else pr[1]
+		var tl: Vector2 = (rpiv + (pr[2] as Vector2)).round()
+		var lib_prop: bool = pr[0] != "under"
+		if lib_prop:
+			prop_ids[int(pr[3])] = true
+		for y in im.get_height():
+			for x in im.get_width():
+				if im.get_pixel(x, y).a < 0.5:
+					continue
+				var X := int(tl.x) + x
+				var Y := int(tl.y) + y
+				if X < 0 or Y < 0 or X >= w or Y >= h:
+					continue
+				fp_all[Y * w + X] = 1
+				if lib_prop:
+					fp_lib[Y * w + X] = 1
+	var n_front := 0
+	var n_behind := 0
+	var n_in := 0
+	var n_deep := 0
+	for y in h:
+		for x in w:
+			var i := y * w + x
+			var a := ids_a[i]
+			var bb := ids_b[i]
+			if prop_ids.has(a) and bb in front:
+				n_front += 1
+			if fp_lib[i] == 1 and a in behind:
+				n_behind += 1
+			if fp_all[i] == 1 and bb in no_ov:
+				n_in += 1
+			if fp_all[i] == 1 and a in grip_ids:
+				var deep := true
+				for dy in range(-depth, depth + 1):
+					for dx in range(-depth, depth + 1):
+						var qx := x + dx
+						var qy := y + dy
+						if qx < 0 or qy < 0 or qx >= w or qy >= h or fp_all[qy * w + qx] == 0:
+							deep = false
+				if deep:
+					n_deep += 1
+	chk_rows.append([tag, n_front, n_behind, n_in, n_deep])
 
 # ================================================================ quem
 func john_build() -> Dictionary:
@@ -629,13 +830,13 @@ func coach_poses(id: String) -> Array:
 			var p2 := tpose(chin.merged({"head": V(2, -55), "hr": V(5, -47)}, true))
 			p2["_head_rot"] = 14.0
 			return [p0, p1, p2]
-		"coach_nudge_photo":   # o dedo da frente empurra o canto de baixo da moldura (a foto entorta no quadro 2)
+		"coach_nudge_photo":   # o dedo da frente encosta no canto de baixo da moldura torta (1) e o empurra 1 px para cima: a foto fica RETA no quadro 2
 			var lean := {"hip": V(2, -30), "top": V(5, -49), "head": V(5, -56), "sl": V(-2, -46), "sr": V(13, -48)}
 			var waist := {"hl": V(-6, -31), "el": V(-10, -38), "stl": "fist", "gkl": "side"}
 			var p0 := tpose(waist.merged({"hr": V(17, -53), "pr": V(0.3, 1), "str": "fist", "gkr": "up", "head": V(2, -55)}, true))
-			var p1 := tpose(lean.merged(waist, true).merged({"hr": V(29, -60), "pr": V(0.3, 1), "str": "fist", "gkr": "side"}, true))
+			var p1 := tpose(lean.merged(waist, true).merged({"hr": V(29, -59), "pr": V(0.3, 1), "str": "fist", "gkr": "side"}, true))
 			p1["_finger"] = true
-			var p2 := tpose(lean.merged(waist, true).merged({"hr": V(29, -59), "pr": V(0.3, 1), "str": "fist", "gkr": "side", "head": V(5, -55)}, true))
+			var p2 := tpose(lean.merged(waist, true).merged({"hr": V(29, -60), "pr": V(0.3, 1), "str": "fist", "gkr": "side", "head": V(5, -55)}, true))
 			p2["_finger"] = true
 			var p3 := tpose(waist.merged({"hr": V(13, -44), "pr": V(0.4, 1), "str": "fist", "gkr": "up", "head": V(1, -55)}, true))
 			return [p0, p1, p2, p3]
@@ -657,7 +858,7 @@ const COACH := {
 	"coach_look_photo": {"fps": 10, "loop": false, "pos": "P_COACH_BACK", "fr": "STD", "scene": "look_photo", "hold_frame": 2,
 		"note": "0 braços soltos; 1 mão da frente no queixo, a outra apoia o cotovelo; 2 CABEÇA INCLINADA (14 graus para a foto) olhando a foto. Segurar o quadro 2."},
 	"coach_nudge_photo": {"fps": 10, "loop": false, "pos": "P_COACH", "fr": "PHOTOF", "scene": "nudge_photo", "nudge_frame": 2,
-		"note": "Outra mão na cintura. 0 braço da frente sobe; 1 dedo esticado no canto de baixo à direita da moldura (ponta do dedo perto de 229,177); 2 EMPURRA 1 px para baixo: a foto entorta NESTE quadro (nudge_frame: trocar wall_photo_old_gym para crooked); 3 recolhe o braço, satisfeito. A moldura NÃO está na folha (é o adereço da parede)."},
+		"note": "Outra mão na cintura. 0 braço da frente sobe; 1 dedo esticado encosta no canto de baixo à direita da moldura TORTA (ponta do dedo perto de 229,178); 2 EMPURRA 1 px para CIMA (ponta perto de 229,177): a foto ENDIREITA neste quadro (nudge_frame: trocar wall_photo_old_gym para straight, quadro 0); 3 recolhe o braço, satisfeito. A moldura NÃO está na folha (é o adereço da parede)."},
 	"coach_idle_gym": {"fps": 3, "loop": true, "pos": "P_COACH", "fr": "STD", "scene": "idle@gym",
 		"note": "= coach_idle (braços cruzados, respiração lenta) com a LUZ DOS TUBOS da academia aplicada no ponto (196,236) no lugar da lâmpada da garagem. Usar no lugar do coach_idle quando ele está na academia."},
 	"coach_talk_gym": {"fps": 6, "loop": true, "pos": "P_COACH", "fr": "STD", "scene": "talk@gym",
@@ -692,7 +893,9 @@ func gen_coach() -> void:
 			extra["photo_rect_rel"] = [16, -78, 18, 21]
 			extra["photo_note"] = "Canto de cima à esquerda da moldura relativo ao pivô no quadro 3-4 (= gym_photo_spot 212,158 com o Osmar em 196,236)."
 		if id == "coach_nudge_photo":
-			extra["finger_tip_rel"] = [33, -60]
+			extra["finger_tip_rel"] = [33, -59]
+			extra["finger_tip_rel_by_frame"] = {"1": [33, -58], "2": [33, -59]}
+			extra["photo_note"] = "O Osmar DESENTORTA a foto: no quadro 1 o dedo encosta no canto da moldura torta; no nudge_frame (2) ele sobe 1 px e a foto fica reta (wall_photo_old_gym quadro 0)."
 		save_plain(id, frames, hands, anchors, fr, pos, e, "characters/", extra, "direita")
 	# conferência: o coach_idle da garagem, desenhado por este gerador com a luz da lâmpada, tem de bater com o atual
 	var chk := []
@@ -712,18 +915,105 @@ func gen_coach() -> void:
 
 # ================================================================ JOHN e DISCÍPULO (mesmo corpo)
 ## Saco deitado no ombro de perto (o de trás de quem anda), atrás da cabeça; a mão de perto segura por cima.
+## (refeito) O saco em ESCALA DE CARREGAR (bag_carry: o mesmo saco remendado, ~60%), em diagonal: a boca (tampa
+## escura) logo ATRÁS da nuca, sem encostar na cabeça; a barriga do saco apoiada no ombro de perto e o fundo
+## descendo pelas costas. Ordem de camadas: o saco entra no mapa de partes só onde o quadro está vazio (atrás de
+## todo o corpo); o braço de perto sobe pela frente do saco e a mão fecha no canto de cima da boca, com os dedos
+## por cima do pano.
+const BAG_ANG := 15.0
+const BAG_LEN := 36.0
+const BAG_R := 7.5
+
 func with_bag(o: Dictionary) -> Dictionary:
 	var sl: Vector2 = o.sl
-	var bw := img_bag_h.get_width()
-	var bh := img_bag_h.get_height()
-	var tl := V(sl.x + 19 - bw, sl.y - 13 - bh / 2.0).round()
-	o["hl"] = V(sl.x - 2, sl.y - 19)
-	o["pl"] = V(-1, 0.4)
+	var hd: Vector2 = o.head
+	var bc: Dictionary = bag_carry(BAG_ANG, BAG_LEN, BAG_R)
+	var d: Vector2 = bc.d
+	var n: Vector2 = bc.n
+	var F := V(hd.x - 9.0, sl.y - 6.0)
+	var tl: Vector2 = (F - (bc.F as Vector2)).round()
+	var H: Vector2 = (F + n * BAG_R + d * 6.0).round()
+	o["hl"] = H
+	o["pl"] = V(-1, -0.4)
 	o["stl"] = "fist"
 	o["gkl"] = "up"
-	o["_props"] = [["after_torso", img_bag_h, tl, 35]]
-	o["_head_redraw"] = true
+	o["_props"] = [["end", bc.im, tl, 5, "empty"]]
+	o["_grips"] = [[H - n * 1.0, -n, ID_NEAR_HAND]]
+	o["_chk"] = {"front": [ID_HEAD, ID_NEAR_HAND, ID_FAR_HAND], "no_overlap": [ID_HEAD], "grip": [ID_NEAR_HAND]}
 	return o
+
+## Saco de carregar desenhado por código, com as cores do bag_l0 (vermelho remendado, fita prata, X de fita, boca
+## escura). ang = graus abaixo da horizontal, indo para TRÁS (-x) a partir da boca; len = comprimento; r = meia
+## grossura. Devolve {im, F (centro da boca na imagem), d (eixo boca->fundo), n (normal para cima)}.
+func bag_carry(ang: float, ln: float, r: float) -> Dictionary:
+	var a := deg_to_rad(ang)
+	var d := Vector2(-cos(a), sin(a))
+	var n := Vector2(-sin(a), -cos(a))
+	var pts := []
+	for u in [-2.5, ln + 0.5]:
+		for v in [-r - 0.5, r + 0.5]:
+			pts.append(d * u + n * v)
+	var mn := Vector2(1e9, 1e9)
+	var mx := Vector2(-1e9, -1e9)
+	for q in pts:
+		mn = Vector2(minf(mn.x, q.x), minf(mn.y, q.y))
+		mx = Vector2(maxf(mx.x, q.x), maxf(mx.y, q.y))
+	var ox := floorf(mn.x) - 1.0
+	var oy := floorf(mn.y) - 1.0
+	var w := int(ceilf(mx.x) - ox) + 2
+	var h := int(ceilf(mx.y) - oy) + 2
+	var F := Vector2(-ox, -oy)
+	var lab := []
+	for y in h:
+		var rowl := []
+		for x in w:
+			var p := Vector2(x + 0.5, y + 0.5) - F
+			var u := p.dot(d)
+			var v := p.dot(n)
+			var c := ""
+			if u >= 0.0 and u <= ln and absf(v) <= r:
+				var corner := (u < 1.5 or u > ln - 1.5) and absf(v) > r - 1.2
+				if not corner:
+					c = "r1"
+					if v >= r * 0.4:
+						c = "r2"
+					elif v < -r * 0.45:
+						c = "r0"
+					if absf(v - r * 0.62) < 0.55 and u > ln * 0.15 and u < ln * 0.9:
+						c = "r3"
+					if u > ln - 2.0:
+						c = "r0" if v < r * 0.4 else "r1"
+					for tu in [ln * 0.3, ln * 0.66]:
+						if u >= tu and u < tu + 2.2:
+							c = "g3" if v > -r * 0.2 else "g2"
+					if u < 1.3:
+						c = "g0" if v > 0.0 else "d2"
+			elif u >= -1.3 and u < 0.0 and absf(v) <= r - 1.3:
+				c = "d2"
+			rowl.append(c)
+		lab.append(rowl)
+	var im: Image = L.blank(w, h)
+	for y in h:
+		for x in w:
+			var c: String = lab[y][x]
+			if c == "":
+				continue
+			var edge := false
+			for dd in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var qx: int = x + dd.x
+				var qy: int = y + dd.y
+				if qx < 0 or qy < 0 or qx >= w or qy >= h or lab[qy][qx] == "":
+					edge = true
+			im.set_pixel(x, y, L.col("ink" if edge else c))
+	# remendo em X (fita), em pixels de tela para ficar nítido
+	var cp: Vector2 = (F + d * (ln * 0.84) + n * (-r * 0.15)).floor()
+	for k in range(-2, 3):
+		for s in [1, -1]:
+			var qx: int = int(cp.x) + k
+			var qy: int = int(cp.y) + k * int(s)
+			if qx >= 0 and qy >= 0 and qx < w and qy < h and lab[qy][qx] != "" and im.get_pixel(qx, qy) != L.col("ink"):
+				im.set_pixel(qx, qy, L.col("g3"))
+	return {"im": im, "F": F, "d": d, "n": n}
 
 func carry_bag_poses() -> Array:
 	var out := []
@@ -755,33 +1045,43 @@ func hang_bag_poses() -> Array:
 	far_swing(f0, 6.0)
 	o.append(G(with_bag(f0)))
 	# 1 tira do ombro: saco deitado por cima da cabeça, as duas mãos embaixo
+	# (refeito) o mesmo saco de carregar, deitado ACIMA da cabeça (1 px de folga), as duas mãos por baixo com os dedos
+	# fechados no pano
 	var f1 := {"hip": V(0, -31), "top": V(1, -50), "head": V(1, -57), "sl": V(-6, -48), "sr": V(9, -48), "toel": V(-3, 0), "toer": V(10, 0),
-		"hl": V(1, -63), "pl": V(-1, 0.3), "stl": "fist", "gkl": "up", "hr": V(16, -63), "pr": V(1, 0.3), "str": "fist", "gkr": "up", "face": "effort",
+		"hl": V(-3, -65), "pl": V(-1, 0.3), "stl": "fist", "gkl": "up", "hr": V(15, -65), "pr": V(1, 0.3), "str": "fist", "gkr": "up", "face": "effort",
 		"kl": V(1, 0), "kr": V(1, 0)}
-	f1["_props"] = [["after_torso", img_bag_h, V(10 - img_bag_h.get_width() / 2.0, -64 - img_bag_h.get_height()).round(), 35]]
-	f1["_head_redraw"] = true
+	var bc: Dictionary = bag_carry(0.0, BAG_LEN, BAG_R)
+	var Fh := V(6.0 + BAG_LEN / 2.0, -67.0 - BAG_R)
+	f1["_props"] = [["end", bc.im, (Fh - (bc.F as Vector2)).round(), 5, "empty"]]
+	f1["_grips"] = [[V(-3, -67), V(0, -1), ID_NEAR_HAND], [V(15, -67), V(0, -1), ID_FAR_HAND]]
+	f1["_chk"] = {"front": [ID_HEAD, ID_NEAR_HAND, ID_FAR_HAND], "no_overlap": [ID_HEAD], "grip": [ID_NEAR_HAND, ID_FAR_HAND]}
 	o.append(G(f1))
 	# 2 de pé: o saco (já em pé) sobe na frente, abraçado pelo lado de perto; 9 px abaixo do gancho
 	var lean := {"hip": V(2, -31), "top": V(5, -50), "head": V(6, -57), "sl": V(-1, -48), "sr": V(11, -48), "toel": V(-2, 0), "toer": V(11, 0),
 		"tw": 0.6, "face": "effort", "kl": V(1, 0), "kr": V(1, 0)}
 	var f2 := lean.duplicate()
-	f2.merge({"hl": V(16, -56), "pl": V(-0.3, 1), "stl": "fist", "gkl": "side", "hr": V(18, -48), "pr": V(0.2, 1), "str": "fist", "gkr": "side"}, true)
+	f2.merge({"hl": V(15, -46), "pl": V(-0.3, 1), "stl": "fist", "gkl": "side", "hr": V(17, -40), "pr": V(0.2, 1), "str": "fist", "gkr": "side"}, true)
 	f2["_props"] = [bag_at(ring + V(0, 9))]
+	# (refeito) as mãos abraçam o saco pelo lado de perto, abaixo do queixo (antes o braço passava na frente do rosto)
+	f2["_grips"] = [[V(16, -46), V(1, 0), ID_NEAR_HAND], [V(18, -40), V(1, 0), ID_FAR_HAND]]
+	f2["_chk"] = {"front": [], "no_overlap": [ID_HEAD], "grip": [ID_NEAR_HAND, ID_FAR_HAND]}
 	o.append(G(f2))
 	# 3 ponta dos pés: argola 2 px acima do gancho
 	var tip := {"hip": V(2, -33), "top": V(5, -52), "head": V(6, -59), "sl": V(0, -50), "sr": V(12, -50), "toel": V(-2, 0), "toer": V(11, 0),
 		"shoel": "34ball", "shoer": "34ball", "tw": 0.6, "face": "effort", "kl": V(1, 0), "kr": V(1, 0)}
 	var f3 := tip.duplicate()
-	f3.merge({"hl": V(16, -64), "pl": V(-0.3, 1), "stl": "fist", "gkl": "up", "hr": V(18, -56), "pr": V(0.2, 1), "str": "fist", "gkr": "side"}, true)
+	f3.merge({"hl": V(15, -49), "pl": V(-0.3, 1), "stl": "fist", "gkl": "side", "hr": V(17, -43), "pr": V(0.2, 1), "str": "fist", "gkr": "side"}, true)
 	f3["_props"] = [bag_at(ring + V(0, -2))]
+	f3["_grips"] = [[V(16, -49), V(1, 0), ID_NEAR_HAND], [V(18, -43), V(1, 0), ID_FAR_HAND]]
+	f3["_chk"] = {"front": [], "no_overlap": [ID_HEAD], "grip": [ID_NEAR_HAND, ID_FAR_HAND]}
 	o.append(G(f3))
 	# 4 ENGANCHA: o saco vira o objeto da sala (não está na folha); as mãos descem 2 px com ele
 	var f4 := tip.duplicate()
-	f4.merge({"hl": V(16, -62), "pl": V(-0.3, 1), "stl": "fist", "gkl": "up", "hr": V(18, -54), "pr": V(0.2, 1), "str": "fist", "gkr": "side"}, true)
+	f4.merge({"hl": V(15, -47), "pl": V(-0.3, 1), "stl": "fist", "gkl": "side", "hr": V(17, -41), "pr": V(0.2, 1), "str": "fist", "gkr": "side"}, true)
 	o.append(G(f4))
 	# 5 solta: mãos abertas se afastando, calcanhares descem
 	var f5 := lean.duplicate()
-	f5.merge({"hl": V(12, -52), "pl": V(-0.3, 1), "stl": "open", "gkl": "up", "hr": V(15, -45), "pr": V(0.3, 1), "str": "open", "gkr": "side", "face": "normal"}, true)
+	f5.merge({"hl": V(13, -44), "pl": V(-0.3, 1), "stl": "open", "gkl": "side", "hr": V(15, -38), "pr": V(0.3, 1), "str": "open", "gkr": "side", "face": "normal"}, true)
 	o.append(G(f5))
 	# 6 baixa os braços
 	var f6 := stand_base()
@@ -794,19 +1094,29 @@ func hang_bag_poses() -> Array:
 	o.append(G(f7))
 	return o
 
-## Caixote nos dois braços, à frente do peito (por cima do tronco, por baixo dos braços).
+## (refeito) Caixote nos dois braços, na frente da barriga, um pouco para a frente do corpo. Ordem de camadas: braço
+## de trás (antebraço e mão) e tronco ATRÁS do caixote; braço e mão de perto NA FRENTE. As mãos seguram nas
+## LATERAIS, embaixo (a de perto fecha na quina de baixo com os dedos por cima da madeira; a de trás aparece do outro
+## lado da tábua, segurando a lateral), nunca no meio da frente.
+const CRATE_RULES := {"front": [ID_HEAD, ID_NEAR_HAND], "behind": [ID_TORSO, ID_FAR_UP, ID_FAR_FORE, ID_FAR_HAND, 10, 11, 12, 13, 14, 15],
+	"no_overlap": [ID_HEAD], "grip": [ID_NEAR_HAND, ID_NEAR_HAND + LIFT]}
+
 func with_crate(o: Dictionary) -> Dictionary:
 	var top: Vector2 = o.top
-	var tl := V(-3 - (2.0 - top.x), top.y + 5).round()
-	o["hl"] = V(tl.x + 1, tl.y + 9)
-	o["pl"] = V(-0.4, 1)
+	var tl := V(top.x - 10.0, top.y + 5.0).round()
+	var cw := img_crate.get_width()
+	o["hl"] = V(tl.x - 1, tl.y + 14)
+	o["pl"] = V(-1, 0.3)
 	o["stl"] = "fist"
-	o["gkl"] = "side"
-	o["hr"] = V(tl.x + 24, tl.y + 8)
-	o["pr"] = V(0.3, 1)
+	o["gkl"] = "up"
+	o["hr"] = V(tl.x + cw + 1, tl.y + 13)
+	o["pr"] = V(1, 0.4)
 	o["str"] = "fist"
-	o["gkr"] = "side"
-	o["_props"] = [["after_torso", img_crate, tl, 55]]
+	o["gkr"] = "up"
+	o["_props"] = [["end", img_crate, tl, 75, ID_NEAR_ARM]]
+	o["_lift"] = ID_NEAR_ARM
+	o["_grips"] = [[V(tl.x + 1, tl.y + 14), V(1, 0), ID_NEAR_HAND + LIFT]]
+	o["_chk"] = CRATE_RULES
 	return o
 
 func carry_crate_poses() -> Array:
@@ -823,9 +1133,12 @@ func put_crate_poses(who: String) -> Array:
 	with_crate(f0)
 	# 1 dobra os joelhos e pousa o caixote atrás de si (2 px acima do chão)
 	var f1 := {"hip": V(-5, -24), "top": V(-1, -42), "head": V(2, -49), "sl": V(-8, -39), "sr": V(6, -39), "toel": V(0, 0), "toer": V(9, 0),
-		"kl": V(1, -0.2), "kr": V(1, -0.2), "hl": V(-14, -23), "pl": V(-0.3, 1), "stl": "fist", "gkl": "side", "hr": V(7, -23), "pr": V(0.4, 1),
-		"str": "fist", "gkr": "side"}
+		"kl": V(1, -0.2), "kr": V(1, -0.2), "hl": V(-14, -24), "pl": V(-0.3, 1), "stl": "fist", "gkl": "up", "hr": V(7, -24), "pr": V(0.4, 1),
+		"str": "fist", "gkr": "up"}
+	# (refeito) o caixote está atrás das pernas; as mãos fecham na borda de cima, dedos por cima da tampa
 	f1["_props"] = [["under", img_crate, crate_tl + V(0, -2), 0]]
+	f1["_grips"] = [[V(-14, -22), V(0, 1), ID_NEAR_HAND], [V(7, -22), V(0, 1), ID_FAR_HAND]]
+	f1["_chk"] = {"front": [], "grip": [ID_NEAR_HAND, ID_FAR_HAND]}
 	# 2 SOLTA (o caixote vira adereço): meio agachado, mãos abertas saindo de cima do caixote
 	var f2 := {"hip": V(-3, -27), "top": V(0, -45), "head": V(2, -52), "sl": V(-7, -42), "sr": V(7, -42), "toel": V(0, 0), "toer": V(9, 0),
 		"kl": V(1, -0.2), "kr": V(1, -0.2), "hl": V(-9, -26), "pl": V(-0.3, 1), "stl": "open", "hr": V(9, -26), "pr": V(0.4, 1), "str": "open", "face": face}
@@ -906,7 +1219,9 @@ func pick_duffel_poses() -> Array:
 	var f4 := G({"hip": V(0, -28), "top": V(4, -46), "head": V(6, -53), "sl": V(-3, -43), "sr": V(11, -44), "tw": 0.5,
 		"hl": V(-5, -26), "stl": "open", "pl": ELB, "hr": V(17, -33), "str": "fist", "gkr": "side", "pr": V(0.3, 1),
 		"toel": V(-1, 0), "toer": V(11, 0), "kl": V(1, 0), "kr": V(1, 0)})
-	f4["_props"] = [["end", img_duffel, V(17 - 9, -33 + 2), 76]]
+	f4["_props"] = [["end", img_duffel, V(17 - 9, -33 + 2), 76, [ID_FAR_FORE, ID_FAR_HAND]]]
+	# (refeito) a mão fecha NA FRENTE das alças (antes a bolsa era desenhada por cima do punho)
+	f4["_chk"] = {"front": [ID_HEAD, ID_FAR_HAND], "grip": [ID_FAR_HAND]}
 	o.append(f4)
 	# 5 bolsa no ombro de trás (= walk_duffel q0 parado)
 	var f5 := stand_base()
@@ -966,13 +1281,13 @@ func duck_out_poses() -> Array:
 ## Tabela das folhas do lutador (John e discípulo). who = "john" | "disc".
 const FIGHTER := {
 	"carry_bag": {"left": true, "fps": 10, "loop": true, "fr": "BAGF", "step_frames": [1, 4], "who": ["john", "disc"],
-		"note": "Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) deitado no ombro de trás, atrás da cabeça (a cabeça aparece inteira); a mão de perto segura o saco por cima, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho."},
+		"note": "Andar para a ESQUERDA com o saco remendado (bag_l0, sempre o da garagem) em ESCALA DE CARREGAR (36x15, desenhado à parte com as mesmas cores) apoiado no ombro de trás, a boca logo atrás da nuca sem encostar na cabeça e o fundo descendo para trás; a mão de perto fecha na borda de cima, perto da boca, com os dedos por cima do pano, o outro braço balança oposto à perna. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho."},
 	"carry_bag_idle": {"left": true, "fps": 3, "loop": true, "fr": "BAGF", "who": ["john", "disc"],
 		"note": "Parado em (352,262) virado para a ESQUERDA (para o Osmar) com o saco no ombro; quadro 1 = ajeita o peso, corpo e saco 1 px abaixo."},
 	"hang_bag": {"left": false, "fps": 10, "loop": false, "fr": "HANGF", "release_frame": 4, "who": ["john", "disc"],
-		"note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: saco deitado por cima da cabeça, as duas mãos embaixo; 2 o saco já em pé sobe na frente (argola 9 px abaixo do gancho), mãos no lado de perto; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho."},
+		"note": "Em (303,272), termina virado para a DIREITA. 0 virou para o gancho, saco ainda no ombro; 1 tira do ombro: o mesmo saco de carregar deitado acima da cabeça (1 px de folga), as duas mãos embaixo com os dedos fechados no pano; 2 o saco (agora o bag_l0 inteiro, na escala da sala) sobe na frente (argola 9 px abaixo do gancho), abraçado pelo lado de perto abaixo do queixo; 3 na ponta dos pés, argola 2 px acima do gancho (336,183); 4 ENGANCHA: o saco vira o objeto da sala NESTE quadro (release_frame; a folha não desenha o saco), poeira; 5 solta, mãos abertas; 6 baixa os braços; 7 parado (= disciple_stand_bare q0). Nos quadros 2-3 o saco é o bag_l0_idle q0 inteiro, desenhado atrás dele, na posição exata do gancho."},
 	"carry_crate": {"left": true, "fps": 10, "loop": true, "fr": "STD", "step_frames": [1, 4], "who": ["john", "disc", "helper"],
-		"note": "Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, à frente do peito, tronco 1 px para trás. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho."},
+		"note": "Andar para a ESQUERDA com o caixote (garage_crate) nos dois braços, na frente da barriga e um pouco à frente do corpo, tronco 1 px para trás. Mãos nas LATERAIS, embaixo: a de perto fecha na quina (dedos por cima da madeira), a de trás aparece do outro lado da tábua; o tronco e o braço de trás ficam atrás do caixote, o braço de perto na frente. Passada de 14 px, 48 px/s. 1 e 4 = pé pousa. Sem espelho."},
 	"put_crate": {"left": false, "fps": 10, "loop": false, "fr": "STD", "release_frame": 2, "who": ["john", "disc", "helper"],
 		"note": "Em (254,252), termina virado para a DIREITA. 0 girou o corpo (caixote ainda no peito); 1 dobra os joelhos e pousa o caixote atrás de si (2 px acima do lugar final, desenhado atrás das pernas); 2 SOLTA: o caixote vira adereço NESTE quadro (garage_crate em 238,232), meio agachado, mãos abertas. Depois: sit_down a partir do QUADRO 1 (o quadro 0 do sit_down é em pé) ou, para o vizinho, stand."},
 	"sit_down": {"left": false, "fps": 10, "loop": false, "fr": "STD", "who": ["disc"],
@@ -1181,11 +1496,11 @@ const HELPER := {
 	"treadmill_stuck": {"left": true, "fps": 4, "loop": true, "fr": "TREADF",
 		"note": "Parado atrás da esteira atravessada, olha um batente (q1), olha o outro (q2-q3, cabeça virada). Quase sem movimento."},
 	"treadmill_turn": {"left": true, "fps": 10, "loop": false, "fr": "TREADF",
-		"note": "Gira a esteira para passar de ponta: 0 atravessada (86 px); 1 meio giro (60); 2 (36); 3 de ponta, estreita (24 px, rolo na frente, painel lá atrás)."},
+		"note": "Gira a esteira para passar de ponta: 0 atravessada (86 px); 1 meio giro (60); 2 (36); 3 DOBRADA e de lado (20x40: deque em pé com os rolos, coluna e painel, base com rodinhas), na mesma pegada do treadmill_carry."},
 	"treadmill_carry": {"left": true, "fps": 10, "loop": true, "fr": "TREADF", "step_frames": [1, 4],
-		"note": "Anda com a esteira de ponta na frente do corpo, de (430,222) a (440,250), virado para a ESQUERDA. 1 e 4 = pé pousa."},
+		"note": "Anda com a esteira DOBRADA carregada de lado, um pouco à frente do corpo (o tronco aparece atrás dela; a mão de perto fecha na borda do deque, a de trás segura a coluna), de (430,222) a (440,250), virado para a ESQUERDA. 1 e 4 = pé pousa."},
 	"treadmill_put": {"left": true, "fps": 10, "loop": false, "fr": "TREADF", "release_frame": 2,
-		"note": "Em (440,250): 0 abaixa a esteira de ponta dobrando os joelhos; 1 ela gira de volta e encosta no chão no lugar (pivô 445,267); 2 a esteira vira o adereço da sala NESTE quadro (não está na folha), ele endireita."},
+		"note": "Em (440,250): 0 abaixa a esteira dobrada dobrando os joelhos (base 4 px acima do chão); 1 ela gira de volta e encosta no chão no lugar (pivô 445,267); 2 a esteira vira o adereço da sala NESTE quadro (não está na folha), ele endireita."},
 }
 
 func helper_stand(dy: float) -> Dictionary:
@@ -1202,6 +1517,30 @@ func tm_hold(o: Dictionary, im: Image, dx: float, dy: float, bottom := -14.0) ->
 	var tl := V(cx - w / 2.0, bottom - h + dy).round()
 	o["_props"] = [["after_left", im, tl, 65]]
 	o["_keep_screen"] = true
+	return o
+
+## (refeito) Esteira dobrada carregada DE LADO, um pouco à frente do corpo (o tronco aparece atrás dela, não é uma
+## caixa grudada no peito). Ordem de camadas: braço de trás, pernas e tronco ATRÁS da esteira; braço e mão de perto
+## NA FRENTE. A mão de perto fecha na borda de trás do deque (dedos por cima do trilho); a de trás segura a coluna
+## e aparece do lado de lá dela. y_top = topo da esteira (rel. ao pivô).
+const TM_RULES := {"front": [ID_HEAD, ID_NEAR_HAND], "behind": [ID_TORSO, ID_FAR_UP, ID_FAR_FORE, ID_FAR_HAND, 10, 11, 12, 13, 14, 15],
+	"no_overlap": [ID_HEAD], "grip": [ID_NEAR_HAND, ID_NEAR_HAND + LIFT]}
+
+func tm_fold_hold(o: Dictionary, y_top: float) -> Dictionary:
+	var top: Vector2 = o.top
+	var tl := V(top.x - 1.0, y_top).round()
+	o["hl"] = V(tl.x, tl.y + 20)
+	o["pl"] = V(-1, 0.4)
+	o["stl"] = "fist"
+	o["gkl"] = "up"
+	o["hr"] = V(tl.x + 13, tl.y + 21)
+	o["pr"] = V(1, 0.5)
+	o["str"] = "fist"
+	o["gkr"] = "up"
+	o["_props"] = [["end", img_tm_fold, tl, 75, ID_NEAR_ARM]]
+	o["_lift"] = ID_NEAR_ARM
+	o["_grips"] = [[V(tl.x + 2, tl.y + 20), V(1, 0), ID_NEAR_HAND + LIFT]]
+	o["_chk"] = TM_RULES
 	return o
 
 func helper_poses(id: String) -> Array:
@@ -1235,21 +1574,27 @@ func helper_poses(id: String) -> Array:
 					"hr": V(10 + dx, -28 + s[1]), "pr": V(0.3, 1), "str": "fist", "gkr": "up"}, true)
 				tm_hold(o, flipped(img_tm), dx, s[1])
 				o["_fingers"] = [V(-6 + dx, -27 + s[1])]
+				# atravessada: a mão de perto fica atrás do trilho (só os dedos por cima); a de trás, na frente
+				o["_chk"] = {"front": [ID_HEAD, ID_FAR_HAND], "no_overlap": [ID_HEAD]}
 				out.append(G(o))
 			return out
 		"treadmill_turn":
 			var out := []
-			var ims := [img_tm, tm_squeezed(60), tm_squeezed(36), img_tm_end]
-			var hx := [[-6, 10], [-5, 9], [-4, 8], [-7, 12]]
+			var ims := [img_tm, tm_squeezed(60), tm_squeezed(36)]
+			var hx := [[-6, 10], [-5, 9], [-4, 8]]
 			for i in 4:
 				var o := stand_base()
 				o.merge({"toel": V(-2, 0), "toer": V(10, 0), "kl": V(1, 0), "kr": V(1, 0), "tw": [0.0, -0.3, -0.5, 0.0][i]}, true)
-				var bottom := -14.0 if i < 3 else -21.0
-				var hy := -28.0 if i < 3 else -27.0
+				if i == 3:
+					# (refeito) 3 = já DOBRADA e de lado, na mesma pegada do treadmill_carry
+					out.append(G(tm_fold_hold(o, -49.0)))
+					continue
+				var hy := -28.0
 				o.merge({"hl": V(hx[i][0], hy), "pl": V(-0.3, 1), "stl": "fist", "gkl": "up",
 					"hr": V(hx[i][1], hy), "pr": V(0.3, 1), "str": "fist", "gkr": "up"}, true)
-				tm_hold(o, flipped(ims[i]), 0, 0, bottom)
+				tm_hold(o, flipped(ims[i]), 0, 0, -14.0)
 				o["_fingers"] = [V(hx[i][0], hy + 1)]
+				o["_chk"] = {"front": [ID_HEAD, ID_FAR_HAND], "no_overlap": [ID_HEAD]}
 				out.append(G(o))
 			return out
 		"treadmill_carry":
@@ -1258,19 +1603,15 @@ func helper_poses(id: String) -> Array:
 				var o: Dictionary = r
 				var top: Vector2 = o.top
 				var bob := top.y + 50.0
-				o.merge({"hl": V(-7, -27 + bob), "pl": V(-0.3, 1), "stl": "fist", "gkl": "up",
-					"hr": V(12, -27 + bob), "pr": V(0.3, 1), "str": "fist", "gkr": "up"}, true)
 				o.erase("_ar")
-				tm_hold(o, flipped(img_tm_end), 0, bob, -21.0)
-				o["_fingers"] = [V(-7, -26 + bob)]
-				out.append(G(o))
+				out.append(G(tm_fold_hold(o, -49.0 + bob)))
 			return out
 		"treadmill_put":
 			var rel := TM_PIV - P_TM_END   # (5,17) na tela; na pose montada para a direita, x troca de sinal
 			var f0 := {"hip": V(-1, -26), "top": V(1, -44), "head": V(2, -51), "sl": V(-6, -41), "sr": V(8, -41), "toel": V(-2, 0), "toer": V(10, 0),
-				"kl": V(1, -0.2), "kr": V(1, -0.2), "hl": V(-7, -22), "pl": V(-0.3, 1), "stl": "fist", "gkl": "up", "hr": V(12, -22), "pr": V(0.3, 1), "str": "fist", "gkr": "up"}
-			tm_hold(f0, flipped(img_tm_end), 0, 0, -15.0)
-			f0["_fingers"] = [V(-7, -21)]
+				"kl": V(1, -0.2), "kr": V(1, -0.2)}
+			# (refeito) 0 abaixa a esteira DOBRADA (a mesma pegada do carry), joelhos dobrados, base 3 px acima do chão
+			tm_fold_hold(f0, -43.0)
 			var f1 := {"hip": V(-2, -24), "top": V(2, -41), "head": V(4, -48), "sl": V(-4, -38), "sr": V(10, -38), "toel": V(-2, 0), "toer": V(10, 0),
 				"kl": V(1, -0.2), "kr": V(1, -0.2), "hl": V(-6, -21), "pl": V(-0.3, 1), "stl": "open", "gkl": "diagdown", "hr": V(13, -21), "pr": V(0.3, 1), "str": "open", "gkr": "diagdown"}
 			var sq := tm_squeezed(70)
@@ -1610,6 +1951,7 @@ func _init() -> void:
 	gen_disc()
 	gen_helper()
 	check_colors()
+	var chk_bad := report_cross()
 	var anims := {
 		"coach": {"hold_photo": "coach_hold_photo", "hang_photo": "coach_hang_photo", "step_back": "coach_step_back",
 			"look_photo": "coach_look_photo", "nudge_photo": "coach_nudge_photo", "idle@gym": "coach_idle_gym", "talk@gym": "coach_talk_gym"},
@@ -1635,9 +1977,9 @@ func _init() -> void:
 			"how": "Troca exata de cor por pixel (from -> to). Só a regata muda: verde (neighbor_1) -> vermelha. Nenhuma outra cor das folhas helper_* é verde ou vermelha (o gerador confere).",
 			"swap": helper2_swap()}},
 		"props_in_sheets": {
-			"saco": "bag_l0_idle q0 (saco remendado), sempre, em qualquer nível comprado. Deitado = o corpo sem a argola girado 90 graus (tampa para a frente).",
+			"saco": "bag_l0_idle q0 (saco remendado), sempre, em qualquer nível comprado. No ombro e acima da cabeça (carry_bag, carry_bag_idle, hang_bag q0-1) = o mesmo saco em escala de carregar (36x15, bag_carry no gerador); no gancho (hang_bag q2-3) = o bag_l0_idle q0 inteiro.",
 			"caixote": "garage_crate (mesmas cores); em put_crate q1 está 2 px acima do lugar final (238,232).",
-			"esteira": "treadmill_l0_idle (enferrujada, da garagem); meio giro = a mesma apertada na largura; de ponta = desenho próprio 24x30 com as mesmas cores.",
+			"esteira": "treadmill_l0_idle (enferrujada, da garagem); meio giro = a mesma apertada na largura; carregada (turn q3, carry, put q0) = DOBRADA de lado, desenho próprio 20x40 com as mesmas cores (deque em pé com os rolos, coluna e painel, base).",
 			"foto": "wall_photo_old endireitada (metade direita 1 px acima = a versão 'reta'). O Diretor de Arte pode usar a mesma conta para o quadro 0 do wall_photo_old_gym.",
 			"bolsa": "Bolsa de lona do John 18x11 (mock/fase6c1_bolsa_ref.png): o john_duffel do Diretor de Arte deve ser este mesmo desenho para a troca do grab_frame não pular.",
 		},
@@ -1659,5 +2001,31 @@ func _init() -> void:
 			print(l)
 	for l in report:
 		print(l)
+	if chk_bad > 0:
+		print("FALHA: conferência de atravessamento com %d px (ver relatorio.txt)" % chk_bad)
+		quit(1)
+		return
 	print("ok: %d folhas" % sprites.size())
 	quit()
+
+## Resumo da conferência de atravessamento (cross_check). Devolve o total de pixels com problema.
+func report_cross() -> int:
+	var tot := 0
+	var by_sheet := {}
+	for r in chk_rows:
+		var sid: String = (r[0] as String).get_slice("[", 0)
+		var bad: int = int(r[1]) + int(r[2]) + int(r[3]) + int(r[4])
+		tot += bad
+		if not by_sheet.has(sid):
+			by_sheet[sid] = [0, 0, 0, 0, 0]
+		var a: Array = by_sheet[sid]
+		a[0] += 1
+		for k in 4:
+			a[k + 1] += int(r[k + 1])
+		if bad > 0:
+			report.append("ATRAVESSA %s: frente %d, atrás %d, dentro %d, mão funda %d" % [r[0], r[1], r[2], r[3], r[4]])
+	for sid in by_sheet:
+		var a: Array = by_sheet[sid]
+		report.append("conferência de atravessamento %s: %d quadros com adereço; frente %d, atrás %d, dentro %d, mão funda %d" % [sid, a[0], a[1], a[2], a[3], a[4]])
+	report.append("CONFERÊNCIA DE ATRAVESSAMENTO: %d quadros com adereço, %d px com problema" % [chk_rows.size(), tot])
+	return tot

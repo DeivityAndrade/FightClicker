@@ -7,7 +7,7 @@ Balão: minúsculas, máx. 2 linhas de 26. Letras só da lista da 5x7 (á â ã 
 ## 1. Cena da chegada (prefixo `aca_`, em `ui_texts.json`)
 | Chave | Quem | Texto |
 |---|---|---|
-| `aca_agora_sim` | Osmar (`coach`), depois de entortar a foto | `agora sim.` |
+| `aca_agora_sim` | Osmar (`coach`), depois de acertar a moldura da foto (ela chega torta da garagem; ele a desentorta) | `agora sim.` |
 
 Polimento: nenhum. É curta, de quem arruma a foto e dá o assunto por encerrado. Substitui o nome `acad_agora_sim` do pedido da prancha antiga; o Diretor de Cutscenes usa `aca_agora_sim` em `lines` (speaker `coach`, `text_key` igual).
 
@@ -26,7 +26,9 @@ Polimento: nenhum. É curta, de quem arruma a foto e dá o assunto por encerrado
 ## 3. Dica (hover) da foto antiga na academia
 Chave nova: `objects.old_photo_gym` em `dialogos.json`.
 > `A foto veio da garagem.`
-> `Torta de novo. É de propósito.`
+> `Era torta. Aqui ficou reta.`
+
+Revisado em 2026-11-16 (decisão do dono): na cena, o Osmar desentorta a foto ("agora sim."), então ela fica reta na academia. Antes: "Torta de novo. É de propósito." Linha 2 com 27 caracteres, menor que a antiga (28).
 
 A garagem continua com `old_photo`: "Osmar, bem antes das histórias." **Pedido ao Programador:** em `_texto_parede`, o caso `photo_old` deve usar `old_photo_gym` quando o local for a academia.
 
@@ -56,7 +58,7 @@ Todas `repeat: rest`, nos mesmos grupos das garagem, com `location: gym`, salvo 
 | `cl_ac_parado_1` | parado | o espelho tá olhando. |
 | `cl_ac_parado_2` | parado | ventilador ligado. / sem desculpa. |
 | `cl_ac_parado_3` | parado | a lâmpada daqui / não pisca. estranho. |
-| `cl_ac_chegada_1..3` | academia_chegada (`gym_arrival`, depois de `cl_primeira_academia`) | a foto já tá no lugar. / torta, como manda. / esse lugar é nosso. |
+| `cl_ac_chegada_1..3` | academia_chegada (`gym_arrival`, depois de `cl_primeira_academia`) | a foto já tá no lugar. / reta agora. casa nova. / esse lugar é nosso. (`_2` revisada em 2026-11-16: antes "torta, como manda.") |
 | `cl_arte_4` | arte | no meu tempo era só / apanhar e aprender. |
 
 - **Arte:** nenhuma fala chama uma arte de certa. Todas valem para qualquer escolha.

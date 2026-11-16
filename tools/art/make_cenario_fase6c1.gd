@@ -917,7 +917,7 @@ func write_manifest() -> void:
 	lay["gym_photo_spot_info"] = {"location": "gym", "requires_milestone": "cena_primeira_academia", "anchor": "canto de cima à esquerda",
 		"sprite": "wall_photo_old_gym", "frame_in_game": 1, "layer": "wall", "size": [PHOTO_SIZE.x, PHOTO_SIZE.y],
 		"object_text": "old_photo_gym", "click_rect": [P_PHOTO.x, P_PHOTO.y, PHOTO_SIZE.x, PHOTO_SIZE.y],
-		"_nota": "No barrado verde, acima da mochila pintada no banco, à direita da cabeça do Osmar. Fora do saco de lado (x 238..278), da corrente e da faixa do alvo. No jogo, sempre o quadro 1 (torta)."}
+		"_nota": "No barrado verde, acima da mochila pintada no banco, à direita da cabeça do Osmar. Fora do saco de lado (x 238..278), da corrente e da faixa do alvo. No jogo, na academia, sempre o quadro 0 (reta)."}
 	doc["layout"] = lay
 	var bd: Dictionary = doc.get("by_data_id", {})
 	bd["gym_arrival_scene"] = {
@@ -928,7 +928,7 @@ func write_manifest() -> void:
 			"note": "Com o gym_half_dark na tela use as animações *_dark; quando o tubo acende (A7), trocar para o quadro claro equivalente no mesmo tique em que o gym_half_dark some. A rua no vão não escurece. Fora das cenas a porta não é desenhada (o gym_bg já tem a fechada)."},
 		"daylight": {"sprite": "gym_daylight", "pos": [DAY_TL.x, DAY_TL.y], "layer": "floor", "frame_for_door": {"1": 1, "2": 0, "4": 1, "5": 0},
 			"note": "Desenhar DEPOIS do gym_half_dark (os dois são floor): a luz é o próprio chão 1 passo mais claro, também na metade escura."},
-		"photo": {"sprite": "wall_photo_old_gym", "pos": [P_PHOTO.x, P_PHOTO.y], "layer": "wall", "frames": {"0": "reta (A4-A5)", "1": "torta (no jogo, sempre)"}},
+		"photo": {"sprite": "wall_photo_old_gym", "pos": [P_PHOTO.x, P_PHOTO.y], "layer": "wall", "frames": {"0": "reta (do A6 em diante e no jogo)", "1": "torta (A4-A5)"}},
 		"crate": {"sprite": "garage_crate_gym", "pos": [P_SEAT.x + CRATE_OFF.x, P_SEAT.y + CRATE_OFF.y], "layer": "sorted", "sort_y": P_SEAT.y - 2},
 		"duffel": {"sprite": "john_duffel", "pos": [DUFFEL_TL.x, DUFFEL_TL.y], "layer": "sorted", "sort_y": 251,
 			"note": "Só na saída do John, até o grab_frame do john_pick_duffel. Serve nos dois locais (o caixote está no mesmo ponto). Nunca fica na sala."},
@@ -1285,7 +1285,7 @@ func _init() -> void:
 	save_sheet("wall_photo_old_gym", "gym/wall_photo_old_gym.png", [photo_straight(), frame_of("wall_photo_old")], 0, Vector2i.ZERO, {
 		"pos": [P_PHOTO.x, P_PHOTO.y], "point": "gym_photo_spot", "layer": "wall", "z": -45, "loop": false,
 		"anim": {"straight": [0], "tilt": [0, 1], "crooked": [1]},
-		"note": "Fase 6c1: a foto antiga na academia (gym_photo_spot, no barrado verde acima da mochila do banco). 0 = reta (a metade direita 1 px acima; a mesma conta das folhas do Artista); 1 = torta, igual à wall_photo_old da garagem. No jogo, sempre o quadro 1."})
+		"note": "Fase 6c1: a foto antiga na academia (gym_photo_spot, no barrado verde acima da mochila do banco). 0 = reta (a metade direita 1 px acima; a mesma conta das folhas do Artista); 1 = torta, igual à wall_photo_old da garagem. Na academia, no jogo, sempre o quadro 0 (reta): o Osmar desentorta a foto no A6."})
 	save_sheet("john_duffel", "characters/john_duffel.png", [duffel()], 0, Vector2i.ZERO, {
 		"pos": [DUFFEL_TL.x, DUFFEL_TL.y], "layer": "sorted", "sort_y": 251,
 		"note": "Fase 6c1: bolsa de lona do John no chão, atrás do caixote (268,242). É a docs/arte/mockups/fase6c1_bolsa_ref.png do Artista, pixel a pixel (a bolsa da folha john_pick_duffel não pula no grab_frame). Sem luz pintada, como as folhas do John. Só no começo da saída; nunca fica na sala."})

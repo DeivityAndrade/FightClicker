@@ -119,6 +119,7 @@ Por que essa ordem:
 
 ### 6c1 — Casa nova
 1. **Cena da academia:** na 1ª chegada da escola à academia, a cena toca com ≤ 15 s presos (validador), a foto termina torta na parede e a escolha da arte abre logo depois, se estiver pendente.
+   *Mudança do dono (2026-11-16): o Osmar **desentorta** a foto (ela fica torta ao ser pendurada e ele acerta a moldura antes do "agora sim."). Vale "a foto termina **reta** na parede da academia", para sempre; na garagem nada muda. Onde este escopo fala de "entorta" ou "foto torta" na academia (§3, §8, perguntas ao dono), leia "desentorta"/"foto reta".*
 2. **Pular:** segurar ESC/ESPAÇO 0,5 s ou clicar em PULAR deixa a academia montada, a foto na parede e a escolha da arte aberta em ≤ 0,3 s.
 3. **Toca uma vez só:** o marco é gravado no começo, com salvamento imediato. Pular, perder, fechar o jogo no meio ou chegar de novo com outro discípulo não faz a cena tocar outra vez. Fechando no meio, ao abrir de novo a academia está montada (estado final).
 4. **Elenco certo:** com o John jogando (Carreira 1), ele carrega o saco e um vizinho carrega a caixa. Com discípulo e o John mentor, o John carrega a caixa. Depois da saída, quem carrega é o último que passou o posto.

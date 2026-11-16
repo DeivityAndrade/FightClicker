@@ -29,7 +29,7 @@
       "tube_r":    { "_nota": "Quadro 1 = apagado.", "sprite": "gym_tube", "pos": [422, 34], "layer": "wall", "frame": 1 },
       "door":      { "_nota": "Porta da rua (6 quadros): 0..2 clara, 3..5 escura (animações *_dark) enquanto o shade está na tela. No A7 passa do quadro 5 para o 2 no mesmo tique em que o shade some.", "sprite": "gym_door", "pos": [401, 116], "layer": "wall", "anim": "closed_dark" },
       "daylight":  { "_nota": "Definido depois do shade: os dois são floor e a luz desenha por cima da metade escura. Quadro 1 = porta meio aberta, 0 = aberta.", "sprite": "gym_daylight", "pos": [330, 220], "layer": "floor", "visible": false },
-      "photo":     { "_nota": "A foto antiga na parede: quadro 0 reta, quadro 1 torta. Ponto = gym_photo_spot proposto.", "sprite": "wall_photo_old_gym", "pos": [212, 158], "layer": "wall", "visible": false },
+      "photo":     { "_nota": "A foto antiga na parede: quadro 0 reta, quadro 1 torta. Entra torta no A4 (o prego bate e ela escorrega) e o Osmar a desentorta no A6 (decisão do dono, 2026-11-16). Ponto = gym_photo_spot.", "sprite": "wall_photo_old_gym", "pos": [212, 158], "layer": "wall", "visible": false },
       "crate":     { "sprite": "garage_crate_gym", "pos": [238, 232], "layer": "sorted", "sort_y": 250, "visible": false },
       "bag":       { "_nota": "O saco da sala, no nível e no local atuais (formato §9 item 21).", "room_object": "punching_bag", "visible": false },
       "treadmill": { "_nota": "A esteira parada no lado direito. Vira objeto da sala quando o player souber (formato §9 item 21).", "sprite": "treadmill_l0_side_gym", "pos": [445, 267], "layer": "sorted", "sort_y": 267, "visible": false }
@@ -106,20 +106,20 @@
         { "type": "wait", "seconds": 0.5 },
         { "_t": 6.3, "_nota": "Uma batida só (duas batidas ritmadas são do John).", "type": "sound", "id": "nail_knock", "volume": 0.7 },
         { "type": "wait", "seconds": 0.2 },
-        { "_t": 6.5, "type": "prop", "id": "photo", "visible": true, "anim": "straight" },
+        { "_t": 6.5, "_nota": "Solta no release_frame do hang_photo e já fica torta (quadro 1); o frame_scrape é ela escorregando no prego.", "type": "prop", "id": "photo", "visible": true, "frame": 1 },
         { "type": "sound", "id": "frame_scrape", "volume": 0.6 }
       ] }
     ] },
 
     { "_q": "A5 Passo atrás (6,80-8,20)", "_t": 6.8, "type": "move", "actor": "coach", "to": [188, 240], "seconds": 0.5, "anim": "step_back", "facing": "right" },
-    { "_t": 7.3, "_nota": "A pausa da cena: 0,9 s olhando a foto reta, cabeça inclinada (folha de 0,3 s + 0,6 s parado).", "type": "pose", "actor": "coach", "anim": "look_photo", "hold": 0.6 },
+    { "_t": 7.3, "_nota": "A pausa da cena: 0,9 s olhando a foto torta, cabeça inclinada como ela (folha de 0,3 s + 0,6 s parado).", "type": "pose", "actor": "coach", "anim": "look_photo", "hold": 0.6 },
 
-    { "_q": "A6 Entorta: 'agora sim.' (8,20-10,40)", "_t": 8.2, "type": "move", "actor": "coach", "to": "gym_coach_spot", "seconds": 0.3, "anim": "step_back", "facing": "right" },
+    { "_q": "A6 Desentorta:'agora sim.' (8,20-10,40)", "_t": 8.2, "type": "move", "actor": "coach", "to": "gym_coach_spot", "seconds": 0.3, "anim": "step_back", "facing": "right" },
     { "_t": 8.5, "type": "parallel", "steps": [
       { "type": "pose", "actor": "coach", "anim": "nudge_photo" },
       { "type": "sequence", "steps": [
         { "type": "wait", "seconds": 0.2 },
-        { "_t": 8.7, "_nota": "Quadro 1 = torta (a animação tilt tem fps 0 no manifest e duraria 2 s).", "type": "prop", "id": "photo", "frame": 1 },
+        { "_t": 8.7, "_nota": "Quadro 0 = reta: o dedo acerta a moldura no nudge_frame do coach_nudge_photo.", "type": "prop", "id": "photo", "frame": 0 },
         { "type": "sound", "id": "frame_scrape", "volume": 0.8 }
       ] }
     ] },
@@ -182,7 +182,7 @@
   "reactions": [],
 
   "end_state": {
-    "_nota": "Academia montada: os dois tubos acesos, Osmar no gym_coach_spot, mentores nos pontos (o 2º mentor entra aqui, design §1.4), foto torta e caixote desenhados pelo jogo (marco), equipe e aparelhos de volta. Os vizinhos que ajudaram somem com a volta da equipe.",
+    "_nota": "Academia montada: os dois tubos acesos, Osmar no gym_coach_spot, mentores nos pontos (o 2º mentor entra aqui, design §1.4), foto RETA (escola.json gym.tilted = false) e caixote desenhados pelo jogo (marco), equipe e aparelhos de volta. Os vizinhos que ajudaram somem com a volta da equipe.",
     "actors": {
       "coach": "hand_to_game",
       "fighter": "hand_to_game",

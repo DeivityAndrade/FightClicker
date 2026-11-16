@@ -308,7 +308,7 @@ func _teste_osmar_e_foto() -> void:
 	_tickar(g, 1.0)
 	checar(g.coach_presente(), "academia com o marco: Osmar desenhado")
 	var f: Dictionary = g.foto_antiga()
-	checar(not f.is_empty() and f.tilted and f.object_text == "old_photo_gym", "academia com o marco: foto torta com texto proprio")
+	checar(not f.is_empty() and not f.tilted and f.object_text == "old_photo_gym", "academia com o marco: foto reta (o Osmar desentorta) com texto proprio")
 	_liberar(g)
 	var s := _novo("f6c1_osmar_sem")
 	s.local_id = "gym"

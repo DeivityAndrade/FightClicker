@@ -1,6 +1,6 @@
 extends SceneTree
 ## Verificacao da UI da 6c1 (Casa nova) na cena principal real, com janela: cena da 1a chegada a academia, academia cheia
-## (Osmar, foto torta, caixote, John, ultimo em pe, equipe) e saida do John (natural e interrompida). Gera capturas.
+## (Osmar, foto reta, caixote, John, ultimo em pe, equipe) e saida do John (natural e interrompida). Gera capturas.
 ## godot --path . --resolution 1280x720 --position 1950,40 --script res://tests/qa_f6c1_ui.gd
 ## Save SEMPRE em user://test/qa6c1_ui/ (defina APPDATA para uma pasta temporaria; nunca o save real).
 
@@ -105,7 +105,7 @@ func cenario_chegada() -> void:
 	ok(gs.cena_sala == "", "a cena terminou sozinha e soltou o relogio")
 	ok(sala().mentor_visivel() and sala().mentor2_visivel(), "academia: John sentado e o ultimo em pe depois da cena")
 	ok(sala()._osmar.visible, "academia: Osmar desenhado")
-	ok(sala()._parede["photo_old_gym"].sprite.visible, "academia: foto torta")
+	ok(sala()._parede["photo_old_gym"].sprite.visible and sala()._parede["photo_old_gym"].sprite.frame == 0, "academia: foto reta (o Osmar desentorta)")
 	ok(sala()._caixote.visible, "academia: caixote")
 	var fl0: Node = cena.get_node("Fluxo")
 	if fl0.janela != null and fl0.janela.has_method("_escolher"):

@@ -15,11 +15,11 @@ Falas são rascunho para o Roteirista. Posições na base 640x360, pelos pés. O
 |---|---|---|---|
 | 1 | 0,0–2,0 | A interface apaga. Academia vazia, meio escura, um tubo piscando. A porta da rua abre. | tubo zumbindo; porta |
 | 2 | 2,0–6,0 | A equipe entra em fila, da porta para a esquerda: o **lutador da campanha** com o **saco remendado** no ombro, até (303,272); atrás, alguém com uma **caixa** (o 1º mentor, se ainda estiver na escola; senão um ajudante do bairro); no fundo, um **ajudante tenta passar com a esteira velha atravessada na porta**: bate, recua, bate de novo. Ele continua tentando ao fundo até o fim da cena. | passos; baque de metal na porta (2x) |
-| 3 | 6,0–10,0 | **Corte para 2x** na parede. O `treinador` pendura a **fotografia antiga**, dá um passo atrás, inclina a cabeça e **entorta a foto um pouco**, do jeito que ela ficava na garagem. **"Agora sim."** | prego; moldura raspando; blip |
+| 3 | 6,0–10,0 | **Corte para 2x** na parede. O `treinador` pendura a **fotografia antiga**, que fica torta no prego; ele dá um passo atrás, inclina a cabeça e **acerta a moldura** (desentorta). **"Agora sim."** | prego; moldura raspando; blip |
 | 4 | 10,0–13,0 | **Corte para 1x:** o segundo tubo acende, o saco é pendurado no gancho (poeira), o ajudante finalmente passa com a esteira de lado. A academia aparece inteira. Interface de volta; abre a escolha da arte. | 2 estalos de tubo; `fx_arrive_dust` |
 
 **Se pular:** academia montada, foto na parede, janela da arte aberta.
-**O que fica:** a foto antiga na parede da academia (torta), para sempre. Proposta: a foto acompanha a escola, isto é, aparece na garagem quando o discípulo treina na garagem e na academia quando ele está na academia; a garagem não fica "abandonada".
+**O que fica:** a foto antiga na parede da academia (**reta**), para sempre. *Mudança do dono (2026-11-16): antes o Osmar entortava a foto; agora desentorta. Casa nova, a gente chegou. Na garagem a foto continua como está.* Proposta: a foto acompanha a escola, isto é, aparece na garagem quando o discípulo treina na garagem e na academia quando ele está na academia; a garagem não fica "abandonada".
 **Chegadas seguintes (outras campanhas):** sem cena. O discípulo entra pela porta (2 s, sem prender o controle) e a foto já está lá.
 **Elenco depende do estado:** o lutador pode ser o próprio 1º lutador (se a Carreira 1 chegar lá) ou um discípulo; a cena não muda.
 

@@ -104,7 +104,7 @@
 		{ "id": "cl_academia_volta_2", "speaker": "coach", "text": "cheiro de tatame, hein?", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_volta", "conditions": { "location": "gym", "after_line": "cl_primeira_academia" } },
 		{ "id": "cl_academia_volta_3", "speaker": "coach", "text": "aqui o espelho é maior.", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_volta", "conditions": { "location": "gym", "after_line": "cl_primeira_academia" } },
 		{ "id": "cl_ac_chegada_1", "speaker": "coach", "text": "a foto já tá no lugar.", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_chegada", "conditions": { "location": "gym", "after_line": "cl_primeira_academia" } },
-		{ "id": "cl_ac_chegada_2", "speaker": "coach", "text": "torta, como manda.", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_chegada", "conditions": { "location": "gym", "after_line": "cl_primeira_academia" } },
+		{ "id": "cl_ac_chegada_2", "speaker": "coach", "text": "reta agora. casa nova.", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_chegada", "conditions": { "location": "gym", "after_line": "cl_primeira_academia" } },
 		{ "id": "cl_ac_chegada_3", "speaker": "coach", "text": "esse lugar é nosso.", "trigger": "gym_arrival", "repeat": "rest", "group": "academia_chegada", "conditions": { "location": "gym", "after_line": "cl_primeira_academia" } },
 
 		{ "id": "cl_arte_1", "speaker": "coach", "text": "cada um tem seu jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
@@ -115,7 +115,7 @@
 	"objects": {
 		"debt_notice": { "title": "AVISO DE COBRANÇA", "title_alt": "AVISO FINAL", "text": "Aluguel em atraso. Regularize ou desocupe." },
 		"old_photo": { "text": "Osmar, bem antes das histórias." },
-		"old_photo_gym": { "text": "A foto veio da garagem.\nTorta de novo. É de propósito." },
+		"old_photo_gym": { "text": "A foto veio da garagem.\nEra torta. Aqui ficou reta." },
 		"entry_form_before": { "text": "ESCOLA: NENHUMA" },
 		"entry_form_after": { "text": "ESCOLA: RAÍZES FIGHT CLUB", "text_alt": "ESCOLA: RAIZES FIGHT CLUB" },
 		"clipping": { "title": "GARAGEM FAZ BARULHO NO BAIRRO", "text": "Ninguém sabia que ali treinava gente.", "footer": "Errata: o nome é {school}." },

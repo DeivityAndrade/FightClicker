@@ -20,7 +20,7 @@ Gerador: `tools/art/make_prancha_6c1.gd`. Rodar de uma pasta temporária com `pr
 Dados: `data/cutscenes/primeira_academia.json` e `data/cutscenes/saida_primeiro_mentor.json`. Os nomes seguem o escopo, o design e `data/escola.json` (o pedido inicial falava em `chegada_academia` e `saida_john`).
 
 ## A ideia visual das duas
-- **A academia só vira casa quando a foto entorta.** A sala começa com um tubo aceso e metade no escuro. O segundo tubo só acende depois do "agora sim.".
+- **A academia só vira casa quando o Osmar acerta a foto.** (Mudança do dono, 2026-11-16: antes ele entortava; agora a foto cai torta no prego e ele a desentorta. Casa nova, a gente chegou.) A sala começa com um tubo aceso e metade no escuro. O segundo tubo só acende depois do "agora sim.".
 - **Quem traz o caixote senta nele.** A "caixa" da mudança é o caixote do mentor. O John carrega o lugar dele para a casa nova, pousa e senta. É de lá que ele assiste o Osmar pendurar a foto, e é de lá que ele levanta para ir embora na outra cena.
 - **A chegada tem um corte; a saída não tem nenhum.** A chegada é a única cena da 6c1 com a interface apagada. A saída acontece atrás do treino, com tudo ligado.
 - **Uma batida só.** O Osmar bate o prego uma vez e o John acena a cabeça uma vez. Dois toques ritmados continuam sendo só do gesto do John.
@@ -37,9 +37,9 @@ Gatilho: MUDAR para a academia com o marco `cena_primeira_academia` ausente (des
 | **A1** Casa vazia | 0,0–1,2 s | Sala 1x. A interface apaga em 2 quadros | Academia sem aparelho, sem equipe e sem foto. Tubo da esquerda aceso (pisca uma vez), tubo da direita apagado: a metade direita fica 1 passo mais escura. O Osmar já está no ponto dele (196,236), com a foto nas mãos, olhando a parede. Em 0,9 s a porta da rua abre e a luz do dia entra no chão | — | Sem corte: alguém aparece na porta |
 | **A2** A mudança entra | 1,2–3,0 s | Sala 1x | Entra primeiro quem traz o **caixote** nos braços (elenco abaixo). 0,8 s depois, o **lutador da campanha** com o saco remendado no ombro. Andam a 48 px/s, da porta (428,224) para a esquerda | — | Sem corte: a porta fica livre e o ajudante tenta entrar |
 | **A3** A esteira não passa | 3,0–5,8 s | Sala 1x | Ao fundo, o **vizinho com a esteira velha atravessada**: bate nos batentes (3,4 s, tremida de 1 px), recua, bate de novo (4,7 s) e fica parado. O lutador para em (352,262), saco no ombro, e olha o Osmar. Quem trouxe o caixote chega ao `gym_mentor_spot` (254,252), pousa o caixote (5,25 s) e fica em pé ao lado (o vizinho não senta) | — | Corte seco para 2x quando o Osmar ergue a foto |
-| **A4** Pendura a foto | 5,8–6,8 s | **2x**, região (128,118,192,136) | O Osmar encosta a moldura na parede, bate o prego com a palma **uma vez** e a foto fica pendurada, **reta**. O mentor sentado no caixote assiste, parado. O lutador e a porta ficam fora do quadro | — | Mesmo plano |
-| **A5** Passo atrás | 6,8–8,2 s | 2x, mesmo plano | O Osmar recua 8 px até (188,240), inclina a cabeça e olha. **0,9 s sem som novo**: é a pausa da cena | — | Mesmo plano |
-| **A6** Entorta | 8,2–10,4 s | 2x, mesmo plano | Ele volta ao ponto, empurra o canto da moldura com um dedo e a foto fica **torta**, como na garagem. Só então fala | **Osmar:** "agora sim." (`aca_agora_sim`) | Corte seco de volta ao 1x, junto com o estalo do tubo |
+| **A4** Pendura a foto | 5,8–6,8 s | **2x**, região (128,118,192,136) | O Osmar encosta a moldura na parede, bate o prego com a palma **uma vez**, solta e a foto escorrega um pouco: fica **torta**. O mentor sentado no caixote assiste, parado. O lutador e a porta ficam fora do quadro | — | Mesmo plano |
+| **A5** Passo atrás | 6,8–8,2 s | 2x, mesmo plano | O Osmar recua 8 px até (188,240), inclina a cabeça (do jeito que a foto está) e olha. **0,9 s sem som novo**: é a pausa da cena | — | Mesmo plano |
+| **A6** Desentorta | 8,2–10,4 s | 2x, mesmo plano | Ele volta ao ponto, acerta o canto da moldura com um dedo e a foto fica **reta**. Só então fala | **Osmar:** "agora sim." (`aca_agora_sim`) | Corte seco de volta ao 1x, junto com o estalo do tubo |
 | **A7** O outro tubo acende | 10,4–12,9 s | Sala 1x | O tubo da direita pisca e acende, e a sala clareia inteira. O lutador anda até (303,272) e ergue o saco para o gancho (336,183), com poeira. O ajudante vira a esteira de lado, passa e encosta ela no lugar (445,267). 0,4 s de respiro com a academia inteira | — | A interface volta |
 | **A8** A interface volta | 12,9 s | Sala 1x, interface ligada | A equipe, os aparelhos, as caixas e o 2º mentor (se houver) aparecem nos pontos do jogo. Os vizinhos que ajudaram somem junto com a entrada da equipe. A porta fecha sozinha. A escolha da arte abre por cima, se pendente | — | Fim |
 
@@ -53,7 +53,7 @@ Gatilho: MUDAR para a academia com o marco `cena_primeira_academia` ausente (des
 O 2º mentor em pé (Carreira 3 em diante, com o John) fica **fora da cena** e aparece no ponto dele no A8, como o Designer propôs: a cena já tem 4 pessoas.
 
 ### Se pular
-- Em qualquer quadro: em 0,3 s fica o estado do A8. Dois tubos acesos, Osmar no ponto, foto torta na parede, caixote no lugar com o mentor sentado (se houver), saco no gancho, equipe e aparelhos de volta, porta fechada. O jogo abre a escolha da arte, se pendente.
+- Em qualquer quadro: em 0,3 s fica o estado do A8. Dois tubos acesos, Osmar no ponto, foto reta na parede, caixote no lugar com o mentor sentado (se houver), saco no gancho, equipe e aparelhos de volta, porta fechada. O jogo abre a escolha da arte, se pendente.
 - O marco é gravado no MUDAR. Pular, fechar o jogo no meio ou chegar com outro lutador não repete a cena.
 - Como pular: segurar ESC ou ESPAÇO por 0,5 s, ou clicar em PULAR.
 - Nada do jogo depende da cena: a foto, o Osmar e os mentores na academia saem do marco.
@@ -62,7 +62,7 @@ O 2º mentor em pé (Carreira 3 em diante, com o John) fica **fora da cena** e a
 1. A segunda batida da esteira sai (a entrada do ajudante passa de 3,0 s para 3,9 s).
 2. O tubo acende sem piscar.
 3. A poeira do saco sai.
-Não se corta: a foto reta, o passo atrás, a foto torta e "agora sim.".
+Não se corta: a foto torta no prego, o passo atrás, a foto acertada e "agora sim.".
 
 ### Arte por quadro
 | # | Arte nova | Reaproveita |
@@ -134,10 +134,23 @@ Regras da cena inteira: interface ligada, o soco vale do primeiro ao último qua
 
 ## Versão 2: dados ajustados à arte e aos sons finais (2026-11-15)
 O que mudou em `primeira_academia.json` e `saida_primeiro_mentor.json`:
-1. **Sons próprios** (`tools/sfx/make_sfx.gd`) no lugar dos dublês: `gym_door_open`, `gym_door_close`, `metal_bump` (esteira na porta), `crate_down`, `nail_knock` (a batida única do prego), `frame_scrape` (foto reta e foto torta), `tube_start` (o tubo da direita no A7). O `ring_clink` do A7 ficou só para a argola do saco.
+1. **Sons próprios** (`tools/sfx/make_sfx.gd`) no lugar dos dublês: `gym_door_open`, `gym_door_close`, `metal_bump` (esteira na porta), `crate_down`, `nail_knock` (a batida única do prego), `frame_scrape` (foto escorrega no prego e foto acertada), `tube_start` (o tubo da direita no A7). O `ring_clink` do A7 ficou só para a argola do saco.
 2. **O vizinho do caixote não senta** (corte 4 do pedido): `put_crate` e depois um passo só, `stand` em laço. Para o `helper_2` isso é o `helper_stand`. Limite: John e discípulo ainda não têm folha `stand` sem luva; eles ficam no último quadro do `put_crate` (em pé) até o A8, quando o jogo os desenha sentados. Se quisermos o mentor sentando de novo dentro da cena, falta um jeito de o passo valer só para um personagem (ver pedidos ao Programador).
 3. **Nomes das poses = folhas reais.** Onde a folha só existe virada para a esquerda o nome leva `_left` (`carry_bag_left`, `carry_bag_idle_left`, `carry_crate_left`, `treadmill_*_left`, `stand_left` do vizinho da esteira, `look_room_left`, `nod_left`). Osmar na academia: `idle_gym` e `talk_gym` (na saída, por `if.location`).
 4. **Porta da academia com 6 quadros.** A chegada começa em `closed_dark` e abre com `open_dark`; no A7 a porta vai do quadro 5 para o 2 no mesmo tique em que o `gym_half_dark` some; no fim fecha com `close` (claro). A luz do dia (`gym_daylight`, definida depois do `gym_half_dark`) entra no quadro 4 da porta (meia) e abre no 5, e fecha junto com a porta. A saída ganhou a mesma luz do dia na academia (`gym_light`). Porta em (401,116), luz em (330,220), caixote `garage_crate_gym`.
-5. **Pisca dos tubos e foto torta quadro a quadro.** `gym_tube` e `wall_photo_old_gym` estão com `fps 0` no manifest: as animações `flicker` e `tilt` tocariam a 0,1 fps. A cena troca os quadros direto (pisca a ~12 fps; torta = quadro 1).
+5. **Pisca dos tubos e foto torta quadro a quadro.** `gym_tube` e `wall_photo_old_gym` estão com `fps 0` no manifest: as animações `flicker` e `tilt` tocariam a 0,1 fps. A cena troca os quadros direto (pisca a ~12 fps; a foto entra no quadro 1 = torta e passa ao 0 = reta).
 6. **Tempo preso da chegada: 12,90 s** (era 14,95 s). `look_photo` tem 0,3 s de folha + 0,6 s parado (a pausa continua 0,9 s); "agora sim." segura 1,05 s para o A7 começar em 10,4 s; o respiro final passou para 0,65 s porque o `hang_bag` real (0,8 s) termina antes.
 7. **Saída:** `john_pick_duffel` real (6 quadros, 56x72, pivô 22,67); a bolsa do chão some em 0,4 s (`grab_frame` 4) e ele segura 0,6 s, então o J2 continua começando em 1,6 s.
+
+## Versão 3: o Osmar desentorta a foto (decisão do dono, 2026-11-16)
+O dono trocou o gesto do A6: em vez de entortar, o Osmar **desentorta**. Mensagem: casa nova, a gente chegou.
+1. **A4:** a foto solta no `release_frame` do `hang_photo` já **torta** (`wall_photo_old_gym` quadro 1); o `frame_scrape` vira ela escorregando no prego.
+2. **A5:** ele olha a foto torta com a cabeça inclinada (o `look_photo` serve como está: a cabeça inclina para o lado da foto).
+3. **A6:** o dedo acerta a moldura e ela passa ao **quadro 0 (reta)**; "agora sim."; o tubo acende no A7.
+4. **Depois da cena:** a foto fica **reta** na academia para sempre (`data/escola.json` `old_photo.gym.tilted = false`). Na garagem nada muda.
+5. Tempo preso igual: **12,90 s** (teto 15). Nenhum passo mudou de duração.
+
+Pendências de outros papéis:
+- **Artista de Personagens** (`coach_nudge_photo`): hoje o quadro 2 empurra o canto de baixo à direita **1 px para baixo** (gesto de entortar). Na foto torta esse canto está 1 px mais baixo que na reta; para desentortar, o dedo precisa **erguer** o canto: quadro 1 encosta 1 px abaixo de onde encosta hoje (ponta perto de 229,178) e o quadro 2 sobe 1 px (de volta a ~229,177), com a foto trocando para reta nesse quadro. Basta trocar a altura do dedo dos quadros 1 e 2. Atualizar o `frames_note` ("a foto entorta NESTE quadro" → "a foto endireita NESTE quadro", `straight`). Sem a correção a cena funciona, mas o dedo desce enquanto a foto sobe (1 px, quase invisível no 2x). O `hang_photo` serve: a moldura nas mãos (quadros 1-4) é a reta e na soltura ela aparece torta, o que lê como escorregar no prego.
+- **Diretor de Arte** (manifest): nota do `wall_photo_old_gym` ("No jogo, sempre o quadro 1" → quadro 0 na academia) e `by_data_id.gym_arrival_scene.props.photo.frames` ("0 reta (A4-A5)", "1 torta (no jogo, sempre)" → "1 torta (A4-A5)", "0 reta (A6 em diante, no jogo)").
+- **Roteirista** (`data/dialogos.json`): `cl_ac_chegada_2` ("torta, como manda.") e o hover `objects.old_photo_gym`.
