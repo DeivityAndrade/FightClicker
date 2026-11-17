@@ -92,6 +92,10 @@ const ESTADOS_TODOS := [
 	"f6c1_academia_balao_osmar", "f6c1_academia_balao_john",
 	"f6c1_saida_gym_J1", "f6c1_saida_gym_J2", "f6c1_saida_gym_J3", "f6c1_saida_gym_J4", "f6c1_saida_gym_J5", "f6c1_saida_gym_J6", "f6c1_saida_gym_J7",
 	"f6c1_saida_gar_J1", "f6c1_saida_gar_J2", "f6c1_saida_gar_J3", "f6c1_saida_gar_J4", "f6c1_saida_gar_J5", "f6c1_saida_gar_J6", "f6c1_saida_gar_J7",
+	# Fase 6c2: mural, árvore do hall, hover da foto (skeletons — wire when API ready)
+	"f6c2_mural_empty", "f6c2_mural_john", "f6c2_mural_disciple", "f6c2_mural_symbol", "f6c2_mural_upgraded",
+	"f6c2_hall_roots", "f6c2_hall_boxing", "f6c2_hall_bjj", "f6c2_hall_future", "f6c2_hall_node_compravel", "f6c2_hall_node_comprado",
+	"f6c2_hover_photo_gym", "f6c2_hover_photo_garage", "f6c2_hover_photo_name", "f6c2_hover_photo_story", "f6c2_hover_photo_legacy",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -329,6 +333,7 @@ func _rodar() -> void:
 	await _rodar_fase6b2()
 	await _rodar_fase6c1()
 	await _rodar_fase6c1_extra()
+	await _rodar_fase6c2()
 	_fechar_cena()
 
 
@@ -3666,3 +3671,87 @@ func _f6c1_saida_quadros(prefixo: String) -> void:
 		await _esperar(0.25)
 		t += 0.25
 	_exigir(not gs.saida_tocando() and sala._mentor_quem == "last" and not sala.mentor2_visivel(), _estado, "depois da saida o ultimo senta e o ponto em pe fica vazio")
+
+
+# ---------------------------------------------------------------------------------------------
+# Fase 6c2: mural, árvore do hall, hover da foto (skeletons — wire when API ready)
+# ---------------------------------------------------------------------------------------------
+
+func _rodar_fase6c2() -> void:
+	var nomes: Array = ESTADOS_TODOS.filter(func(n: String) -> bool: return n.begins_with("f6c2_"))
+	var alguma := false
+	for n in nomes:
+		if _quer(n):
+			alguma = true
+	if not alguma:
+		return
+
+	# Mural states (placeholder visibility toggles)
+	if _quer("f6c2_mural_empty") or _quer("f6c2_mural_john") or _quer("f6c2_mural_disciple") \
+			or _quer("f6c2_mural_symbol") or _quer("f6c2_mural_upgraded"):
+		_novo_jogo()
+		gs.local_id = "gym"
+		await _abrir()
+		var mural: Control = _cena.get_node_or_null("Mural")
+		if mural == null:
+			_problema("AUDIT", "f6c2_mural_empty", "nó Mural não encontrado na cena")
+			return
+		mural.visible = true
+		# Reset all states
+		for child in mural.get_children():
+			if child is ColorRect:
+				child.visible = false
+		if _quer("f6c2_mural_empty"):
+			_estado = "f6c2_mural_empty"
+			mural.get_node("Empty").visible = true
+			mural.get_node("TextoMural").text = "a parede espera."
+			await _ver(_estado)
+		if _quer("f6c2_mural_john"):
+			_estado = "f6c2_mural_john"
+			mural.get_node("JohnOnly").visible = true
+			mural.get_node("TextoMural").text = "foi seguir o rumo dele."
+			await _ver(_estado)
+		if _quer("f6c2_mural_disciple"):
+			_estado = "f6c2_mural_disciple"
+			mural.get_node("WithDisciple").visible = true
+			mural.get_node("TextoMural").text = "foi seguir o rumo dele\nseguiu o nosso"
+			await _ver(_estado)
+		if _quer("f6c2_mural_symbol"):
+			_estado = "f6c2_mural_symbol"
+			mural.get_node("SymbolUnlocked").visible = true
+			mural.get_node("TextoMural").text = "foi seguir o rumo dele"
+			await _ver(_estado)
+		if _quer("f6c2_mural_upgraded"):
+			_estado = "f6c2_mural_upgraded"
+			mural.get_node("MuralUpgraded").visible = true
+			mural.get_node("TextoMural").text = "ao lado de John Bullet"
+			await _ver(_estado)
+
+	# Hall tree states (placeholder window open)
+	if _quer("f6c2_hall_roots") or _quer("f6c2_hall_boxing") or _quer("f6c2_hall_bjj") \
+			or _quer("f6c2_hall_future") or _quer("f6c2_hall_node_compravel") or _quer("f6c2_hall_node_comprado"):
+		_novo_jogo()
+		await _abrir()
+		# Stub: abrir janela do hall quando existir no Fluxo
+		# var fluxo: Node = _cena.get_node("Fluxo")
+		# fluxo.abrir_hall()
+		# await _esperar(0.5)
+		for estado in ["f6c2_hall_roots", "f6c2_hall_boxing", "f6c2_hall_bjj", "f6c2_hall_future", "f6c2_hall_node_compravel", "f6c2_hall_node_comprado"]:
+			if _quer(estado):
+				_estado = estado
+				# Placeholder: apenas captura a tela atual até a janela existir
+				await _ver(_estado)
+
+	# Hover photo states (placeholder dica positioning)
+	if _quer("f6c2_hover_photo_gym") or _quer("f6c2_hover_photo_garage") or _quer("f6c2_hover_photo_name") \
+			or _quer("f6c2_hover_photo_story") or _quer("f6c2_hover_photo_legacy"):
+		_novo_jogo()
+		gs.local_id = "gym"
+		await _abrir()
+		for estado in ["f6c2_hover_photo_gym", "f6c2_hover_photo_garage", "f6c2_hover_photo_name", "f6c2_hover_photo_story", "f6c2_hover_photo_legacy"]:
+			if _quer(estado):
+				_estado = estado
+				# Stub: posicionar dica sobre a foto quando hover existir
+				# _dica_em("texto_placeholder", Vector2(500, 60))
+				await _ver(_estado)
+				# _sem_dica()

@@ -33,6 +33,8 @@ func _ready() -> void:
 	GameState.atributo_mudou.connect(func(_a: String, _v: float) -> void: _sujo = true)
 	GameState.economia_mudou.connect(_atualizar_tudo)
 	GameState.carreira_mudou.connect(_atualizar_tudo)
+	GameState.mural_updated.connect(func(_s: String) -> void: _atualizar_mural())
+	_atualizar_mural()
 
 	var timer := Timer.new()
 	timer.wait_time = 1.0 / maxf(1.0, float(GameState.config.get("ui_atualizacoes_por_segundo", 10)))
@@ -93,6 +95,40 @@ func _atualizar_tudo() -> void:
 	_esq.atualizar()
 	_dir.atualizar()
 	_barra.atualizar()
+	_atualizar_mural()
+
+
+## Fase 6c2: mural na academia. Lê estado e texto do GameState; mostra/esconde os filhos do nó Mural.
+func _atualizar_mural() -> void:
+	var mural: Control = get_node_or_null("Mural")
+	if mural == null:
+		return
+	var est := GameState.mural_estado()
+	var visivel := est != "" and GameState.local_id == "gym"
+	mural.visible = visivel
+	if not visivel:
+		return
+	# Esconde todos os estados visuais primeiro
+	for child in mural.get_children():
+		if child is ColorRect:
+			child.visible = false
+	# Mostra o estado correspondente
+	match est:
+		"empty":
+			mural.get_node_or_null("Empty").visible = true if mural.has_node("Empty") else false
+		"john_only":
+			mural.get_node_or_null("JohnOnly").visible = true if mural.has_node("JohnOnly") else false
+		"john_left":
+			mural.get_node_or_null("JohnLeft").visible = true if mural.has_node("JohnLeft") else false
+		"with_disciple":
+			mural.get_node_or_null("WithDisciple").visible = true if mural.has_node("WithDisciple") else false
+		"symbol_unlocked":
+			mural.get_node_or_null("SymbolUnlocked").visible = true if mural.has_node("SymbolUnlocked") else false
+		"mural_upgraded":
+			mural.get_node_or_null("MuralUpgraded").visible = true if mural.has_node("MuralUpgraded") else false
+	var lbl: Label = mural.get_node_or_null("TextoMural")
+	if lbl != null:
+		lbl.text = GameState.mural_texto()
 
 
 func _process(_delta: float) -> void:

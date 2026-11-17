@@ -1,0 +1,95 @@
+[gd_scene load_steps=2 format=3 uid="uid://f6c2_hall_skeleton"]
+
+[ext_resource type="Script" path="res://ui/janela_hall.gd" id="1_script"]
+
+[node name="JanelaHall" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 30.0
+offset_right = -40.0
+offset_bottom = -30.0
+metadata/ui_align = "center"
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Titulo" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "HALL DA ESCOLA"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/ui_align = "center"
+
+[node name="SaldoHonor" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "HONRA: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/ui_align = "center"
+
+[node name="Branches" type="HBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PainelInfo" type="PanelContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 80)
+metadata/ui_align = "center"
+
+[node name="InfoVBox" type="VBoxContainer" parent="VBox/PainelInfo"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NomeNo" type="Label" parent="VBox/PainelInfo/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "NOME DO NÓ"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/ui_align = "center"
+
+[node name="DescNo" type="Label" parent="VBox/PainelInfo/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Descrição diegética do nó."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+metadata/ui_align = "center"
+
+[node name="CustoLabel" type="Label" parent="VBox/PainelInfo/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "8 HONRA"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/ui_align = "center"
+
+[node name="EfeitoLabel" type="Label" parent="VBox/PainelInfo/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "EFEITO PLACEHOLDER"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/ui_align = "center"
+
+[node name="BotaoComprar" type="Button" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "COMPRAR"
+metadata/ui_align = "center"
+
+[node name="JuiceHall" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("1_script")

@@ -59,3 +59,83 @@ script = ExtResource("8_fluxo")
 [node name="DebugOverlay" type="Control" parent="."]
 layout_mode = 0
 script = ExtResource("7_debug")
+
+[node name="Mural" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 480.0
+offset_top = 20.0
+offset_right = 620.0
+offset_bottom = 100.0
+visible = false
+metadata/ui_align = "ignore"
+
+[node name="Empty" type="ColorRect" parent="Mural"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.15, 0.12, 0.1, 1)
+metadata/ui_align = "ignore"
+
+[node name="JohnOnly" type="ColorRect" parent="Mural"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.25, 0.18, 0.12, 1)
+metadata/ui_align = "ignore"
+
+[node name="JohnLeft" type="ColorRect" parent="Mural"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.3, 0.22, 0.15, 1)
+metadata/ui_align = "ignore"
+
+[node name="WithDisciple" type="ColorRect" parent="Mural"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.35, 0.25, 0.18, 1)
+metadata/ui_align = "ignore"
+
+[node name="SymbolUnlocked" type="ColorRect" parent="Mural"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.4, 0.28, 0.2, 1)
+metadata/ui_align = "ignore"
+
+[node name="MuralUpgraded" type="ColorRect" parent="Mural"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.45, 0.32, 0.22, 1)
+metadata/ui_align = "ignore"
+
+[node name="TextoMural" type="Label" parent="Mural"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "a parede espera."
+metadata/ui_align = "center"
