@@ -247,6 +247,7 @@ const _EscolaFalas := preload("res://scripts/estado/escola_falas.gd")
 const _Aparelhos := preload("res://scripts/estado/aparelhos.gd")
 const _Calendario := preload("res://scripts/estado/calendario.gd")
 const _Arvore := preload("res://scripts/estado/arvore.gd")
+const _AcademiaArtes := preload("res://scripts/estado/academia_artes.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -256,6 +257,7 @@ var _escola := _EscolaFalas.new(self)
 var _aparelhos := _Aparelhos.new(self)
 var _calendario := _Calendario.new(self)
 var _arvore := _Arvore.new(self)
+var _academia := _AcademiaArtes.new(self)
 
 
 func _ready() -> void:
@@ -1379,7 +1381,7 @@ func _zerar_carreira() -> void:
 	local_id = academia.local_padrao
 	arte_id = ""
 	arte_segundos = 0.0
-	_atualizar_traco()
+	_academia._atualizar_traco()
 	segundos_campanha = 0.0
 	_arte_comentada = true  # sem arte ainda: o comentário volta a valer quando ela for escolhida
 	nivel_luva = 0
@@ -1424,230 +1426,6 @@ func cartao_inicio() -> Dictionary:
 	return {"title": preencher(texto_ui("career_card_title_named", "{nome}: O QUE VOCÊ TROUXE"), {"nome": nome_lutador().to_upper()}),
 		"career": numero_carreira(), "name": nome_lutador(), "nodes": r.nodes, "art": arte_id,
 		"art_text": preencher(texto_ui("career_card_art", "ARTE: {nome}"), {"nome": nome_arte(arte_id).to_upper()}) if arte_id != "" else ""}
-
-
-## Multiplicador global de treino do local atual (garagem 1,0; academia 2,0), lido de data/locations.json.
-func mult_local() -> float:
-	var m := float(academia.local(local_id).get("training_mult", 1.0))
-	if m != 1.0:
-		m *= 1.0 + _arvore._b("gym_training_bonus")  # Fase 5.4: Ventilador novo (só fora da garagem)
-	return m
-
-
-## Local atual: {id, name, ambience, training_mult, apparatus_suffix, ...}. O sufixo vai nos sprites dos aparelhos básicos.
-func local_atual() -> Dictionary:
-	return academia.local(local_id)
-
-
-func sufixo_aparelhos() -> String:
-	return str(local_atual().get("apparatus_suffix", ""))
-
-
-## true se o treino está multiplicado por causa do local (a UI mostra `texto_hud_local()`).
-func em_academia() -> bool:
-	return mult_local() != 1.0
-
-
-## Dados do botão MUDAR ({} se não há para onde mudar: já está lá). Chaves: id, location, cost, name, mult, button,
-## description, title, price_text, effect_text, keeps_text, per_career_text, state ("locked" sem cinturão,
-## "missing" sem dinheiro, "ready").
-func mudanca() -> Dictionary:
-	var d := academia.destino_mudanca()
-	if d.is_empty() or d.id == local_id:
-		return {}
-	var custo := float(d.move.cost)
-	return {
-		"id": d.move.id, "location": d.id, "cost": custo, "name": d.name, "mult": d.training_mult,
-		"button": d.move_button if d.move_button != "" else texto_ui("move_button", "MUDAR"),
-		"description": d.move_description,
-		"title": texto_ui("move_title"), "price_text": preencher(texto_ui("move_price", "${n}"), {"n": NumberFormat.fmt(custo)}),
-		"effect_text": preencher(texto_ui("move_effect"), {"mult": NumberFormat.fmt(float(d.training_mult))}),
-		"keeps_text": texto_ui("move_keeps"), "per_career_text": texto_ui("move_per_career"),
-		"state": estado_mudanca(),
-	}
-
-
-## "none" (nada a comprar), "locked" (falta o cinturão: o botão não existe), "missing" (cinturão sem o dinheiro: apagado) ou "ready".
-func estado_mudanca() -> String:
-	var d := academia.destino_mudanca()
-	if d.is_empty() or d.id == local_id:
-		return "none"
-	if not cinturao:
-		return "locked"
-	return "ready" if Economia.pode_pagar(dinheiro, float(d.move.cost)) else "missing"
-
-
-func pode_mudar() -> bool:
-	return estado_mudanca() == "ready" and not acoes_bloqueadas()
-
-
-## MUDAR: desconta o preço uma vez, vai para o local, e na 1ª vez libera todas as artes e pede a escolha. Salva na hora.
-## Mudar nunca tira nada (geradores, melhorias, aparelhos, luva, Metrônomo, Treino, atributos ficam).
-func mudar() -> bool:
-	if not pode_mudar():
-		return false
-	var d := academia.destino_mudanca()
-	_gastar_dinheiro(float(d.move.cost))
-	_casa._interromper_saida()  # 6c1: trocar de local no meio da saída do John a termina na hora
-	var estava_parado := estado_escada() == "move"
-	local_id = str(d.id)
-	_reacao_cena = ""
-	if estava_parado and calendario_ligado():
-		fight_day = _calendario._data_da_proxima_luta()  # B3: chegou ao novo local, folga cheia a partir de hoje
-	var primeira: bool = permanente.arts_unlocked.is_empty() and not academia.artes.is_empty()
-	if primeira:
-		permanente["arts_unlocked"] = academia.ids_artes()
-	# 6c1: a 1ª chegada à academia toca a cena. O marco entra no MESMO salvar() da mudança (fechar o jogo no meio não repete).
-	var cena_id := _casa._cena_da_chegada()
-	if cena_id != "":
-		_escola._gravar_marco(str(escola_cfg.gym_arrival.milestone), {}, false)
-		cena_sala = cena_id
-		_cena_sala_t = 0.0
-		_sucessao._cancelar_toques(true)
-		_calendario._checar_sala()
-	_chave_melhor = ""
-	salvar()
-	local_mudou.emit(local_id)
-	if primeira:
-		permanente_mudou.emit()
-	escada_mudou.emit()
-	economia_mudou.emit()
-	atualizar_risco_hud()
-	if escolha_arte_pendente():
-		escolha_arte_pedida.emit(escolha_arte_primeira())
-	if local_id == "gym":
-		_academia_rearmada = true
-		disparar_gatilho("gym_arrival")  # Fase 6a: só a chegada pelo MUDAR (a carga e o NOVA CAMPANHA não passam aqui)
-	if cena_id != "":
-		cena_sala_pedida.emit(cena_id)  # a escolha da arte espera o fim da cena (cena_sala_terminou)
-	return true
-
-
-## Dinheiro que a LOJA não pode gastar: o preço da mudança, entre o cinturão e a mudança (0 nos outros casos).
-func reserva_mudanca() -> float:
-	if not cinturao:
-		return 0.0
-	var d := academia.destino_mudanca()
-	if d.is_empty() or d.id == local_id:
-		return 0.0
-	return float(d.move.cost)
-
-
-## Estado de uma compra em dinheiro: "ok", "money" (falta dinheiro) ou "reserve" (deixaria menos que a reserva da mudança).
-func loja_estado(custo: float) -> String:
-	if not Economia.pode_pagar(dinheiro, custo):
-		return "money"
-	if dinheiro - custo < reserva_mudanca() * (1.0 - Economia.EPS):
-		return "reserve"
-	return "ok"
-
-
-## Artes liberadas para sempre (ids), na ordem do arquivo.
-func artes_liberadas() -> Array:
-	return permanente.get("arts_unlocked", []).duplicate()
-
-
-func nome_arte(id: String) -> String:
-	return str(academia.arte(id).get("name", ""))
-
-
-## true quando a janela de escolha da arte deve estar aberta: artes liberadas, carreira viva e sem arte escolhida.
-## Cobre a 1ª chegada, o início de toda carreira e reabrir o jogo sem ter escolhido. Enquanto vale, `acoes_bloqueadas()`.
-func escolha_arte_pendente() -> bool:
-	return arte_id == "" and fim.is_empty() and sucessao == "none" and cena_sala == "" and not permanente.get("arts_unlocked", []).is_empty()
-
-
-## true na escolha da 1ª chegada (nunca escolheu arte): subtítulo `art_sub_first`.
-func escolha_arte_primeira() -> bool:
-	return str(permanente.get("last_art", "")) == ""
-
-
-## Cartões da janela de escolha: [{id, name, tagline, rule_text, fight_text, icon, apparatus, apparatus_name, last, last_text}].
-## `last` = a arte da carreira anterior (já vem marcada). Textos com os números já preenchidos (com o nó ESTILO, se houver).
-func artes_para_escolha() -> Array:
-	var r: Array = []
-	var ultima := str(permanente.get("last_art", ""))
-	for a in academia.artes:
-		if not (a.id in permanente.get("arts_unlocked", [])):
-			continue
-		var eh_ultima: bool = a.id == ultima
-		r.append({
-			"id": a.id, "name": a.name, "tagline": a.tagline, "icon": a.icon,
-			"rule_text": texto_regra_arte(a.id), "fight_text": texto_traco_luta(a.id),
-			"apparatus": a.apparatus, "apparatus_name": nome_curto_aparelho(a.apparatus).to_upper() if a.apparatus != "" else "",
-			"last": eh_ultima,
-			"last_text": preencher(texto_ui("art_last", "ÚLTIMA: {nome}"), {"nome": str(a.name).to_upper()}) if eh_ultima else "",
-		})
-	return r
-
-
-## Escolhe a arte da carreira (1 clique). Vale a carreira inteira: não existe função de troca. Só com a escolha pendente
-## e uma arte liberada. Salva na hora; zera `art_seconds`; guarda `last_art`.
-func escolher_arte(id: String) -> bool:
-	if not escolha_arte_pendente() or academia.arte(id).is_empty() or not (id in permanente.arts_unlocked):
-		return false
-	arte_id = id
-	arte_segundos = 0.0
-	_arte_comentada = false
-	permanente["last_art"] = id
-	_arvore._recalcular_bonus()  # Fase 5.4: nós da arte passam a valer
-	_atualizar_traco()
-	_chave_melhor = ""
-	salvar()
-	arte_mudou.emit(arte_id)
-	permanente_mudou.emit()
-	economia_mudou.emit()
-	atualizar_risco_hud()
-	return true
-
-
-## Soma dos nós ESTILO comprados da arte (0 ou 0,5): o efeito da regra dela fica x(1 + estilo).
-func estilo_arte(id: String) -> float:
-	return float(_estilo.get(id, 0.0))
-
-
-## Bônus do Boxe no clique MANUAL (0,50; com o nó 0,75). 0 sem arte ou com outra arte.
-func bonus_arte_clique() -> float:
-	var a := academia.arte(arte_id)
-	if a.is_empty() or a.rule.type != "manual_click_bonus":
-		return 0.0
-	return float(a.rule.value) * (1.0 + estilo_arte(arte_id))
-
-
-## Bônus do Jiu-jitsu na equipe: (1 + estilo) x min(teto, começo + por_minuto x minutos de arte). 0 sem a arte.
-func bonus_arte_equipe() -> float:
-	var a := academia.arte(arte_id)
-	if a.is_empty() or a.rule.type != "crew_time_bonus":
-		return 0.0
-	var r: Dictionary = a.rule
-	return (1.0 + estilo_arte(arte_id)) * minf(float(r.cap), float(r.start) + float(r.per_minute) * arte_segundos / 60.0)
-
-
-## true quando o bônus da equipe chegou no teto (a UI mostra "(MÁX.)").
-func arte_no_teto() -> bool:
-	var a := academia.arte(arte_id)
-	if a.is_empty() or a.rule.type != "crew_time_bonus":
-		return false
-	var r: Dictionary = a.rule
-	return float(r.start) + float(r.per_minute) * arte_segundos / 60.0 >= float(r.cap) - 1.0e-9
-
-
-# O traço de luta da arte entra na tática do jogador (luta e prévia usam a mesma função, no motor).
-func _atualizar_traco() -> void:
-	var f: Dictionary = academia.arte(arte_id).get("fight", {})
-	var dano := float(f.get("damage_mult", 1.0))
-	var recebido := float(f.get("taken_mult", 1.0))
-	var extra := _arvore._b("art_fight_bonus")  # Fase 5.4: Contragolpe / Base firme (só da arte jogada)
-	if dano != 1.0:
-		dano *= 1.0 + extra
-	if recebido != 1.0:
-		recebido *= maxf(0.0, 1.0 - extra)
-	motor.traco = {"damage_mult": dano, "taken_mult": recebido}
-
-
-## Tática do jogador já com o traço da arte (cópia). Útil para testes e para a UI mostrar números.
-func tatica_efetiva(tatica_id: String = "") -> Dictionary:
-	return motor.aplicar_traco(lutas.tatica(tatica) if tatica_id == "" else lutas.tatica(tatica_id))
 
 
 ## Troca {chave} por valores. Valor em Array: troca uma ocorrência por item, na ordem (ex.: "{n}" duas vezes).
@@ -1815,7 +1593,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	_dia_chegou_emitido = false
 	nos_ativos_ids = _validar_ativos(c.get("active_nodes", null))
 	_arvore._recalcular_bonus()
-	_atualizar_traco()
+	_academia._atualizar_traco()
 	nivel_metronomo = _inteiro_valido(c.get("metronome_level", 0), float(metronomo_niveis()))
 	_acc_metronomo = 0.0
 	_acc_assist = _aparelhos._assist_primeiro()
@@ -2076,7 +1854,7 @@ func _validar_local_e_arte(c: Dictionary) -> void:
 		a = ""
 	arte_id = a
 	arte_segundos = _numero_valido(c.get("art_seconds", 0.0)) if a != "" else 0.0
-	_atualizar_traco()
+	_academia._atualizar_traco()
 
 
 # Escada além do 1º adversário de outro local com a carreira na garagem (save editado): vai para esse local.
@@ -2458,3 +2236,49 @@ func nos_ativos() -> Array: return _arvore.nos_ativos()
 func arvore_mapa() -> Array: return _arvore.arvore_mapa()
 ## Dados gerais do mapa: {unit_px, regions: [{id, name, icon, lock, open}], last_node, legacy, open, can_buy_count}.
 func arvore_mapa_info() -> Dictionary: return _arvore.arvore_mapa_info()
+
+# ===== Repasses para scripts/estado/academia_artes.gd =====
+## Multiplicador global de treino do local atual (garagem 1,0; academia 2,0), lido de data/locations.json.
+func mult_local() -> float: return _academia.mult_local()
+## Local atual: {id, name, ambience, training_mult, apparatus_suffix, ...}. O sufixo vai nos sprites dos aparelhos básicos.
+func local_atual() -> Dictionary: return _academia.local_atual()
+## Veja academia_artes.gd.
+func sufixo_aparelhos() -> String: return _academia.sufixo_aparelhos()
+## true se o treino está multiplicado por causa do local (a UI mostra `texto_hud_local()`).
+func em_academia() -> bool: return _academia.em_academia()
+## Dados do botão MUDAR ({} se não há para onde mudar: já está lá). Chaves: id, location, cost, name, mult, button,
+func mudanca() -> Dictionary: return _academia.mudanca()
+## "none" (nada a comprar), "locked" (falta o cinturão: o botão não existe), "missing" (cinturão sem o dinheiro: apagado) ou "ready".
+func estado_mudanca() -> String: return _academia.estado_mudanca()
+## Veja academia_artes.gd.
+func pode_mudar() -> bool: return _academia.pode_mudar()
+## MUDAR: desconta o preço uma vez, vai para o local, e na 1ª vez libera todas as artes e pede a escolha. Salva na hora.
+func mudar() -> bool: return _academia.mudar()
+## Dinheiro que a LOJA não pode gastar: o preço da mudança, entre o cinturão e a mudança (0 nos outros casos).
+func reserva_mudanca() -> float: return _academia.reserva_mudanca()
+## Estado de uma compra em dinheiro: "ok", "money" (falta dinheiro) ou "reserve" (deixaria menos que a reserva da mudança).
+func loja_estado(custo: float) -> String: return _academia.loja_estado(custo)
+## Artes liberadas para sempre (ids), na ordem do arquivo.
+func artes_liberadas() -> Array: return _academia.artes_liberadas()
+## Veja academia_artes.gd.
+func nome_arte(id: String) -> String: return _academia.nome_arte(id)
+## true quando a janela de escolha da arte deve estar aberta: artes liberadas, carreira viva e sem arte escolhida.
+func escolha_arte_pendente() -> bool: return _academia.escolha_arte_pendente()
+## true na escolha da 1ª chegada (nunca escolheu arte): subtítulo `art_sub_first`.
+func escolha_arte_primeira() -> bool: return _academia.escolha_arte_primeira()
+## Cartões da janela de escolha: [{id, name, tagline, rule_text, fight_text, icon, apparatus, apparatus_name, last, last_text}].
+func artes_para_escolha() -> Array: return _academia.artes_para_escolha()
+## Escolhe a arte da carreira (1 clique). Vale a carreira inteira: não existe função de troca. Só com a escolha pendente
+func escolher_arte(id: String) -> bool: return _academia.escolher_arte(id)
+## Soma dos nós ESTILO comprados da arte (0 ou 0,5): o efeito da regra dela fica x(1 + estilo).
+func estilo_arte(id: String) -> float: return _academia.estilo_arte(id)
+## Bônus do Boxe no clique MANUAL (0,50; com o nó 0,75). 0 sem arte ou com outra arte.
+func bonus_arte_clique() -> float: return _academia.bonus_arte_clique()
+## Bônus do Jiu-jitsu na equipe: (1 + estilo) x min(teto, começo + por_minuto x minutos de arte). 0 sem a arte.
+func bonus_arte_equipe() -> float: return _academia.bonus_arte_equipe()
+## true quando o bônus da equipe chegou no teto (a UI mostra "(MÁX.)").
+func arte_no_teto() -> bool: return _academia.arte_no_teto()
+## O traço de luta da arte entra na tática do jogador (luta e prévia usam a mesma função, no motor).
+func _atualizar_traco() -> void: _academia._atualizar_traco()
+## Tática do jogador já com o traço da arte (cópia). Útil para testes e para a UI mostrar números.
+func tatica_efetiva(tatica_id: String = "") -> Dictionary: return _academia.tatica_efetiva(tatica_id)
