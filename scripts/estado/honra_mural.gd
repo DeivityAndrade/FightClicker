@@ -255,7 +255,7 @@ func mural_na_sala() -> Dictionary:
 	if req != "" and not gs.marco(req):
 		return {}
 	var nome = str(cfg.spot_by_location[gs.local_id])
-	return {"spot": gs._cena_dados_pontos().ponto_caminho(nome), "spot_name": nome, "object_text": str(cfg.get("object_text", "mural"))}
+	return {"spot": gs._casa._cena_dados_pontos().ponto_caminho(nome), "spot_name": nome, "object_text": str(cfg.get("object_text", "mural"))}
 
 
 ## Campanha do 1º cinturão amador da escola (o menor entre o marco da garagem salva, o roster e a campanha atual); 0 = nenhuma.

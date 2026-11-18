@@ -240,9 +240,11 @@ var _falta_chave_atual := ""
 const _Depuracao := preload("res://scripts/estado/depuracao.gd")
 const _Textos := preload("res://scripts/estado/textos.gd")
 const _HonraMural := preload("res://scripts/estado/honra_mural.gd")
+const _CasaNova := preload("res://scripts/estado/casa_nova.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
+var _casa := _CasaNova.new(self)
 
 
 func _ready() -> void:
@@ -276,8 +278,8 @@ func inicializar(pasta_save: String, caminho_config: String,
 		dados_academia: GymData = null, dados_dialogos: DialogosData = null, dados_discipulos: DiscipulosData = null) -> void:
 	config = GameConfig.carregar(caminho_config)
 	disciples = dados_discipulos if dados_discipulos != null else DiscipulosData.carregar()
-	escola_cfg = _ler_json_dados("res://data/escola.json")
-	hall_cfg = _ler_json_dados("res://data/hall.json")
+	escola_cfg = _casa._ler_json_dados("res://data/escola.json")
+	hall_cfg = _casa._ler_json_dados("res://data/hall.json")
 	_rng_sucessao.randomize()
 	dialogos = dados_dialogos if dados_dialogos != null else DialogosData.carregar()
 	_rng_fala.randomize()
@@ -318,7 +320,7 @@ func tick(delta: float) -> void:
 				_ganhar(producao * dt)
 			if arte_id != "":
 				arte_segundos += dt
-				_tick_comentario_da_arte()
+				_casa._tick_comentario_da_arte()
 			_depur._tick_tempo_morto(dt)
 			_tick_metronomo(dt)
 			_tick_evento_dourado(dt)
@@ -455,7 +457,7 @@ func _checar_sala() -> void:
 		_sala_antes = a
 		if not a:
 			_fechar_para_janela()  # Fase 6a: nunca fica balão (nem gesto da sala) por baixo de janela ou luta
-			_interromper_saida()  # 6c1: janela, luta, tela de fim ou dia da luta terminam a saída do John na hora
+			_casa._interromper_saida()  # 6c1: janela, luta, tela de fim ou dia da luta terminam a saída do John na hora
 		sala_ativa_mudou.emit(a)
 
 
@@ -1297,7 +1299,7 @@ func lutar() -> Dictionary:
 	if not pode_lutar():
 		return {}
 	_reacao_cena = ""  # lutar antes do 1º clique: a reação da cena se perde, os toques seguem a regra comum
-	_interromper_saida()
+	_casa._interromper_saida()
 	var opp := proximo_adversario()
 	var jog := _atributos_array()
 	var semente := int(rng.randi())
@@ -1460,7 +1462,7 @@ func concluir_luta() -> Dictionary:
 		if opp.belt:
 			garagem_salva = _gravar_marco("garage_saved", {"opponent": str(opp.id), "by_first": lutador_atual() == "first"}, false)
 		# 6c1: a 1ª vitória de um discípulo na academia, com o John ainda na escola, arma a saída dele (mesmo save do prêmio).
-		_marcar_vitoria_na_academia(str(opp.id))
+		_casa._marcar_vitoria_na_academia(str(opp.id))
 		# Revanche: vencer o algoz limpa a marca (no mesmo save do prêmio).
 		var revanche := e_algoz(opp.id)
 		if revanche:
@@ -1567,7 +1569,7 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 	var honra_ganha := honra_da_saida(indice_escada, cinturao) if tipo == "retire" else 0
 	escola["honor"] = honra() + honra_ganha
 	escola["honor_total"] = honra_total() + honra_ganha
-	_interromper_saida()  # 6c1: o fim da campanha termina a saída do John na hora
+	_casa._interromper_saida()  # 6c1: o fim da campanha termina a saída do John na hora
 	escola["last_end"] = {"kind": tipo, "campaign": numero_carreira()}  # Fase 6a: o comentário da derrota usa isto
 	if tipo == "defeat":
 		motivo_fim["unlock_tip"] = _aparelho_da_dica(motivo)
@@ -2027,7 +2029,7 @@ func mudar() -> bool:
 		return false
 	var d := academia.destino_mudanca()
 	_gastar_dinheiro(float(d.move.cost))
-	_interromper_saida()  # 6c1: trocar de local no meio da saída do John a termina na hora
+	_casa._interromper_saida()  # 6c1: trocar de local no meio da saída do John a termina na hora
 	var estava_parado := estado_escada() == "move"
 	local_id = str(d.id)
 	_reacao_cena = ""
@@ -2037,7 +2039,7 @@ func mudar() -> bool:
 	if primeira:
 		permanente["arts_unlocked"] = academia.ids_artes()
 	# 6c1: a 1ª chegada à academia toca a cena. O marco entra no MESMO salvar() da mudança (fechar o jogo no meio não repete).
-	var cena_id := _cena_da_chegada()
+	var cena_id := _casa._cena_da_chegada()
 	if cena_id != "":
 		_gravar_marco(str(escola_cfg.gym_arrival.milestone), {}, false)
 		cena_sala = cena_id
@@ -3058,11 +3060,11 @@ func _tick_falas(delta: float) -> void:
 					and int(fim_ant.get("campaign", 0)) == numero_carreira() - 1 and not escola.lines_seen.has("cl_primeira_derrota"):
 				disparar_gatilho("after_defeat")
 		# 6c1: fechou o jogo antes da cl_primeira_academia (ou save antigo que só viu a cena agora): a fala nunca se perde
-		if ativa and local_id == "gym" and not _academia_rearmada and marco(_marco_da_chegada()) and coach_presente():
+		if ativa and local_id == "gym" and not _academia_rearmada and marco(_casa._marco_da_chegada()) and coach_presente():
 			_academia_rearmada = true
 			if not escola.lines_seen.has("cl_primeira_academia"):
 				disparar_gatilho("gym_arrival")
-		_tick_saida(ativa)
+		_casa._tick_saida(ativa)
 	_resolver_gatilhos(delta)
 
 
@@ -3434,7 +3436,7 @@ func mentores_na_sala() -> Array:
 	var r: Array = []
 	if lutador_atual() != "disciple":
 		return r
-	var pontos := _spots_do_local()
+	var pontos := _casa._spots_do_local()
 	if pontos.is_empty():
 		return r
 	var seat_p := ponto_do_local("seat")
@@ -3446,7 +3448,7 @@ func mentores_na_sala() -> Array:
 		if not s.is_empty():
 			r.append({"id": "last", "role": "stand", "spot": s.ponto_nome, "point": s.ponto, "pose": s.pose, "glove": s.glove,
 				"facing": s.facing, "campaign": s.campaign, "name": s.nome, "look": s.look})
-	elif marco(_marco_da_saida()) and not seat_p.is_empty():
+	elif marco(_casa._marco_da_saida()) and not seat_p.is_empty():
 		var e := segundo_mentor_entrada()
 		if not e.is_empty():
 			var apos: Dictionary = disciples.mentores_cfg.get("after_first_leaves", {})
@@ -3487,7 +3489,7 @@ func segundo_mentor() -> Dictionary:
 	var e := segundo_mentor_entrada()
 	if e.is_empty():
 		return {}
-	var nome_ponto := str(_spots_do_local().get("stand", ""))
+	var nome_ponto := str(_casa._spots_do_local().get("stand", ""))
 	var p := ponto_do_local("stand")
 	if nome_ponto == "" or p.size() != 2:
 		return {}
@@ -3504,7 +3506,7 @@ func segundo_mentor() -> Dictionary:
 func mentor_sentado() -> bool:
 	if lutador_atual() != "disciple" or not ("first" in escola.get("mentors", [])):
 		return false
-	return not _spots_do_local().is_empty() and not ponto_do_local("seat").is_empty()
+	return not _casa._spots_do_local().is_empty() and not ponto_do_local("seat").is_empty()
 
 
 ## Lista da escola: quem passou o posto, em ordem (cópia). Ver design §3.4.
@@ -3523,7 +3525,7 @@ func _discipulo_padrao() -> Dictionary:
 func receber_discipulo() -> bool:
 	if fim.is_empty() or sucessao != "none":
 		return false
-	_interromper_saida()  # 6c1: RECEBER termina a saída do John na hora
+	_casa._interromper_saida()  # 6c1: RECEBER termina a saída do John na hora
 	var nova := numero_carreira() + 1
 	if nova <= int(escola.get("first_fighter_campaign", 1)):
 		return nova_carreira()
@@ -3812,276 +3814,18 @@ func _toques_apos_vitoria(resumo: Dictionary) -> void:
 
 func _tick_toques(delta: float, ativa: bool) -> void:
 	if not _toques.is_empty():
-		if not _toques_valem_aqui() or not ativa:
+		if not _casa._toques_valem_aqui() or not ativa:
 			_cancelar_toques(true)
 		elif _t_real >= float(_toques.ate):
 			_toques = {}
 	if _toque_vitoria >= 0.0:
-		if not _toques_valem_aqui() or not luta.is_empty():
+		if not _casa._toques_valem_aqui() or not luta.is_empty():
 			_toque_vitoria = -1.0  # lutar de novo ou mudar de local cancela
 		elif ativa:
 			_toque_vitoria += delta
 			if _toque_vitoria >= float(disciples.toques.get("win_return_delay_seconds", 1.0)):
 				_toque_vitoria = -1.0
 				_pedir_toques("win_return")
-
-
-func _ler_json_dados(caminho: String) -> Dictionary:
-	if not FileAccess.file_exists(caminho):
-		return {}
-	var v = JSON.parse_string(FileAccess.get_file_as_string(caminho))
-	return v if v is Dictionary else {}
-
-
-func _marco_da_chegada() -> String:
-	return str(escola_cfg.get("gym_arrival", {}).get("milestone", "cena_primeira_academia"))
-
-
-func _marco_da_saida() -> String:
-	return str(escola_cfg.get("mentor_leave", {}).get("milestone", "cena_saida_primeiro_mentor"))
-
-
-## Id da cena de chegada se o MUDAR atual é a 1ª chegada à academia (marco ausente); "" nos outros casos.
-func _cena_da_chegada() -> String:
-	var cfg: Dictionary = escola_cfg.get("gym_arrival", {})
-	if cfg.is_empty() or local_id != str(cfg.get("location", "gym")) or marco(_marco_da_chegada()):
-		return ""
-	return str(cfg.get("scene", "primeira_academia"))
-
-
-## A cena da chegada terminou (return_control ou PULAR): devolve o relógio e abre a escolha da arte, se pendente.
-func cena_sala_terminou() -> void:
-	if cena_sala == "":
-		return
-	cena_sala = ""
-	_cena_sala_t = 0.0
-	_checar_sala()
-	if escolha_arte_pendente():
-		escolha_arte_pedida.emit(escolha_arte_primeira())
-
-
-## Quem a chegada à academia usa (formato §9 item 16): {fighter "first"|"disciple", box "first"|"last_passed"|"neighbor",
-## box_look (look do último, {} nos outros)}. A cena resolve os atores pelo papel; isto é para a interface e os testes.
-func elenco_primeira_academia() -> Dictionary:
-	var m := papel_do_elenco("mentor:seat")
-	var caixa := "neighbor"
-	if not m.is_empty():
-		caixa = "first" if str(m.id) == "first" else "last_passed"
-	return {"fighter": lutador_atual(), "box": caixa, "box_look": m.get("look", {}) if caixa == "last_passed" else {}}
-
-
-# {id "first"|"last", character, look, name} de um dos papéis de cena; {} se ninguém ocupa o papel.
-func papel_do_elenco(papel: String) -> Dictionary:
-	if papel == "mentor:seat":
-		for quem in escola_cfg.get("gym_arrival", {}).get("box_carrier_order", ["first", "last_passed"]):
-			if str(quem) == "first" and lutador_atual() == "disciple" and "first" in escola.get("mentors", []):
-				return _papel_john()
-			if str(quem) == "last_passed" and marco(_marco_da_saida()):
-				var u := _papel_ultimo()
-				if not u.is_empty():
-					return u
-		return {}
-	if papel == "mentor:last":
-		return _papel_ultimo()
-	return {}
-
-
-func _papel_john() -> Dictionary:
-	return {"id": "first", "character": "first_fighter", "look": {}, "name": str(dialogos.cast.get("first", {}).get("name", "John Bullet"))}
-
-
-# O último que passou o posto (a entrada do roster), com o look validado.
-func _papel_ultimo() -> Dictionary:
-	var e := segundo_mentor_entrada()
-	if e.is_empty():
-		return {}
-	var look = e.get("look", null)
-	return {"id": "last", "character": "current_player", "name": str(e.get("name", "")),
-		"look": disciples.validar_look(look) if look is Dictionary else disciples.look_padrao.duplicate()}
-
-
-# {seat, stand} (nomes dos pontos) do local atual, ou {} se ali não há mentor desenhado (academia sem o marco da cena).
-func _spots_do_local() -> Dictionary:
-	var s = disciples.mentores_cfg.get("spots_by_location", {}).get(local_id, {})
-	if not (s is Dictionary) or s.is_empty():
-		return {}
-	var req := str(s.get("requires_milestone", ""))
-	if req != "" and not marco(req):
-		return {}
-	return {"seat": str(s.get("seat", "")), "stand": str(s.get("stand", ""))}
-
-
-func _cena_dados_pontos() -> CenaDados:
-	if _pontos_cena == null:
-		_pontos_cena = CenaDados.novo()
-	return _pontos_cena
-
-
-## Ponto ([x, y]) do papel `seat` ou `stand` no local atual; [] se não há (manifest com reserva em data/cena_player.json).
-func ponto_do_local(papel: String) -> Array:
-	var p := _spots_do_local()
-	if p.is_empty():
-		return []
-	return _cena_dados_pontos().ponto(str(p.get(papel, "")))
-
-
-## {seat_spot, stand_spot, coach_spot} do local atual: o que a cena usa para `seat_spot` etc. (formato §9 item 22).
-func pontos_do_local() -> Dictionary:
-	return _cena_dados_pontos().pontos_do_local(local_id, disciples.mentores_cfg.get("spots_by_location", {}), escola_cfg.get("coach_presence", {}))
-
-
-## Ponto onde o Osmar é desenhado no local atual ([] se não aparece ali).
-func ponto_do_coach() -> Array:
-	var c = escola_cfg.get("coach_presence", {}).get(local_id, null)
-	if not (c is Dictionary):
-		return []
-	var req := str(c.get("requires_milestone", ""))
-	if req != "" and not marco(req):
-		return []
-	return _cena_dados_pontos().ponto_caminho(str(c.get("spot", "")))
-
-
-## O Osmar está desenhado no local atual? Só fala quem está desenhado (design §3.2). Garagem: sempre; academia: depois do marco.
-func coach_presente() -> bool:
-	if escola_cfg.is_empty():
-		return local_id == "garage"
-	return not ponto_do_coach().is_empty()
-
-
-## A foto antiga do local atual: {spot [x, y], object_text (chave de objects), tilted} ou {} se não aparece (design §2).
-func foto_antiga() -> Dictionary:
-	var c = escola_cfg.get("old_photo", {}).get(local_id, null)
-	if not (c is Dictionary):
-		return {}
-	var req := str(c.get("requires_milestone", ""))
-	if req != "" and not marco(req):
-		return {}
-	var p := _cena_dados_pontos().ponto_caminho(str(c.get("spot", "")))
-	if p.is_empty():
-		return {}
-	return {"spot": p, "object_text": str(c.get("object_text", "")), "tilted": bool(c.get("tilted", false))}
-
-
-## O caixote de sentar está desenhado no local atual (com ou sem gente sentada)? Garagem: desde a 1ª sucessão. Academia: desde o marco.
-func assento_visivel() -> bool:
-	var c = disciples.mentores_cfg.get("seat_prop", {}).get(local_id, null)
-	if not (c is Dictionary):
-		return false
-	var req := str(c.get("requires_milestone", ""))
-	if req != "" and not marco(req):
-		return false
-	var s = disciples.mentores_cfg.get("spots_by_location", {}).get(local_id, {})
-	return s is Dictionary and not _cena_dados_pontos().ponto(str(s.get("seat", ""))).is_empty()
-
-
-## Quem a sala desenha num papel (`seat`, `stand`, `coach`): {id, point, facing, pose, look, name} ou {}.
-## Durante a saída do John vale o que a sala desenhava ANTES dela (a cena assume o desenho).
-func papel_da_sala(papel: String) -> Dictionary:
-	if papel == "coach":
-		var p := ponto_do_coach()
-		if p.is_empty():
-			return {}
-		return {"id": "coach", "point": p, "facing": "right", "pose": "idle", "look": {}, "glove": "none",
-			"name": str(dialogos.cast.get("coach", {}).get("name", "Osmar Brandão"))}
-	var lista: Array = _saida_elenco.get("mentores", []) if _saida_tocando else mentores_na_sala()
-	for m in lista:
-		if str(m.get("role", "")) == papel:
-			return m
-	return {}
-
-
-func _toques_valem_aqui() -> bool:
-	return mentor_sentado() and local_id in disciples.toques.get("locations", ["garage"])
-
-
-# 1ª vitória de um discípulo na academia com o John ainda na escola: arma a saída (no save do prêmio, sem salvar aqui).
-func _marcar_vitoria_na_academia(oponente: String) -> void:
-	var cfg: Dictionary = escola_cfg.get("mentor_leave", {})
-	if cfg.is_empty() or lutador_atual() != "disciple" or local_id != str(cfg.get("win_location", "gym")):
-		return
-	if not ("first" in escola.get("mentors", [])):
-		return
-	_gravar_marco(str(cfg.get("win_milestone", "disciple_gym_win")), {"opponent": oponente}, false)
-
-
-# Chamado só com sala ativa e arte escolhida: depois de `after_art_seconds` de arte, o gatilho art_choice sai uma vez.
-func _tick_comentario_da_arte() -> void:
-	if _arte_comentada:
-		return
-	var cfg: Dictionary = escola_cfg.get("art_comment", {})
-	if cfg.is_empty():
-		_arte_comentada = true
-		return
-	if arte_segundos >= float(cfg.get("after_art_seconds", 60.0)):
-		_arte_comentada = true
-		disparar_gatilho(str(cfg.get("trigger", "art_choice")))
-
-
-## A saída do John está devida? (design §6.1) John na escola, discípulo jogando, saída ainda não feita e a
-## 1ª vitória na academia OU a campanha de reserva (campanha do John + offset).
-func saida_devida() -> bool:
-	var cfg: Dictionary = escola_cfg.get("mentor_leave", {})
-	if cfg.is_empty() or not ("first" in escola.get("mentors", [])) or lutador_atual() != "disciple" or marco(_marco_da_saida()):
-		return false
-	if marco(str(cfg.get("win_milestone", "disciple_gym_win"))):
-		return true
-	return numero_carreira() >= int(escola.get("first_fighter_campaign", 1)) + int(cfg.get("reserve_campaign_offset", 3))
-
-
-## A saída do John está tocando agora.
-func saida_tocando() -> bool:
-	return _saida_tocando
-
-
-# Roda a cada quadro com a sala calma: pede a saída no 1º momento calmo com o John desenhado (design §6.2).
-func _tick_saida(ativa: bool) -> void:
-	var cfg: Dictionary = escola_cfg.get("mentor_leave", {})
-	if _saida_tocando:
-		# Trava de segurança: se ninguém avisar o fim (sem interface), a saída acaba sozinha um pouco depois do teto.
-		if _t_real - _saida_inicio > float(cfg.get("max_seconds", 14.0)) + 3.0:
-			saida_terminou()
-		return
-	if not ativa or not saida_devida() or not _balao.is_empty() or not _gesto.is_empty() or not _toques.is_empty():
-		return
-	if _toque_vitoria >= 0.0 or _calma < float(cfg.get("settle_seconds", 2.0)) or not mentor_sentado():
-		return
-	_iniciar_saida()
-
-
-func _iniciar_saida() -> void:
-	var cfg: Dictionary = escola_cfg.mentor_leave
-	var cena := CenaDados.carregar_cena(str(cfg.get("scene", "saida_primeiro_mentor")))
-	_saida_elenco = {"mentores": mentores_na_sala()}  # o que a sala desenhava, antes de o John sair da lista
-	# O marco e o que a cena dá são gravados no COMEÇO: fechar o jogo no meio dá o mesmo save.
-	_gravar_marco(_marco_da_saida(), {}, false)
-	_aplicar_grants(cena.get("grants", [{"type": "mentor_leaves", "character": "first_fighter"}]))
-	_saida_tocando = true
-	_saida_inicio = _t_real
-	salvar()
-	saida_mentor_pedida.emit()
-
-
-## A saída acabou (a cena terminou ou foi interrompida): conta como comentário (intervalo de 60 s) e solta a vaga.
-func saida_terminou() -> void:
-	if not _saida_tocando:
-		return
-	_saida_tocando = false
-	_saida_elenco = {}
-	_ultimo_comentario = _t_real
-
-
-# Janela, luta, MUDAR, tela de fim ou RECEBER: a cena aplica o end_state na hora e fecha os balões (sinal).
-func _interromper_saida() -> void:
-	if not _saida_tocando:
-		return
-	saida_mentor_interrompida.emit()
-	saida_terminou()
-
-
-## O CenaPlayer avisa que uma cena sem controle preso acabou sozinha.
-func cena_livre_terminou(id: String) -> void:
-	if id == str(escola_cfg.get("mentor_leave", {}).get("scene", "saida_primeiro_mentor")):
-		saida_terminou()
 
 
 # ===== Repasses para scripts/estado/depuracao.gd =====
@@ -4181,3 +3925,35 @@ func mentor_do_caixote() -> Dictionary: return _honra.mentor_do_caixote()
 func voz_do_mentor(kind: String, campanha: int) -> Dictionary: return _honra.voz_do_mentor(kind, campanha)
 ## Maior número de vitórias de uma entrada do roster (wins -1 = desconhecido não conta).
 func recorde_da_escola() -> int: return _honra.recorde_da_escola()
+
+# ===== Repasses para scripts/estado/casa_nova.gd =====
+## A cena da chegada terminou (return_control ou PULAR): devolve o relógio e abre a escolha da arte, se pendente.
+func cena_sala_terminou() -> void: _casa.cena_sala_terminou()
+## Quem a chegada à academia usa (formato §9 item 16): {fighter "first"|"disciple", box "first"|"last_passed"|"neighbor",
+func elenco_primeira_academia() -> Dictionary: return _casa.elenco_primeira_academia()
+## {id "first"|"last", character, look, name} de um dos papéis de cena; {} se ninguém ocupa o papel.
+func papel_do_elenco(papel: String) -> Dictionary: return _casa.papel_do_elenco(papel)
+## Ponto ([x, y]) do papel `seat` ou `stand` no local atual; [] se não há (manifest com reserva em data/cena_player.json).
+func ponto_do_local(papel: String) -> Array: return _casa.ponto_do_local(papel)
+## {seat_spot, stand_spot, coach_spot} do local atual: o que a cena usa para `seat_spot` etc. (formato §9 item 22).
+func pontos_do_local() -> Dictionary: return _casa.pontos_do_local()
+## Ponto onde o Osmar é desenhado no local atual ([] se não aparece ali).
+func ponto_do_coach() -> Array: return _casa.ponto_do_coach()
+## O Osmar está desenhado no local atual? Só fala quem está desenhado (design §3.2). Garagem: sempre; academia: depois do marco.
+func coach_presente() -> bool: return _casa.coach_presente()
+## A foto antiga do local atual: {spot [x, y], object_text (chave de objects), tilted} ou {} se não aparece (design §2).
+func foto_antiga() -> Dictionary: return _casa.foto_antiga()
+## O caixote de sentar está desenhado no local atual (com ou sem gente sentada)? Garagem: desde a 1ª sucessão. Academia: desde o marco.
+func assento_visivel() -> bool: return _casa.assento_visivel()
+## Quem a sala desenha num papel (`seat`, `stand`, `coach`): {id, point, facing, pose, look, name} ou {}.
+func papel_da_sala(papel: String) -> Dictionary: return _casa.papel_da_sala(papel)
+## A saída do John está devida? (design §6.1) John na escola, discípulo jogando, saída ainda não feita e a
+func saida_devida() -> bool: return _casa.saida_devida()
+## A saída do John está tocando agora.
+func saida_tocando() -> bool: return _casa.saida_tocando()
+## A saída acabou (a cena terminou ou foi interrompida): conta como comentário (intervalo de 60 s) e solta a vaga.
+func saida_terminou() -> void: _casa.saida_terminou()
+## Janela, luta, MUDAR, tela de fim ou RECEBER: a cena aplica o end_state na hora e fecha os balões (sinal).
+func _interromper_saida() -> void: _casa._interromper_saida()
+## O CenaPlayer avisa que uma cena sem controle preso acabou sozinha.
+func cena_livre_terminou(id: String) -> void: _casa.cena_livre_terminou(id)
