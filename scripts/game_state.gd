@@ -76,6 +76,11 @@ signal cena_sala_pedida(id: String)  # a cena de uma vez na vida deve tocar agor
 signal saida_mentor_pedida()  # a saída do John começa (cena sem controle preso); marco e `mentor_leaves` já salvos
 signal saida_mentor_interrompida()  # janela, luta, MUDAR, tela de fim ou RECEBER: a cena aplica o end_state na hora
 
+# Fase 6c2 (Mais longe que eu): Honra, hall e mural (contrato: docs/fases/fase6c2-api.md)
+signal honra_mudou(honor: int)  # saldo de Honra mudou (fim de campanha por vontade, compra no hall, carga do save)
+signal hall_mudou()  # nó do hall comprado ou carga do save
+signal previa_falta_pronta(texto: String)  # a linha "FALTA ~N DE ATRIBUTO" da prévia ficou pronta (calculada em segundo plano)
+
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
 const PASTA_SAVE_TESTES := "user://test/autoload/"
@@ -217,6 +222,10 @@ var _toque_vitoria := -1.0  # >= 0: segundos de sala ativa desde a vitória; -1 
 
 # Fase 6c1 (nada disto vai para o save: o que importa fica nos marcos da escola)
 var escola_cfg: Dictionary = {}  # data/escola.json
+var hall_cfg: Dictionary = {}  # data/hall.json (6c2): Honra, bônus do retrato e nós do hall
+var _falta_tarefa := -1  # tarefa em segundo plano da linha "o que mais falta" da prévia (-1 = nenhuma)
+var _falta_fundo: Dictionary = {}
+var _falta_cache: Dictionary = {}  # {chave, texto}
 var cena_sala := ""  # "" | "primeira_academia": a cena de chegada está tocando (relógio e cliques parados)
 var _saida_tocando := false  # a saída do John está tocando agora
 var _saida_inicio := 0.0  # _t_real do começo da saída
@@ -236,6 +245,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	tick(delta)
 	_finalizar_motivo(true, false)  # recolhe sem travar o quadro
+	_finalizar_falta(false)
 
 
 func _notification(what: int) -> void:
@@ -257,6 +267,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 	config = GameConfig.carregar(caminho_config)
 	disciples = dados_discipulos if dados_discipulos != null else DiscipulosData.carregar()
 	escola_cfg = _ler_json_dados("res://data/escola.json")
+	hall_cfg = _ler_json_dados("res://data/hall.json")
 	_rng_sucessao.randomize()
 	dialogos = dados_dialogos if dados_dialogos != null else DialogosData.carregar()
 	_rng_fala.randomize()
@@ -477,12 +488,12 @@ func por_auto_soco() -> float:
 
 
 func _base_soco() -> float:
-	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _b("click_bonus")) * mult_local()
+	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _b("click_bonus")) * mult_local() * mult_escola()
 
 
 ## Fator que a equipe recebe: (1 + árvore) x local x (1 + Jiu-jitsu).
 func _fator_equipe() -> float:
-	return (1.0 + _b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe())
+	return (1.0 + _b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe()) * mult_escola() * (1.0 + _hall_valor("crew_mult"))
 
 
 ## Treino/s vindo de todos os geradores (da garagem e pagos).
@@ -1034,7 +1045,8 @@ func previa_aposentar() -> Dictionary:
 	var bonus := int(floor(pote * c.retire_belt_bonus_share + 1.0e-9)) if cinturao else 0
 	var total := _com_bonus_legado(base + bonus)
 	return {"pote": pote, "base": base, "bonus": bonus, "total": total, "cinturao": cinturao,
-		"notebook": total - (base + bonus), "zero": base + bonus == 0}
+		"notebook": total - (base + bonus), "zero": base + bonus == 0,
+		"honor": honra_da_saida(indice_escada, cinturao), "wins": indice_escada}
 
 
 func _atributos_array() -> Array:
@@ -1258,6 +1270,8 @@ func previa() -> Dictionary:
 		# Fase 5: traço de luta da arte ("BOXE: +10% DE DANO"); "" sem arte
 		"art": arte_id,
 		"art_fight_text": texto_traco_luta(arte_id),
+		# Fase 6c2: nó "Caderno de recordes" (fora do verde); "" até ficar pronto (sinal previa_falta_pronta)
+		"missing_line": _linha_o_que_falta(opp, jog, adv, rotulo),
 	}
 
 
@@ -1556,7 +1570,8 @@ func concluir_luta() -> Dictionary:
 		if escada_completa():
 			campanha_completa_mudou.emit()
 		var proximo := proximo_adversario()
-		resumo = {"win": true, "fight_day": fight_day, "opponent": opp.id, "money": premio, "fame": premio_f,
+		var fala_mentor := _fala_do_mentor(opp)  # 6c2: só pede; quem fala é o gatilho mentor_won
+		resumo = {"win": true, "mentor_line": fala_mentor, "fight_day": fight_day, "opponent": opp.id, "money": premio, "fame": premio_f,
 			"legacy_gain": legado_em_jogo() - pote_antes, "legacy_run": legado_em_jogo(), "belt": opp.belt,
 			"next": proximo.get("id", ""), "next_name": proximo.get("name", ""), "revenge": revanche,
 			"record": recorde, "first_school_win": primeira_vitoria, "garage_saved": garagem_salva,
@@ -1650,21 +1665,27 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 	if cinturao:
 		permanente["belts_won"] = int(permanente.belts_won) + 1
 	var motivo_fim := motivo.duplicate()
+	# 6c2: Honra só por saída voluntária com vitórias; nunca multiplicada; no mesmo salvar() do Legado.
+	var honra_ganha := honra_da_saida(indice_escada, cinturao) if tipo == "retire" else 0
+	escola["honor"] = honra() + honra_ganha
+	escola["honor_total"] = honra_total() + honra_ganha
 	_interromper_saida()  # 6c1: o fim da campanha termina a saída do John na hora
 	escola["last_end"] = {"kind": tipo, "campaign": numero_carreira()}  # Fase 6a: o comentário da derrota usa isto
 	if tipo == "defeat":
 		motivo_fim["unlock_tip"] = _aparelho_da_dica(motivo)
 	fim = {
 		"kind": tipo, "career_number": numero_carreira(), "legacy_gained": ganho, "legacy_notebook": caderno,
-		"legacy_total": int(permanente.legacy_total),
+		"legacy_total": int(permanente.legacy_total), "honor_gained": honra_ganha,
 		"opponent": str(snap.get("opponent", "")), "tactic": str(snap.get("tactic", tatica)),
 		"seed": int(snap.get("seed", 0)), "player": snap.get("player", {}).duplicate(),
 		"result": snap.get("result", {}).duplicate(), "reason": motivo_fim,
 		"summary": {"wins": indice_escada, "belts": 1 if cinturao else 0, "fame": fama,
 			"money_earned": dinheiro_ganho, "play_seconds": tempo_jogo, "art": arte_id, "location": local_id},
 	}
-	_registrar_na_lista_da_escola(tipo, snap, ganho)
+	_registrar_na_lista_da_escola(tipo, snap, ganho, honra_ganha)
 	salvar()
+	if honra_ganha > 0:
+		honra_mudou.emit(honra())
 	permanente_mudou.emit()
 	fim_de_carreira.emit(fim.duplicate(true))
 
@@ -1698,6 +1719,7 @@ func _reiniciar_campanha() -> void:
 	discipulo = {}
 	mentor_cumprimentou = false
 	_aplicar_inicio_da_arvore()
+	_aplicar_inicio_do_hall()
 	nivel_metronomo = mini(int(_b("metronome_start")), metronomo_niveis())
 
 
@@ -2776,6 +2798,8 @@ func aplicar_save(estado: Dictionary) -> void:
 	# Fase 6a: escola (depois de permanente e fim: o padrão depende deles) e estado volátil das falas
 	gestos_calcados = _validar_gestos(c.get("gestured_gloves", []))
 	escola = _validar_escola(estado.get("school", null), not estado.is_empty())
+	for b in caixas_lista:  # 6c2: o hall pode ter baixado os cliques da caixa
+		b["hits"] = mini(int(b.hits), maxi(0, cliques_para_abrir() - 1))
 	# Fase 6b1: passar o posto. O estado da sucessão vem do save (school.handover); o discípulo depois dele.
 	_aplicar_handover_da_carga()
 	discipulo = _validar_discipulo(c.get("disciple", null), not c.is_empty())
@@ -2881,6 +2905,7 @@ func _validar_fim(v: Variant) -> Dictionary:
 		"legacy_gained": _inteiro_valido(v.get("legacy_gained", 0), 1.0e15),
 		"legacy_notebook": _inteiro_valido(v.get("legacy_notebook", 0), 1.0e15),
 		"legacy_total": _inteiro_valido(v.get("legacy_total", 0), 1.0e15),
+		"honor_gained": _inteiro_valido(v.get("honor_gained", 0), 1.0e15),
 		"opponent": str(v.get("opponent", "")), "tactic": str(v.get("tactic", "")),
 		"seed": _inteiro_valido(v.get("seed", 0), 4294967295.0),
 		"player": pl.duplicate(true) if pl is Dictionary else {},
@@ -2978,6 +3003,8 @@ func _emitir_tudo(pedir_arte: bool = true) -> void:
 	escada_mudou.emit()
 	economia_mudou.emit()
 	carreira_mudou.emit()
+	honra_mudou.emit(honra())
+	hall_mudou.emit()
 	campanha_completa_mudou.emit()
 	if risco_hud_ativo:
 		atualizar_risco_hud()
@@ -3032,7 +3059,7 @@ func caixa(item: String) -> Dictionary:
 ## Cliques que ainda faltam para abrir a caixa do item (0 se não há caixa).
 func cliques_faltando(item: String) -> int:
 	var i := _indice_caixa(item)
-	return maxi(0, dados.box_clicks_to_open - int(caixas_lista[i].hits)) if i >= 0 else 0
+	return maxi(0, cliques_para_abrir() - int(caixas_lista[i].hits)) if i >= 0 else 0
 
 
 ## true se há uma luva esperando na caixa (a próxima só fica à venda depois de abrir).
@@ -3057,7 +3084,7 @@ func bater_caixa(item: String) -> bool:
 	caixas_lista[i]["hits"] = int(caixas_lista[i].hits) + 1
 	var batidas := int(caixas_lista[i].hits)
 	caixa_batida.emit(item, batidas)  # inclusive a última (a UI treme 1, 2, 3 px); depois vem caixa_aberta
-	if batidas >= dados.box_clicks_to_open:
+	if batidas >= cliques_para_abrir():
 		abrir_caixa(item)
 	return true
 
@@ -3374,18 +3401,27 @@ func fala_terminada(id: String) -> void:
 func _ctx_falas(params: Dictionary) -> Dictionary:
 	return {"campaign": numero_carreira(), "first_campaign": int(escola.get("first_fighter_campaign", 1)),
 		"lutador": lutador_atual(), "location": local_id, "milestones": escola.get("milestones", {}),
-		"lines_seen": escola.get("lines_seen", {}), "params": params}
+		"lines_seen": escola.get("lines_seen", {}), "params": params,
+		"mentor_kind": str(params.get("mentor_kind", ""))}
 
 
-func _mostrar_fala(l: Dictionary, como_comentario: bool) -> bool:
-	var texto := dialogos.texto_balao(l)
-	var voz := str(dialogos.personagem(str(l.speaker)).get("voice", l.speaker))
+func _mostrar_fala(l: Dictionary, como_comentario: bool, params: Dictionary = {}) -> bool:
+	var falante := str(l.speaker)
+	var voz := str(dialogos.personagem(falante).get("voice", falante))
+	if falante == DialogosData.FALANTE_MENTOR:
+		# 6c2: "mentor" vira quem está sentado no caixote: "first" (o John, voz dele) ou "last" (discípulo; voz de mentor_voice)
+		var m := mentor_do_caixote()
+		if m.is_empty():
+			return false
+		falante = str(m.id)
+		voz = "first"
+	var texto := dialogos.texto_balao(l, params)
 	var dur := float(dialogos.tempo_fala(texto, voz).total)
 	_balao = {"id": str(l.id), "ate": _t_real + dur + float(dialogos.comments.get("balloon_safety_seconds", 1.0))}
 	# A UI pode recusar o balão (sem espaço) chamando fala_recusada() dentro do sinal: aí nada é gravado.
 	_fala_recusada = false
 	if not baloes_escondidos:
-		fala_pedida.emit(str(l.speaker), texto, str(l.id))
+		fala_pedida.emit(falante, texto, str(l.id))
 	if _fala_recusada:
 		_fala_recusada = false
 		_balao = {}
@@ -3523,7 +3559,7 @@ func _resolver_gatilhos(delta: float) -> void:
 		return  # sem intervalo: o novo some; a vaga (se for ela) segue esperando até vencer o tempo dela
 	if g_ganho.has("vaga"):
 		_vaga = {}
-	_mostrar_fala(l, true)
+	_mostrar_fala(l, true, g_ganho.params)
 
 
 func _melhor_do_grupo(grupo: Array) -> Dictionary:
@@ -3534,6 +3570,8 @@ func _melhor_do_grupo(grupo: Array) -> Dictionary:
 		for l in dialogos.candidatas(str(g.id), _ctx_falas(g.params)):
 			if str(l.speaker) == "coach" and not osmar:
 				continue  # 6c1: só fala quem está desenhado neste local (nunca balão sem personagem embaixo)
+			if str(l.speaker) == DialogosData.FALANTE_MENTOR and mentor_do_caixote().is_empty():
+				continue  # 6c2: sem mentor sentado, nenhuma fala de mentor
 			todas.append(l)
 			dono[str(l.id)] = g
 	var melhor := dialogos.melhor(todas, _ctx_falas({}), _rng_fala)
@@ -3589,7 +3627,10 @@ func _fala_caixa_aberta(item: String, tipo: String) -> void:
 
 
 func _fala_luta_resolvida(resumo: Dictionary) -> void:
-	if bool(resumo.get("win", false)) and not resumo.has("retire"):
+	var fm = resumo.get("mentor_line", {})
+	if bool(resumo.get("win", false)) and not resumo.has("retire") and fm is Dictionary and not fm.is_empty():
+		disparar_gatilho("mentor_won", fm)  # 6c2: o mentor comenta; a fight_won do Osmar não sai nesta vitória
+	elif bool(resumo.get("win", false)) and not resumo.has("retire"):
 		disparar_gatilho("fight_won", {"revenge": bool(resumo.get("revenge", false)), "record": bool(resumo.get("record", false)),
 			"opponent": str(resumo.get("opponent", ""))})
 
@@ -3733,7 +3774,7 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 	elif havia_save:
 		push_warning("GameState: save sem o bloco da escola: recriado pelo padrão.")
 	var r := {"first_fighter_campaign": padrao_primeiro, "milestones": {}, "lines_seen": {}, "last_end": null,
-		"handover": null, "mentors": [], "roster": []}
+		"handover": null, "mentors": [], "roster": [], "honor": 0, "honor_total": 0, "hall_nodes": []}
 	var f = s.get("first_fighter_campaign", null)
 	if (typeof(f) == TYPE_INT or typeof(f) == TYPE_FLOAT) and is_finite(float(f)) and float(f) >= 1.0 and float(f) < 1.0e9:
 		r["first_fighter_campaign"] = int(f)
@@ -3770,6 +3811,7 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 	elif not fim.is_empty():
 		r["last_end"] = {"kind": str(fim.kind), "campaign": int(fim.career_number)}
 	_validar_escola_6b(s, r)
+	_validar_escola_6c2(s, r)
 	return r
 
 
@@ -4167,18 +4209,20 @@ func _validar_entrada_da_lista(e: Variant) -> Dictionary:
 		"wins": clampi(int(_numero_ou(e.get("wins", -1), -1.0)), -1, 1000000),
 		"belt": typeof(e.get("belt", false)) == TYPE_BOOL and e.get("belt", false),
 		"art": str(e.get("art", "")), "opponent": str(e.get("opponent", "")),
-		"legacy_gained": _inteiro_valido(e.get("legacy_gained", 0), 1.0e15)}
+		"legacy_gained": _inteiro_valido(e.get("legacy_gained", 0), 1.0e15),
+		"honor": _inteiro_valido(e.get("honor", 0), 1.0e15) if fim_tipo == "retire" else 0}
 
 
 # Uma entrada na lista da escola para a campanha que acabou de encerrar (no mesmo salvar() do Legado).
-func _registrar_na_lista_da_escola(tipo: String, snap: Dictionary, ganho: int) -> void:
+func _registrar_na_lista_da_escola(tipo: String, snap: Dictionary, ganho: int, honra_ganha: int = 0) -> void:
 	var primeiro := int(escola.get("first_fighter_campaign", 1))
 	if numero_carreira() < primeiro:
 		return  # campanhas de antes do John não entram
 	var e_john := numero_carreira() == primeiro
 	escola.roster.append({"campaign": numero_carreira(), "kind": "first" if e_john else "disciple", "name": nome_lutador(),
 		"look": null if e_john else visual_lutador(), "end": tipo, "wins": indice_escada, "belt": cinturao, "art": arte_id,
-		"opponent": str(snap.get("opponent", "")) if tipo == "defeat" else "", "legacy_gained": ganho})
+		"opponent": str(snap.get("opponent", "")) if tipo == "defeat" else "", "legacy_gained": ganho,
+		"honor": honra_ganha})
 
 
 # --- John mentor: os toques ---
@@ -4520,3 +4564,380 @@ func _interromper_saida() -> void:
 func cena_livre_terminou(id: String) -> void:
 	if id == str(escola_cfg.get("mentor_leave", {}).get("scene", "saida_primeiro_mentor")):
 		saida_terminou()
+
+
+# --- Fase 6c2 (Mais longe que eu): Honra, hall, mural, falas dos mentores e símbolo (contrato: docs/fases/fase6c2-api.md) ---
+
+# Campos novos da escola (v13): saldo, total e nós do hall. Inválido vira 0/vazio; saldo nunca passa do total.
+func _validar_escola_6c2(s: Dictionary, r: Dictionary) -> void:
+	r["honor"] = _inteiro_valido(s.get("honor", 0), 1.0e15)
+	r["honor_total"] = maxi(_inteiro_valido(s.get("honor_total", 0), 1.0e15), int(r.honor))
+	var lista = s.get("hall_nodes", [])
+	if lista is Array:
+		for x in lista:
+			var id := str(x)
+			if _no_do_hall(id).is_empty() or id in r.hall_nodes:
+				_avisar("Nó do hall salvo inválido ou repetido (%s): ignorado." % id)
+				continue
+			r.hall_nodes.append(id)
+	elif s.has("hall_nodes"):
+		_avisar("Nós do hall inválidos: zerados.")
+
+
+## Saldo de Honra (a moeda do hall; nunca compra Legado).
+func honra() -> int:
+	return int(escola.get("honor", 0))
+
+
+## Honra ganha na vida inteira (nunca desce).
+func honra_total() -> int:
+	return int(escola.get("honor_total", 0))
+
+
+## A fórmula (só dados): honra de uma saída voluntária com `wins` vitórias. Derrota nunca passa por aqui.
+func honra_da_saida(wins: int, belt: bool) -> int:
+	var h: Dictionary = hall_cfg.get("honor", {})
+	if wins < int(h.get("min_wins", 1)):
+		return 0
+	var por: Array = h.get("per_win", [])
+	var total := 0
+	for i in wins:
+		if por.is_empty():
+			break
+		total += int(por[mini(i, por.size() - 1)])
+	if belt:
+		total += int(h.get("belt_bonus", 0))
+	return total
+
+
+# --- Bônus do retrato ---
+
+## Entradas do roster com selo (saíram por cima: honor > 0).
+func retratos_com_selo() -> int:
+	var n := 0
+	for e in escola.get("roster", []):
+		if int(e.get("honor", 0)) > 0:
+			n += 1
+	return n
+
+
+## Quantos retratos contam: 5, ou 8 com o nó hall_wall.
+func teto_retratos() -> int:
+	return int(hall_cfg.get("portrait", {}).get("max_portraits", 5)) + int(_hall_valor("portrait_cap_plus"))
+
+
+## Fator de TODO o treino (clique, Metrônomo, assistido e equipe): 1 + 2% por retrato com selo, até o teto.
+func mult_escola() -> float:
+	var por := float(hall_cfg.get("portrait", {}).get("per_portrait", 0.0))
+	return 1.0 + por * float(mini(retratos_com_selo(), teto_retratos()))
+
+
+# --- Hall ---
+
+func _no_do_hall(id: String) -> Dictionary:
+	for n in hall_cfg.get("hall", {}).get("nodes", []):
+		if str(n.get("id", "")) == id:
+			return n
+	return {}
+
+
+## Soma dos valores dos nós do hall comprados com esse tipo de efeito.
+func _hall_valor(tipo: String) -> float:
+	var v := 0.0
+	for id in escola.get("hall_nodes", []):
+		var n := _no_do_hall(str(id))
+		if not n.is_empty() and str(n.effect.type) == tipo:
+			v += float(n.effect.value)
+	return v
+
+
+func tem_no_hall(id: String) -> bool:
+	return id in escola.get("hall_nodes", [])
+
+
+## Cliques para abrir uma caixa: o dado menos o nó hall_box (mínimo 1).
+func cliques_para_abrir() -> int:
+	return maxi(1, dados.box_clicks_to_open - int(_hall_valor("box_clicks_minus")))
+
+
+## Lista fixa do hall: [{id, name, cost, effect_text, state "owned"|"buyable"|"missing"|"closed", missing}].
+## "closed" = fora da tela de fim (só consulta); "missing" = faltam `missing` de Honra.
+func hall_lista() -> Array:
+	var r: Array = []
+	for n in hall_cfg.get("hall", {}).get("nodes", []):
+		var id := str(n.id)
+		var custo := int(n.cost)
+		var falta := maxi(0, custo - honra())
+		var estado := "owned"
+		if not tem_no_hall(id):
+			estado = "closed" if fim.is_empty() else ("buyable" if falta == 0 else "missing")
+		r.append({"id": id, "name": texto_ui("%s_name" % id, str(n.get("name", id))),
+			"cost": custo, "effect_text": texto_ui("%s_desc" % id, str(n.get("effect_text", ""))),
+			"state": estado, "missing": 0 if estado == "owned" else falta})
+	return r
+
+
+func pode_comprar_hall(id: String) -> bool:
+	var n := _no_do_hall(id)
+	return not n.is_empty() and not fim.is_empty() and not tem_no_hall(id) and honra() >= int(n.cost)
+
+
+## Compra um nó: só com a tela de fim pendente, sem reembolso, desconta a Honra exata, um salvar() só.
+func comprar_hall(id: String) -> bool:
+	if not pode_comprar_hall(id):
+		return false
+	escola["honor"] = honra() - int(_no_do_hall(id).cost)
+	escola["hall_nodes"].append(id)
+	salvar()
+	honra_mudou.emit(honra())
+	hall_mudou.emit()
+	return true
+
+
+# Efeitos de começo de campanha (depois de zerar): Treino inicial e Luva de lona já aberta (sem caixa, sem gesto).
+func _aplicar_inicio_do_hall() -> void:
+	var t := _hall_valor("start_training")
+	if t > 0.0:
+		treino += t
+	var g := int(_hall_valor("start_glove"))
+	if g > 0:
+		nivel_luva = clampi(maxi(nivel_luva, g), 0, lutas.luvas.size())
+		for n in range(1, nivel_luva + 1):
+			if not (n in gestos_calcados):
+				gestos_calcados.append(n)
+
+
+var _falta_chave_atual := ""
+
+
+# Linha "FALTA ~N DE ATRIBUTO" da prévia (nó hall_notes). Calcula em segundo plano; "" até ficar pronta.
+func _linha_o_que_falta(opp: Dictionary, jog: Array, adv: Array, rotulo: String) -> String:
+	if not tem_no_hall("hall_notes") or rotulo == "easy" or rotulo == "":
+		return ""
+	var chave := "%s|%s|%s" % [str(opp.id), tatica, str(jog)]
+	if str(_falta_cache.get("chave", "")) == chave:
+		return str(_falta_cache.texto)
+	_falta_chave_atual = chave
+	if _falta_tarefa < 0:
+		var tat := tatica
+		var j := jog.duplicate()
+		var a := adv.duplicate()
+		_falta_fundo = {}
+		_falta_tarefa = WorkerThreadPool.add_task(func() -> void: _falta_fundo = _calcular_falta(j, a, tat, chave))
+	return ""
+
+
+func _calcular_falta(jog: Array, adv: Array, tat: String, chave: String) -> Dictionary:
+	# Mesmo atributo que a prévia realça em vermelho (`destaque`); sem realce, o do motivo da derrota.
+	var atr := motor.destaque(jog, adv)
+	var falta := -1.0
+	if atr != "":
+		falta = motor.falta_para(jog, adv, tat, Luta.ATRIBUTOS.find(atr))
+	else:
+		var m := motor.motivo(jog, adv, tat)
+		atr = str(m.attribute)
+		falta = float(m.faltaram)
+	var texto := ""
+	if falta >= 0.0:  # -1 = nem 16x o total basta: sem número, sem linha
+		texto = preencher(texto_ui("preview_missing_line", "FALTA ~{n} DE {atributo}"),
+			{"n": NumberFormat.fmt(Economia.teto3(falta)), "atributo": str(dados.atributo_info(atr).name).to_upper()})
+	return {"chave": chave, "texto": texto}
+
+
+## Recolhe a linha calculada em segundo plano. Com `esperar`, bloqueia até terminar.
+func _finalizar_falta(esperar: bool) -> void:
+	if _falta_tarefa < 0:
+		return
+	if not esperar and not WorkerThreadPool.is_task_completed(_falta_tarefa):
+		return
+	WorkerThreadPool.wait_for_task_completion(_falta_tarefa)
+	_falta_tarefa = -1
+	var pronto := _falta_fundo
+	_falta_fundo = {}
+	if pronto.is_empty():
+		return
+	_falta_cache = pronto
+	if str(pronto.chave) == _falta_chave_atual:
+		previa_falta_pronta.emit(str(pronto.texto))
+
+
+## Espera a linha "o que mais falta" ficar pronta (testes e fechamento).
+func aguardar_falta() -> void:
+	_finalizar_falta(true)
+
+
+# --- Mural ---
+
+## Dados da janela do mural. `entries` na ordem do roster (o John é a 1ª): {campaign, kind, name, look, art, wins, belt,
+## end, end_key, end_text, opponent, opponent_name, sealed, honor, symbol, extra_key, career_text, wins_text, art_text}.
+func mural() -> Dictionary:
+	var cfg: Dictionary = escola_cfg.get("mural", {})
+	var fins: Dictionary = cfg.get("end_texts", {})
+	var itens: Array = []
+	for e in escola.get("roster", []):
+		var fim_tipo := str(e.get("end", "unknown"))
+		var honra_e := int(e.get("honor", 0))
+		var chave := str(fins.get("unknown", ""))
+		if fim_tipo == "retire":
+			chave = str(fins.get("retire_sealed", "")) if honra_e > 0 else str(fins.get("retire_plain", ""))
+		elif fim_tipo == "defeat":
+			chave = str(fins.get("defeat", ""))
+		var oponente := str(e.get("opponent", ""))
+		var nome_op := str(lutas.adversario(oponente).get("name", "")) if oponente != "" else ""
+		var wins := int(e.get("wins", -1))
+		var extra := ""
+		if str(e.get("kind", "")) == "first" and marco(str(cfg.get("first_left_milestone", ""))):
+			extra = str(cfg.get("first_left_text", ""))
+		var arte := str(e.get("art", ""))
+		var wins_texto := ""
+		if wins < 0:
+			wins_texto = texto_ui(str(cfg.get("wins_unknown_text", "mural_wins_unknown")), "?")
+		elif wins == 1:
+			wins_texto = texto_ui("mural_wins_one", "1 VITÓRIA")
+		else:
+			wins_texto = preencher(texto_ui("mural_wins", "{n} VITÓRIAS"), {"n": wins})
+		itens.append({"campaign": int(e.campaign), "kind": str(e.kind), "name": str(e.name), "look": e.get("look", null),
+			"art": arte, "wins": wins, "belt": bool(e.get("belt", false)), "end": fim_tipo, "end_key": chave,
+			"end_text": preencher(texto_ui(chave), {"adversario": nome_op.to_upper()}) if (chave != str(fins.get("defeat", "")) or nome_op != "")
+				else texto_ui("mural_end_defeat_unknown", "PAROU NUMA LUTA"),
+			"opponent": oponente, "opponent_name": nome_op, "sealed": honra_e > 0, "honor": honra_e,
+			"symbol": simbolo_na_entrada(e), "extra_key": extra,
+			"career_text": preencher(texto_ui("mural_career", "CARREIRA {n}"), {"n": int(e.campaign)}),
+			"wins_text": wins_texto,
+			"art_text": nome_arte(arte).to_upper() if arte != "" else texto_ui("mural_art_none", "—")})
+	var contam := mini(retratos_com_selo(), teto_retratos())
+	var por := float(hall_cfg.get("portrait", {}).get("per_portrait", 0.0))
+	var pct := int(round(100.0 * por * contam))
+	return {"entries": itens, "honor": honra(), "sealed": retratos_com_selo(), "counted": contam, "cap": teto_retratos(),
+		"bonus_pct": pct, "columns": int(cfg.get("columns", 5)), "rows_per_page": int(cfg.get("rows_per_page", 2)),
+		"bonus_line": preencher(texto_ui("mural_bonus_line"), {"n": retratos_com_selo(), "c": contam, "cap": teto_retratos(), "pct": pct})}
+
+
+## O mural na sala atual: {spot [x, y] ou [] (ponto ainda sem arte), spot_name, object_text (chave de objects)}; {} onde não aparece.
+## Abre a qualquer hora em que a sala está ativa (a UI decide); nada vai para o save.
+func mural_na_sala() -> Dictionary:
+	var cfg: Dictionary = escola_cfg.get("mural", {})
+	if cfg.is_empty() or not cfg.get("spot_by_location", {}).has(local_id):
+		return {}
+	var req := str(cfg.get("requires_milestone_by_location", {}).get(local_id, ""))
+	if req != "" and not marco(req):
+		return {}
+	var nome := str(cfg.spot_by_location[local_id])
+	return {"spot": _cena_dados_pontos().ponto_caminho(nome), "spot_name": nome, "object_text": str(cfg.get("object_text", "mural"))}
+
+
+# --- Símbolo da escola ---
+
+## Campanha do 1º cinturão amador da escola (o menor entre o marco da garagem salva, o roster e a campanha atual); 0 = nenhuma.
+func campanha_do_simbolo() -> int:
+	var cfg: Dictionary = escola_cfg.get("school_symbol", {})
+	var melhor := 0
+	var marco_id := str(cfg.get("from_milestone", "garage_saved"))
+	if marco(marco_id):
+		melhor = int(dados_marco(marco_id).get("campaign", 0))
+	if bool(cfg.get("also_roster_belt", true)):
+		for e in escola.get("roster", []):
+			if bool(e.get("belt", false)) and (melhor <= 0 or int(e.campaign) < melhor):
+				melhor = int(e.campaign)
+	if cinturao and (melhor <= 0 or numero_carreira() < melhor):
+		melhor = numero_carreira()
+	return melhor
+
+
+## O lutador atual usa o símbolo no peito? Discípulo (nunca o John) de campanha >= `campanha_do_simbolo()`.
+func simbolo_no_lutador() -> bool:
+	var c := campanha_do_simbolo()
+	return lutador_atual() == "disciple" and c > 0 and numero_carreira() >= c
+
+
+## Uma entrada do roster usa o símbolo? Vale para o mural e para o mentor sentado/em pé (use `campaign` do mentor).
+func simbolo_na_entrada(e: Dictionary) -> bool:
+	var c := campanha_do_simbolo()
+	return str(e.get("kind", "")) == "disciple" and c > 0 and int(e.get("campaign", 0)) >= c
+
+
+# --- Falas dos mentores ---
+
+## O mentor sentado no caixote agora: {id "first"|"last", name, campaign, kind "first"|"disciple"} ou {}.
+func mentor_do_caixote() -> Dictionary:
+	for m in mentores_na_sala():
+		if str(m.get("role", "")) == "seat":
+			return {"id": str(m.id), "name": str(m.name), "campaign": int(m.campaign), "kind": "first" if str(m.id) == "first" else "disciple"}
+	return {}
+
+
+## Timbre do mentor para a voz: {base_hz, cps, vowel_order, vowel_steps}. O John usa a voz `first`; discípulo: escola.json.
+func voz_do_mentor(kind: String, campanha: int) -> Dictionary:
+	if kind == "first":
+		return dialogos.voices.get("first", {}).duplicate()
+	var v: Dictionary = escola_cfg.get("mentor_voice", {})
+	var passos: Array = v.get("steps", [0])
+	var hz := float(v.get("base_hz", 200)) + float(v.get("step_hz", 14)) * float(passos[campanha % maxi(1, passos.size())])
+	return {"base_hz": hz, "cps": float(v.get("cps", 26)), "vowel_order": str(v.get("vowel_order", "uoaei")),
+		"vowel_steps": v.get("vowel_steps", [0, 2, 4, 5, 7])}
+
+
+## Maior número de vitórias de uma entrada do roster (wins -1 = desconhecido não conta).
+func recorde_da_escola() -> int:
+	var m := 0
+	for e in escola.get("roster", []):
+		m = maxi(m, int(e.get("wins", -1)))
+	return m
+
+
+func _entrada_da_campanha(campanha: int) -> Dictionary:
+	for e in escola.get("roster", []):
+		if int(e.campaign) == campanha:
+			return e
+	return {}
+
+
+# O teto por grupo: já tocou alguma fala do grupo nesta campanha (lines_seen == campanha atual)?
+func _grupo_de_fala_usado(grupo: String) -> bool:
+	var caps: Dictionary = escola_cfg.get("mentor_lines", {}).get("caps", {})
+	for l in dialogos.linhas:
+		if str(l.trigger) != "mentor_won":
+			continue
+		var k := str(l.conditions.get("mentor_line", ""))
+		if str(caps.get(k, k)) == grupo and int(escola.lines_seen.get(str(l.id), -1)) == numero_carreira():
+			return true
+	return false
+
+
+# Vitória sobre `opp` (indice_escada já somado): qual fala o mentor do caixote pede? {} = nenhuma.
+# Ordem revanche > recorde > mais longe que eu; no máximo uma. Devolve os params de mentor_won.
+func _fala_do_mentor(opp: Dictionary) -> Dictionary:
+	var cfg: Dictionary = escola_cfg.get("mentor_lines", {})
+	var mentor := mentor_do_caixote()
+	if cfg.is_empty() or mentor.is_empty() or dialogos.gatilho(str(cfg.get("trigger", "mentor_won"))).is_empty():
+		return {}
+	var minha := _entrada_da_campanha(int(mentor.campaign))
+	var caps: Dictionary = cfg.get("caps", {})
+	for k in cfg.get("order", []):
+		var params := {"line": k, "mentor_line": k, "adversario": str(opp.name), "mentor": "", "own": false, "mentor_kind": mentor.kind}
+		match str(k):
+			"revanche":
+				var achou := {}
+				for e in escola.get("roster", []):
+					if str(e.get("end", "")) == "defeat" and str(e.get("opponent", "")) == str(opp.id):
+						if achou.is_empty() or (int(e.campaign) == int(mentor.campaign) and str(e.kind) == str(minha.get("kind", ""))):
+							achou = e
+				if achou.is_empty():
+					continue
+				params["mentor"] = str(achou.name)
+				params["own"] = not minha.is_empty() and int(achou.campaign) == int(minha.campaign)
+			"recorde":
+				var rec := recorde_da_escola()
+				if rec < int(cfg.get("record_min_wins", 1)) or indice_escada <= rec:
+					continue
+			"mais_longe":
+				if minha.is_empty() or int(minha.get("wins", -1)) < 0 or indice_escada <= int(minha.wins):
+					continue
+			_:
+				continue
+		if _grupo_de_fala_usado(str(caps.get(k, k))):
+			continue
+		if dialogos.candidatas("mentor_won", _ctx_falas(params)).is_empty():
+			continue  # sem fala escrita para este caso: não gasta a vitória nem cala o Osmar
+		return params
+	return {}

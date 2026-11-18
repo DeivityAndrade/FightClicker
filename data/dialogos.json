@@ -40,7 +40,8 @@
 		"box_opened": { "priority": 3, "defer": false, "campaign_cap": 1 },
 		"idle": { "priority": 1, "defer": false, "campaign_cap": 1 },
 		"retire": { "priority": 5, "defer": false },
-		"art_choice": { "priority": 5, "defer": true, "campaign_cap": 1 }
+		"art_choice": { "priority": 5, "defer": true, "campaign_cap": 1 },
+		"mentor_won": { "priority": 7, "defer": true }
 	},
 	"opening": {
 		"max_seconds": 20, "skip_hold_seconds": 0.5, "gap_between": 0.3, "first_line_at": 1.5,
@@ -110,12 +111,31 @@
 		{ "id": "cl_arte_1", "speaker": "coach", "text": "cada um tem seu jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
 		{ "id": "cl_arte_2", "speaker": "coach", "text": "escolheu? então capricha.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
 		{ "id": "cl_arte_3", "speaker": "coach", "text": "eu lutei de todo jeito.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
-		{ "id": "cl_arte_4", "speaker": "coach", "text": "no meu tempo era só\napanhar e aprender.", "trigger": "art_choice", "repeat": "rest", "group": "arte" }
+		{ "id": "cl_arte_4", "speaker": "coach", "text": "no meu tempo era só\napanhar e aprender.", "trigger": "art_choice", "repeat": "rest", "group": "arte" },
+
+		{ "id": "ml_revanche_1", "speaker": "mentor", "text": "{adversario} caiu.\ncobrou por {mentor}.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_revanche", "conditions": { "mentor_line": "revanche" } },
+		{ "id": "ml_revanche_2", "speaker": "mentor", "text": "esse aí derrubou\n{mentor}. não mais.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_revanche", "conditions": { "mentor_line": "revanche" } },
+		{ "id": "ml_revanche_3", "speaker": "mentor", "text": "alguém tinha que\ncobrar essa. valeu.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_revanche", "conditions": { "mentor_line": "revanche" } },
+		{ "id": "ml_revanche_own_1", "speaker": "mentor", "text": "esse aí me derrubou.\nagora ele sabe.", "trigger": "mentor_won", "repeat": "rest", "priority": 8, "group": "ml_revanche_own", "conditions": { "mentor_line": "revanche", "own": true } },
+		{ "id": "ml_revanche_own_2", "speaker": "mentor", "text": "lembro desse. me pegou\nde jeito. você não.", "trigger": "mentor_won", "repeat": "rest", "priority": 8, "group": "ml_revanche_own", "conditions": { "mentor_line": "revanche", "own": true } },
+		{ "id": "ml_revanche_own_3", "speaker": "mentor", "text": "esperei muito\npor essa.", "trigger": "mentor_won", "repeat": "rest", "priority": 8, "group": "ml_revanche_own", "conditions": { "mentor_line": "revanche", "own": true } },
+
+		{ "id": "ml_recorde_1", "speaker": "mentor", "text": "ninguém da escola\nchegou tão longe.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_recorde", "conditions": { "mentor_line": "recorde" } },
+		{ "id": "ml_recorde_2", "speaker": "mentor", "text": "marca nova na parede.\neu vi daqui.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_recorde", "conditions": { "mentor_line": "recorde" } },
+		{ "id": "ml_recorde_3", "speaker": "mentor", "text": "daqui pra frente, você\nvai ter que nos contar.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_recorde", "conditions": { "mentor_line": "recorde" } },
+		{ "id": "ml_recorde_first_1", "speaker": "mentor", "text": "eu que ensinei o início.\no resto é seu.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_recorde", "conditions": { "mentor_line": "recorde", "mentor_kind": "first" } },
+
+		{ "id": "ml_mais_longe_1", "speaker": "mentor", "text": "passou de onde\neu parei.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_mais_longe", "conditions": { "mentor_line": "mais_longe" } },
+		{ "id": "ml_mais_longe_2", "speaker": "mentor", "text": "já passou da minha\nmarca. segue aí.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_mais_longe", "conditions": { "mentor_line": "mais_longe" } },
+		{ "id": "ml_mais_longe_3", "speaker": "mentor", "text": "eu fiquei por aqui.\nvocê foi além.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_mais_longe", "conditions": { "mentor_line": "mais_longe" } },
+		{ "id": "ml_mais_longe_first_1", "speaker": "mentor", "text": "foi mais longe que eu\nna garagem. bom.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_mais_longe", "conditions": { "mentor_line": "mais_longe", "mentor_kind": "first" } },
+		{ "id": "ml_mais_longe_disc_1", "speaker": "mentor", "text": "minha campanha acabou\nantes disso. segue.", "trigger": "mentor_won", "repeat": "rest", "group": "ml_mais_longe", "conditions": { "mentor_line": "mais_longe", "mentor_kind": "disciple" } }
 	],
 	"objects": {
 		"debt_notice": { "title": "AVISO DE COBRANÇA", "title_alt": "AVISO FINAL", "text": "Aluguel em atraso. Regularize ou desocupe." },
 		"old_photo": { "text": "Osmar, bem antes das histórias." },
 		"old_photo_gym": { "text": "A foto veio da garagem.\nEra torta. Aqui ficou reta." },
+		"mural": { "title": "MURAL DA ESCOLA", "text": "Todo mundo que vestiu a camisa." },
 		"entry_form_before": { "text": "ESCOLA: NENHUMA" },
 		"entry_form_after": { "text": "ESCOLA: RAÍZES FIGHT CLUB", "text_alt": "ESCOLA: RAIZES FIGHT CLUB" },
 		"clipping": { "title": "GARAGEM FAZ BARULHO NO BAIRRO", "text": "Ninguém sabia que ali treinava gente.", "footer": "Errata: o nome é {school}." },

@@ -169,6 +169,7 @@ func _abrir_fim(fim: Dictionary, reabrindo: bool = false) -> void:
 	j.abrir_com(fim, not reabrindo and (str(fim.kind) == "retire" or not tela.visible), reabrindo)
 	j.nova_carreira_pedido.connect(func() -> void: GameState.receber_discipulo())
 	j.arvore_pedido.connect(abrir_arvore)
+	j.mural_pedido.connect(abrir_mural)
 
 
 # --- Árvore grande (Fase 5.4): o mapa abre pelo botão da sala (qualquer hora) e pelo botão ÁRVORE da tela de fim ---
@@ -200,10 +201,41 @@ func _fechar_mapa() -> void:
 		_fechar()
 
 
+
+# --- Fase 6c2: o mural da escola (parede da sala em qualquer hora; botão MURAL da tela de fim, onde o hall compra) ---
+
+func abrir_mural() -> void:
+	if janela != null and not (janela is JanelaFim):
+		return  # só a tela de fim cede o lugar ao mural
+	if tela.visible and not (janela is JanelaFim):
+		return
+	if janela == null and (GameState.sucessao_estado() != "none" or GameState.cena_sala != "" or GameState.acoes_bloqueadas()):
+		return
+	var do_fim := janela is JanelaFim
+	var j := JanelaMural.new()
+	_abrir(j)
+	Dica.limpar()
+	j.abrir_com(do_fim)
+	j.fechar_pedido.connect(_fechar_mural)
+
+
+## Fecha o mural (X ou Esc). Quem veio da tela de fim volta para ela (com o saldo de Honra novo); da sala volta para a sala.
+func _fechar_mural() -> void:
+	if not (janela is JanelaMural):
+		return
+	if GameState.tem_fim_pendente():
+		janela.queue_free()
+		janela = null
+		_abrir_fim(GameState.fim, true)
+	else:
+		_fechar()
+
+
 # --- Cartão "o que você trouxe" (começo da carreira) ---
 
 func _ao_nova_carreira_iniciada(dados: Dictionary) -> void:
 	# Fase 5: com as artes liberadas, a escolha da arte vem ANTES do cartão (que mostra "ARTE: BOXE"): o cartão espera a janela.
+	dados = _com_mural(dados)
 	_cartao_depois_da_arte = GameState.escolha_arte_pendente()
 	if _cartao_depois_da_arte or dados.is_empty():
 		return  # sem nós comprados (e sem arte) não há o que mostrar
@@ -240,7 +272,7 @@ func _ao_arte_escolhida(_arte: String) -> void:
 	_fechar()
 	if _cartao_depois_da_arte:
 		_cartao_depois_da_arte = false
-		var dados := GameState.cartao_inicio()  # agora com a arte ("ARTE: BOXE")
+		var dados := _com_mural(GameState.cartao_inicio())  # agora com a arte ("ARTE: BOXE")
 		if not dados.is_empty():
 			_mostrar_cartao(dados)
 
@@ -379,6 +411,22 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		elif janela is JanelaAposentar:
 			_fechar()
 			get_viewport().set_input_as_handled()
+		elif janela is JanelaMural:
+			_fechar_mural()
+			get_viewport().set_input_as_handled()
 		elif janela is JanelaMapa:
 			_fechar_mapa()
 			get_viewport().set_input_as_handled()
+
+
+## 6c2: a linha "O MURAL: +N% DE TREINO" do cartão de início (só com bônus). Sem nós nem arte o cartão nasce só com ela.
+func _com_mural(dados: Dictionary) -> Dictionary:
+	var pct := int(GameState.mural().get("bonus_pct", 0))
+	if pct <= 0:
+		return dados
+	var d := dados.duplicate()
+	if d.is_empty():
+		d = {"title": GameState.preencher(GameState.texto_ui("career_card_title_named", "{nome}: O QUE VOCÊ TROUXE"),
+			{"nome": GameState.nome_lutador().to_upper()}), "nodes": [], "art": "", "art_text": ""}
+	d["mural_text"] = UiTema.txt("start_card_mural", "O MURAL: +{pct}% DE TREINO", {"pct": pct})
+	return d

@@ -19,7 +19,8 @@ var _fechado := false
 static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 	var nos: Array = dados.get("nodes", [])
 	var arte_texto := str(dados.get("art_text", ""))  # Fase 5: "ARTE: BOXE" como 1ª linha
-	var altura := 26.0 + 14.0 * (nos.size() + (1 if arte_texto != "" else 0))
+	var mural_texto := str(dados.get("mural_text", ""))  # 6c2: "O MURAL: +N% DE TREINO" (só com bônus)
+	var altura := 26.0 + 14.0 * (nos.size() + (1 if arte_texto != "" else 0) + (1 if mural_texto != "" else 0))
 	var c := Control.new()
 	c.position = Vector2(x, y)
 	c.size = Vector2(LARGURA, altura)
@@ -47,6 +48,16 @@ static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 		UiTema.nine_patch(la, "ui_career_card_row", Rect2(0, 0, larg_int, 14))
 		UiTema.textura_rect(la, "art_" + str(dados.get("art", "")), 2, -1)
 		UiTema.rotulo(la, arte_texto.to_upper(), UiTema.P2, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
+		yy += 14.0
+	if mural_texto != "":
+		var lm := Control.new()
+		lm.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lm.position = Vector2(5, yy)
+		lm.size = Vector2(larg_int, 14)
+		c.add_child(lm)
+		UiTema.nine_patch(lm, "ui_career_card_row", Rect2(0, 0, larg_int, 14))
+		UiTema.textura_rect(lm, "icon_honor_16", 2, -1)
+		UiTema.rotulo(lm, mural_texto.to_upper(), UiTema.COL_HONOR, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
 		yy += 14.0
 	for n in nos:
 		# Cada linha é um Control: o ícone de 16 px "encosta 1 px acima" (a arte pede) e não se sobrepõe ao da linha vizinha.

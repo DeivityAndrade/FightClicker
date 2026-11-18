@@ -228,7 +228,7 @@ func _tem(lista: Array, id: String) -> bool:
 # --- Save v11 ---
 
 func _teste_save_v11() -> void:
-	checar_igual(SaveStore.VERSAO_ATUAL, 12, "save v11")
+	checar_igual(SaveStore.VERSAO_ATUAL, 13, "save v11")
 	var pasta := pasta_limpa("f6a_v10")
 	var career := {"training": 500.0, "money": 20.0, "fame": 5, "ladder_index": 2, "glove_level": 1, "belt": true,
 		"campaign_seconds": 40.0, "fight_day": 9, "active_nodes": [], "metronome_level": 0}
@@ -261,7 +261,7 @@ func _teste_save_v11() -> void:
 	checar_igual([gs.lutador_atual(), gs.abertura_estado()], ["first", "pending"], "save antigo: campanha atual é do John e a abertura ainda não tocou")
 	_tickar(gs, 30.0)
 	checar(not gs.marco("garage_saved"), "...nem depois de jogar")
-	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), 12, "regravado como v11")
+	checar_igual(int(JSON.parse_string(ler(pasta + "save.json")).version), SaveStore.VERSAO_ATUAL, "regravado como v11")
 	_liberar(gs)
 	# Ida e volta no disco, e bloco inválido
 	var g2 := _novo("f6a_volta")

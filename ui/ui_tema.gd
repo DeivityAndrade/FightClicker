@@ -41,6 +41,7 @@ const COL_TREINO := GR3
 const COL_MONEY := Y1
 const COL_FAME := F2
 const COL_LEGACY := P2
+const COL_HONOR := Color("a9b4bf")  # Honra: prata/aço (st3), nunca no HUD
 const COL_TEXT_1 := WHITE
 const COL_TEXT_2 := G2
 const COL_DISABLED := G1
@@ -486,7 +487,7 @@ static func textura_disc(nome: String) -> Texture2D:
 	if nome.begins_with("portrait_player") and GameState.lutador_atual() == "disciple":
 		var cam := DiscVisual.nome_em_camadas(nome)
 		if cam != "":
-			return DiscVisual.textura(cam, GameState.visual_lutador())
+			return DiscVisual.textura(cam, GameState.visual_lutador(), GameState.simbolo_no_lutador())
 	return textura(nome)
 
 
@@ -498,6 +499,6 @@ static func aplicar_visual_disc(sp: AnimSprite) -> void:
 	var cam := DiscVisual.nome_em_camadas(sp.nome_sprite)
 	if cam == "":
 		return
-	var t := DiscVisual.textura(cam, GameState.visual_lutador())
+	var t := DiscVisual.textura(cam, GameState.visual_lutador(), GameState.simbolo_no_lutador())
 	if sp.texture != t:
 		sp.texture = t

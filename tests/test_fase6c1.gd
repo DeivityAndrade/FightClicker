@@ -109,7 +109,7 @@ func rodar_testes() -> void:
 
 func _teste_dados() -> void:
 	var gs := _novo("f6c1_dados")
-	checar_igual(SaveStore.VERSAO_ATUAL, 12, "save continua v12 (sem migracao nova)")
+	checar_igual(SaveStore.VERSAO_ATUAL, 13, "save continua v12 (sem migracao nova)")
 	checar(not gs.escola_cfg.is_empty(), "data/escola.json carregado")
 	checar_igual(str(gs.escola_cfg.gym_arrival.milestone), CENA_ACADEMIA, "marco da cena da academia")
 	checar_igual(float(gs.escola_cfg.gym_arrival.max_locked_seconds), 15.0, "teto de 15 s da cena da academia")

@@ -17,7 +17,7 @@ static func limpar() -> void:
 
 
 ## Textura da folha `nome` (ex.: "disciple_walk_bare", "fighter_idle_disc_layered") com o visual `look`.
-static func textura(nome: String, look: Dictionary) -> Texture2D:
+static func textura(nome: String, look: Dictionary, simbolo: bool = false) -> Texture2D:
 	var s := UiTema.sprite(nome)
 	var cam: Dictionary = s.get("layers", {}) if s.get("layers", {}) is Dictionary else {}
 	if cam.is_empty() or look.is_empty():
@@ -26,8 +26,8 @@ static func textura(nome: String, look: Dictionary) -> Texture2D:
 	var top := str(look.get("top", "none"))
 	var faixa := str(look.get("headband", "none"))
 	var meiao := str(look.get("socks", "none"))
-	var chave := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [nome, look.get("skin", ""), look.get("hair_color", ""), look.get("shorts_color", ""),
-		estilo, top, look.get("top_color", ""), faixa, look.get("headband_color", ""), meiao]
+	var chave := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [nome, look.get("skin", ""), look.get("hair_color", ""), look.get("shorts_color", ""),
+		estilo, top, look.get("top_color", ""), faixa, look.get("headband_color", ""), meiao, "sym" if simbolo else "-"]
 	if _cache.has(chave):
 		return _cache[chave]
 	var corpo := _imagem(str(cam.get("body", "")))
@@ -48,6 +48,12 @@ static func textura(nome: String, look: Dictionary) -> Texture2D:
 			"socks":
 				if meiao != "none":
 					_somar(base, _imagem(str(cam.get("socks", ""))), mapa)
+			"school_symbol":
+				if simbolo:
+					var lugar := "chest" if top != "none" else "leg"
+					var sims: Dictionary = cam.get("school_symbol", {}) if cam.get("school_symbol", {}) is Dictionary else {}
+					if sims.has(lugar):
+						_somar(base, _imagem(str(sims[lugar])), _mapa_simbolo(look, lugar))
 			"head":
 				if saida == null:
 					saida = _copia(base)
@@ -146,3 +152,18 @@ static func _aplicar_opcao(r: Dictionary, ks: Dictionary, lista: Array, id: Stri
 		for slot in rampa:
 			if ks.has(slot):
 				r[Color(str(ks[slot])).to_rgba32()] = Color(str(rampa[slot]))
+
+
+## Cores do símbolo da escola (estampa de uma cor): o peito segue a cor da parte de cima, a coxa a do calção
+## (manifest disciple_palette.school_symbol_source -> options.school_symbol).
+static func _mapa_simbolo(look: Dictionary, lugar: String) -> Dictionary:
+	if _paleta.is_empty():
+		_paleta = UiTema.manifest().get("by_data_id", {}).get("disciple_palette", {})
+	var r := {}
+	var fonte: Dictionary = _paleta.get("school_symbol_source", {}).get(lugar, {})
+	var padrao: Dictionary = _paleta.get("default", {})
+	var campo := str(fonte.get("field", ""))
+	var cor := str(look.get(campo, padrao.get(campo, "")))
+	var id := str(fonte.get("map", {}).get(cor, "blue"))
+	_aplicar_opcao(r, _paleta.get("keys", {}).get("school_symbol", {}), _paleta.get("options", {}).get("school_symbol", []), id)
+	return r

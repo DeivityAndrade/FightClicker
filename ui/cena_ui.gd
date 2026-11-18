@@ -242,7 +242,7 @@ func _falar(ev: Dictionary) -> void:
 		cabeca = sala.cabeca_mentor() if ator == "first" else sala.ponto_cabeca(ator)
 		var o2 := sala.ponto_cabeca("coach")
 		evitar.append(Rect2(o2.x - 9.0, o2.y, 18.0, 18.0))
-		var l := sala.ponto_cabeca("first")
+		var l := sala.cabeca_lutador()
 		evitar.append(Rect2(l.x - 9.0, l.y, 18.0, 18.0))
 	_fala_id = "cena_" + str(ev.get("line", ""))
 	if balao.mostrar(_fala_id, ator, str(ev.get("text", "")), cabeca, -1.0, evitar):

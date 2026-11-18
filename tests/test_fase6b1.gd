@@ -345,7 +345,7 @@ func _teste_primeira_sucessao() -> void:
 	var g2 := _novo("f6b1_primeira", gs.store.pasta)
 	checar_igual([g2.discipulo.name, g2.discipulo.look.skin, g2.mentor_cumprimentou, g2.escola.mentors, g2.sucessao_estado(), g2.escola.handover],
 		["Zé Cutelo", "skin_5", true, ["first"], "none", null], "save v12: discípulo, mentor_greeted, mentores e handover voltam do disco")
-	checar_igual(int(JSON.parse_string(ler(gs.store.pasta + "save.json")).version), 12, "arquivo na versão 12")
+	checar_igual(int(JSON.parse_string(ler(gs.store.pasta + "save.json")).version), SaveStore.VERSAO_ATUAL, "arquivo na versão 12")
 	checar_igual(g2.nome_lutador(), "Zé Cutelo", "nome_lutador")
 	p.free()
 	_liberar(g2)

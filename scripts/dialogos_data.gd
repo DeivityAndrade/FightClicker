@@ -11,7 +11,10 @@ const LINHAS_MAX := 2
 const FONTE_BALAO := "abcdefghijklmnopqrstuvwxyzáâãçéêíóõú0123456789 .,;:!?'\"-()"
 const REPETICOES: Array[String] = ["once", "rest"]
 const CONDICOES: Array[String] = ["fighter", "first_fighter_done", "location", "milestone_present", "milestone_missing",
-	"after_line", "revenge", "record", "opponent", "item", "kind", "what", "campaign_min"]
+	"after_line", "revenge", "record", "opponent", "item", "kind", "what", "campaign_min",
+	"mentor_line", "mentor_kind", "own"]
+# 6c2: falante que não está em `cast`: resolvido pelo GameState para o mentor sentado no caixote.
+const FALANTE_MENTOR := "mentor"
 
 var cast: Dictionary = {}
 var school_name := ""
@@ -50,8 +53,12 @@ func prioridade(l: Dictionary) -> int:
 
 
 ## Texto para o balão: {first}/{coach}/{school} viram o apelido curto (minúsculo).
-func texto_balao(l: Dictionary) -> String:
-	return _trocar(str(l.text), true)
+func texto_balao(l: Dictionary, marcas: Dictionary = {}) -> String:
+	var t := _trocar(str(l.text), true)
+	# 6c2: {adversario} e {mentor}; sem valor (validação), entra um nome de 8 letras.
+	for k in ["adversario", "mentor"]:
+		t = t.replace("{%s}" % k, str(marcas.get(k, "xxxxxxxx")).to_lower())
+	return t
 
 
 ## Texto de objeto da parede ou da interface (nome completo). `campo`: text, title, footer, text_alt, title_alt.
@@ -245,6 +252,12 @@ func _condicoes_ok(l: Dictionary, ctx: Dictionary) -> bool:
 			"campaign_min":
 				if campanha < int(v):
 					return false
+			"mentor_line", "mentor_kind":
+				if str(p.get(k, "")) != str(v):
+					return false
+			"own":
+				if bool(p.get(k, false)) != bool(v):
+					return false
 	return true
 
 
@@ -300,7 +313,7 @@ func _validar_linha(l: Dictionary, ids: Dictionary) -> String:
 		return "sem id"
 	if ids.has(l.id):
 		return "id repetido"
-	if not cast.has(l.speaker):
+	if not cast.has(l.speaker) and l.speaker != FALANTE_MENTOR:
 		return "speaker desconhecido (%s)" % l.speaker
 	if l.trigger != "opening" and not triggers.has(l.trigger):
 		return "gatilho desconhecido (%s)" % l.trigger

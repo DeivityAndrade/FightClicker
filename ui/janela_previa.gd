@@ -22,6 +22,7 @@ var _selo_rotulo := ""
 var _rotulo_tatica: Dictionary = {}  # tática -> {botao, sub}
 var _dica: Label
 var _aviso: Label
+var _falta: Label  # linha "FALTA ~N DE ATRIBUTO" (só com o nó hall_notes)
 var _percent: Label
 var _t := 0.0
 var dia_da_luta := false  # Fase 5.3: prévia do dia (sem VOLTAR A TREINAR, sem X, sem Esc; com LUTAR e PASSAR O POSTO)
@@ -46,7 +47,13 @@ func _montar() -> void:
 	# Fase 5: com arte, a linha do traço de luta ("BOXE: +10% DE DANO") ganha 11 px; a janela cresce metade para cada lado.
 	var revanche := bool(_dados.get("revenge", false))
 	var traco := str(_dados.get("art_fight_text", ""))
-	var ex := (17.0 if revanche else 0.0) + (11.0 if traco != "" else 0.0)
+	var nota := GameState.tem_no_hall("hall_notes")  # 6c2: reserva a linha "FALTA ~N DE ATRIBUTO" (11 px) enquanto o nó existir
+	var regra := GameState.indice_escada == 0
+	var ex := (17.0 if revanche else 0.0) + (11.0 if traco != "" else 0.0) + (11.0 if nota else 0.0)
+	# Revanche + arte + nota juntas não cabem nos 360 px: os respiros de 1 px entre as seções (ar) somem e a janela encolhe 14 px.
+	var compacto := ex > 28.0 and not regra
+	if compacto:
+		ex -= 14.0
 	var oy := -floorf(ex / 2.0)
 	# Fase 5.1: a janela ganha até 10 px de altura (metade para cada lado) para os blocos respirarem; com a fita da
 	# revanche e a linha da arte juntas, o respiro encolhe para a janela caber na tela (358 px).
@@ -85,8 +92,7 @@ func _montar() -> void:
 		y += 17.0
 
 	# Respiro: a regra do tempo (2 linhas) só aparece na 1ª luta da carreira; nas outras, esse espaço vira ar entre as seções.
-	var regra := GameState.indice_escada == 0
-	var ar := 0.0 if regra else 1.0
+	var ar := 0.0 if (regra or compacto) else 1.0
 	# Descrição dele
 	y += 42.0
 	if dia_da_luta:
@@ -131,6 +137,14 @@ func _montar() -> void:
 	y += 14.0 + g4 + 2.0 * ar  # respiro antes do que está em jogo
 	if traco != "":
 		_linha_traco(str(_dados.get("art", "")), traco, y)
+		y += 11.0
+	if nota:
+		# 6c2: "FALTA ~N DE ATRIBUTO" (nó Caderninho). Vem pronta de um cálculo em segundo plano: a linha fica vazia até o sinal.
+		_falta = UiTema.rotulo(painel, "", UiTema.R3, X0, y, X1 - X0, HORIZONTAL_ALIGNMENT_CENTER)
+		_falta.name = "LinhaFalta"
+		UiTema.alinhar(_falta, "center_h")
+		_mostrar_falta(str(_dados.get("missing_line", "")))
+		GameState.previa_falta_pronta.connect(_mostrar_falta)
 		y += 11.0
 
 	# --- Em jogo ---
@@ -288,6 +302,8 @@ func _escolher(id: String, tocou: bool) -> void:
 	_dica.text = str(t.get("hint", "")).to_upper()
 	var rot := str(_dados.risks.get(id, {}).get("label", ""))
 	_mostrar_risco(rot, tocou)
+	if tocou and _falta != null:
+		_mostrar_falta(str(GameState.previa().get("missing_line", "")))  # a tática mudou: pede o cálculo de novo (vem pelo sinal)
 
 
 func _mostrar_risco(rot: String, animar: bool) -> void:
@@ -330,3 +346,16 @@ func _process(delta: float) -> void:
 	_t += delta
 	if _aviso != null and _aviso.text != "":
 		_aviso.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 6.0))
+
+
+func _mostrar_falta(texto: String) -> void:
+	if _falta == null or not is_instance_valid(_falta):
+		return
+	# A fonte 5x7 não tem o "~" (caixa vazia): enquanto o texto do Roteirista o usar, ele vira "UNS " ("FALTA UNS 47,6K DE ...").
+	_falta.text = texto.to_upper().replace("~", "UNS ")
+	_falta.visible = texto != ""
+
+
+func _exit_tree() -> void:
+	if GameState.previa_falta_pronta.is_connected(_mostrar_falta):
+		GameState.previa_falta_pronta.disconnect(_mostrar_falta)

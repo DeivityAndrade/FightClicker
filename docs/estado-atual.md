@@ -1,24 +1,23 @@
-# Onde paramos (atualizado em 2026-11-16)
+# Onde paramos (atualizado em 2026-11-16, fim do dia)
 
-Documento do Produtor para retomar o trabalho noutra sessão. Vale sobre memórias antigas.
+Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Fases
-| Fase | Situação |
-|---|---|
-| 1 a 6b2 | Na main. |
-| **6c1 — Casa nova** | Na main (PR #12): cena da 1ª chegada à academia, saída discreta do John, caixote do mentor na academia, Osmar/foto/mentores por local, comentário da arte, 7 sons novos, cenário e poses. QA e Diretor aprovaram (`docs/fases/fase6c1-qa.md`, `fase6c1-revisao.md`), inclusive com cópia do save real. |
-| **Correção da 6c1** | Branch `fix/6c1-carga-foto`, PR aberto, **ainda não integrado**. Ver abaixo. |
-| **6c2 — Mais longe que eu** | Liberada pelo Diretor, não começada. Mural, Honra, árvore do hall, bônus de retrato, falas de mentor (recorde/revanche), símbolo da escola. |
+## Situação agora
+- **Pasta de trabalho:** `E:\Fightclicker` (pasta principal), branch **`fase-6c2`**, enviada ao GitHub. O worktree antigo `.claude/worktrees/agents-subagents-setup-7a8cc6` e as pastas temporárias `%TEMP%c_pr14` / `fc_main` sobraram (limpas; podem ser removidas com `git worktree remove --force`). A branch local `backup/6c-copia-antiga` guarda a cópia velha da 6c1 — não usar.
+- **Na main:** fases 1 a 6c1, correção da 6c1 (PR #13) e o **PR #14 do Matheus** (K.O. no quadro certo, simuladores, testes de queda e soak).
+- **6c2 "Mais longe que eu": pronta e testada, falta só a revisão do Diretor e integrar.**
+  - Feito: design (Designer em raciocínio alto), textos, arte (mural, retratos, símbolo, ícones), lógica (Honra, hall, retrato, mural, falas de mentor, símbolo, save v13), telas.
+  - QA (`docs/fases/fase6c2-qa.md`): aprovou com ressalvas; **B1–B6 corrigidos** (PAROU NUMA LUTA, símbolo nas costas na luta, mural vazio, seta apagada, plaquinha "beto", linha FALTA pelo atributo destacado).
+  - Verificado no fim: `tools/run_tests.ps1` **TODOS OS TESTES PASSARAM** (APPDATA temporário); `ui_audit` 358 estados, 0 problemas (2 rodadas).
+  - **Falta:** (1) Diretor escrever `docs/fases/fase6c2-revisao.md` (parou no limite de uso; pedido: decidir se fecha a 6c, perguntas aos testadores, o que vai para o pixel artist, o que vem na 7a); (2) abrir PR de `fase-6c2` para a main e integrar (o dono deixa integrar sempre).
+- **Atenção:** 15 PNGs e 2 mockups de `assets/sprites/opponents/opp_leslie/` aparecem modificados e **não foram commitados** (origem desconhecida, provavelmente um gerador rodado por agente). Conferir com `git diff --stat` antes de commitar ou descartar.
+- **Próxima fase:** 7a — Lutas por arte (Boxe e Jiu-jitsu lutam diferente, habilidades passivas, arena da academia).
 
-## A correção da 6c1 (o que o dono pediu em 2026-11-16)
-1. **Poses de carga atravessando objetos** (mão no caixote, cabeça no saco). O Artista refez em camadas: braço de trás → objeto → braço/mão da frente; saco menor no ombro; esteira dobrada reconhecível. O gerador `tools/art/make_sprites_fase6c1.gd` ganhou uma conferência automática de atravessamento (`cross_check`): 101 quadros, 0 px com problema. Mesmos tamanhos, quadros e pivôs.
-2. **Foto: o Osmar desentorta em vez de entortar** (decisão do dono). A foto entra torta, ele acerta a moldura, "agora sim."; fica reta na academia para sempre (`data/escola.json` `gym.tilted = false`). `coach_nudge_photo` com o dedo subindo. Textos novos: `cl_ac_chegada_2` "reta agora. casa nova." e o hover `old_photo_gym` "A foto veio da garagem. / Era torta. Aqui ficou reta.".
-3. Verificado antes do PR: `tools/run_tests.ps1` todo verde (3200 PASS), validador de cenas 0 erros (chegada 12,90 s presos).
-
-**Falta para fechar a correção:**
-- O **QA** estava testando quando a sessão parou (seção "Correção: carga e foto" no fim de `docs/fases/fase6c1-qa.md`, capturas `docs/arte/mockups/fase6c1_ui_*.png`, `ui_audit` com os textos novos). Se essa seção não estiver no PR, rodar o QA de novo com o mesmo pedido: olhar ampliado A1–A5 da chegada e a bolsa na saída, procurando atravessamento, objeto flutuando ou pulando, e a foto torta→reta; `ui_audit` com 0 problemas.
-- **Revisão rápida do Diretor** da correção.
-- Integrar o PR na main (o dono deixa integrar PR sempre).
+## Decisões do dono desta rodada
+- Rival **James Blindado**: entra na 8a, menospreza a escola, termina em respeito; o **campeão mundial é outro** (fase 9).
+- Saída do John: 1º momento calmo após a 1ª vitória de um discípulo na academia, ou campanha F+3.
+- Modelos: Fable não é usado; pensadores em Opus médio (Designer em alto só na Honra da 6c2), executores em Sonnet.
+- PR pode ser integrado na main sempre; executável só quando o dono pedir.
 
 ## Anotado para depois (não trava nada)
 - Pixel artist humano: saco carregado menor que o pendurado (salto no `hang_bag` q1→q2); giro da esteira achatado; mãos simples; braço no agachamento do `john_pick_duffel`; peças de cenário do §25.4 da `direcao-visual.md`.
