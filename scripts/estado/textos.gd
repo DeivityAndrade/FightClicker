@@ -72,8 +72,8 @@ func texto_efeito_metronomo(nivel_def: Dictionary) -> String:
 func texto_stake_win(opp: Dictionary) -> String:
 	var din = NumberFormat.fmt(gs.premio_dinheiro(opp))
 	var fam = NumberFormat.fmt(float(gs.premio_fama(opp)))
-	var pd = int(round(100.0 * gs._b("money_bonus")))
-	var pf = int(round(100.0 * gs._b("fame_bonus")))
+	var pd = int(round(100.0 * gs._arvore._b("money_bonus")))
+	var pf = int(round(100.0 * gs._arvore._b("fame_bonus")))
 	if pd > 0:
 		din += " " + gs.preencher(texto_ui("stake_bonus", "(+{n}%)"), {"n": pd})
 	var texto = gs.preencher(texto_ui("stake_win"), {"n": [din, fam]})

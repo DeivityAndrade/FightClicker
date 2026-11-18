@@ -246,6 +246,7 @@ const _Sucessao := preload("res://scripts/estado/sucessao.gd")
 const _EscolaFalas := preload("res://scripts/estado/escola_falas.gd")
 const _Aparelhos := preload("res://scripts/estado/aparelhos.gd")
 const _Calendario := preload("res://scripts/estado/calendario.gd")
+const _Arvore := preload("res://scripts/estado/arvore.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -254,6 +255,7 @@ var _sucessao := _Sucessao.new(self)
 var _escola := _EscolaFalas.new(self)
 var _aparelhos := _Aparelhos.new(self)
 var _calendario := _Calendario.new(self)
+var _arvore := _Arvore.new(self)
 
 
 func _ready() -> void:
@@ -379,12 +381,12 @@ func por_auto_soco() -> float:
 
 
 func _base_soco() -> float:
-	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _b("click_bonus")) * mult_local() * mult_escola()
+	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _arvore._b("click_bonus")) * mult_local() * mult_escola()
 
 
 ## Fator que a equipe recebe: (1 + árvore) x local x (1 + Jiu-jitsu).
 func _fator_equipe() -> float:
-	return (1.0 + _b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe()) * mult_escola() * (1.0 + _honra._hall_valor("crew_mult"))
+	return (1.0 + _arvore._b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe()) * mult_escola() * (1.0 + _honra._hall_valor("crew_mult"))
 
 
 ## Treino/s vindo de todos os geradores (da garagem e pagos).
@@ -550,7 +552,7 @@ func bonus_crew_click() -> float:
 
 ## Segundos da equipe por clique com o Grito: loja + nó "Grito mais alto" (Fase 5.4).
 func crew_share_efetivo() -> float:
-	return float(lutas.crew_click.get("crew_share", 0.0)) + _b("crew_click_bonus")
+	return float(lutas.crew_click.get("crew_share", 0.0)) + _arvore._b("crew_click_bonus")
 
 
 func pode_comprar_crew_click() -> bool:
@@ -695,13 +697,13 @@ func legado_se_perder() -> int:
 
 ## Fase 5.4: Legado ganho = floor(base x (1 + nó "Caderno do velho")). Vale em qualquer fim de campanha.
 func _com_bonus_legado(base: int) -> int:
-	return int(floor(base * (1.0 + _b("legacy_bonus")) + 1.0e-9))
+	return int(floor(base * (1.0 + _arvore._b("legacy_bonus")) + 1.0e-9))
 
 
 ## Fração do pote que a derrota leva: `defeat_share` + bônus da árvore, sempre abaixo de `retire_share`.
 func parte_derrota() -> float:
 	var c: Dictionary = lutas.carreira
-	var s := float(c.defeat_share) + _b("defeat_share_bonus")
+	var s := float(c.defeat_share) + _arvore._b("defeat_share_bonus")
 	var teto := float(c.retire_share) - 0.05
 	if s > teto:
 		s = maxf(float(c.defeat_share), teto)
@@ -927,16 +929,16 @@ func previa() -> Dictionary:
 
 ## Dinheiro da vitória contra `opp` com o bônus da árvore.
 func premio_dinheiro(opp: Dictionary) -> float:
-	return float(opp.prize_money) * (1.0 + _b("money_bonus"))
+	return float(opp.prize_money) * (1.0 + _arvore._b("money_bonus"))
 
 
 ## Fama da vitória contra `opp` com o bônus da árvore (inteiro, arredondado).
 func premio_fama(opp: Dictionary) -> int:
-	return int(floor(float(opp.prize_fame) * (1.0 + _b("fame_bonus")) + 0.5))
+	return int(floor(float(opp.prize_fame) * (1.0 + _arvore._b("fame_bonus")) + 0.5))
 
 
 func tem_previa_detalhada() -> bool:
-	return _b("preview_percent") > 0.0
+	return _arvore._b("preview_percent") > 0.0
 
 
 ## `permanent.revenge_opponent`: id do adversário que encerrou a última carreira ("" = sem marca).
@@ -1327,15 +1329,15 @@ func _reiniciar_campanha() -> void:
 	# Fase 5.4: a foto dos nós (o que vale nesta campanha) é tirada aqui, ANTES de zerar (a data usa "+1 dia").
 	nos_ativos_ids = permanente.get("skill_nodes", []).duplicate()
 	arte_id = ""
-	_recalcular_bonus()
+	_arvore._recalcular_bonus()
 	_zerar_carreira()
 	permanente["career_number"] = int(permanente.career_number) + 1
 	fim = {}
 	discipulo = {}
 	mentor_cumprimentou = false
-	_aplicar_inicio_da_arvore()
+	_arvore._aplicar_inicio_da_arvore()
 	_honra._aplicar_inicio_do_hall()
-	nivel_metronomo = mini(int(_b("metronome_start")), metronomo_niveis())
+	nivel_metronomo = mini(int(_arvore._b("metronome_start")), metronomo_niveis())
 
 
 # O começo da campanha, na ordem da 6a: cartão, escolha da arte (a UI trata "arte antes do cartão") e a fala da derrota.
@@ -1402,264 +1404,6 @@ func _zerar_carreira() -> void:
 	_motivo_cache = {}
 
 
-# Soma, por tipo, dos efeitos dos nós ATIVOS da campanha (aditivo dentro do tipo; ver design §3.5).
-# Fase 5.4: lê `nos_ativos_ids` (a foto), nunca `skill_nodes`; nó com `requires_art` só vale jogando aquela arte.
-func _recalcular_bonus() -> void:
-	var ids: Array = nos_ativos_ids
-	_bonus = bonus_de(ids, arte_id)
-	# Fase 5: nós ESTILO valem só para a arte deles (`requires_art`).
-	_estilo = {}
-	for id in ids:
-		var n: Dictionary = lutas.no_da_arvore(str(id))
-		if not n.is_empty() and n.effect_type == "art_rule_bonus" and n.requires_art != "":
-			_estilo[n.requires_art] = float(_estilo.get(n.requires_art, 0.0)) + float(n.effect_value)
-
-
-## Bônus (por tipo de efeito) de uma lista de ids de nós. Tipos: somas (click, passive, money, fame, defeat_share,
-## crew_click, gym_training, art_fight, legacy, prep_days, art_rule) e maior valor (metronome_start, preview_percent,
-## rope_installed). `arte` "*" = sem filtro de arte; senão só entram nós sem `requires_art` ou da arte dada.
-func bonus_de(ids: Array, arte: String = "*") -> Dictionary:
-	var b := {}
-	for t in FightData.TIPOS_EFEITO:
-		b[t] = 0.0
-	for id in ids:
-		var n: Dictionary = lutas.no_da_arvore(str(id))
-		if n.is_empty():
-			continue
-		if arte != "*" and n.requires_art != "" and n.requires_art != arte:
-			continue
-		var t: String = n.effect_type
-		if t == "start_generator":
-			continue  # lido por _aplicar_inicio_da_arvore
-		if t == "metronome_start" or t == "preview_percent" or t == "rope_installed":
-			b[t] = maxf(float(b[t]), float(n.effect_value))
-		else:
-			b[t] = float(b[t]) + float(n.effect_value)
-	return b
-
-
-## Efeitos que agem no começo da campanha (depois de zerar): corda montada e geradores de saída.
-func _aplicar_inicio_da_arvore() -> void:
-	if _b("rope_installed") > 0.0 and not dados.aparelho("jump_rope").is_empty() and not aparelho_montado("jump_rope"):
-		aparelhos_montados_ids.append("jump_rope")  # sem caixa e sem foco novo
-	for id in nos_ativos_ids:
-		var n: Dictionary = lutas.no_da_arvore(str(id))
-		if n.is_empty() or n.effect_type != "start_generator" or not geradores.has(n.effect_target):
-			continue
-		geradores[n.effect_target] = maxi(int(geradores[n.effect_target]), int(n.effect_value))
-
-
-func _b(tipo: String) -> float:
-	return float(_bonus.get(tipo, 0.0))
-
-
-## Bônus ativos da carreira em andamento (cópia, para a UI e os testes).
-func bonus_ativos() -> Dictionary:
-	return _bonus.duplicate()
-
-
-func nos_comprados() -> Array:
-	return permanente.get("skill_nodes", []).duplicate()
-
-
-func tem_no(id: String) -> bool:
-	return id in permanente.get("skill_nodes", [])
-
-
-func legado_disponivel() -> int:
-	return int(permanente.get("legacy_total", 0))
-
-
-## Estado de um nó para a tela ANTIGA (abas): "owned", "buyable", "missing" (falta Legado) ou "locked" (escondido no mapa).
-## Id inexistente: "". O mapa novo usa `estado_mapa`.
-func estado_no(id: String) -> String:
-	var e := estado_mapa(id)
-	if e == "" or e == "owned":
-		return e
-	if e == "hidden":
-		return "locked"
-	return "buyable" if legado_disponivel() >= int(lutas.no_da_arvore(id).cost) else "missing"
-
-
-## Fase 5.4: estado de um nó no mapa: "owned" (comprado), "visible" (à vista: raiz ou vizinho de comprado, trava aberta)
-## ou "hidden". Calculado de skill_nodes + travas (não vai para o save). Id inexistente: "".
-func estado_mapa(id: String) -> String:
-	var n: Dictionary = lutas.no_da_arvore(id)
-	if n.is_empty():
-		return ""
-	if tem_no(id):
-		return "owned"
-	if not trava_aberta(str(n.lock)):
-		return "hidden"
-	if n.root:
-		return "visible"
-	for v in n.neighbors:
-		if tem_no(str(v)):
-			return "visible"
-	return "hidden"
-
-
-## Trava de região/nó: "" sempre; "gym" com alguma arte liberada (um discípulo já chegou à academia); "art:<id>" com a arte liberada.
-func trava_aberta(trava: String) -> bool:
-	if trava == "":
-		return true
-	if trava == "gym":
-		return not permanente.get("arts_unlocked", []).is_empty()
-	if trava.begins_with("art:"):
-		return trava.substr(4) in permanente.get("arts_unlocked", [])
-	return false
-
-
-## Lista de nós na ordem do arquivo. Cada item: {id, branch, branch_name, requires, requires_name, cost, name,
-## description, effect_text (já com número), icon, effect_type, effect_value, state, missing (Legado que falta, 0 se nenhum)}.
-## Fase 5: ramos que a aba mostra ([{id, name}]). O ramo ESTILO só aparece com alguma arte liberada.
-func arvore_ramos() -> Array:
-	var r: Array = []
-	for b in lutas.ramos:
-		if not b.requires_arts_unlocked or not artes_liberadas().is_empty():
-			r.append({"id": b.id, "name": b.name})
-	return r
-
-
-func arvore_nos() -> Array:
-	var lista: Array = []
-	var visiveis: Array = arvore_ramos().map(func(b): return b.id)
-	for n in lutas.arvore:
-		if not (n.branch in visiveis):
-			continue
-		var item: Dictionary = n.duplicate()
-		# Fase 5: nó de arte diz "SÓ VALE JOGANDO DE BOXE"
-		item["art_only_text"] = preencher(texto_ui("tree_style_art_only", "SÓ VALE JOGANDO DE {nome}"),
-			{"nome": str(academia.arte(n.requires_art).get("name", "")).to_upper()}) if n.requires_art != "" else ""
-		item["branch_name"] = str(lutas.ramo(n.branch).get("name", n.branch))
-		item["requires_name"] = str(lutas.no_da_arvore(n.requires).get("name", "")) if n.requires != "" else ""
-		item["effect_text"] = texto_efeito_no(n)
-		item["state"] = estado_no(n.id)
-		item["missing"] = maxi(0, int(n.cost) - legado_disponivel()) if item.state == "missing" else 0
-		lista.append(item)
-	return lista
-
-
-## Fase 5.4: a árvore abre em qualquer momento, menos na luta, no dia da luta, na escolha da arte e com caixa
-## no meio da abertura (já tem batida). Com a tela de fim pendente abre sempre.
-func pode_abrir_arvore() -> bool:
-	if not luta.is_empty():
-		return false
-	if not fim.is_empty():
-		return true
-	if no_dia_da_luta() or escolha_arte_pendente():
-		return false
-	for b in caixas_lista:
-		if int(b.hits) > 0:
-			return false
-	return true
-
-
-## Compat: "a árvore está aberta" (mesma regra de `pode_abrir_arvore`).
-func arvore_aberta() -> bool:
-	return pode_abrir_arvore()
-
-
-## À vista, com Legado para pagar e mapa aberto.
-func pode_comprar_no(id: String) -> bool:
-	return pode_abrir_arvore() and pode_pagar_no(id)
-
-
-## Igual a `pode_comprar_no`, sem olhar se o mapa está aberto (o brilho do botão usa isto).
-func pode_pagar_no(id: String) -> bool:
-	return estado_mapa(id) == "visible" and legado_disponivel() >= int(lutas.no_da_arvore(id).cost)
-
-
-## true se existe nó à vista que o Legado paga: o botão da sala brilha (mesmo com o mapa fechado).
-func ha_no_compravel() -> bool:
-	for n in lutas.arvore:
-		if pode_pagar_no(n.id):
-			return true
-	return false
-
-
-## Quantos nós à vista o Legado paga agora ("{n} NÓS PARA COMPRAR").
-func nos_compraveis() -> int:
-	var c := 0
-	for n in lutas.arvore:
-		if pode_pagar_no(n.id):
-			c += 1
-	return c
-
-
-func _ids_a_vista() -> Array:
-	var r: Array = []
-	for n in lutas.arvore:
-		if estado_mapa(n.id) != "hidden":
-			r.append(n.id)
-	return r
-
-
-## Compra o nó: desconta o Legado exato, grava o nó e salva (um save só). Recusa (nada muda) com o mapa fechado,
-## nó já comprado, escondido ou Legado insuficiente. Os bônus valem a partir da PRÓXIMA campanha (`nos_ativos_ids`).
-func comprar_no(id: String) -> bool:
-	if not pode_comprar_no(id):
-		return false
-	var n: Dictionary = lutas.no_da_arvore(id)
-	var antes := _ids_a_vista()
-	permanente["legacy_total"] = maxi(0, int(permanente.legacy_total) - int(n.cost))
-	var nos: Array = permanente.get("skill_nodes", [])
-	nos.append(id)
-	permanente["skill_nodes"] = nos
-	permanente["tree_last_node"] = id
-	# O `fim` pendente mostra o Legado total: mantém igual ao disponível.
-	if not fim.is_empty():
-		fim["legacy_total"] = int(permanente.legacy_total)
-	var novos: Array = []
-	for x in _ids_a_vista():
-		if not (x in antes):
-			novos.append(x)
-	salvar()
-	arvore_mudou.emit()
-	permanente_mudou.emit()
-	if not novos.is_empty():
-		no_revelado.emit(novos)
-	return true
-
-
-## Nós que valem na campanha atual (a foto de `career.active_nodes`).
-func nos_ativos() -> Array:
-	return nos_ativos_ids.duplicate()
-
-
-## Mapa inteiro para a UI (o `docs/fases/fase5.4-api.md` descreve cada chave). A UI desenha só o que não é "hidden".
-func arvore_mapa() -> Array:
-	var lista: Array = []
-	for n in lutas.arvore:
-		if n.region == "" or lutas.regiao(n.region).is_empty():
-			continue  # nó antigo sem região (arquivo v1)
-		var estado := estado_mapa(n.id)
-		var item: Dictionary = n.duplicate(true)
-		item["state"] = estado
-		item["region_name"] = str(lutas.regiao(n.region).get("name", ""))
-		item["effect_text"] = texto_efeito_no(n)
-		item["can_buy"] = pode_comprar_no(n.id)
-		item["affordable"] = pode_pagar_no(n.id)
-		item["missing"] = maxi(0, int(n.cost) - legado_disponivel()) if estado == "visible" else 0
-		item["active"] = n.id in nos_ativos_ids
-		item["next_campaign"] = estado == "owned" and not (n.id in nos_ativos_ids)  # etiqueta VALE NA PRÓXIMA CAMPANHA
-		item["needs_shout"] = n.effect_type == "crew_click_bonus" and not crew_click_comprado
-		item["art_only_text"] = preencher(texto_ui("tree_style_art_only", "SÓ VALE JOGANDO DE {nome}"),
-			{"nome": str(academia.arte(n.requires_art).get("name", "")).to_upper()}) if n.requires_art != "" else ""
-		lista.append(item)
-	return lista
-
-
-## Dados gerais do mapa: {unit_px, regions: [{id, name, icon, lock, open}], last_node, legacy, open, can_buy_count}.
-func arvore_mapa_info() -> Dictionary:
-	var regs: Array = []
-	for r in lutas.regioes:
-		regs.append({"id": r.id, "name": r.name, "icon": r.icon, "lock": r.lock, "open": trava_aberta(str(r.lock))})
-	var ultimo := str(permanente.get("tree_last_node", ""))
-	return {"unit_px": float(lutas.mapa_arvore.get("unit_px", 40.0)), "regions": regs, "last_node": ultimo,
-		"legacy": legado_disponivel(), "open": pode_abrir_arvore(), "can_buy_count": nos_compraveis()}
-
-
 ## Lista dos nós ativos (ordem da compra): [{id, name, effect_text, icon}]. Cartão de início e resumo da garagem.
 func resumo_legado() -> Dictionary:
 	var itens: Array = []
@@ -1686,7 +1430,7 @@ func cartao_inicio() -> Dictionary:
 func mult_local() -> float:
 	var m := float(academia.local(local_id).get("training_mult", 1.0))
 	if m != 1.0:
-		m *= 1.0 + _b("gym_training_bonus")  # Fase 5.4: Ventilador novo (só fora da garagem)
+		m *= 1.0 + _arvore._b("gym_training_bonus")  # Fase 5.4: Ventilador novo (só fora da garagem)
 	return m
 
 
@@ -1846,7 +1590,7 @@ func escolher_arte(id: String) -> bool:
 	arte_segundos = 0.0
 	_arte_comentada = false
 	permanente["last_art"] = id
-	_recalcular_bonus()  # Fase 5.4: nós da arte passam a valer
+	_arvore._recalcular_bonus()  # Fase 5.4: nós da arte passam a valer
 	_atualizar_traco()
 	_chave_melhor = ""
 	salvar()
@@ -1893,7 +1637,7 @@ func _atualizar_traco() -> void:
 	var f: Dictionary = academia.arte(arte_id).get("fight", {})
 	var dano := float(f.get("damage_mult", 1.0))
 	var recebido := float(f.get("taken_mult", 1.0))
-	var extra := _b("art_fight_bonus")  # Fase 5.4: Contragolpe / Base firme (só da arte jogada)
+	var extra := _arvore._b("art_fight_bonus")  # Fase 5.4: Contragolpe / Base firme (só da arte jogada)
 	if dano != 1.0:
 		dano *= 1.0 + extra
 	if recebido != 1.0:
@@ -2070,7 +1814,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	_aviso_data_chave = -2
 	_dia_chegou_emitido = false
 	nos_ativos_ids = _validar_ativos(c.get("active_nodes", null))
-	_recalcular_bonus()
+	_arvore._recalcular_bonus()
 	_atualizar_traco()
 	nivel_metronomo = _inteiro_valido(c.get("metronome_level", 0), float(metronomo_niveis()))
 	_acc_metronomo = 0.0
@@ -2668,3 +2412,49 @@ func no_dia_da_luta() -> bool: return _calendario.no_dia_da_luta()
 func _alvo_relogio() -> float: return _calendario._alvo_relogio()
 ## Data da próxima luta contada a partir do dia de hoje (-1 se a escada acabou).
 func _data_da_proxima_luta() -> int: return _calendario._data_da_proxima_luta()
+
+# ===== Repasses para scripts/estado/arvore.gd =====
+## Soma, por tipo, dos efeitos dos nós ATIVOS da campanha (aditivo dentro do tipo; ver design §3.5).
+func _recalcular_bonus() -> void: _arvore._recalcular_bonus()
+## Bônus (por tipo de efeito) de uma lista de ids de nós. Tipos: somas (click, passive, money, fame, defeat_share,
+func bonus_de(ids: Array, arte: String = "*") -> Dictionary: return _arvore.bonus_de(ids, arte)
+## Veja arvore.gd.
+func _b(tipo: String) -> float: return _arvore._b(tipo)
+## Bônus ativos da carreira em andamento (cópia, para a UI e os testes).
+func bonus_ativos() -> Dictionary: return _arvore.bonus_ativos()
+## Veja arvore.gd.
+func nos_comprados() -> Array: return _arvore.nos_comprados()
+## Veja arvore.gd.
+func tem_no(id: String) -> bool: return _arvore.tem_no(id)
+## Veja arvore.gd.
+func legado_disponivel() -> int: return _arvore.legado_disponivel()
+## Estado de um nó para a tela ANTIGA (abas): "owned", "buyable", "missing" (falta Legado) ou "locked" (escondido no mapa).
+func estado_no(id: String) -> String: return _arvore.estado_no(id)
+## Fase 5.4: estado de um nó no mapa: "owned" (comprado), "visible" (à vista: raiz ou vizinho de comprado, trava aberta)
+func estado_mapa(id: String) -> String: return _arvore.estado_mapa(id)
+## Trava de região/nó: "" sempre; "gym" com alguma arte liberada (um discípulo já chegou à academia); "art:<id>" com a arte liberada.
+func trava_aberta(trava: String) -> bool: return _arvore.trava_aberta(trava)
+## Lista de nós na ordem do arquivo. Cada item: {id, branch, branch_name, requires, requires_name, cost, name,
+func arvore_ramos() -> Array: return _arvore.arvore_ramos()
+## Veja arvore.gd.
+func arvore_nos() -> Array: return _arvore.arvore_nos()
+## Fase 5.4: a árvore abre em qualquer momento, menos na luta, no dia da luta, na escolha da arte e com caixa
+func pode_abrir_arvore() -> bool: return _arvore.pode_abrir_arvore()
+## Compat: "a árvore está aberta" (mesma regra de `pode_abrir_arvore`).
+func arvore_aberta() -> bool: return _arvore.arvore_aberta()
+## À vista, com Legado para pagar e mapa aberto.
+func pode_comprar_no(id: String) -> bool: return _arvore.pode_comprar_no(id)
+## Igual a `pode_comprar_no`, sem olhar se o mapa está aberto (o brilho do botão usa isto).
+func pode_pagar_no(id: String) -> bool: return _arvore.pode_pagar_no(id)
+## true se existe nó à vista que o Legado paga: o botão da sala brilha (mesmo com o mapa fechado).
+func ha_no_compravel() -> bool: return _arvore.ha_no_compravel()
+## Quantos nós à vista o Legado paga agora ("{n} NÓS PARA COMPRAR").
+func nos_compraveis() -> int: return _arvore.nos_compraveis()
+## Compra o nó: desconta o Legado exato, grava o nó e salva (um save só). Recusa (nada muda) com o mapa fechado,
+func comprar_no(id: String) -> bool: return _arvore.comprar_no(id)
+## Nós que valem na campanha atual (a foto de `career.active_nodes`).
+func nos_ativos() -> Array: return _arvore.nos_ativos()
+## Mapa inteiro para a UI (o `docs/fases/fase5.4-api.md` descreve cada chave). A UI desenha só o que não é "hidden".
+func arvore_mapa() -> Array: return _arvore.arvore_mapa()
+## Dados gerais do mapa: {unit_px, regions: [{id, name, icon, lock, open}], last_node, legacy, open, can_buy_count}.
+func arvore_mapa_info() -> Dictionary: return _arvore.arvore_mapa_info()

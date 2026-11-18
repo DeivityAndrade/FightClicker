@@ -57,7 +57,7 @@ func _alvo_relogio() -> float:
 func _prep_do_indice(i: int) -> int:
 	if i < 0 or i >= gs.lutas.adversarios.size():
 		return 14
-	return int(gs.lutas.adversarios[i].get("prep_days", 14)) + int(gs._b("prep_days_bonus"))
+	return int(gs.lutas.adversarios[i].get("prep_days", 14)) + int(gs._arvore._b("prep_days_bonus"))
 
 
 ## Data da próxima luta contada a partir do dia de hoje (-1 se a escada acabou).
