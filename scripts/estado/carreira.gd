@@ -248,7 +248,7 @@ func _zerar_carreira() -> void:
 	gs._morto_max = 0.0
 	gs._morto_total = 0.0
 	gs._chave_melhor = ""
-	gs._finalizar_motivo(false)
+	gs._luta._finalizar_motivo(false)
 	gs._motivo_cache = {}
 
 

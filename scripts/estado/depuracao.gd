@@ -59,7 +59,7 @@ func _atualizar_melhor_risco(delta: float) -> void:
 	var opp = gs.proximo_adversario()
 	var algum_ok := false
 	for t in gs.lutas.taticas:
-		if gs.motor.passa(gs._atributos_array(), gs._array_adversario(opp), t.id, int(gs.lutas.risco.samples), float(gs.lutas.risco.even_min)):
+		if gs.motor.passa(gs._luta._atributos_array(), gs._luta._array_adversario(opp), t.id, int(gs.lutas.risco.samples), float(gs.lutas.risco.even_min)):
 			algum_ok = true
 			break
 	gs._perigoso_melhor = not algum_ok

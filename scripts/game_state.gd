@@ -250,6 +250,7 @@ const _Arvore := preload("res://scripts/estado/arvore.gd")
 const _AcademiaArtes := preload("res://scripts/estado/academia_artes.gd")
 const _LojaGeradores := preload("res://scripts/estado/loja_geradores.gd")
 const _Carreira := preload("res://scripts/estado/carreira.gd")
+const _LutaEstado := preload("res://scripts/estado/luta.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -262,6 +263,7 @@ var _arvore := _Arvore.new(self)
 var _academia := _AcademiaArtes.new(self)
 var _loja := _LojaGeradores.new(self)
 var _carreira := _Carreira.new(self)
+var _luta := _LutaEstado.new(self)
 
 
 func _ready() -> void:
@@ -273,7 +275,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	tick(delta)
-	_finalizar_motivo(true, false)  # recolhe sem travar o quadro
+	_luta._finalizar_motivo(true, false)  # recolhe sem travar o quadro
 	_honra._finalizar_falta(false)
 
 
@@ -281,7 +283,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		definir_assistido(false)  # perder o foco da janela = soltar o Shift
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		_finalizar_motivo(false)  # o save recalcula sob demanda se faltar
+		_luta._finalizar_motivo(false)  # o save recalcula sob demanda se faltar
 		salvar()
 		get_tree().quit()
 
@@ -327,7 +329,7 @@ func tick(delta: float) -> void:
 	if fim.is_empty() and sucessao == "none" and cena_sala == "":  # 6c1: a cena da academia também congela a carreira
 		tempo_jogo += delta
 		_ocioso += delta
-		_tick_risco(delta)
+		_luta._tick_risco(delta)
 		# Fase 5.3: UMA condição (sala_ativa) liga relógio, equipe, Metrônomo, assistido, ouro e arte.
 		# `dt` é o tempo de sala deste quadro (menor que delta se o relógio travou no dia da luta).
 		var dt := _calendario._avancar_relogio(delta)
@@ -350,403 +352,6 @@ func tick(delta: float) -> void:
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
 			_tempo_autosave = 0.0
 			salvar()
-
-
-func _atributos_array() -> Array:
-	return [atributos.get("strength", 0.0), atributos.get("agility", 0.0), atributos.get("endurance", 0.0)]
-
-
-func _array_adversario(opp: Dictionary) -> Array:
-	return [opp.strength, opp.agility, opp.endurance]
-
-
-func definir_tatica(tatica_id: String) -> bool:
-	if lutas.tatica(tatica_id).is_empty():
-		return false
-	if tatica_id != tatica:
-		tatica = tatica_id
-		tatica_mudou.emit(tatica)
-		atualizar_risco_hud()
-	return true
-
-
-## Risco de uma tática contra o próximo adversário: {label: "easy"|"even"|"hard", chance}.
-## `chance` é só para testes e depuração: a tela NÃO mostra a porcentagem (Fase 4).
-func risco_tatica(tatica_id: String = "") -> Dictionary:
-	var opp := proximo_adversario()
-	if opp.is_empty():
-		return {}
-	var t := tatica if tatica_id == "" else tatica_id
-	var p := motor.chance(_atributos_array(), _array_adversario(opp), t)
-	return {"label": motor.rotulo(p), "chance": p}
-
-
-## Dados da janela de prévia (calcula as 3 táticas: ~600 lutas). Não muda nada no jogo.
-func previa() -> Dictionary:
-	var opp := proximo_adversario()
-	if opp.is_empty():
-		return {}
-	var jog := _atributos_array()
-	var adv := _array_adversario(opp)
-	var riscos := {}
-	var com_porcentagem := tem_previa_detalhada()
-	for t in lutas.taticas:
-		riscos[t.id] = risco_tatica(t.id)
-		riscos[t.id]["percent"] = _textos._porcentagem(riscos[t.id].chance)
-	var rotulo: String = riscos[tatica].label if riscos.has(tatica) else ""
-	return {
-		"opponent": opp.duplicate(), "you": {"strength": jog[0], "agility": jog[1], "endurance": jog[2]},
-		"tactic": tatica, "risks": riscos, "risk": rotulo,
-		"lead": motor.destaque(jog, adv),
-		"stake_win": texto_stake_win(opp),
-		"stake_belt": opp.belt,
-		# Fase 4
-		"stake_lose": texto_stake_lose(),
-		"show_percent": com_porcentagem,
-		"percent": int(riscos[tatica].percent) if riscos.has(tatica) else 0,
-		"percent_text": preencher(texto_ui("preview_percent", "{n}%"), {"n": int(riscos[tatica].percent)}) if riscos.has(tatica) else "",
-		"revenge": e_algoz(opp.id),
-		"wait_green": esperar_verde(opp.id, rotulo),
-		# Fase 5: traço de luta da arte ("BOXE: +10% DE DANO"); "" sem arte
-		"art": arte_id,
-		"art_fight_text": texto_traco_luta(arte_id),
-		# Fase 6c2: nó "Caderno de recordes" (fora do verde); "" até ficar pronto (sinal previa_falta_pronta)
-		"missing_line": _honra._linha_o_que_falta(opp, jog, adv, rotulo),
-	}
-
-
-## Dinheiro da vitória contra `opp` com o bônus da árvore.
-func premio_dinheiro(opp: Dictionary) -> float:
-	return float(opp.prize_money) * (1.0 + _arvore._b("money_bonus"))
-
-
-## Fama da vitória contra `opp` com o bônus da árvore (inteiro, arredondado).
-func premio_fama(opp: Dictionary) -> int:
-	return int(floor(float(opp.prize_fame) * (1.0 + _arvore._b("fame_bonus")) + 0.5))
-
-
-func tem_previa_detalhada() -> bool:
-	return _arvore._b("preview_percent") > 0.0
-
-
-## `permanent.revenge_opponent`: id do adversário que encerrou a última carreira ("" = sem marca).
-func algoz() -> String:
-	return str(permanente.get("revenge_opponent", ""))
-
-
-func e_algoz(adversario_id: String) -> bool:
-	return adversario_id != "" and adversario_id == algoz()
-
-
-## Alavanca L1 (decisão D2): "ESPERE FICAR VERDE" contra o algoz e contra todo adversário antes dele na escada,
-## enquanto o rótulo da tática escolhida não é "easy". Só texto: não bloqueia nada.
-func esperar_verde(adversario_id: String, rotulo: String) -> bool:
-	var a := algoz()
-	if a == "" or adversario_id == "" or rotulo == "easy" or rotulo == "":
-		return false
-	var i_alvo := lutas.indice_adversario(adversario_id)
-	var i_algoz := lutas.indice_adversario(a)
-	return i_alvo >= 0 and i_algoz >= 0 and i_alvo <= i_algoz
-
-
-## Para o bloco "PRÓXIMA" do HUD: marca de revanche e dica do verde do próximo adversário.
-func info_proxima() -> Dictionary:
-	var opp := proximo_adversario()
-	if opp.is_empty():  # `move`: precisa mudar de local; `end`: escada completa
-		return {"revenge": false, "wait_green": false, "move": precisa_mudar(), "end": escada_completa()}
-	var r: Dictionary = _risco_hud
-	var rotulo: String = r.rotulo if r.adversario == opp.id else ""
-	return {"revenge": e_algoz(opp.id), "wait_green": esperar_verde(opp.id, rotulo), "move": false, "end": false}
-
-
-## Último risco calculado para o HUD: {adversario, rotulo ("easy"|"even"|"hard"|""), tatica}.
-func risco_proxima() -> Dictionary:
-	return _risco_hud.duplicate()
-
-
-## Recalcula o risco do HUD (200 lutas) e emite `risco_proxima_mudou` se mudou.
-func atualizar_risco_hud() -> void:
-	var opp := proximo_adversario()
-	if opp.is_empty():
-		_definir_risco_hud("", "")
-		return
-	_chave_risco = _chave_estado_risco()
-	_definir_risco_hud(opp.id, motor.rotulo_rapido(_atributos_array(), _array_adversario(opp), tatica))
-
-
-func _definir_risco_hud(adversario: String, rotulo: String) -> void:
-	var mudou: bool = _risco_hud.adversario != adversario or _risco_hud.rotulo != rotulo
-	_risco_hud = {"adversario": adversario, "rotulo": rotulo, "tatica": tatica}
-	if mudou:
-		risco_proxima_mudou.emit(adversario, rotulo)
-
-
-func _chave_estado_risco() -> String:
-	return "%d|%s|%s|%s|%s" % [indice_escada, tatica, atributos.get("strength", 0.0), atributos.get("agility", 0.0),
-		atributos.get("endurance", 0.0)]
-
-
-# No máximo 1 vez por `hud_refresh_seconds` e só se algum atributo (ou a tática) mudou.
-func _tick_risco(delta: float) -> void:
-	if not risco_hud_ativo or not luta.is_empty():
-		return
-	_tempo_risco += delta
-	if _tempo_risco < float(lutas.risco.hud_refresh_seconds):
-		return
-	_tempo_risco = 0.0
-	if _chave_estado_risco() != _chave_risco:
-		atualizar_risco_hud()
-
-
-## LUTAR: simula a luta inteira, grava `career.fight` e salva ANTES da animação. Devolve o mesmo que
-## `luta_atual()` ({} se não pode lutar). A UI só anima a lista de eventos.
-func lutar() -> Dictionary:
-	if not pode_lutar():
-		return {}
-	_reacao_cena = ""  # lutar antes do 1º clique: a reação da cena se perde, os toques seguem a regra comum
-	_casa._interromper_saida()
-	var opp := proximo_adversario()
-	var jog := _atributos_array()
-	var semente := int(rng.randi())
-	var res := motor.lutar(jog, _array_adversario(opp), tatica, semente, false)
-	luta = {"opponent": opp.id, "tactic": tatica, "seed": semente,
-		"player": {"strength": jog[0], "agility": jog[1], "endurance": jog[2]},
-		"result": _resultado_salvo(res)}
-	_motivo_cache = {}
-	salvar()
-	# O motivo (busca cara, ~100-200 ms) é calculado em segundo plano em TODA luta (custo igual na
-	# vitória e na derrota); na vitória é descartado. Fica salvo antes de concluir_luta().
-	_iniciar_motivo_fundo()
-	var info := luta_atual()
-	luta_iniciada.emit(info)
-	return info
-
-
-# Segundo plano: só lê dados (motor, lutas) e escreve em `_motivo_fundo`; o resultado é recolhido na thread principal.
-func _iniciar_motivo_fundo() -> void:
-	_finalizar_motivo(false)
-	var snap := luta.duplicate(true)
-	_motivo_fundo = {}
-	_motivo_tarefa = WorkerThreadPool.add_task(func() -> void: _motivo_fundo = _calcular_motivo(snap))
-	_motivo_seed = int(snap.seed)
-
-
-## Recolhe o motivo calculado em segundo plano. Com `esperar`, bloqueia até terminar (só no fim da luta/testes).
-## Se a luta atual é derrota, guarda o motivo em luta["reason"] e salva.
-func _finalizar_motivo(guardar: bool, esperar: bool = true) -> void:
-	if _motivo_tarefa < 0:
-		return
-	if not esperar and not WorkerThreadPool.is_task_completed(_motivo_tarefa):
-		return
-	WorkerThreadPool.wait_for_task_completion(_motivo_tarefa)
-	_motivo_tarefa = -1
-	var pronto := _motivo_fundo
-	_motivo_fundo = {}
-	if guardar and not luta.is_empty() and not luta.result.win and int(luta.seed) == _motivo_seed \
-			and not pronto.is_empty():
-		luta["reason"] = pronto
-		salvar()
-
-
-## Espera o cálculo em segundo plano e deixa o motivo salvo (usado pelos testes e pelo fechamento).
-func aguardar_motivo() -> void:
-	_finalizar_motivo(true)
-
-
-func _resultado_salvo(res: Dictionary) -> Dictionary:
-	return {"win": res.win, "ko": res.ko, "t_ko": res.t_ko, "t_end": res.t_end, "round": res.round,
-		"pct_player": res.pct_player, "pct_opponent": res.pct_opponent}
-
-
-## Luta em andamento recalculada da semente (determinística): eventos, tempos e resultado.
-## Formato completo em docs/fases/fase3-api.md. {} se não há luta.
-func luta_atual() -> Dictionary:
-	if luta.is_empty():
-		return {}
-	var opp := lutas.adversario(luta.opponent)
-	var p: Dictionary = luta.player
-	var jog := [p.strength, p.agility, p.endurance]
-	var res := motor.lutar(jog, _array_adversario(opp), luta.tactic, int(luta.seed), true)
-	var salvo: Dictionary = luta.result
-	if bool(salvo.win) != bool(res.win) or bool(salvo.ko) != bool(res.ko):
-		push_warning("GameState: a luta salva não bate com a simulação (dados mudaram?); vale o resultado salvo.")
-	return _montar_info_luta(opp, res, salvo)
-
-
-func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> Dictionary:
-	var c: Dictionary = lutas.combate
-	var tj := lutas.tatica(str(luta.tactic))
-	var neutra := Luta.NEUTRA
-	var taticas_lado := [tj if not tj.is_empty() else neutra, neutra]
-	var eventos: Array = []
-	var vmax: Array = res.life_max
-	var n: int = res.events.size()
-	# Golpes (só visual, nunca muda o resultado): cada lado usa os golpes do seu estilo. Jogador = boxe por enquanto;
-	# `liberados` é o gancho para a árvore de habilidades liberar golpes (ids de nós) no futuro.
-	var liberados: Array = []
-	var golpes_lado: Array = [golpes.disponiveis("boxing", liberados), golpes.disponiveis(str(opp.get("style", "boxing")))]
-	var golpe_anterior: Array = ["", ""]
-	var semente_golpes := int(luta.seed)
-	for i in n:
-		var e: Dictionary = res.events[i]
-		var alvo: int = 1 - int(e.who)
-		var def_t: Dictionary = taticas_lado[alvo]
-		var fator_crit: float = 1.0 + (float(c.crit_multiplier) - 1.0) * (1.0 - float(def_t.crit_guard))
-		var tipo: String = e.type
-		var kind := "jab"
-		if tipo == "dodge":
-			kind = "dodge"
-		elif e.counter:
-			kind = "counter"
-		elif tipo == "crit" and fator_crit > 1.0 + 1.0e-9:
-			kind = "crit"
-		var bloqueou: bool = tipo != "dodge" and bool(def_t.block)
-		var d_anim := "dodge" if tipo == "dodge" else ("block" if bloqueou else "hit")
-		var lado := int(e.who)
-		var golpe_id := ""
-		var golpe_anim := ""
-		var reacao := ""
-		if kind != "dodge":
-			golpe_id = golpes.escolher(golpes_lado[lado], kind, semente_golpes, i, str(golpe_anterior[lado]))
-			if golpe_id != "":
-				golpe_anterior[lado] = golpe_id
-				golpe_anim = str(golpes.golpes[golpe_id].anim)
-				if d_anim == "hit":
-					reacao = str(golpes.golpes[golpe_id].defender_anim)
-		eventos.append({
-			"t": e.t, "who": e.who, "target": alvo, "type": tipo, "counter": e.counter,
-			"kind": kind, "attack_anim": "heavy" if kind == "crit" or kind == "counter" else "jab",
-			"move": golpe_id, "move_anim": golpe_anim, "defender_move_anim": reacao,
-			"defender_anim": d_anim, "blocked": bloqueou,
-			"damage": e.damage, "life_after": e.life_after, "life_pct_after": e.life_after / vmax[alvo],
-			"round": int(floor(float(e.t) / float(c.round_length))) + 1,
-			"ko": bool(salvo.ko) and i == n - 1,
-		})
-	var perdedor := -1
-	if salvo.ko:
-		perdedor = 1 if salvo.win else 0
-	var t_ko := float(salvo.t_ko)
-	var grogue := {}
-	if salvo.ko and t_ko < float(c.min_ko_time):
-		grogue = {"who": perdedor, "from": t_ko, "to": float(c.min_ko_time)}
-	return {
-		"opponent": opp.id, "tactic": luta.tactic, "seed": int(luta.seed), "player": luta.player.duplicate(),
-		"events": eventos, "result": salvo.duplicate(), "grogue": grogue, "loser": perdedor,
-		"life_max": {"player": vmax[0], "opponent": vmax[1]},
-		"intro_seconds": c.intro_seconds, "outro_seconds": c.outro_seconds,
-		"screen_seconds": float(c.intro_seconds) + float(salvo.t_end) + float(c.outro_seconds),
-		"counts": res.counts,
-	}
-
-
-## Fim da animação (ou luta pendente ao reabrir): aplica o resultado UMA vez e salva.
-## Vitória: prêmio. Derrota: Legado + tela de fim. Devolve o resumo ({} se não havia luta).
-func concluir_luta() -> Dictionary:
-	if luta.is_empty():
-		return {}
-	_finalizar_motivo(true)  # garante o motivo pronto e salvo antes de aplicar o resultado
-	var snap := luta.duplicate(true)
-	var opp := lutas.adversario(snap.opponent)
-	var resumo := {}
-	if snap.result.win:
-		var pote_antes := legado_em_jogo()
-		luta = {}
-		var premio := premio_dinheiro(opp)
-		var premio_f := premio_fama(opp)
-		dinheiro = clampf(dinheiro + premio, 0.0, VALOR_MAXIMO)
-		dinheiro_ganho += premio
-		fama += premio_f
-		indice_escada += 1
-		if opp.belt:
-			cinturao = true
-		# Fase 6a: marcos da escola, gravados no mesmo save do prêmio. A garagem só é salva por vitória AO VIVO
-		# sobre o adversário do cinturão (qualquer lutador da escola); nunca por belts_won.
-		var recorde := int(permanente.best_wins) > 0 and indice_escada > int(permanente.best_wins)
-		var primeira_vitoria := _escola._gravar_marco("first_school_win", {}, false)
-		var garagem_salva := false
-		if opp.belt:
-			garagem_salva = _escola._gravar_marco("garage_saved", {"opponent": str(opp.id), "by_first": lutador_atual() == "first"}, false)
-		# 6c1: a 1ª vitória de um discípulo na academia, com o John ainda na escola, arma a saída dele (mesmo save do prêmio).
-		_casa._marcar_vitoria_na_academia(str(opp.id))
-		# Revanche: vencer o algoz limpa a marca (no mesmo save do prêmio).
-		var revanche := e_algoz(opp.id)
-		if revanche:
-			permanente["revenge_opponent"] = ""
-		# Fase 5.3: a próxima data conta do dia em que esta luta aconteceu (-1 depois do Kid).
-		fight_day = _calendario._data_da_proxima_luta()
-		if escada_completa():
-			campanha_completa_mudou.emit()
-		var proximo := proximo_adversario()
-		var fala_mentor := _honra._fala_do_mentor(opp)  # 6c2: só pede; quem fala é o gatilho mentor_won
-		resumo = {"win": true, "mentor_line": fala_mentor, "fight_day": fight_day, "opponent": opp.id, "money": premio, "fame": premio_f,
-			"legacy_gain": legado_em_jogo() - pote_antes, "legacy_run": legado_em_jogo(), "belt": opp.belt,
-			"next": proximo.get("id", ""), "next_name": proximo.get("name", ""), "revenge": revanche,
-			"record": recorde, "first_school_win": primeira_vitoria, "garage_saved": garagem_salva,
-			"revenge_line": preencher(texto_ui("victory_revenge_line"), {"nome": opp.name}) if revanche else ""}
-		dinheiro_mudou.emit(dinheiro)
-		fama_mudou.emit(fama)
-		escada_mudou.emit()
-		economia_mudou.emit()
-		salvar()
-		if revanche:
-			permanente_mudou.emit()
-		atualizar_risco_hud()
-	else:
-		var motivo := motivo_da_luta(snap)
-		luta = {}
-		_carreira._encerrar_carreira("defeat", snap, motivo)
-		resumo = {"win": false, "fim": fim.duplicate(true)}
-	_motivo_cache = {}
-	luta_resolvida.emit(resumo)
-	return resumo
-
-
-## Motivo da derrota (design §7): {attribute, faltaram, who, round, model, tip, stat, better_tactic}.
-## Calcula até ~9.000 lutas simuladas: chame durante a animação. Resultado fica em cache.
-func motivo_da_luta(snap: Dictionary = {}) -> Dictionary:
-	if snap.is_empty():
-		snap = luta
-		_finalizar_motivo(true)  # já pronto em segundo plano (a animação dura segundos)
-		snap = luta
-	if snap.is_empty():
-		return {}
-	var pronto = snap.get("reason", null)
-	if pronto is Dictionary and not pronto.is_empty():
-		return pronto  # calculado em lutar()
-	if not _motivo_cache.is_empty() and _motivo_cache.get("seed") == int(snap.seed):
-		return _motivo_cache
-	_motivo_cache = _calcular_motivo(snap)
-	return _motivo_cache
-
-
-func _calcular_motivo(snap: Dictionary) -> Dictionary:
-	var opp := lutas.adversario(snap.opponent)
-	var p: Dictionary = snap.player
-	var jog := [p.strength, p.agility, p.endurance]
-	var adv := _array_adversario(opp)
-	var tat := str(snap.tactic)
-	var seed_i := int(snap.seed)
-	var chances := motor.chances_por_tatica(jog, adv)
-	var usada: float = chances.get(tat, 0.0)
-	var m := motor.explicar(jog, adv, tat, seed_i, usada)
-	var res: Dictionary = m.res
-	var faltaram := -1.0
-	if m.faltaram >= 0.0:
-		faltaram = Economia.teto3(m.faltaram)
-	var melhor := ""
-	var minimo := usada + float(lutas.motivo.tactic_tip_gap) - 1.0e-12
-	for t in lutas.taticas:
-		if t.id != tat and chances[t.id] >= minimo and (melhor == "" or chances[t.id] > chances[melhor]):
-			melhor = t.id
-	if m.kind == "luck":
-		melhor = ""  # azar nunca culpa a tática
-	return {
-		"seed": seed_i, "kind": m.kind, "attribute": m.attribute, "faltaram": faltaram, "far_n": m.far_n,
-		"who": "ko" if res.ko else "points", "round": res.round,
-		"model": (seed_i / 3) % 2, "tip": seed_i % 3,
-		"stat": m.stat,
-		"better_tactic": melhor,
-	}
 
 
 ## Troca {chave} por valores. Valor em Array: troca uma ocorrência por item, na ordem (ex.: "{n}" duas vezes).
@@ -931,7 +536,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	var greeted = c.get("mentor_greeted", true)  # ausente = true: save sem o campo não dispara toques no meio da campanha
 	mentor_cumprimentou = typeof(greeted) != TYPE_BOOL or greeted
 	_escola._reiniciar_falas()
-	_finalizar_motivo(false)
+	_luta._finalizar_motivo(false)
 	_motivo_cache = {}
 
 	_emitir_tudo()
@@ -1743,3 +1348,45 @@ func _zerar_carreira() -> void: _carreira._zerar_carreira()
 func resumo_legado() -> Dictionary: return _carreira.resumo_legado()
 ## Cartão "o que você trouxe" ({} sem nós): {title, career, nodes}. A UI mostra por até 1,8 s.
 func cartao_inicio() -> Dictionary: return _carreira.cartao_inicio()
+
+# ===== Repasses para scripts/estado/luta.gd =====
+## Veja luta.gd.
+func _atributos_array() -> Array: return _luta._atributos_array()
+## Veja luta.gd.
+func _array_adversario(opp: Dictionary) -> Array: return _luta._array_adversario(opp)
+## Veja luta.gd.
+func definir_tatica(tatica_id: String) -> bool: return _luta.definir_tatica(tatica_id)
+## Risco de uma tática contra o próximo adversário: {label: "easy"|"even"|"hard", chance}.
+func risco_tatica(tatica_id: String = "") -> Dictionary: return _luta.risco_tatica(tatica_id)
+## Dados da janela de prévia (calcula as 3 táticas: ~600 lutas). Não muda nada no jogo.
+func previa() -> Dictionary: return _luta.previa()
+## Dinheiro da vitória contra `opp` com o bônus da árvore.
+func premio_dinheiro(opp: Dictionary) -> float: return _luta.premio_dinheiro(opp)
+## Fama da vitória contra `opp` com o bônus da árvore (inteiro, arredondado).
+func premio_fama(opp: Dictionary) -> int: return _luta.premio_fama(opp)
+## Veja luta.gd.
+func tem_previa_detalhada() -> bool: return _luta.tem_previa_detalhada()
+## `permanent.revenge_opponent`: id do adversário que encerrou a última carreira ("" = sem marca).
+func algoz() -> String: return _luta.algoz()
+## Veja luta.gd.
+func e_algoz(adversario_id: String) -> bool: return _luta.e_algoz(adversario_id)
+## Alavanca L1 (decisão D2): "ESPERE FICAR VERDE" contra o algoz e contra todo adversário antes dele na escada,
+func esperar_verde(adversario_id: String, rotulo: String) -> bool: return _luta.esperar_verde(adversario_id, rotulo)
+## Para o bloco "PRÓXIMA" do HUD: marca de revanche e dica do verde do próximo adversário.
+func info_proxima() -> Dictionary: return _luta.info_proxima()
+## Último risco calculado para o HUD: {adversario, rotulo ("easy"|"even"|"hard"|""), tatica}.
+func risco_proxima() -> Dictionary: return _luta.risco_proxima()
+## Recalcula o risco do HUD (200 lutas) e emite `risco_proxima_mudou` se mudou.
+func atualizar_risco_hud() -> void: _luta.atualizar_risco_hud()
+## Veja luta.gd.
+func _definir_risco_hud(adversario: String, rotulo: String) -> void: _luta._definir_risco_hud(adversario, rotulo)
+## LUTAR: simula a luta inteira, grava `career.fight` e salva ANTES da animação. Devolve o mesmo que
+func lutar() -> Dictionary: return _luta.lutar()
+## Espera o cálculo em segundo plano e deixa o motivo salvo (usado pelos testes e pelo fechamento).
+func aguardar_motivo() -> void: _luta.aguardar_motivo()
+## Luta em andamento recalculada da semente (determinística): eventos, tempos e resultado.
+func luta_atual() -> Dictionary: return _luta.luta_atual()
+## Fim da animação (ou luta pendente ao reabrir): aplica o resultado UMA vez e salva.
+func concluir_luta() -> Dictionary: return _luta.concluir_luta()
+## Motivo da derrota (design §7): {attribute, faltaram, who, round, model, tip, stat, better_tactic}.
+func motivo_da_luta(snap: Dictionary = {}) -> Dictionary: return _luta.motivo_da_luta(snap)
