@@ -248,6 +248,7 @@ const _Aparelhos := preload("res://scripts/estado/aparelhos.gd")
 const _Calendario := preload("res://scripts/estado/calendario.gd")
 const _Arvore := preload("res://scripts/estado/arvore.gd")
 const _AcademiaArtes := preload("res://scripts/estado/academia_artes.gd")
+const _LojaGeradores := preload("res://scripts/estado/loja_geradores.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -258,6 +259,7 @@ var _aparelhos := _Aparelhos.new(self)
 var _calendario := _Calendario.new(self)
 var _arvore := _Arvore.new(self)
 var _academia := _AcademiaArtes.new(self)
+var _loja := _LojaGeradores.new(self)
 
 
 func _ready() -> void:
@@ -335,8 +337,8 @@ func tick(delta: float) -> void:
 				arte_segundos += dt
 				_casa._tick_comentario_da_arte()
 			_depur._tick_tempo_morto(dt)
-			_tick_metronomo(dt)
-			_tick_evento_dourado(dt)
+			_loja._tick_metronomo(dt)
+			_loja._tick_evento_dourado(dt)
 		_aparelhos._tick_assistido(dt)
 		_calendario._verificar_calendario()
 	_calendario._checar_sala()
@@ -346,282 +348,6 @@ func tick(delta: float) -> void:
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
 			_tempo_autosave = 0.0
 			salvar()
-
-
-## Atributo do aparelho (nos aparelhos de arte, o de maior fatia: para cor e ícone). A conta real é `divisao_aparelho`.
-func atributo_do_aparelho(aparelho_id: String) -> String:
-	return str(dados.aparelho(aparelho_id).get("attribute", ""))
-
-
-## Como o treino do aparelho se divide nos atributos: {atributo: fração} (soma 1). Aparelho comum: 100% num atributo.
-func divisao_aparelho(aparelho_id: String) -> Dictionary:
-	var ap := dados.aparelho(aparelho_id)
-	var d = ap.get("split", {})
-	if d is Dictionary and not d.is_empty():
-		return d
-	var a := str(ap.get("attribute", ""))
-	return {a: 1.0} if a != "" else {}
-
-
-func multiplicador_aparelho(aparelho_id: String) -> float:
-	var m := 1.0
-	var ap := dados.aparelho(aparelho_id)
-	var nivel := nivel_melhoria(aparelho_id)
-	for i in nivel:
-		m *= float(ap.upgrades[i].multiplier)
-	return m
-
-
-## Treino por clique MANUAL normal (sem crítico) com o foco atual: base x aparelho x luva x árvore x local x (1 + Boxe).
-func por_clique() -> float:
-	return _base_soco() * (1.0 + bonus_arte_clique()) + bonus_crew_click()
-
-
-## Treino por auto-soco (Metrônomo e assistido): igual ao clique, mas sem o bônus do Boxe.
-func por_auto_soco() -> float:
-	return _base_soco()
-
-
-func _base_soco() -> float:
-	return dados.base_training * multiplicador_aparelho(foco) * multiplicador_luva() * (1.0 + _arvore._b("click_bonus")) * mult_local() * mult_escola()
-
-
-## Fator que a equipe recebe: (1 + árvore) x local x (1 + Jiu-jitsu).
-func _fator_equipe() -> float:
-	return (1.0 + _arvore._b("passive_bonus")) * mult_local() * (1.0 + bonus_arte_equipe()) * mult_escola() * (1.0 + _honra._hall_valor("crew_mult"))
-
-
-## Treino/s vindo de todos os geradores (da garagem e pagos).
-func producao_total() -> float:
-	var total := 0.0
-	for g in dados.geradores:
-		total += producao_gerador(g.id)
-	for g in lutas.geradores_pagos:
-		total += producao_gerador(g.id)
-	return total
-
-
-## Aceita id de gerador da garagem ou pago.
-func producao_gerador(gerador_id: String) -> float:
-	var g := _def_gerador(gerador_id)
-	if g.is_empty():
-		return 0.0
-	return float(g.production) * quantidade_gerador(gerador_id) * _fator_equipe()
-
-
-## Aceita id de gerador da garagem ou pago.
-func quantidade_gerador(gerador_id: String) -> int:
-	if not lutas.gerador_pago(gerador_id).is_empty():
-		return int(geradores_pagos.get(gerador_id, 0))
-	return int(geradores.get(gerador_id, 0))
-
-
-func _def_gerador(gerador_id: String) -> Dictionary:
-	var g := dados.gerador(gerador_id)
-	return g if not g.is_empty() else lutas.gerador_pago(gerador_id)
-
-
-## Custo da próxima unidade (já em 3 dígitos significativos).
-func custo_gerador(gerador_id: String) -> float:
-	var g := dados.gerador(gerador_id)
-	if g.is_empty():
-		return INF
-	return Economia.custo_gerador(g.base_cost, g.growth, quantidade_gerador(gerador_id))
-
-
-func pode_comprar_gerador(gerador_id: String) -> bool:
-	return not dados.gerador(gerador_id).is_empty() and Economia.pode_pagar(treino, custo_gerador(gerador_id))
-
-
-## Quantas pessoas desenhar na sala (limite só de desenho; comprar nunca é bloqueado).
-func pessoas_desenhadas(gerador_id: String) -> int:
-	var g := _def_gerador(gerador_id)
-	if g.is_empty():
-		return 0
-	var q := quantidade_gerador(gerador_id)
-	var n := 0
-	for limite in g.draw_thresholds:
-		if limite <= q:
-			n += 1
-	return n
-
-
-func nivel_melhoria(aparelho_id: String) -> int:
-	return int(niveis_melhoria.get(aparelho_id, 0))
-
-
-## Próxima melhoria do aparelho, ou {} se a linha está completa.
-func proxima_melhoria(aparelho_id: String) -> Dictionary:
-	var ap := dados.aparelho(aparelho_id)
-	if ap.is_empty() or not aparelho_montado(aparelho_id):
-		return {}
-	var nivel := nivel_melhoria(aparelho_id)
-	if nivel >= ap.upgrades.size():
-		return {}
-	return ap.upgrades[nivel]
-
-
-func pode_comprar_melhoria(aparelho_id: String) -> bool:
-	var m := proxima_melhoria(aparelho_id)
-	return not m.is_empty() and Economia.pode_pagar(treino, m.cost)
-
-
-## Sprite do aparelho: maior visual_level entre as melhorias compradas (0 se nenhuma).
-func nivel_visual(aparelho_id: String) -> int:
-	var ap := dados.aparelho(aparelho_id)
-	var v := 0
-	for i in mini(nivel_melhoria(aparelho_id), ap.get("upgrades", []).size()):
-		v = maxi(v, int(ap.upgrades[i].visual_level))
-	return v
-
-
-## Um clique no alvo central. Soma no saldo e no atributo do foco; emite `clicou`.
-func clicar() -> Dictionary:
-	_ocioso = 0.0  # mão mexendo, mesmo se a ação for recusada
-	registrar_clique()  # Fase 6a: cancela o gesto e zera a "sala parada"
-	if acoes_bloqueadas() or not sala_ativa():
-		return {}
-	_sucessao._toques_do_primeiro_clique()
-	return _socar(false)
-
-
-## Um auto-soco do Metrônomo: o MESMO caminho do clique (aparelho em foco, luva, árvore, crítico, treino no
-## atributo), mas emite `auto_socou` em vez de `clicou` (a UI não treme a tela e usa número menor).
-## Normalmente chamado pelo tique do Metrônomo; público para testes.
-func auto_socar() -> Dictionary:
-	if acoes_bloqueadas() or not sala_ativa():
-		return {}
-	auto_socos_total += 1
-	return _socar(true)
-
-
-func _socar(auto: bool) -> Dictionary:
-	var aparelho_id := foco
-	var atributo := atributo_do_aparelho(aparelho_id)
-	var critico := rng.randf() < dados.crit_chance
-	var ganho := (por_auto_soco() if auto else por_clique()) * (dados.crit_multiplier if critico else 1.0) * mult_frenesi()
-	var texto := ""
-	if critico:
-		var textos: Array = dados.aparelho(aparelho_id).crit_texts
-		texto = str(textos[rng.randi() % textos.size()])
-	_ganhar(ganho)
-	var info := {"ganho": ganho, "critico": critico, "aparelho": aparelho_id,
-		"atributo": atributo, "texto_critico": texto, "auto": auto}
-	if auto:
-		auto_socou.emit(ganho, critico, aparelho_id, atributo, texto)
-	else:
-		clicou.emit(ganho, critico, aparelho_id, atributo, texto)
-	return info
-
-
-## 7 enquanto o FRENESI está ligado, 1 nos outros casos.
-func mult_frenesi() -> float:
-	return FRENESI_MULT if frenesi_restante > 0.0 else 1.0
-
-
-## O jogador clicou no evento dourado. Tipo "frenzy": liga o FRENESI. Tipo "crew" (bolsa da torcida): paga
-## `valor_bolsa()` de uma vez, sem FRENESI e sem crítico. false se não havia evento (ou se há janela aberta).
-func pegar_evento_dourado() -> bool:
-	if evento_dourado_restante <= 0.0 or modal_aberto or acoes_bloqueadas():
-		return false
-	evento_dourado_restante = 0.0
-	if evento_dourado_tipo == "crew":
-		var ganho := valor_bolsa()
-		_ganhar(ganho)
-		bolsa_paga.emit(ganho)
-		return true
-	frenesi_restante = FRENESI_DURACAO
-	frenesi_mudou.emit(frenesi_restante)
-	return true
-
-
-## Quanto a bolsa da torcida paga agora: max(crew_seconds x renda_sem_mao, crew_floor_clicks x por_clique).
-func valor_bolsa() -> float:
-	return maxf(dados.golden_crew_seconds * renda_sem_mao(), dados.golden_crew_floor_clicks * por_clique())
-
-
-## Treino/s sem a mão: equipe + auto-socos do Metrônomo (sem crítico e sem FRENESI).
-func renda_sem_mao() -> float:
-	return producao_total() + socos_por_segundo_metronomo() * por_auto_soco()
-
-
-## Extra do Grito da equipe em cada clique da mão: crew_share x equipe/s (0 sem a melhoria). Não vale no auto-soco.
-func bonus_crew_click() -> float:
-	if not crew_click_comprado or lutas.crew_click.is_empty():
-		return 0.0
-	return crew_share_efetivo() * producao_total()
-
-
-## Segundos da equipe por clique com o Grito: loja + nó "Grito mais alto" (Fase 5.4).
-func crew_share_efetivo() -> float:
-	return float(lutas.crew_click.get("crew_share", 0.0)) + _arvore._b("crew_click_bonus")
-
-
-func pode_comprar_crew_click() -> bool:
-	return not lutas.crew_click.is_empty() and not crew_click_comprado and loja_estado(float(lutas.crew_click.cost)) == "ok"
-
-
-func comprar_crew_click() -> bool:
-	if acoes_bloqueadas() or not pode_comprar_crew_click():
-		return false
-	_gastar_dinheiro(float(lutas.crew_click.cost))
-	crew_click_comprado = true
-	crew_click_mudou.emit(true)
-	economia_mudou.emit()
-	return true
-
-
-func _tick_evento_dourado(delta: float) -> void:
-	if frenesi_restante > 0.0:
-		frenesi_restante = maxf(0.0, frenesi_restante - delta)
-		if frenesi_restante == 0.0:
-			frenesi_mudou.emit(0.0)
-	if evento_dourado_restante > 0.0:
-		evento_dourado_restante = maxf(0.0, evento_dourado_restante - delta)  # ninguém clicou: o cinturão some
-		return
-	if modal_aberto or acoes_bloqueadas():
-		return  # luta ou janela aberta: o relógio do próximo evento espera
-	if _evento_espera < 0.0:
-		_evento_espera = _rng_evento.randf_range(EVENTO_ESPERA_MIN, EVENTO_ESPERA_MAX)
-	_evento_espera -= delta
-	if _evento_espera <= 0.0:
-		_evento_espera = -1.0
-		evento_dourado_tipo = "crew" if dados.golden_crew_chance >= 1.0 or (dados.golden_crew_chance > 0.0 and _rng_evento.randf() < dados.golden_crew_chance) else "frenzy"
-		evento_dourado_restante = EVENTO_DURACAO
-		evento_dourado.emit(EVENTO_DURACAO)
-
-
-## Troca o foco (grátis, instantâneo). Retorna false se o aparelho não existe.
-func definir_foco(aparelho_id: String) -> bool:
-	if dados.aparelho(aparelho_id).is_empty() or not aparelho_montado(aparelho_id):
-		return false
-	if aparelho_id != foco:
-		foco = aparelho_id
-		foco_mudou.emit(foco)
-		economia_mudou.emit()
-	return true
-
-
-func comprar_gerador(gerador_id: String) -> bool:
-	if acoes_bloqueadas() or not pode_comprar_gerador(gerador_id):
-		return false
-	_gastar(custo_gerador(gerador_id))
-	geradores[gerador_id] = quantidade_gerador(gerador_id) + 1
-	gerador_mudou.emit(gerador_id, geradores[gerador_id])
-	economia_mudou.emit()
-	return true
-
-
-## Compra o próximo nível de melhoria do aparelho.
-func comprar_melhoria(aparelho_id: String) -> bool:
-	if acoes_bloqueadas() or not pode_comprar_melhoria(aparelho_id):
-		return false
-	var m := proxima_melhoria(aparelho_id)
-	_gastar(m.cost)
-	niveis_melhoria[aparelho_id] = nivel_melhoria(aparelho_id) + 1
-	melhoria_comprada.emit(aparelho_id, m.id, niveis_melhoria[aparelho_id])
-	economia_mudou.emit()
-	return true
 
 
 ## true durante a luta (resultado decidido, ainda não aplicado) e com a tela de fim pendente:
@@ -730,148 +456,6 @@ func _atributos_array() -> Array:
 
 func _array_adversario(opp: Dictionary) -> Array:
 	return [opp.strength, opp.agility, opp.endurance]
-
-
-func multiplicador_luva() -> float:
-	var m := 1.0
-	for i in mini(luvas_abertas(), lutas.luvas.size()):
-		m *= float(lutas.luvas[i].click_multiplier)
-	return m
-
-
-## Luva equipada: {id, level, name, sprite_suffix, click_multiplier}. Nível 0 = luva velha.
-## A UI troca cursor, mão da garagem e mão da luta por `sprite_suffix` (ex.: "" ou "_glove_l1").
-func luva_equipada() -> Dictionary:
-	var n := luvas_abertas()
-	if n <= 0 or n > lutas.luvas.size():
-		return lutas.luva_base
-	return lutas.luvas[n - 1]
-
-
-func sufixo_luva() -> String:
-	return str(luva_equipada().sprite_suffix)
-
-
-## Próxima luva da linha, ou {} se completou. Fase 5.1: com a luva anterior ainda na caixa ela NÃO está à venda
-## (`pode_comprar_luva` é false e `luva_em_caixa()` é true): a UI mostra `shop_glove_boxed`.
-func proxima_luva() -> Dictionary:
-	return {} if nivel_luva >= lutas.luvas.size() else lutas.luvas[nivel_luva]
-
-
-func pode_comprar_luva() -> bool:
-	var l := proxima_luva()
-	return not l.is_empty() and not luva_em_caixa() and loja_estado(float(l.cost)) == "ok"
-
-
-func comprar_luva() -> bool:
-	if acoes_bloqueadas() or not pode_comprar_luva():
-		return false
-	var l := proxima_luva()
-	_gastar_dinheiro(l.cost)
-	nivel_luva += 1  # glove_level conta as luvas COMPRADAS (abertas + a da caixa)
-	if dados.box_glove:
-		_aparelhos._criar_caixa(str(l.id), "glove")
-		salvar()
-		caixa_criada.emit(str(l.id), "glove")
-	else:
-		luva_mudou.emit(nivel_luva, sufixo_luva())
-	economia_mudou.emit()
-	return true
-
-
-func custo_gerador_pago(gerador_id: String) -> float:
-	var g := lutas.gerador_pago(gerador_id)
-	if g.is_empty():
-		return INF
-	return Economia.custo_gerador(g.base_cost, g.growth, quantidade_gerador(gerador_id))
-
-
-func pode_comprar_gerador_pago(gerador_id: String) -> bool:
-	return not lutas.gerador_pago(gerador_id).is_empty() and loja_estado(custo_gerador_pago(gerador_id)) == "ok"
-
-
-func comprar_gerador_pago(gerador_id: String) -> bool:
-	if acoes_bloqueadas() or not pode_comprar_gerador_pago(gerador_id):
-		return false
-	_gastar_dinheiro(custo_gerador_pago(gerador_id))
-	geradores_pagos[gerador_id] = quantidade_gerador(gerador_id) + 1
-	gerador_pago_mudou.emit(gerador_id, geradores_pagos[gerador_id])
-	economia_mudou.emit()
-	return true
-
-
-func metronomo_niveis() -> int:
-	return lutas.metronomo.levels.size()
-
-
-## Definição do nível atual ({} se 0).
-func metronomo_atual() -> Dictionary:
-	if nivel_metronomo <= 0 or nivel_metronomo > metronomo_niveis():
-		return {}
-	return lutas.metronomo.levels[nivel_metronomo - 1]
-
-
-## Próximo nível à venda: {id, level, cost, interval, name, description, appears_as}, ou {} se completo/sem Metrônomo.
-func proximo_metronomo() -> Dictionary:
-	return {} if nivel_metronomo >= metronomo_niveis() else lutas.metronomo.levels[nivel_metronomo]
-
-
-## Segundos entre auto-socos no nível atual (0 = sem Metrônomo).
-func intervalo_metronomo() -> float:
-	return float(metronomo_atual().get("interval", 0.0))
-
-
-func socos_por_segundo_metronomo() -> float:
-	var i := intervalo_metronomo()
-	return 1.0 / i if i > 0.0 else 0.0
-
-
-func pode_comprar_metronomo() -> bool:
-	var n := proximo_metronomo()
-	return not n.is_empty() and loja_estado(float(n.cost)) == "ok"
-
-
-func comprar_metronomo() -> bool:
-	if acoes_bloqueadas() or not pode_comprar_metronomo():
-		return false
-	_gastar_dinheiro(proximo_metronomo().cost)
-	nivel_metronomo += 1
-	_acc_metronomo = 0.0
-	metronomo_mudou.emit(nivel_metronomo)
-	_aparelhos._atualizar_estado_assist()
-	economia_mudou.emit()
-	return true
-
-
-## true quando o Metrônomo pode socar agora: garagem na tela (sem luta, sem tela de fim, sem janela da UI).
-func metronomo_ativo() -> bool:
-	return nivel_metronomo > 0 and sala_ativa()
-
-
-## API da UI (Fase 5.3): chamar com true quando QUALQUER janela abre (prévia, confirmação, vitória, cartão,
-## futuras opções) e false quando fecha. Janela aberta = sala parada (relógio, equipe, Metrônomo, clique...).
-## Toda janela passa por `Fluxo._abrir`, que já chama isto.
-func definir_modal(aberto: bool) -> void:
-	modal_aberto = aberto
-	_aparelhos._atualizar_estado_assist()
-	_calendario._checar_sala()
-
-
-# Acumula tempo só com o alvo livre; no máximo 3 socos por quadro (nunca acumula socos para depois).
-func _tick_metronomo(delta: float) -> void:
-	if not metronomo_ativo():
-		return
-	var intervalo := intervalo_metronomo()
-	if intervalo <= 0.0:
-		return
-	_acc_metronomo += delta
-	var n := 0
-	while _acc_metronomo >= intervalo and n < 3:
-		_acc_metronomo -= intervalo
-		auto_socar()
-		n += 1
-	if _acc_metronomo >= intervalo:
-		_acc_metronomo = fmod(_acc_metronomo, intervalo)
 
 
 func definir_tatica(tatica_id: String) -> bool:
@@ -2282,3 +1866,101 @@ func arte_no_teto() -> bool: return _academia.arte_no_teto()
 func _atualizar_traco() -> void: _academia._atualizar_traco()
 ## Tática do jogador já com o traço da arte (cópia). Útil para testes e para a UI mostrar números.
 func tatica_efetiva(tatica_id: String = "") -> Dictionary: return _academia.tatica_efetiva(tatica_id)
+
+# ===== Repasses para scripts/estado/loja_geradores.gd =====
+## Atributo do aparelho (nos aparelhos de arte, o de maior fatia: para cor e ícone). A conta real é `divisao_aparelho`.
+func atributo_do_aparelho(aparelho_id: String) -> String: return _loja.atributo_do_aparelho(aparelho_id)
+## Como o treino do aparelho se divide nos atributos: {atributo: fração} (soma 1). Aparelho comum: 100% num atributo.
+func divisao_aparelho(aparelho_id: String) -> Dictionary: return _loja.divisao_aparelho(aparelho_id)
+## Veja loja_geradores.gd.
+func multiplicador_aparelho(aparelho_id: String) -> float: return _loja.multiplicador_aparelho(aparelho_id)
+## Treino por clique MANUAL normal (sem crítico) com o foco atual: base x aparelho x luva x árvore x local x (1 + Boxe).
+func por_clique() -> float: return _loja.por_clique()
+## Treino por auto-soco (Metrônomo e assistido): igual ao clique, mas sem o bônus do Boxe.
+func por_auto_soco() -> float: return _loja.por_auto_soco()
+## Veja loja_geradores.gd.
+func _base_soco() -> float: return _loja._base_soco()
+## Fator que a equipe recebe: (1 + árvore) x local x (1 + Jiu-jitsu).
+func _fator_equipe() -> float: return _loja._fator_equipe()
+## Treino/s vindo de todos os geradores (da garagem e pagos).
+func producao_total() -> float: return _loja.producao_total()
+## Aceita id de gerador da garagem ou pago.
+func producao_gerador(gerador_id: String) -> float: return _loja.producao_gerador(gerador_id)
+## Aceita id de gerador da garagem ou pago.
+func quantidade_gerador(gerador_id: String) -> int: return _loja.quantidade_gerador(gerador_id)
+## Custo da próxima unidade (já em 3 dígitos significativos).
+func custo_gerador(gerador_id: String) -> float: return _loja.custo_gerador(gerador_id)
+## Veja loja_geradores.gd.
+func pode_comprar_gerador(gerador_id: String) -> bool: return _loja.pode_comprar_gerador(gerador_id)
+## Quantas pessoas desenhar na sala (limite só de desenho; comprar nunca é bloqueado).
+func pessoas_desenhadas(gerador_id: String) -> int: return _loja.pessoas_desenhadas(gerador_id)
+## Veja loja_geradores.gd.
+func nivel_melhoria(aparelho_id: String) -> int: return _loja.nivel_melhoria(aparelho_id)
+## Próxima melhoria do aparelho, ou {} se a linha está completa.
+func proxima_melhoria(aparelho_id: String) -> Dictionary: return _loja.proxima_melhoria(aparelho_id)
+## Veja loja_geradores.gd.
+func pode_comprar_melhoria(aparelho_id: String) -> bool: return _loja.pode_comprar_melhoria(aparelho_id)
+## Sprite do aparelho: maior visual_level entre as melhorias compradas (0 se nenhuma).
+func nivel_visual(aparelho_id: String) -> int: return _loja.nivel_visual(aparelho_id)
+## Um clique no alvo central. Soma no saldo e no atributo do foco; emite `clicou`.
+func clicar() -> Dictionary: return _loja.clicar()
+## Um auto-soco do Metrônomo: o MESMO caminho do clique (aparelho em foco, luva, árvore, crítico, treino no
+func auto_socar() -> Dictionary: return _loja.auto_socar()
+## 7 enquanto o FRENESI está ligado, 1 nos outros casos.
+func mult_frenesi() -> float: return _loja.mult_frenesi()
+## O jogador clicou no evento dourado. Tipo "frenzy": liga o FRENESI. Tipo "crew" (bolsa da torcida): paga
+func pegar_evento_dourado() -> bool: return _loja.pegar_evento_dourado()
+## Quanto a bolsa da torcida paga agora: max(crew_seconds x renda_sem_mao, crew_floor_clicks x por_clique).
+func valor_bolsa() -> float: return _loja.valor_bolsa()
+## Treino/s sem a mão: equipe + auto-socos do Metrônomo (sem crítico e sem FRENESI).
+func renda_sem_mao() -> float: return _loja.renda_sem_mao()
+## Extra do Grito da equipe em cada clique da mão: crew_share x equipe/s (0 sem a melhoria). Não vale no auto-soco.
+func bonus_crew_click() -> float: return _loja.bonus_crew_click()
+## Segundos da equipe por clique com o Grito: loja + nó "Grito mais alto" (Fase 5.4).
+func crew_share_efetivo() -> float: return _loja.crew_share_efetivo()
+## Veja loja_geradores.gd.
+func pode_comprar_crew_click() -> bool: return _loja.pode_comprar_crew_click()
+## Veja loja_geradores.gd.
+func comprar_crew_click() -> bool: return _loja.comprar_crew_click()
+## Troca o foco (grátis, instantâneo). Retorna false se o aparelho não existe.
+func definir_foco(aparelho_id: String) -> bool: return _loja.definir_foco(aparelho_id)
+## Veja loja_geradores.gd.
+func comprar_gerador(gerador_id: String) -> bool: return _loja.comprar_gerador(gerador_id)
+## Compra o próximo nível de melhoria do aparelho.
+func comprar_melhoria(aparelho_id: String) -> bool: return _loja.comprar_melhoria(aparelho_id)
+## Veja loja_geradores.gd.
+func multiplicador_luva() -> float: return _loja.multiplicador_luva()
+## Luva equipada: {id, level, name, sprite_suffix, click_multiplier}. Nível 0 = luva velha.
+func luva_equipada() -> Dictionary: return _loja.luva_equipada()
+## Veja loja_geradores.gd.
+func sufixo_luva() -> String: return _loja.sufixo_luva()
+## Próxima luva da linha, ou {} se completou. Fase 5.1: com a luva anterior ainda na caixa ela NÃO está à venda
+func proxima_luva() -> Dictionary: return _loja.proxima_luva()
+## Veja loja_geradores.gd.
+func pode_comprar_luva() -> bool: return _loja.pode_comprar_luva()
+## Veja loja_geradores.gd.
+func comprar_luva() -> bool: return _loja.comprar_luva()
+## Veja loja_geradores.gd.
+func custo_gerador_pago(gerador_id: String) -> float: return _loja.custo_gerador_pago(gerador_id)
+## Veja loja_geradores.gd.
+func pode_comprar_gerador_pago(gerador_id: String) -> bool: return _loja.pode_comprar_gerador_pago(gerador_id)
+## Veja loja_geradores.gd.
+func comprar_gerador_pago(gerador_id: String) -> bool: return _loja.comprar_gerador_pago(gerador_id)
+## Veja loja_geradores.gd.
+func metronomo_niveis() -> int: return _loja.metronomo_niveis()
+## Definição do nível atual ({} se 0).
+func metronomo_atual() -> Dictionary: return _loja.metronomo_atual()
+## Próximo nível à venda: {id, level, cost, interval, name, description, appears_as}, ou {} se completo/sem Metrônomo.
+func proximo_metronomo() -> Dictionary: return _loja.proximo_metronomo()
+## Segundos entre auto-socos no nível atual (0 = sem Metrônomo).
+func intervalo_metronomo() -> float: return _loja.intervalo_metronomo()
+## Veja loja_geradores.gd.
+func socos_por_segundo_metronomo() -> float: return _loja.socos_por_segundo_metronomo()
+## Veja loja_geradores.gd.
+func pode_comprar_metronomo() -> bool: return _loja.pode_comprar_metronomo()
+## Veja loja_geradores.gd.
+func comprar_metronomo() -> bool: return _loja.comprar_metronomo()
+## true quando o Metrônomo pode socar agora: garagem na tela (sem luta, sem tela de fim, sem janela da UI).
+func metronomo_ativo() -> bool: return _loja.metronomo_ativo()
+## API da UI (Fase 5.3): chamar com true quando QUALQUER janela abre (prévia, confirmação, vitória, cartão,
+func definir_modal(aberto: bool) -> void: _loja.definir_modal(aberto)

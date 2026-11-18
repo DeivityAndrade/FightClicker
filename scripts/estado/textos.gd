@@ -59,7 +59,7 @@ func texto_efeito_loja(item: Dictionary) -> String:
 		return gs.preencher(texto_ui("shop_glove_effect", "x{mult} POR CLIQUE"),
 			{"mult": NumberFormat.fmt(float(item.click_multiplier))})
 	return gs.preencher(texto_ui("shop_generator_effect", "+{n}/S"),
-		{"n": NumberFormat.fmt(float(item.get("production", 0.0)) * gs._fator_equipe())})
+		{"n": NumberFormat.fmt(float(item.get("production", 0.0)) * gs._loja._fator_equipe())})
 
 
 ## "1 SOCO A CADA 2.0 S" para um nível (ex.: proximo_metronomo()).
