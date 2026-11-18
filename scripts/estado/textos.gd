@@ -2,10 +2,10 @@ extends RefCounted
 ## Textos montados (dicas, efeitos, tela de fim). Nada aqui muda estado.
 ## Trabalha nas variáveis do GameState (`gs`); as funções públicas continuam em GameState como repasses.
 
-var gs  # o GameState (autoload)
+var gs: EstadoJogo  # o GameState (autoload)
 
 
-func _init(g) -> void:
+func _init(g: EstadoJogo) -> void:
 	gs = g
 
 

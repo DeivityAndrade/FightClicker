@@ -2,10 +2,10 @@ extends RefCounted
 ## Fases 6b1/6b2: passar o posto, discípulo, rascunho, mentores e toques do John.
 ## Trabalha nas variáveis do GameState (`gs`); as funções públicas continuam em GameState como repasses.
 
-var gs  # o GameState (autoload)
+var gs: EstadoJogo  # o GameState (autoload)
 
 
-func _init(g) -> void:
+func _init(g: EstadoJogo) -> void:
 	gs = g
 
 
@@ -189,7 +189,7 @@ func receber_discipulo() -> bool:
 	gs._cena_grande_ativa = grande
 	if grande:
 		# O marco e o que ele dá são gravados no COMEÇO da cena: pular ou fechar o jogo dão o mesmo save.
-		gs._gravar_marco(str(cena.milestone), {}, false)
+		gs._escola._gravar_marco(str(cena.milestone), {}, false)
 		_aplicar_grants(cena.get("grants", []))
 	gs.salvar()
 	gs._tempo_autosave = 0.0

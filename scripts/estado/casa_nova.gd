@@ -2,10 +2,10 @@ extends RefCounted
 ## Fase 6c1: chegada à academia, elenco da sala e saída do John.
 ## Trabalha nas variáveis do GameState (`gs`); as funções públicas continuam em GameState como repasses.
 
-var gs  # o GameState (autoload)
+var gs: EstadoJogo  # o GameState (autoload)
 
 
-func _init(g) -> void:
+func _init(g: EstadoJogo) -> void:
 	gs = g
 
 
@@ -184,7 +184,7 @@ func _marcar_vitoria_na_academia(oponente: String) -> void:
 		return
 	if not ("first" in gs.escola.get("mentors", [])):
 		return
-	gs._gravar_marco(str(cfg.get("win_milestone", "disciple_gym_win")), {"opponent": oponente}, false)
+	gs._escola._gravar_marco(str(cfg.get("win_milestone", "disciple_gym_win")), {"opponent": oponente}, false)
 
 
 # Chamado só com sala ativa e arte escolhida: depois de `after_art_seconds` de arte, o gatilho art_choice sai uma vez.
@@ -236,7 +236,7 @@ func _iniciar_saida() -> void:
 	var cena := CenaDados.carregar_cena(str(cfg.get("scene", "saida_primeiro_mentor")))
 	gs._saida_elenco = {"mentores": gs.mentores_na_sala()}  # o que a sala desenhava, antes de o John sair da lista
 	# O marco e o que a cena dá são gravados no COMEÇO: fechar o jogo no meio dá o mesmo save.
-	gs._gravar_marco(_marco_da_saida(), {}, false)
+	gs._escola._gravar_marco(_marco_da_saida(), {}, false)
 	gs._sucessao._aplicar_grants(cena.get("grants", [{"type": "mentor_leaves", "character": "first_fighter"}]))
 	gs._saida_tocando = true
 	gs._saida_inicio = gs._t_real

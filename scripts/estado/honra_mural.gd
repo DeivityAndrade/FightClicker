@@ -2,10 +2,10 @@ extends RefCounted
 ## Fase 6c2: Honra, hall, bônus do retrato, mural da escola, vozes dos mentores.
 ## Trabalha nas variáveis do GameState (`gs`); as funções públicas continuam em GameState como repasses.
 
-var gs  # o GameState (autoload)
+var gs: EstadoJogo  # o GameState (autoload)
 
 
-func _init(g) -> void:
+func _init(g: EstadoJogo) -> void:
 	gs = g
 
 
@@ -365,7 +365,7 @@ func _fala_do_mentor(opp: Dictionary) -> Dictionary:
 				continue
 		if _grupo_de_fala_usado(str(caps.get(k, k))):
 			continue
-		if gs.dialogos.candidatas("mentor_won", gs._ctx_falas(params)).is_empty():
+		if gs.dialogos.candidatas("mentor_won", gs._escola._ctx_falas(params)).is_empty():
 			continue  # sem fala escrita para este caso: não gasta a vitória nem cala o Osmar
 		return params
 	return {}
