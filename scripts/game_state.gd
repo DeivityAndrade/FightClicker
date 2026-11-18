@@ -233,6 +233,12 @@ var _saida_elenco: Dictionary = {}  # {seat, stand, coach}: quem a sala desenhav
 var _cena_sala_t := 0.0  # segundos reais da cena da academia (trava de segurança se a interface nunca avisar o fim)
 var _academia_rearmada := false  # a cl_primeira_academia já foi (re)disparada nesta sessão
 var _arte_comentada := false  # o comentário da arte desta campanha já saiu (ou não vale mais)
+var _reacao_cena := ""  # cena que armou a reação do 1º clique ("primeira_sucessao"); "" = toques sem fala
+var _falta_chave_atual := ""
+
+# Módulos (scripts/estado/): a lógica de cada assunto mora lá e trabalha nas variáveis acima.
+const _Depuracao := preload("res://scripts/estado/depuracao.gd")
+var _depur := _Depuracao.new(self)
 
 
 func _ready() -> void:
@@ -309,7 +315,7 @@ func tick(delta: float) -> void:
 			if arte_id != "":
 				arte_segundos += dt
 				_tick_comentario_da_arte()
-			_tick_tempo_morto(dt)
+			_depur._tick_tempo_morto(dt)
 			_tick_metronomo(dt)
 			_tick_evento_dourado(dt)
 		_tick_assistido(dt)
@@ -322,8 +328,6 @@ func tick(delta: float) -> void:
 			_tempo_autosave = 0.0
 			salvar()
 
-
-# --- Fase 5.3: calendário da campanha e sala ativa ---
 
 ## A ÚNICA condição de tick: relógio da campanha, equipe, Metrônomo, assistido, clique, luva dourada e Jiu-jitsu
 ## só andam com ela. Perder foco ou minimizar NÃO desliga; janela, luta, escolha da arte e dia da luta sim.
@@ -450,8 +454,6 @@ func _checar_sala() -> void:
 			_interromper_saida()  # 6c1: janela, luta, tela de fim ou dia da luta terminam a saída do John na hora
 		sala_ativa_mudou.emit(a)
 
-
-# --- Consultas ---
 
 ## Atributo do aparelho (nos aparelhos de arte, o de maior fatia: para cor e ícone). A conta real é `divisao_aparelho`.
 func atributo_do_aparelho(aparelho_id: String) -> String:
@@ -595,8 +597,6 @@ func texto_efeito_melhoria(melhoria: Dictionary) -> String:
 	var modelo: String = dados.ui.get("upgrade_effect", "x{mult} POR CLIQUE: {alvo}")
 	return modelo.replace("{mult}", NumberFormat.fmt(float(melhoria.get("multiplier", 1.0)))).replace("{alvo}", alvo)
 
-
-# --- Ações ---
 
 ## Um clique no alvo central. Soma no saldo e no atributo do foco; emite `clicou`.
 func clicar() -> Dictionary:
@@ -753,8 +753,6 @@ func comprar_melhoria(aparelho_id: String) -> bool:
 	return true
 
 
-# --- Fase 4b: aparelhos que chegam ---
-
 func aparelho_montado(aparelho_id: String) -> bool:
 	return aparelho_id in aparelhos_montados_ids
 
@@ -871,8 +869,6 @@ func textos_trancado(aparelho_id: String) -> Dictionary:
 	}
 
 
-# --- Fase 4b: modo assistido (só com o Shift pressionado) ---
-
 ## Chamado pela UI: true enquanto o Shift (ou o botão SEGURAR) estiver pressionado, false ao soltar
 ## e quando a janela perde o foco. Nada disso vai para o save.
 func definir_assistido(segurando: bool) -> void:
@@ -946,8 +942,6 @@ func _tick_assistido(delta: float) -> void:
 		_acc_assist = _assist_primeiro()
 	_atualizar_estado_assist()
 
-
-# --- Fase 3: estado e consultas ---
 
 ## true durante a luta (resultado decidido, ainda não aplicado) e com a tela de fim pendente:
 ## a garagem não aceita clique nem compra.
@@ -1057,8 +1051,6 @@ func _array_adversario(opp: Dictionary) -> Array:
 	return [opp.strength, opp.agility, opp.endurance]
 
 
-# --- Fase 3: loja (dinheiro) ---
-
 func multiplicador_luva() -> float:
 	var m := 1.0
 	for i in mini(luvas_abertas(), lutas.luvas.size()):
@@ -1135,8 +1127,6 @@ func texto_efeito_loja(item: Dictionary) -> String:
 	return preencher(texto_ui("shop_generator_effect", "+{n}/S"),
 		{"n": NumberFormat.fmt(float(item.get("production", 0.0)) * _fator_equipe())})
 
-
-# --- Fase 4: Metrônomo (loja, dinheiro) ---
 
 func metronomo_niveis() -> int:
 	return lutas.metronomo.levels.size()
@@ -1217,8 +1207,6 @@ func _tick_metronomo(delta: float) -> void:
 	if _acc_metronomo >= intervalo:
 		_acc_metronomo = fmod(_acc_metronomo, intervalo)
 
-
-# --- Fase 3: táticas, prévia e risco ---
 
 func definir_tatica(tatica_id: String) -> bool:
 	if lutas.tatica(tatica_id).is_empty():
@@ -1302,8 +1290,6 @@ func _porcentagem(chance: float) -> int:
 	return int(floor(chance * 100.0 + 1.0e-9))
 
 
-# --- Fase 4: bônus da árvore (prêmios) ---
-
 ## Dinheiro da vitória contra `opp` com o bônus da árvore.
 func premio_dinheiro(opp: Dictionary) -> float:
 	return float(opp.prize_money) * (1.0 + _b("money_bonus"))
@@ -1317,8 +1303,6 @@ func premio_fama(opp: Dictionary) -> int:
 func tem_previa_detalhada() -> bool:
 	return _b("preview_percent") > 0.0
 
-
-# --- Fase 4: revanche e "espere ficar verde" ---
 
 ## `permanent.revenge_opponent`: id do adversário que encerrou a última carreira ("" = sem marca).
 func algoz() -> String:
@@ -1388,8 +1372,6 @@ func _tick_risco(delta: float) -> void:
 	if _chave_estado_risco() != _chave_risco:
 		atualizar_risco_hud()
 
-
-# --- Fase 3: a luta ---
 
 ## LUTAR: simula a luta inteira, grava `career.fight` e salva ANTES da animação. Devolve o mesmo que
 ## `luta_atual()` ({} se não pode lutar). A UI só anima a lista de eventos.
@@ -1642,8 +1624,6 @@ func _calcular_motivo(snap: Dictionary) -> Dictionary:
 	}
 
 
-# --- Fase 3: fim de carreira, Legado e nova carreira ---
-
 ## APOSENTAR (só entre lutas): soma o Legado e cria a tela de fim "saiu por cima". Devolve o `fim`.
 func aposentar() -> Dictionary:
 	if not pode_aposentar():
@@ -1786,8 +1766,6 @@ func _zerar_carreira() -> void:
 	_finalizar_motivo(false)
 	_motivo_cache = {}
 
-
-# --- Fase 4: árvore de habilidades ---
 
 # Soma, por tipo, dos efeitos dos nós ATIVOS da campanha (aditivo dentro do tipo; ver design §3.5).
 # Fase 5.4: lê `nos_ativos_ids` (a foto), nunca `skill_nodes`; nó com `requires_art` só vale jogando aquela arte.
@@ -2076,8 +2054,6 @@ func cartao_inicio() -> Dictionary:
 		"art_text": preencher(texto_ui("career_card_art", "ARTE: {nome}"), {"nome": nome_arte(arte_id).to_upper()}) if arte_id != "" else ""}
 
 
-# --- Fase 5: academia, mudança, artes marciais (contrato: docs/fases/fase5-api.md) ---
-
 ## Multiplicador global de treino do local atual (garagem 1,0; academia 2,0), lido de data/locations.json.
 func mult_local() -> float:
 	var m := float(academia.local(local_id).get("training_mult", 1.0))
@@ -2106,8 +2082,6 @@ func texto_hud_local() -> String:
 		return ""
 	return preencher(texto_ui("hud_location_mult", "ACADEMIA: TREINO x{mult}"), {"mult": NumberFormat.fmt(mult_local())})
 
-
-# --- A mudança ---
 
 ## Dados do botão MUDAR ({} se não há para onde mudar: já está lá). Chaves: id, location, cost, name, mult, button,
 ## description, title, price_text, effect_text, keeps_text, per_career_text, state ("locked" sem cinturão,
@@ -2184,8 +2158,6 @@ func mudar() -> bool:
 	return true
 
 
-# --- Reserva da mudança na LOJA ---
-
 ## Dinheiro que a LOJA não pode gastar: o preço da mudança, entre o cinturão e a mudança (0 nos outros casos).
 func reserva_mudanca() -> float:
 	if not cinturao:
@@ -2210,8 +2182,6 @@ func texto_reserva(curto: bool = false) -> String:
 	var chave := "move_reserve_short" if curto else "move_reserve"
 	return preencher(texto_ui(chave, "GUARDE ${n} PARA A MUDANÇA"), {"n": NumberFormat.fmt(reserva_mudanca())})
 
-
-# --- Artes ---
 
 ## Artes liberadas para sempre (ids), na ordem do arquivo.
 func artes_liberadas() -> Array:
@@ -2391,8 +2361,6 @@ func tatica_efetiva(tatica_id: String = "") -> Dictionary:
 	return motor.aplicar_traco(lutas.tatica(tatica) if tatica_id == "" else lutas.tatica(tatica_id))
 
 
-# --- Dica de aposentar na academia ---
-
 ## Bloco PRÓXIMA LUTA: {show, text, legacy, seconds}. `show` = o adversário da academia está PERIGOSO (na melhor das 3 táticas)
 ## há >= `gym_retire_hint_seconds` (career.json) seguidos. `legacy` = o Legado que aposentar agora leva (mesmo cálculo da confirmação).
 ## Os segundos não vão para o save (reabrir o jogo zera a contagem).
@@ -2406,65 +2374,6 @@ func dica_aposentar() -> Dictionary:
 	return {"show": mostrar, "legacy": legado, "days": dias,
 		"text": preencher(texto_ui("retire_hint", "PASSAR O POSTO AGORA LEVA {n} DE LEGADO"), {"n": legado})}
 
-
-# --- Fase 4: tempo morto (depuração/QA; não vai para o save) ---
-
-## Métrica de tempo morto da carreira: {atual, maximo, total} em segundos. Tempo morto = garagem livre, próximo
-## adversário PERIGOSO na melhor das 3 táticas e nada da loja cabe no dinheiro. Só atualiza com `risco_hud_ativo`.
-func tempo_morto() -> Dictionary:
-	return {"atual": _morto_atual, "maximo": _morto_max, "total": _morto_total}
-
-
-## Menor preço da loja agora (próximo Prof. Nelson, próxima luva, próximo nível do Metrônomo), em dinheiro.
-func menor_preco_loja() -> float:
-	var m := INF
-	for g in lutas.geradores_pagos:
-		m = minf(m, custo_gerador_pago(g.id))
-	var l := proxima_luva()
-	if not l.is_empty() and not luva_em_caixa():
-		m = minf(m, float(l.cost))
-	if not lutas.crew_click.is_empty() and not crew_click_comprado:
-		m = minf(m, float(lutas.crew_click.cost))
-	var mt := proximo_metronomo()
-	if not mt.is_empty():
-		m = minf(m, float(mt.cost))
-	return m
-
-
-func _tick_tempo_morto(delta: float) -> void:
-	var morto := false
-	var opp := proximo_adversario()
-	if risco_hud_ativo and luta.is_empty() and not opp.is_empty():
-		_atualizar_melhor_risco(delta)
-		morto = _perigoso_melhor and dinheiro < menor_preco_loja()
-	if morto:
-		_morto_atual += delta
-		_morto_total += delta
-		_morto_max = maxf(_morto_max, _morto_atual)
-	else:
-		_morto_atual = 0.0
-
-
-# "Perigoso na melhor das 3 táticas": recalcula só quando atributos ou escada mudam, no máximo 1 vez por refresh do HUD.
-func _atualizar_melhor_risco(delta: float) -> void:
-	_tempo_melhor += delta
-	var chave := "%d|%s|%s|%s" % [indice_escada, atributos.get("strength", 0.0), atributos.get("agility", 0.0),
-		atributos.get("endurance", 0.0)]
-	if chave == _chave_melhor:
-		return
-	if _chave_melhor != "" and _tempo_melhor < float(lutas.risco.hud_refresh_seconds):
-		return
-	_tempo_melhor = 0.0
-	_chave_melhor = chave
-	var opp := proximo_adversario()
-	var algum_ok := false
-	for t in lutas.taticas:
-		if motor.passa(_atributos_array(), _array_adversario(opp), t.id, int(lutas.risco.samples), float(lutas.risco.even_min)):
-			algum_ok = true
-			break
-	_perigoso_melhor = not algum_ok
-
-# --- Fase 3: textos montados ---
 
 ## Troca {chave} por valores. Valor em Array: troca uma ocorrência por item, na ordem (ex.: "{n}" duas vezes).
 static func preencher(modelo: String, vars: Dictionary = {}) -> String:
@@ -2607,32 +2516,6 @@ func _modelo_reason(chave: String, i: int, vars: Dictionary) -> String:
 	var l := lista_ui(chave)
 	return preencher(str(l[i]), vars) if l.size() > i else ""
 
-
-# --- Depuração (só em build de debug; a UI mostra com F12) ---
-
-func debug_disponivel() -> bool:
-	return OS.is_debug_build()
-
-
-## Multiplica só o saldo (nunca os atributos).
-func debug_multiplicar_saldo() -> void:
-	if not debug_disponivel():
-		return
-	_definir_treino(maxf(treino, 1.0) * config.multiplicador_debug)
-	economia_mudou.emit()
-
-
-## Soma unidades de cada gerador de graça.
-func debug_somar_geradores() -> void:
-	if not debug_disponivel():
-		return
-	for g in dados.geradores:
-		geradores[g.id] = quantidade_gerador(g.id) + int(config.debug_unidades_gerador)
-		gerador_mudou.emit(g.id, geradores[g.id])
-	economia_mudou.emit()
-
-
-# --- Save ---
 
 func salvar() -> bool:
 	if store.bloqueado:
@@ -2918,8 +2801,6 @@ func _validar_fim(v: Variant) -> Dictionary:
 	}
 
 
-# --- Auxiliares ---
-
 # Soma ganho ao saldo e ao atributo do foco.
 func _ganhar(valor: float) -> void:
 	if is_nan(valor) or valor <= 0.0:
@@ -3037,8 +2918,6 @@ func _horario_local(unix: int) -> String:
 	var bias_s: int = Time.get_time_zone_from_system().get("bias", 0) * 60
 	return Time.get_time_string_from_unix_time(unix + bias_s)
 
-
-# --- Fase 5.1: caixa de equipamento ---
 
 ## Caixas fechadas, na ordem da compra: [{item, kind, hits}]. Cópia (mexer nela não muda o jogo).
 func caixas() -> Array:
@@ -3172,8 +3051,6 @@ func _indice_luva(item: String) -> int:
 	return -1
 
 
-# --- Fase 4b: validações e dica ---
-
 # Lista de aparelhos montados: ignora inexistente/repetido (com aviso) e sempre inclui os sem `unlock`.
 func _validar_aparelhos(v: Variant, avisar_ausente: bool = true) -> Array:
 	var r: Array = []
@@ -3205,8 +3082,6 @@ func _aparelho_da_dica(motivo: Dictionary) -> String:
 			return "" if aparelho_montado(ap.id) else str(ap.id)
 	return ""
 
-
-# --- Fase 5: validações do save ---
 
 # career.location e career.art: inexistente volta ao padrão (arte fora das liberadas vira ""), tudo com aviso.
 func _validar_local_e_arte(c: Dictionary) -> void:
@@ -3275,8 +3150,6 @@ func _validar_ativos(v: Variant) -> Array:
 	return r
 
 
-# --- Fase 6a: escola, marcos, falas, abertura e gesto (só lógica; a UI está em docs/fases/fase6a-api.md) ---
-
 ## Quem está jogando: "first" (John Bullet, a campanha dele) ou "disciple" (discípulo padrão, das seguintes).
 func lutador_atual() -> String:
 	return "first" if numero_carreira() <= int(escola.get("first_fighter_campaign", 1)) else "disciple"
@@ -3329,8 +3202,6 @@ func _gravar_marco(id: String, extra: Dictionary = {}, salvar_agora: bool = true
 	return true
 
 
-# --- Abertura ---
-
 ## Pula a abertura (ESC segurado 0,5 s): mesmo estado final de terminar. Em "pending" só grava o marco.
 func pular_abertura() -> void:
 	if _abertura == "pending":
@@ -3381,8 +3252,6 @@ func _terminar_abertura(pulada: bool) -> void:
 	_ultimo_comentario = _t_real  # o fim da abertura conta como comentário
 	abertura_mudou.emit(_abertura)
 
-
-# --- Falas ---
 
 ## Um gatilho de comentário chegou (id de data/dialogos.json > triggers). Resolvido no próximo tick: se a sala não
 ## está calma, só os gatilhos `defer` ficam na vaga única; os outros somem. Público para os testes.
@@ -3641,8 +3510,6 @@ func _fala_aviso_data(dias: int) -> void:
 		disparar_gatilho("fight_near", {"opponent": str(proximo.get("id", ""))})
 
 
-# --- Gesto de assinatura (só o 1º lutador) ---
-
 ## Pede o gesto. `momento`: "opening", "fight_intro", "victory", "glove" (com `nivel`) ou "idle". Devolve o plano
 ## (e emite `gesto_pedido`) ou {} se não vale: discípulo nunca faz; luva já festejada; sala não ativa (glove, idle).
 ## A UI chama "fight_intro" no começo da animação da luta e "victory" quando começa o `outro`;
@@ -3748,8 +3615,6 @@ func _reiniciar_falas() -> void:
 	abertura_mudou.emit(_abertura)
 
 
-# --- Validação do bloco da escola e dos gestos ---
-
 func _validar_gestos(v: Variant) -> Array:
 	var r: Array = []
 	if not (v is Array):
@@ -3814,10 +3679,6 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 	_validar_escola_6c2(s, r)
 	return r
 
-
-# --- Fase 6b1: passar o posto, discípulo e John mentor (design: docs/fases/fase6b1-design.md; API: fase6b1-api.md) ---
-
-# --- Consultas ---
 
 ## "none" | "scene_1" | "creating" | "scene_2" | "arriving". Fora de "none" a carreira está congelada.
 func sucessao_estado() -> String:
@@ -3978,8 +3839,6 @@ func _discipulo_padrao() -> Dictionary:
 	return {"name": disciples.nome_padrao, "look": disciples.look_padrao.duplicate(), "campaign": numero_carreira()}
 
 
-# --- Ações: o fluxo da sucessão ---
-
 ## RECEBER NOVO DISCÍPULO (substitui a chamada da interface a nova_carreira()). Só com a tela de fim pendente.
 ## Zera a campanha (mesma conta de hoje) e segura o começo: cartão, escolha da arte e fala da derrota só saem em
 ## sucessao_terminou(). Primeira sucessão: grava o marco e os grants já aqui. No "começo do John" (save antigo,
@@ -4106,8 +3965,6 @@ func sucessao_terminou() -> bool:
 	return true
 
 
-# --- Carga e validação ---
-
 # Depois de validar a escola: o que o save diz sobre uma sucessão em andamento.
 func _aplicar_handover_da_carga() -> void:
 	sucessao = "none"
@@ -4225,11 +4082,6 @@ func _registrar_na_lista_da_escola(tipo: String, snap: Dictionary, ganho: int, h
 		"honor": honra_ganha})
 
 
-# --- John mentor: os toques ---
-
-var _reacao_cena := ""  # cena que armou a reação do 1º clique ("primeira_sucessao"); "" = toques sem fala
-
-
 # 1º clique da campanha: grava mentor_greeted na hora e pede os toques (se o intervalo de 60 s deixar).
 func _toques_do_primeiro_clique() -> void:
 	if mentor_cumprimentou or lutador_atual() != "disciple":
@@ -4296,9 +4148,6 @@ func _tick_toques(delta: float, ativa: bool) -> void:
 				_toque_vitoria = -1.0
 				_pedir_toques("win_return")
 
-
-# --- Fase 6c1 (Casa nova): chegada à academia, a escola na academia e a saída do John ---
-# Contrato para a interface: docs/fases/fase6c1-api.md. Nada daqui entra no save além dos marcos (save v12).
 
 func _ler_json_dados(caminho: String) -> Dictionary:
 	if not FileAccess.file_exists(caminho):
@@ -4373,8 +4222,6 @@ func _papel_ultimo() -> Dictionary:
 	return {"id": "last", "character": "current_player", "name": str(e.get("name", "")),
 		"look": disciples.validar_look(look) if look is Dictionary else disciples.look_padrao.duplicate()}
 
-
-# --- Pontos do local ---
 
 # {seat, stand} (nomes dos pontos) do local atual, ou {} se ali não há mentor desenhado (academia sem o marco da cena).
 func _spots_do_local() -> Dictionary:
@@ -4470,8 +4317,6 @@ func _toques_valem_aqui() -> bool:
 	return mentor_sentado() and local_id in disciples.toques.get("locations", ["garage"])
 
 
-# --- Marcos ---
-
 # 1ª vitória de um discípulo na academia com o John ainda na escola: arma a saída (no save do prêmio, sem salvar aqui).
 func _marcar_vitoria_na_academia(oponente: String) -> void:
 	var cfg: Dictionary = escola_cfg.get("mentor_leave", {})
@@ -4481,8 +4326,6 @@ func _marcar_vitoria_na_academia(oponente: String) -> void:
 		return
 	_gravar_marco(str(cfg.get("win_milestone", "disciple_gym_win")), {"opponent": oponente}, false)
 
-
-# --- Comentário da arte ---
 
 # Chamado só com sala ativa e arte escolhida: depois de `after_art_seconds` de arte, o gatilho art_choice sai uma vez.
 func _tick_comentario_da_arte() -> void:
@@ -4496,8 +4339,6 @@ func _tick_comentario_da_arte() -> void:
 		_arte_comentada = true
 		disparar_gatilho(str(cfg.get("trigger", "art_choice")))
 
-
-# --- Saída do John ---
 
 ## A saída do John está devida? (design §6.1) John na escola, discípulo jogando, saída ainda não feita e a
 ## 1ª vitória na academia OU a campanha de reserva (campanha do John + offset).
@@ -4566,8 +4407,6 @@ func cena_livre_terminou(id: String) -> void:
 		saida_terminou()
 
 
-# --- Fase 6c2 (Mais longe que eu): Honra, hall, mural, falas dos mentores e símbolo (contrato: docs/fases/fase6c2-api.md) ---
-
 # Campos novos da escola (v13): saldo, total e nós do hall. Inválido vira 0/vazio; saldo nunca passa do total.
 func _validar_escola_6c2(s: Dictionary, r: Dictionary) -> void:
 	r["honor"] = _inteiro_valido(s.get("honor", 0), 1.0e15)
@@ -4610,8 +4449,6 @@ func honra_da_saida(wins: int, belt: bool) -> int:
 	return total
 
 
-# --- Bônus do retrato ---
-
 ## Entradas do roster com selo (saíram por cima: honor > 0).
 func retratos_com_selo() -> int:
 	var n := 0
@@ -4631,8 +4468,6 @@ func mult_escola() -> float:
 	var por := float(hall_cfg.get("portrait", {}).get("per_portrait", 0.0))
 	return 1.0 + por * float(mini(retratos_com_selo(), teto_retratos()))
 
-
-# --- Hall ---
 
 func _no_do_hall(id: String) -> Dictionary:
 	for n in hall_cfg.get("hall", {}).get("nodes", []):
@@ -4707,9 +4542,6 @@ func _aplicar_inicio_do_hall() -> void:
 				gestos_calcados.append(n)
 
 
-var _falta_chave_atual := ""
-
-
 # Linha "FALTA ~N DE ATRIBUTO" da prévia (nó hall_notes). Calcula em segundo plano; "" até ficar pronta.
 func _linha_o_que_falta(opp: Dictionary, jog: Array, adv: Array, rotulo: String) -> String:
 	if not tem_no_hall("hall_notes") or rotulo == "easy" or rotulo == "":
@@ -4765,8 +4597,6 @@ func _finalizar_falta(esperar: bool) -> void:
 func aguardar_falta() -> void:
 	_finalizar_falta(true)
 
-
-# --- Mural ---
 
 ## Dados da janela do mural. `entries` na ordem do roster (o John é a 1ª): {campaign, kind, name, look, art, wins, belt,
 ## end, end_key, end_text, opponent, opponent_name, sealed, honor, symbol, extra_key, career_text, wins_text, art_text}.
@@ -4826,8 +4656,6 @@ func mural_na_sala() -> Dictionary:
 	return {"spot": _cena_dados_pontos().ponto_caminho(nome), "spot_name": nome, "object_text": str(cfg.get("object_text", "mural"))}
 
 
-# --- Símbolo da escola ---
-
 ## Campanha do 1º cinturão amador da escola (o menor entre o marco da garagem salva, o roster e a campanha atual); 0 = nenhuma.
 func campanha_do_simbolo() -> int:
 	var cfg: Dictionary = escola_cfg.get("school_symbol", {})
@@ -4855,8 +4683,6 @@ func simbolo_na_entrada(e: Dictionary) -> bool:
 	var c := campanha_do_simbolo()
 	return str(e.get("kind", "")) == "disciple" and c > 0 and int(e.get("campaign", 0)) >= c
 
-
-# --- Falas dos mentores ---
 
 ## O mentor sentado no caixote agora: {id "first"|"last", name, campaign, kind "first"|"disciple"} ou {}.
 func mentor_do_caixote() -> Dictionary:
@@ -4941,3 +4767,16 @@ func _fala_do_mentor(opp: Dictionary) -> Dictionary:
 			continue  # sem fala escrita para este caso: não gasta a vitória nem cala o Osmar
 		return params
 	return {}
+
+
+# ===== Repasses para scripts/estado/depuracao.gd =====
+## Métrica de tempo morto da carreira: {atual, maximo, total} em segundos. Tempo morto = garagem livre, próximo
+func tempo_morto() -> Dictionary: return _depur.tempo_morto()
+## Menor preço da loja agora (próximo Prof. Nelson, próxima luva, próximo nível do Metrônomo), em dinheiro.
+func menor_preco_loja() -> float: return _depur.menor_preco_loja()
+## Veja depuracao.gd.
+func debug_disponivel() -> bool: return _depur.debug_disponivel()
+## Multiplica só o saldo (nunca os atributos).
+func debug_multiplicar_saldo() -> void: _depur.debug_multiplicar_saldo()
+## Soma unidades de cada gerador de graça.
+func debug_somar_geradores() -> void: _depur.debug_somar_geradores()
