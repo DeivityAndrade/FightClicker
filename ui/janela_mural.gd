@@ -253,7 +253,7 @@ func _hall() -> void:
 		if str(n.state) == "closed":
 			fechado = true
 	if fechado:
-		UiTema.rotulo(_conteudo, UiTema.txt("hall_between", "O HALL SÓ SE COMPRA ENTRE CAMPANHAS"), UiTema.G2, HALL_X, 73, HALL_LARG)
+		pass  # 6d2: "O HALL SÓ SE COMPRA ENTRE CAMPANHAS" saiu: cada nó trancado já diz COMPRA NO FIM DA CAMPANHA
 	for i in lista.size():
 		_no(lista[i], HALL_Y + HALL_PASSO * float(i))
 

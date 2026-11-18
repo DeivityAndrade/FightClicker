@@ -4,7 +4,7 @@ extends Control
 ## Só lê o estado (sinais do GameState) e chama GameState.clicar()/definir_foco().
 ## Coordenadas internas = coordenadas da tela base 640x360 (o nó "Mundo" compensa a posição da sala).
 
-const AREA := Rect2(128, 18, 384, 272)
+const AREA_ANTIGA := Rect2(128, 18, 384, 272)  # sala de antes da 6d2 (só se o manifest ainda não tiver room_rect largo)
 const ALVO := Rect2(312, 182, 48, 90)  # área clicável central (manifest.click_area)
 const PONTO_PADRAO := Vector2(336, 222)
 const POOL_NUMEROS := 24
@@ -24,9 +24,6 @@ const PERA := "speed_bag"  # Fase 5: aparelho do Boxe
 const BONECO := "grappling_dummy"  # Fase 5: aparelho do Jiu-jitsu
 const BR0 := Color("3b2622")  # caneta da plaquinha de papelão (direcao-visual §3)
 
-## Clique na marca de fita (ou na plaquinha) de um aparelho que ainda não chegou: a garagem abre a aba TREINO.
-signal marca_clicada(aparelho: String)
-
 ## Clique na sala que nao pegou nada (fora do alvo, de caixa e de aparelho): completa o balao que esta escrevendo (Fase 6a).
 signal clique_vazio
 
@@ -34,6 +31,7 @@ signal clique_vazio
 signal mural_clicado
 
 var sfx: Sfx
+var _area := area()  # 6d2: a sala ocupa a tela (manifest.room_rect = 0,18,640,312)
 var _mural: AnimSprite  # mural da escola na parede (garagem e academia), ao lado da foto
 var _mural_rect := Rect2()  # área clicável e do hover (vazio = não desenhado)
 var _mural_chave := ""
@@ -99,9 +97,7 @@ var _gesto: Gesto
 var _gesto_sprite := ""
 var _parede: Dictionary = {}  # objeto -> {sprite, rect, dica}
 
-# Fase 4b: marcas de fita no lugar dos aparelhos que faltam e a chegada deles.
-var _marcas: Dictionary = {}  # aparelho -> {fita, fantasma, placa, extras, chave, rect, m}
-var _marca_hover := ""  # marca de fita sob o mouse (acende a versão _hi)
+# 6d2: aparelho que não foi comprado é invisível (sem fita, silhueta nem cadeado): comprou = só a caixa; abriu = o aparelho.
 var _caixas: Dictionary = {}  # item -> CaixaSala
 var _revelar: Dictionary = {}  # aparelho que acabou de sair da caixa e ainda não "nasceu"
 var janela_aberta := false  # a Garagem avisa: árvore, aposentar, prévia ou luta por cima (a caixa não recebe clique)
@@ -137,13 +133,21 @@ var _cena_livre := false  # a saída do John: o jogador continua no controle, s�
 var _saco_da_cena := false  # o saco só aparece na cena da academia quando ela o pendura
 var _toques_id := 0
 var _cam_escala := 1
-var _cam_rect := AREA
+var _cam_rect := _area
+
+
+## Retângulo da sala na tela (manifest.room_rect). Sem o campo, a sala de antes da 6d2.
+static func area() -> Rect2:
+	var r: Array = UiTema.manifest().get("room_rect", [])
+	if r.size() == 4:
+		return Rect2(float(r[0]), float(r[1]), float(r[2]), float(r[3]))
+	return AREA_ANTIGA
 
 
 func _ready() -> void:
 	_rng.randomize()
-	position = AREA.position
-	size = AREA.size
+	position = _area.position
+	size = _area.size
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	sfx = Sfx.new()
@@ -166,8 +170,7 @@ func _ready() -> void:
 	GameState.caixa_aberta.connect(_ao_caixa_aberta)
 	GameState.caixas_mudaram.connect(_sincronizar_caixas)
 	GameState.economia_mudou.connect(func() -> void:
-		_sincronizar_caixas()
-		_atualizar_marcas())
+		_sincronizar_caixas())
 	GameState.local_mudou.connect(_ao_local)
 	GameState.arte_mudou.connect(_ao_arte)
 	GameState.gesto_pedido.connect(_ao_gesto_pedido)
@@ -192,7 +195,7 @@ func _ready() -> void:
 
 func _montar() -> void:
 	_mundo = Node2D.new()
-	_mundo.position = -AREA.position
+	_mundo.position = -_area.position
 	_mundo.z_index = 100  # os z negativos do fundo ficam acima do ColorRect da tela
 	add_child(_mundo)
 
@@ -266,7 +269,6 @@ func _montar() -> void:
 	_fx_poeira_chegada = _novo_fx("fx_arrive_dust")
 	_fx_brilho_chegada = _novo_fx("fx_arrive_sparkle")
 	_fx_poeira_pequena = _novo_fx("fx_arrive_dust_small")
-	_montar_marcas()
 	_montar_osmar()
 	_montar_parede()
 	_gesto = Gesto.new()
@@ -327,7 +329,7 @@ func _aplicar_layout() -> void:
 	# Corda: no prego (sem foco) ou em uso pelo lutador.
 	_corda_prego.definir(_n("rope_l%d_idle" % nr))
 	_corda_prego.position = UiTema.pos(_n("rope_l%d_idle" % nr), "prego")
-	_corda_prego.visible = foco != CORDA and GameState.aparelho_montado(CORDA)  # sem corda: só a marca de fita no prego
+	_corda_prego.visible = foco != CORDA and GameState.aparelho_montado(CORDA)  # 6d2: sem corda, nada no prego
 	_corda_giro.visible = false
 	_corda_costas.visible = false
 
@@ -338,14 +340,13 @@ func _aplicar_layout() -> void:
 	_esteira.position = UiTema.pos(nome_esteira, chave_e)
 	_esteira.z_index = int(_esteira.position.y)
 	_esteira.parar(0)
-	_esteira.visible = GameState.aparelho_montado(ESTEIRA)  # sem esteira: só a marca de fita no chão
+	_esteira.visible = GameState.aparelho_montado(ESTEIRA)  # 6d2: sem esteira, nada no chão
 	_corrida = 0.0
 
 	_aplicar_arte(PERA, foco)
 	_aplicar_arte(BONECO, foco)
 	_pose_repouso()
 	_esconder_reveladas()
-	_atualizar_marcas()
 	_ocultar_da_cena()
 
 
@@ -516,16 +517,10 @@ func _clique_em(p: Vector2) -> void:
 	if cx != "":
 		_bater_caixa(cx)
 		return
-	# Clique em aparelho lateral só troca o foco (não gera treino). Fase 5: inclui o aparelho da arte, se existir.
+	# Clique em aparelho lateral só troca o foco (não gera treino). 6d2: aparelho não comprado não existe na sala.
 	for ap in GameState.aparelhos_da_carreira():
 		var id := str(ap.id)
-		if not GameState.aparelho_montado(id):
-			# Marca de fita de um aparelho que falta: nada de treino nem troca de foco, só aponta a compra.
-			if _marcas.has(id) and _marcas[id].fita.visible and Rect2(_marcas[id].rect).has_point(p):
-				sfx.foco()
-				marca_clicada.emit(id)
-				return
-		elif id != GameState.foco and _area_lateral(id).has_point(p):
+		if GameState.aparelho_montado(id) and id != GameState.foco and _area_lateral(id).has_point(p):
 			GameState.definir_foco(id)
 			sfx.foco()
 			return
@@ -582,8 +577,8 @@ func _mostrar_numero(p: Vector2, ganho: float, critico: bool, atributo: String, 
 	var nome := str(GameState.dados.atributo_info(atributo).get("name", atributo)).to_upper()
 	var dx := float(DESVIOS_X[_desvio_i % DESVIOS_X.size()])
 	_desvio_i += 1
-	var x := clampf(p.x + dx, AREA.position.x + 60.0, AREA.end.x - 60.0)
-	var y := clampf(p.y - 6.0, AREA.position.y + 40.0, AREA.end.y - 8.0)
+	var x := clampf(p.x + dx, _area.position.x + 60.0, _area.end.x - 60.0)
+	var y := clampf(p.y - 6.0, _area.position.y + 40.0, _area.end.y - 8.0)
 	_ordem += 1
 	# Mais recente por cima; crítico sempre acima dos normais (z fica abaixo do cursor, 4000).
 	n.definir_z(Z_NUMEROS + (1000 if critico else 0) + _ordem % 900)
@@ -633,8 +628,8 @@ func _mostrar_numeros_divididos(p: Vector2, partes: Array, critico: bool, texto:
 		altura_total += 7.0 * e + (NUMEROS_FOLGA if i > 0 else 0.0)
 	var dx := float(DESVIOS_X[_desvio_i % DESVIOS_X.size()])
 	_desvio_i += 1
-	var x := clampf(p.x + dx, AREA.position.x + 60.0, AREA.end.x - 60.0)
-	var y := clampf(p.y - 6.0, AREA.position.y + 40.0 + altura_total, AREA.end.y - 8.0)
+	var x := clampf(p.x + dx, _area.position.x + 60.0, _area.end.x - 60.0)
+	var y := clampf(p.y - 6.0, _area.position.y + 40.0 + altura_total, _area.end.y - 8.0)
 	var y_i := y - (4.0 if critico else 0.0)
 	_ordem += 1
 	for i in partes.size():
@@ -727,7 +722,7 @@ func _ao_auto_socou(ganho: float, critico: bool, aparelho: String, atributo: Str
 	var n := _pegar_numero()
 	var dx := float([-26, 26, -12, 12][_desvio_auto % 4])
 	_desvio_auto += 1
-	var x := clampf(PONTO_PADRAO.x + dx, AREA.position.x + 60.0, AREA.end.x - 60.0)
+	var x := clampf(PONTO_PADRAO.x + dx, _area.position.x + 60.0, _area.end.x - 60.0)
 	_ordem += 1
 	n.definir_z(Z_NUMEROS - 300 + _ordem % 300)  # abaixo de qualquer número do jogador
 	var cor := UiTema.cor_atributo(atributo).lerp(UiTema.WHITE, 0.25)
@@ -850,8 +845,8 @@ func _ao_evento_dourado(duracao: float) -> void:
 		_evento_spr = _novo_anim(sprite_evento, "", 950)
 	else:
 		_evento_spr.definir(sprite_evento)
-	var x := _rng.randf_range(AREA.position.x + 50.0, AREA.end.x - 70.0)
-	var y := _rng.randf_range(AREA.position.y + 40.0, AREA.position.y + 150.0)
+	var x := _rng.randf_range(maxf(_area.position.x + 50.0, 150.0), minf(_area.end.x - 70.0, 430.0))  # nunca atrás dos painéis (esquerdo e direito)
+	var y := _rng.randf_range(_area.position.y + 40.0, _area.position.y + 150.0)
 	_evento_spr.position = Vector2(x, y)
 	_evento_spr.visible = true
 	_evento_spr.modulate = Color.WHITE
@@ -872,7 +867,7 @@ func _ao_bolsa_paga(ganho: float) -> void:
 	var n := _pegar_numero()
 	_ordem += 1
 	n.definir_z(Z_NUMEROS + 1500 + _ordem % 900)
-	var x := clampf(centro.x, AREA.position.x + 100.0, AREA.end.x - 100.0)
+	var x := clampf(centro.x, _area.position.x + 100.0, minf(_area.end.x - 100.0, 410.0))
 	n.iniciar(UiTema.txt("golden_crew_toast", "", {"n": NumberFormat.fmt(ganho)}), UiTema.Y1, false, "", Vector2(x, centro.y - 6.0), 1.5, 24.0)
 
 
@@ -892,7 +887,7 @@ func _esconder_evento() -> void:
 
 func _ao_frenesi_mudou(restante: float) -> void:
 	if _rotulo_frenesi == null:
-		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(AREA.position.x, AREA.position.y + 2.0, AREA.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
+		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(_area.position.x, _area.position.y + 2.0, _area.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
 		_rotulo_frenesi.z_index = 980
 	_rotulo_frenesi.visible = restante > 0.0
 	# Durante o FRENESI o lutador (e as luvas) brilham em dourado, pulsando.
@@ -1057,7 +1052,7 @@ func _ao_melhorar(aparelho: String, _melhoria: String, nivel: int) -> void:
 
 func _mostrar_texto(p: Vector2, texto: String, cor: Color) -> void:
 	var n := _pegar_numero()
-	n.iniciar(texto, cor, false, "", Vector2(clampf(p.x, AREA.position.x + 80.0, AREA.end.x - 80.0), maxf(p.y, 60.0)), 1.1, 18.0)
+	n.iniciar(texto, cor, false, "", Vector2(clampf(p.x, _area.position.x + 80.0, _area.end.x - 80.0), maxf(p.y, 60.0)), 1.1, 18.0)
 
 
 func _ao_gerador(_gerador: String, _qtd: int) -> void:
@@ -1156,91 +1151,12 @@ func _festa_academia() -> void:
 	n.iniciar(UiTema.txt("move_arrived", "BEM-VINDO À BOA ESQUINA!"), UiTema.Y1, true, "", Vector2(336, 140), 2.0, 12.0)
 
 
-# --- Fase 5.1: marcas de fita SEM texto, dicas de hover e a caixa da escola ---
+# --- Fase 5.1: dicas de hover e a caixa da escola ---
 
-## Uma marca de fita (+ silhueta tracejada + cadeado quando trancada) por aparelho que tem `unlock`. Sem plaquinha:
-## o detalhe (nome, preço, requisito) vai para a dica de hover (Dica). Estados: normal, _hi (mouse em cima) e _dim + cadeado (trancado).
-func _montar_marcas() -> void:
-	var por_id: Dictionary = UiTema.manifest().get("by_data_id", {})
-	for ap in GameState.dados.todos_aparelhos():  # inclui pera e boneco (só aparecem na carreira da arte)
-		var u: Dictionary = ap.get("unlock", {})
-		if u.is_empty():
-			continue
-		var m: Dictionary = por_id.get(str(u.get("id", "")), {})
-		if m.is_empty():
-			continue
-		var mp: Array = m.mark_pos
-		var pos_marca := Vector2(float(mp[0]), float(mp[1]))
-		var nome_fita := str(m.floor_mark)
-		var nome_fantasma := str(m.ghost)
-		var fita := _novo_anim(nome_fita, "", int(UiTema.sprite(nome_fita).get("z", -30)))
-		fita.position = pos_marca
-		var fantasma := _novo_anim(nome_fantasma, "", int(UiTema.sprite(nome_fantasma).get("z", -29)))
-		fantasma.position = pos_marca
-		var cadeado := _novo_anim("mark_padlock", "", int(UiTema.sprite(nome_fantasma).get("z", -29)) + 1)
-		var lp: Array = m.get("lock_pos", mp)
-		cadeado.position = Vector2(float(lp[0]), float(lp[1]))
-		cadeado.visible = false
-		var area_fita := Rect2(pos_marca - UiTema.pivo(nome_fita), UiTema.tamanho_quadro(nome_fita))
-		_marcas[str(ap.id)] = {"fita": fita, "fantasma": fantasma, "cadeado": cadeado, "rect": area_fita,
-			"area_fita": area_fita, "m": m, "estilo": ""}
-	_atualizar_marcas()
-
-
-## Marca visível = aparelho ainda não montado (com a caixa esperando ela continua embaixo, como o manifest pede).
-func _atualizar_marcas() -> void:
-	for id in _marcas:
-		var d: Dictionary = _marcas[id]
-		var estado := GameState.estado_aparelho(id)  # "absent" (aparelho de outra arte): não desenha nada
-		var mostrar: bool = estado != "owned" and estado != "absent"
-		d.fita.visible = mostrar
-		d.fantasma.visible = mostrar
-		d.cadeado.visible = mostrar and estado == "locked"
-		if not mostrar:
-			continue
-		var estados: Dictionary = d.m.get("mark_states", {})
-		var nome_fita: String
-		var nome_fantasma := str(d.m.ghost)
-		if estado == "locked":
-			nome_fita = str(estados.get("locked", d.m.floor_mark))
-			nome_fantasma = str(d.m.get("ghost_dim", d.m.ghost))
-		elif _marca_hover == id and estado != "boxed":
-			nome_fita = str(estados.get("hover_or_pulse", d.m.floor_mark))
-		else:
-			nome_fita = str(estados.get("normal", d.m.floor_mark))
-		var chave := nome_fita + "|" + nome_fantasma
-		if chave != d.estilo:
-			d.estilo = chave
-			d.fita.definir(nome_fita)
-			d.fantasma.definir(nome_fantasma)
-
-
-## Texto da dica de hover da marca de fita (nome / preço ou requisito), vindo de ui_texts.json.
-func _texto_marca(id: String) -> String:
-	var estado := GameState.estado_aparelho(id)
-	var u: Dictionary = GameState.desbloqueio(id)
-	var nome := GameState.nome_curto_aparelho(id)
-	var req := str(u.get("requires", ""))
-	var req_nome := GameState.nome_curto_aparelho(req).to_lower() if req != "" else ""
-	var cost := float(u.get("cost", 0.0))
-	match estado:
-		"boxed":
-			return GameState.texto_ui("tape_boxed")
-		"locked":
-			return GameState.preencher(GameState.texto_ui("tape_locked_box" if GameState.tem_caixa(req) else "tape_locked"),
-				{"nome": nome, "requisito": req_nome})
-		"missing":
-			return GameState.preencher(GameState.texto_ui("tape_short"), {"nome": nome, "n": NumberFormat.fmt(maxf(0.0, cost - GameState.treino))})
-		"buyable":
-			return GameState.preencher(GameState.texto_ui("tape_open"), {"nome": nome, "preco": NumberFormat.fmt(cost)})
-	return ""
-
-
-## Mouse se mexeu na sala: marca de fita ou caixa sob ele mostram a dica (e a marca acende).
+## Mouse se mexeu na sala: caixa, mentor 2 ou objeto da parede sob ele mostram a dica.
 func _hover_em(p: Vector2) -> void:
 	var sobre_mentor2 := false
 	var tip := ""
-	var marca := ""
 	var cx := _caixa_em(p)
 	if _evento_rect.size != Vector2.ZERO and _evento_rect.has_point(p) and _evento_tipo == "crew":
 		tip = _texto_bolsa()
@@ -1251,16 +1167,6 @@ func _hover_em(p: Vector2) -> void:
 		sobre_mentor2 = true
 	elif _texto_parede(p) != "":
 		tip = _texto_parede(p)
-	else:
-		for id in _marcas:
-			var d: Dictionary = _marcas[id]
-			if d.fita.visible and Rect2(d.rect).has_point(p) and GameState.estado_aparelho(id) != "owned":
-				marca = id
-				tip = _texto_marca(id)
-				break
-	if marca != _marca_hover:
-		_marca_hover = marca
-		_atualizar_marcas()
 	_ancorar_dica_mentor2(sobre_mentor2)
 	if tip != "":
 		Dica.pedir(tip)
@@ -1281,9 +1187,6 @@ func _ancorar_dica_mentor2(sobre: bool) -> void:
 
 
 func _sair_hover() -> void:
-	if _marca_hover != "":
-		_marca_hover = ""
-		_atualizar_marcas()
 	_ancorar_dica_mentor2(false)
 	Dica.limpar()
 
@@ -1342,7 +1245,6 @@ func _ao_caixa_criada(item: String, _tipo: String) -> void:
 		return
 	_criar_caixa(item, 0, true)
 	sfx.queda()
-	_atualizar_marcas()
 
 
 ## Caixa sob o ponto (coordenadas da tela base) ou "".
@@ -1429,7 +1331,6 @@ func _ao_caixa_aberta(item: String, tipo: String) -> void:
 		_revelar[item] = true
 		_aplicar_layout()
 		get_tree().create_timer(0.3).timeout.connect(func() -> void: _revelar_item(item))
-	_atualizar_marcas()
 
 
 func _revelar_item(item: String) -> void:
@@ -2140,7 +2041,7 @@ func cena_caixote(sim: bool) -> void:
 ## Corte seco de câmera: escala 2 numa janela (rect na base 640x360) ou volta ao 1x.
 func cena_camera(escala: int, rect: Array) -> void:
 	_cam_escala = maxi(1, escala)
-	_cam_rect = Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3])) if _cam_escala > 1 and rect.size() == 4 else AREA
+	_cam_rect = Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3])) if _cam_escala > 1 and rect.size() == 4 else _area
 	_mundo.scale = Vector2(_cam_escala, _cam_escala)
 	_mundo.position = _cam_base()
 
@@ -2181,11 +2082,6 @@ func _ocultar_da_cena() -> void:
 		_pera.visible = false
 		_boneco.visible = false
 		_metronomo.visible = false
-		for id in _marcas:
-			var m: Dictionary = _marcas[id]
-			m.fita.visible = false
-			m.fantasma.visible = false
-			m.cadeado.visible = false
 	if "boxes" in _cena_oculta:
 		for cx in _caixas.values():
 			if is_instance_valid(cx):

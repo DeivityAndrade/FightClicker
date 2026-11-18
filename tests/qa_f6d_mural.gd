@@ -25,7 +25,7 @@ func cap() -> Image:
 
 func _initialize() -> void:
 	gs = root.get_node("GameState")
-	out = ProjectSettings.globalize_path("res://docs/arte/mockups/") + "fase6d_qa_"
+	out = ProjectSettings.globalize_path("res://docs/arte/mockups/") + "fase6d_qa2_"
 	await process_frame
 	gs.inicializar("user://test/qa6dm/", CONFIG)
 	gs.autosave_ativo = false

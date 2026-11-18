@@ -184,7 +184,7 @@ func _teste_mudanca() -> void:
 	checar(gs.escolha_arte_pendente() and gs.escolha_arte_primeira(), "1ª chegada pede a escolha")
 	checar_igual(pedidos, [true], "sinal escolha_arte_pedida(primeira)")
 	checar_igual(gs.sufixo_aparelhos(), "_gym", "aparelhos na versão da academia")
-	checar_igual(gs.texto_hud_local(), "ACADEMIA: TREINO x2", "HUD da academia")
+	checar_igual(gs.texto_hud_local(), "TREINO x2", "HUD da academia")  # 6d2: texto encurtado
 	checar_igual(gs.proximo_adversario().id, "opp_gym_1", "agora o Tonhão luta")
 	# Salvou na hora.
 	var gs2: Node = GameStateScript.new()
@@ -375,7 +375,7 @@ func _teste_boxe() -> void:
 	# Boxe não mexe na equipe.
 	gg.geradores["neighbor_kid"] = 10
 	checar_igual(gg.producao_total(), 20.0, "Boxe não mexe na equipe")
-	checar_igual(gs.texto_hud_arte(), "BOXE: +50% NO SEU CLIQUE", "HUD do Boxe")
+	checar_igual(gs.texto_hud_arte(), "BOXE +50%", "HUD do Boxe")  # 6d2: texto encurtado
 	for g in [sem, gs, sem2, gs2, gm, ga, gg]:
 		_liberar(g)
 
@@ -395,12 +395,12 @@ func _teste_jiu_jitsu() -> void:
 		gs.arte_segundos = caso[0]
 		checar(absf(gs.producao_total() / 100.0 - caso[1]) < 1e-9, "Jiu-jitsu a %ss: equipe x%s" % [caso[0], caso[1]])
 	gs.arte_segundos = 0.0
-	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +%d%%" % roundi(100.0 * _bjj(rj, 0.0)), "HUD do Jiu-jitsu no começo")
+	checar_igual(gs.texto_hud_arte(), "JIU-JITSU +%d%%" % roundi(100.0 * _bjj(rj, 0.0)), "HUD do Jiu-jitsu no começo")  # 6d2: texto encurtado
 	gs.arte_segundos = 240.0
-	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +%d%%" % roundi(100.0 * _bjj(rj, 240.0)), "HUD aos 4 min")
+	checar_igual(gs.texto_hud_arte(), "JIU-JITSU +%d%%" % roundi(100.0 * _bjj(rj, 240.0)), "HUD aos 4 min")  # 6d2: texto encurtado
 	checar(not gs.arte_no_teto(), "ainda não no teto")
 	gs.arte_segundos = t_teto
-	checar_igual(gs.texto_hud_arte(), "JIU-JITSU: EQUIPE +%d%% (MÁX.)" % roundi(100.0 * float(rj.cap)), "HUD no teto")
+	checar_igual(gs.texto_hud_arte(), "JIU-JITSU +%d%% (MÁX.)" % roundi(100.0 * float(rj.cap)), "HUD no teto")  # 6d2: texto encurtado
 	checar(gs.arte_no_teto(), "no teto aos 6:40")
 	checar_igual([gs.por_clique(), gs.por_auto_soco()], [1.0, 1.0], "o clique não muda")
 	# O relógio anda no tick.
@@ -632,7 +632,7 @@ func _teste_estilo() -> void:
 	checar_igual(gs.bonus_arte_clique(), 0.75, "Boxe com o nó: +75%")
 	checar_igual(gs.por_clique(), 1.75, "e o clique rende 1,75")
 	checar_igual(gs.texto_regra_arte("boxing"), "+75% TREINO NO CLIQUE DA SUA MÃO", "a janela de arte já mostra o número com o nó")
-	checar_igual(gs.texto_hud_arte(), "BOXE: +75% NO SEU CLIQUE", "HUD com o nó")
+	checar_igual(gs.texto_hud_arte(), "BOXE +75%", "HUD com o nó")  # 6d2: texto encurtado
 	# O nó do Boxe não afeta quem joga de Jiu-jitsu.
 	var g2 := _com_arte("f5_estilo_bjj", "bjj")
 	g2.permanente["skill_nodes"] = ["style_boxing"]
@@ -873,7 +873,7 @@ func _teste_textos() -> void:
 	checar_igual([m.title, m.effect_text, m.keeps_text, m.per_career_text, m.state], ["ACADEMIA BOA ESQUINA", "TREINO x2 / 2 LUTAS DA CASA",
 		"TUDO O QUE VOCÊ COMPROU VAI JUNTO", "VALE ATÉ O FIM DESTA CAMPANHA", "ready"], "textos da mudança")
 	checar_igual(g.info_proxima().move, true, "bloco PRÓXIMA sabe que precisa mudar")
-	checar_igual(g.texto_ui("hud_next_move"), "PRÓXIMA: MUDE PARA A ACADEMIA", "texto do HUD antes de mudar")
+	checar_igual(g.texto_ui("hud_next_move"), "MUDE PARA A ACADEMIA", "texto do HUD antes de mudar")  # 6d2: texto encurtado
 	# Dicas extras de fim.
 	var gd := _na_academia("f5_dica_extra", "boxing")
 	gd.indice_escada = 4

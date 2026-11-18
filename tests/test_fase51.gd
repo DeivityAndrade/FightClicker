@@ -60,7 +60,7 @@ func _teste_dados() -> void:
 			"hint_fame", "hint_legacy", "hint_keys", "hint_locked_item", "hint_prize", "hint_prize_belt"]:
 		checar(d.ui.has(chave), "ui_texts tem " + chave)
 	checar_igual(d.ui.box_click.size(), 3, "3 textos de clique")
-	checar(str(d.ui.hint_keys).contains("1 a 4: foco"), "hint_keys diz foco (não tática)")
+	checar(str(d.ui.hint_keys).contains("1-4 foco"), "hint_keys diz foco (não tática)")  # 6d2: texto encurtado
 	_liberar(gs)
 
 

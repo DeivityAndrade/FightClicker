@@ -38,8 +38,7 @@ func abrir_com(previa: Dictionary) -> void:
 		ih.name = "IconeHonra"
 		UiTema.rotulo(painel, th, UiTema.COL_HONOR, xh + 20.0, y)
 		y += 15.0
-		UiTema.rotulo_centro(painel, UiTema.txt("retire_confirm_honor_help", "A HONRA FICA NO MURAL DA ESCOLA"), UiTema.G2, 320.0, y)
-		y += 12.0
+		y += 12.0  # 6d2: a linha "A HONRA FICA NO MURAL" saiu (o botão MURAL já explica); o espaço fica
 	elif int(previa.get("wins", 0)) <= 0:
 		UiTema.rotulo_centro(painel, UiTema.txt("retire_no_honor", "HONRA SÓ COM 1 VITÓRIA"), UiTema.G2, 320.0, y)
 		y += 12.0

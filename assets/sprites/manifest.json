@@ -6,10 +6,10 @@
 		360
 	],
 	"room_rect": [
-		128,
+		0,
 		18,
-		384,
-		272
+		640,
+		312
 	],
 	"click_area": [
 		312,
@@ -70,34 +70,34 @@
 		"_nota_fase5": "Fase 5: com foco em saco/corda/esteira, a pera fica na parede (speed_bag_lN_wall em 'parede') e o boneco deitado no canto (grappling_dummy_lN_rest em 'canto'). Só existe o aparelho da arte da carreira. Na academia, somar o sufixo _gym ao nome do sprite (bag_l1_idle -> bag_l1_idle_gym); se não existir no manifest, usar o da garagem.",
 		"box_slots": {
 			"treadmill": [
-				445,
-				268
+				466,
+				324
 			],
 			"jump_rope": [
-				424,
-				287
+				348,
+				327
 			],
 			"art": [
-				204,
-				283
+				192,
+				318
 			],
 			"glove": [
-				386,
-				280
+				292,
+				327
 			],
-			"_nota": "Pivô da caixa (meio da base, no chão), igual na garagem e na academia. Fora da faixa do lutador e do alvo (x 281..362) com 8 px de folga; nenhuma caixa encosta na outra. A da luva e a da corda ficam na frente, à direita do alvo, lado a lado. Ordenar por y do pivô, como as pessoas. Fase 6b1: a caixa da corda saiu de (258,244) para (424,287), na frente, à direita da caixa da luva, para o John sentado no mentor_spot não tapar a caixa."
+			"_nota": "Fase 6d2: pivô da caixa (meio da base, no chão), igual na garagem e na academia. A grande da esteira e a da arte ficam onde o aparelho vai morar (esteira 466,324; boneco 192,318; a pera usa a pequena no mesmo ponto). Luva e corda (pequenas) logo abaixo dos pés do lutador (292,327 e 348,327), fora da zona do alvo (y até 291). Antes de comprar não há nada na sala; com a compra aparece só a caixa; abrindo, o aparelho."
 		},
 		"rope_hook": [
 			296,
 			166
 		],
 		"mentor_spot": [
-			254,
-			252
+			132,
+			254
 		],
 		"mentor_2_spot": [
-			150,
-			262
+			62,
+			256
 		],
 		"mentor_2_spot_info": {
 			"pose": "stand_bare",
@@ -108,14 +108,14 @@
 				-65
 			],
 			"head_anchor_abs": [
-				151,
-				197
+				63,
+				191
 			],
 			"sort_y": 262,
 			"location": "garage",
 			"occupies": [
-				138,
-				197,
+				50,
+				191,
 				25,
 				67
 			],
@@ -149,8 +149,8 @@
 			"_nota": "Pés do Osmar na academia: o mesmo ponto da garagem, em frente ao banco pintado. A foto fica à direita da cabeça dele. Detalhes: by_data_id.gym_arrival_scene e direcao-visual.md §25."
 		},
 		"gym_mentor_spot": [
-			254,
-			252
+			132,
+			254
 		],
 		"gym_mentor_spot_info": {
 			"location": "gym",
@@ -166,8 +166,8 @@
 			"crate": {
 				"sprite": "garage_crate_gym",
 				"pos": [
-					238,
-					232
+					116,
+					234
 				],
 				"pivot": [
 					16,
@@ -178,16 +178,16 @@
 				"visible": "a partir do marco cena_primeira_academia, com gente sentada ou não (substitui o banco do design §4.1)"
 			},
 			"occupies": [
-				238,
-				196,
+				116,
+				198,
 				33,
-				58
+				57
 			],
-			"_nota": "Pés de quem senta no caixote na academia: o mesmo ponto da garagem. Com o saco de lado (258,160) o saco passa atrás da cabeça dele pela ordem por y, como na garagem."
+			"_nota": "Fase 6d2: pés de quem senta no caixote = (132,254), em frente ao suporte de halteres, longe do alvo. O mesmo ponto da garagem."
 		},
 		"gym_mentor_2_spot": [
-			150,
-			262
+			62,
+			256
 		],
 		"gym_mentor_2_spot_info": {
 			"location": "gym",
@@ -201,13 +201,13 @@
 				-65
 			],
 			"head_anchor_abs": [
-				151,
-				197
+				63,
+				191
 			],
 			"sort_y": 262,
 			"occupies": [
-				138,
-				197,
+				50,
+				191,
 				25,
 				67
 			],
@@ -1164,26 +1164,6 @@
 		"unlock_treadmill": {
 			"apparatus": "treadmill",
 			"requires": "",
-			"floor_mark": "tape_mark_treadmill",
-			"ghost": "ghost_treadmill",
-			"mark_pos": [
-				445,
-				267
-			],
-			"sign": {
-				"frame": "sign_cardboard",
-				"mode": "chao",
-				"bottom_center": [
-					445,
-					257
-				],
-				"brick": "sign_brick",
-				"brick_pos": [
-					445,
-					260
-				],
-				"note": "Plaquinha em pé no fundo da marca (encostada na parede), apoiada no tijolo, para não cobrir a fita da frente: desenhar a plaquinha com a base em bottom_center e o sign_brick por cima, em brick_pos."
-			},
 			"icon_locked": "icon_treadmill_locked",
 			"icon_locked_buyable": "icon_treadmill_locked_buyable",
 			"focus_button": {
@@ -1197,12 +1177,12 @@
 			"arrive": {
 				"fx": "fx_arrive_dust",
 				"fx_pos": [
-					445,
-					267
+					466,
+					324
 				],
 				"sprite": "treadmill_lN_side",
 				"drop": "ver sprites.fx_arrive_dust.drop",
-				"extra": "fx_arrive_sparkle (opcional, pivô em 445,226)"
+				"extra": "fx_arrive_sparkle (opcional, pivô em 466,283)"
 			},
 			"text_keys": {
 				"sign_price": "floor_mark_price",
@@ -1211,45 +1191,19 @@
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
 			},
-			"mark_states": {
-				"normal": "tape_mark_treadmill",
-				"hover_or_pulse": "tape_mark_treadmill_hi",
-				"locked": "tape_mark_treadmill_dim"
-			},
-			"ghost_dim": "ghost_treadmill_dim",
-			"lock": "mark_padlock",
-			"lock_pos": [
-				445,
-				249
-			],
 			"box": {
 				"sprite": "box_big",
 				"pos": [
-					445,
-					268
+					466,
+					324
 				]
 			},
-			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
+			"room_before_box": "nothing",
+			"note_6d2": "Sem uso desde a 6d2: aparelho não comprado não aparece na sala (antes da caixa, nada; com a caixa, só a caixa)."
 		},
 		"unlock_jump_rope": {
 			"apparatus": "jump_rope",
 			"requires": "treadmill",
-			"floor_mark": "tape_mark_rope",
-			"ghost": "ghost_rope",
-			"mark_pos": [
-				296,
-				166
-			],
-			"sign": {
-				"frame": "sign_cardboard",
-				"mode": "parede",
-				"top_center": [
-					296,
-					127
-				],
-				"tape": "sign_tape_bit",
-				"note": "Plaquinha colada na parede ACIMA do prego, centrada em x 296 (à esquerda da corrente do saco, x 335) e 2 sign_tape_bit nos cantos de cima. Na parede não cabe 'DEPOIS DA ESTEIRA' numa linha só com o nome: usar 3 linhas (CORDA / DEPOIS DA / ESTEIRA)."
-			},
 			"icon_locked": "icon_rope_locked",
 			"icon_locked_buyable": "icon_rope_locked_buyable",
 			"focus_button": {
@@ -1276,25 +1230,15 @@
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
 			},
-			"mark_states": {
-				"normal": "tape_mark_rope",
-				"hover_or_pulse": "tape_mark_rope_hi",
-				"locked": "tape_mark_rope_dim"
-			},
-			"ghost_dim": "ghost_rope_dim",
-			"lock": "mark_padlock",
-			"lock_pos": [
-				296,
-				187
-			],
 			"box": {
 				"sprite": "box_small",
 				"pos": [
-					424,
-					287
+					348,
+					327
 				]
 			},
-			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
+			"room_before_box": "nothing",
+			"note_6d2": "Sem uso desde a 6d2: aparelho não comprado não aparece na sala (antes da caixa, nada; com a caixa, só a caixa)."
 		},
 		"focus_locked_layout": {
 			"button_size": [
@@ -1410,30 +1354,30 @@
 			},
 			"people_pos": {
 				"neighbor_1": [
-					176,
-					284
+					72,
+					322
 				],
 				"neighbor_2": [
-					220,
-					258
+					126,
+					322
 				],
 				"neighbor_3": [
-					488,
-					286
+					590,
+					322
 				],
 				"uncle_1": [
-					455,
-					236
+					400,
+					324
 				],
 				"uncle_2": [
-					398,
-					230
+					484,
+					262
 				],
 				"coach_1": [
-					394,
-					280
+					548,
+					250
 				],
-				"note": "Os mesmos pontos da garagem: a academia foi montada em volta deles (banco atrás do neighbor_2, porta atrás dos tios, tatame livre para o boneco). As pessoas têm a luz da lâmpada pintada: na academia ficam um pouco mais quentes que a sala (placeholder aceitável)."
+				"note": "Fase 6d2: os mesmos pontos da garagem (sala larga). Vizinhos 1 e 2 na frente à esquerda, tio 1 na frente à direita do alvo, tio 2 no fundo à direita da porta; vizinho 3 e Prof. Nelson no canto direito (x >= 506), atrás do painel quando ele está fixado (aprovado pelo dono)."
 			},
 			"chain": "bag_chain_tile (mesmo da garagem): os ganchos da viga de aço estão em x 336 e 258.",
 			"move_arrive": "Ao mudar: trocar o fundo com um corte seco + fx_arrive_dust no saco (o saco 'chega' como a esteira da 4b, offsets -20,-10,-3,0,1,0) — opcional; o mínimo é trocar garage_bg por gym_bg e os sprites pelo sufixo."
@@ -1516,22 +1460,6 @@
 		"unlock_speed_bag": {
 			"apparatus": "speed_bag",
 			"requires": "treadmill",
-			"floor_mark": "tape_mark_speed_bag",
-			"ghost": "ghost_speed_bag",
-			"mark_pos": [
-				436,
-				46
-			],
-			"sign": {
-				"frame": "sign_cardboard",
-				"mode": "parede",
-				"top_center": [
-					432,
-					102
-				],
-				"tape": "sign_tape_bit",
-				"note": "Plaquinha colada na parede (na garagem fica na porta de enrolar) logo abaixo da marca, centrada em x 432 a partir de y 102, com 2 sign_tape_bit nos cantos de cima. 2 linhas (PERA / 2.5K TREINO) ou 3 (PERA / DEPOIS DA / ESTEIRA)."
-			},
 			"icon_locked": "icon_speed_bag_locked",
 			"icon_locked_buyable": "icon_speed_bag_locked_buyable",
 			"focus_button": {
@@ -1570,49 +1498,19 @@
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
 			},
-			"mark_states": {
-				"normal": "tape_mark_speed_bag",
-				"hover_or_pulse": "tape_mark_speed_bag_hi",
-				"locked": "tape_mark_speed_bag_dim"
-			},
-			"ghost_dim": "ghost_speed_bag_dim",
-			"lock": "mark_padlock",
-			"lock_pos": [
-				436,
-				68
-			],
 			"box": {
 				"sprite": "box_small",
 				"pos": [
-					228,
-					283
+					192,
+					318
 				]
 			},
-			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
+			"room_before_box": "nothing",
+			"note_6d2": "Sem uso desde a 6d2: aparelho não comprado não aparece na sala (antes da caixa, nada; com a caixa, só a caixa)."
 		},
 		"unlock_grappling_dummy": {
 			"apparatus": "grappling_dummy",
 			"requires": "treadmill",
-			"floor_mark": "tape_mark_grappling_dummy",
-			"ghost": "ghost_grappling_dummy",
-			"mark_pos": [
-				228,
-				283
-			],
-			"sign": {
-				"frame": "sign_cardboard",
-				"mode": "chao",
-				"bottom_center": [
-					244,
-					268
-				],
-				"brick": "sign_brick",
-				"brick_pos": [
-					244,
-					271
-				],
-				"note": "Plaquinha em pé no fundo da marca, apoiada no tijolo (igual à da esteira)."
-			},
 			"icon_locked": "icon_grappling_dummy_locked",
 			"icon_locked_buyable": "icon_grappling_dummy_locked_buyable",
 			"focus_button": {
@@ -1640,8 +1538,8 @@
 				},
 				"fx": "fx_arrive_dust_small",
 				"fx_pos": [
-					228,
-					283
+					192,
+					318
 				],
 				"note": "O tatame com o boneco cai no canto: desenhar grappling_dummy_l0_rest deslocado pelos offsets. No 0: some a marca, fx_arrive_dust_small e tremida de 1 px. Na academia, sufixo _gym."
 			},
@@ -1652,25 +1550,15 @@
 				"focus_after": "focus_locked_after",
 				"arrived": "unlock_arrived"
 			},
-			"mark_states": {
-				"normal": "tape_mark_grappling_dummy",
-				"hover_or_pulse": "tape_mark_grappling_dummy_hi",
-				"locked": "tape_mark_grappling_dummy_dim"
-			},
-			"ghost_dim": "ghost_grappling_dummy_dim",
-			"lock": "mark_padlock",
-			"lock_pos": [
-				228,
-				271
-			],
 			"box": {
 				"sprite": "box_big",
 				"pos": [
-					228,
-					283
+					192,
+					318
 				]
 			},
-			"mark_note_fase51": "Fase 5.1: SEM plaquinha (o bloco 'sign' ficou só por compatibilidade e não deve mais ser desenhado). Dá para comprar = marca normal + ghost; com o mouse em cima (ou pulso lento) = marca _hi; trancado = marca _dim + ghost _dim + mark_padlock em lock_pos. Com a caixa esperando, a marca continua embaixo dela e some quando a caixa abre. Texto só na dica (tape_open / tape_locked / tape_short)."
+			"room_before_box": "nothing",
+			"note_6d2": "Sem uso desde a 6d2: aparelho não comprado não aparece na sala (antes da caixa, nada; com a caixa, só a caixa)."
 		},
 		"tech_boxing_1": {
 			"icon": "icon_tech_boxing_1",
@@ -3012,16 +2900,16 @@
 		"_nota_fase6a_arte": "Fase 6a (Diretor de Arte): speech_bubble, skip_hold, garage_saved_seal, garage_story_wall, school_symbol. Fonte 5x7 regravada (acentos das minúsculas, — e …).",
 		"mentor_spot": {
 			"pos": [
-				254,
-				252
+				132,
+				254
 			],
 			"facing": "direita",
 			"location": "garage",
 			"crate": {
 				"sprite": "garage_crate",
 				"pos": [
-					238,
-					232
+					116,
+					234
 				],
 				"layer": "sorted",
 				"sort_y": 250
@@ -3032,12 +2920,13 @@
 				-51
 			],
 			"occupies": [
-				238,
-				200,
+				116,
+				198,
 				33,
-				53
+				57
 			],
-			"note": "Ponto dos pés do mentor sentado (6b1: John). Era (268,268) na prancha; mudou para (254,252) porque em 268 o John sentado entrava na faixa do alvo (x 281..362 com 8 px de folga = 273..370) e tapava a caixa da corda. Aqui ele fica encostado no fim do carro, olhando o saco, com a caixa ocupando x 238..270, y 200..252. A caixa da corda foi para (424,287), na frente à direita (6 px da caixa da luva; cobre 5 px da base da esteira encostada, que fica atrás pela ordem por y). Com foco na corda/esteira o saco de lado (lado_esquerdo 258,160) fica atrás da cabeça dele (ordem por y): aceito, como já era na prancha."
+			"note": "Ponto dos pés do mentor sentado (6b1: John). Era (268,268) na prancha; mudou para (254,252) porque em 268 o John sentado entrava na faixa do alvo (x 281..362 com 8 px de folga = 273..370) e tapava a caixa da corda. Aqui ele fica encostado no fim do carro, olhando o saco, com a caixa ocupando x 238..270, y 200..252. A caixa da corda foi para (424,287), na frente à direita (6 px da caixa da luva; cobre 5 px da base da esteira encostada, que fica atrás pela ordem por y). Com foco na corda/esteira o saco de lado (lado_esquerdo 258,160) fica atrás da cabeça dele (ordem por y): aceito, como já era na prancha.",
+			"note_6d2": "Fase 6d2: (132,254), em frente à bancada, à esquerda do Osmar (era 254,252, colado na folga do alvo)."
 		},
 		"garage_door_scene": {
 			"door": {
@@ -3594,8 +3483,8 @@
 		},
 		"mentor_2_spot": {
 			"pos": [
-				150,
-				262
+				62,
+				256
 			],
 			"location": "garage",
 			"from_campaign": 3,
@@ -3608,8 +3497,8 @@
 				-65
 			],
 			"head_anchor_abs": [
-				151,
-				197
+				63,
+				191
 			],
 			"layer": "sorted",
 			"sort_y": 262,
@@ -3621,8 +3510,8 @@
 				"olha_o_saco": "nenhuma folha nova: ele já está virado para o saco; o olhar é o próprio facing"
 			},
 			"occupies": [
-				138,
-				197,
+				50,
+				191,
 				25,
 				67
 			],
@@ -3635,17 +3524,19 @@
 				"vizinho_1": "não se cobrem: ele ocupa até x 162 e o vizinho 1 (176,284) começa em x 163 (em (152,262) o punho do vizinho encostava na coxa)",
 				"baloes": "balão do Osmar (132,132,154,36), do John sentado/de pé e do discípulo no saco não chegam na cabeça dele (y 196..210)"
 			},
-			"note": "Fase 6b2 (Diretor de Arte): o último que passou o posto, da Carreira 3 em diante, enquanto o John está no caixote. De pé, encostado na parede esquerda, atrás do vizinho 1 e à esquerda do Osmar, olhando o saco. Usa a folha que o discípulo em camadas já tem (disciple_stand_bare, virado à direita): nenhuma arte nova. Escolhido em vez de (490,250): lá ficaria atrás do vizinho 3 e do tio 1 e colado na caixa da esteira. Mockup: docs/arte/mockups/fase6b2_mentor2_*.png; texto: direcao-visual.md §24."
+			"note": "Fase 6b2 (Diretor de Arte): o último que passou o posto, da Carreira 3 em diante, enquanto o John está no caixote. De pé, encostado na parede esquerda, atrás do vizinho 1 e à esquerda do Osmar, olhando o saco. Usa a folha que o discípulo em camadas já tem (disciple_stand_bare, virado à direita): nenhuma arte nova. Escolhido em vez de (490,250): lá ficaria atrás do vizinho 3 e do tio 1 e colado na caixa da esteira. Mockup: docs/arte/mockups/fase6b2_mentor2_*.png; texto: direcao-visual.md §24.",
+			"note_6d2": "Fase 6d2: (62,256), junto da parede esquerda, embaixo da janela (era 150,262)."
 		},
 		"gym_arrival_scene": {
 			"half_dark": {
 				"sprite": "gym_half_dark",
 				"pos": [
-					128,
-					18
+					0,
+					0
 				],
 				"layer": "floor",
-				"note": "Só enquanto o tubo da direita está apagado (A1..A6), junto com gym_tube quadro 1 no tubo da direita. Furo transparente no retângulo da porta (401,116,60,108): ali entra a gym_door escura (quadros 3..5)."
+				"note": "Só enquanto o tubo da direita está apagado (A1..A6), junto com gym_tube quadro 1 no tubo da direita. Furo transparente no retângulo da porta (401,116,60,108): ali entra a gym_door escura (quadros 3..5).",
+				"note_6d2": "Fase 6d2: 640x360 em (0,0) (era 384x272 em 128,18). Furo na porta igual."
 			},
 			"door": {
 				"sprite": "gym_door",
@@ -3696,8 +3587,8 @@
 			"crate": {
 				"sprite": "garage_crate_gym",
 				"pos": [
-					238,
-					232
+					116,
+					234
 				],
 				"layer": "sorted",
 				"sort_y": 250
@@ -3705,8 +3596,8 @@
 			"duffel": {
 				"sprite": "john_duffel",
 				"pos": [
-					268,
-					242
+					146,
+					244
 				],
 				"layer": "sorted",
 				"sort_y": 251,
@@ -13727,8 +13618,8 @@
 		"garage_bg": {
 			"file": "res://assets/sprites/garage/garage_bg.png",
 			"frame_size": [
-				384,
-				272
+				640,
+				360
 			],
 			"frames": 1,
 			"fps": 0.0,
@@ -13737,12 +13628,12 @@
 				0
 			],
 			"pos": [
-				128,
-				18
+				0,
+				0
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Sala inteira sem aparelhos nem pessoas: paredes, chão, viga, porta, carro com lona, prateleira, pôster, foto, gancho da corda em (296,166), marcas de giz. Luz da lâmpada já aplicada. Tudo o que é sprite fica por cima (ordem por y dos pés). Fase 5.1: o prego antigo (352,72) saiu; o gancho da corda fica em (296,166), na altura do ombro."
+			"note": "Fase 6d2: garagem larga (tela inteira, 640x360 em 0,0). Parede do fundo x 70..569, chão até y 329 (a faixa de baixo da tela começa em 330), mesmo ponto de fuga (320,-28). O miolo x 171..469 é a garagem de antes (porta, carro, prateleira, pôster, gancho da corda em 296,166); pilares em x 164..174 e 468..478. Novos: janela basculante e cano (parede esquerda), chapa de ferramentas e bancada (ala esquerda), geladeira, pneus, relógio de luz e mangueira (ala direita), escada (parede direita). Luz: a lâmpada de sempre + janela à esquerda + luminária de obra à direita. Gerador: tools/art/make_mockup_fase6d2_layout.gd -- --final."
 		},
 		"floor_shadow": {
 			"file": "res://assets/sprites/garage/floor_shadow.png",
@@ -14012,8 +13903,8 @@
 					280
 				],
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
 			"note": "Esteira enferrujada (nível visual 0), parada. Pivô = meio da base (chão)."
@@ -14053,11 +13944,12 @@
 			],
 			"positions": {
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
-			"note": "Esteira enferrujada (nível visual 0), parada, com a luz da sala aplicada para o lado direito (foco no saco ou na corda)."
+			"note": "Esteira enferrujada (nível visual 0), parada, com a luz da sala aplicada para o lado direito (foco no saco ou na corda).",
+			"note_6d2": "Fase 6d2: encostada na frente à direita, fora do caminho da porta; luz refeita para o ponto novo."
 		},
 		"treadmill_l1_idle": {
 			"file": "res://assets/sprites/equipment/treadmill_l1_idle.png",
@@ -14077,8 +13969,8 @@
 					280
 				],
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
 			"note": "Esteira lubrificada (nível visual 1: 'Óleo de cozinha na esteira'), parada. Pivô = meio da base (chão)."
@@ -14118,11 +14010,12 @@
 			],
 			"positions": {
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
-			"note": "Esteira lubrificada (nível visual 1: 'Óleo de cozinha na esteira'), parada, com a luz da sala aplicada para o lado direito (foco no saco ou na corda)."
+			"note": "Esteira lubrificada (nível visual 1: 'Óleo de cozinha na esteira'), parada, com a luz da sala aplicada para o lado direito (foco no saco ou na corda).",
+			"note_6d2": "Fase 6d2: encostada na frente à direita, fora do caminho da porta; luz refeita para o ponto novo."
 		},
 		"fighter_idle": {
 			"file": "res://assets/sprites/characters/fighter_idle.png",
@@ -14283,11 +14176,12 @@
 			],
 			"loop": true,
 			"pos": [
-				176,
-				284
+				72,
+				322
 			],
 			"facing": "direita",
-			"note": "Vizinho da casa 12 (1ª pessoa, com 1 comprado): boxe de sombra, de chinelo. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo)."
+			"note": "Vizinho da casa 12 (1ª pessoa, com 1 comprado): boxe de sombra, de chinelo. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo).",
+			"note_6d2": "Fase 6d2: ponto novo (sala larga). A luz pintada ainda é a do ponto antigo: pedir folha nova ao Artista de Personagens."
 		},
 		"neighbor_2": {
 			"file": "res://assets/sprites/characters/neighbor_2_idle.png",
@@ -14303,11 +14197,12 @@
 			],
 			"loop": true,
 			"pos": [
-				220,
-				258
+				126,
+				322
 			],
 			"facing": "direita",
-			"note": "Vizinho (2ª pessoa, com 10): polichinelo. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo)."
+			"note": "Vizinho (2ª pessoa, com 10): polichinelo. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo).",
+			"note_6d2": "Fase 6d2: ponto novo (sala larga). A luz pintada ainda é a do ponto antigo: pedir folha nova ao Artista de Personagens."
 		},
 		"neighbor_3": {
 			"file": "res://assets/sprites/characters/neighbor_3_idle.png",
@@ -14323,11 +14218,12 @@
 			],
 			"loop": true,
 			"pos": [
-				488,
-				286
+				590,
+				322
 			],
 			"facing": "esquerda",
-			"note": "Vizinho (3ª pessoa, com 25): saltita na guarda, boné para trás. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo)."
+			"note": "Vizinho (3ª pessoa, com 25): saltita na guarda, boné para trás. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo).",
+			"note_6d2": "Fase 6d2: ponto novo (sala larga). A luz pintada ainda é a do ponto antigo: pedir folha nova ao Artista de Personagens."
 		},
 		"uncle_1": {
 			"file": "res://assets/sprites/characters/uncle_1_idle.png",
@@ -14343,11 +14239,12 @@
 			],
 			"loop": true,
 			"pos": [
-				455,
-				236
+				400,
+				324
 			],
 			"facing": "esquerda",
-			"note": "Tio aposentado (1ª pessoa, com 1): guarda lenta de camisa social, calça de tergal e luva velha marrom. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo)."
+			"note": "Tio aposentado (1ª pessoa, com 1): guarda lenta de camisa social, calça de tergal e luva velha marrom. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo).",
+			"note_6d2": "Fase 6d2: ponto novo (sala larga). A luz pintada ainda é a do ponto antigo: pedir folha nova ao Artista de Personagens."
 		},
 		"uncle_2": {
 			"file": "res://assets/sprites/characters/uncle_2_idle.png",
@@ -14363,11 +14260,12 @@
 			],
 			"loop": true,
 			"pos": [
-				398,
-				230
+				484,
+				262
 			],
 			"facing": "esquerda",
-			"note": "Tio aposentado (2ª pessoa, com 10): agachamento lento, luvas para a frente. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo)."
+			"note": "Tio aposentado (2ª pessoa, com 10): agachamento lento, luvas para a frente. Luz já aplicada para este ponto (não mover para longe; para outro ponto, gerar de novo).",
+			"note_6d2": "Fase 6d2: ponto novo (sala larga). A luz pintada ainda é a do ponto antigo: pedir folha nova ao Artista de Personagens."
 		},
 		"glove_old": {
 			"file": "res://assets/sprites/equipment/glove_old.png",
@@ -22211,11 +22109,12 @@
 			],
 			"loop": true,
 			"pos": [
-				394,
-				280
+				548,
+				250
 			],
 			"facing": "esquerda",
-			"note": "Prof. Nelson (gerador pago gen_paid_1): moletom verde do clube do bairro, apito no pescoço, prancheta. 0 parado, 1 confere o relógio, 2 apita, 3 parado. Fica perto do aparelho em foco, sem cobrir a área de clique. Luz já aplicada para este ponto. Sombra: floor_shadow nos pés."
+			"note": "Prof. Nelson (gerador pago gen_paid_1): moletom verde do clube do bairro, apito no pescoço, prancheta. 0 parado, 1 confere o relógio, 2 apita, 3 parado. Fica perto do aparelho em foco, sem cobrir a área de clique. Luz já aplicada para este ponto. Sombra: floor_shadow nos pés.",
+			"note_6d2": "Fase 6d2: ponto novo (sala larga). A luz pintada ainda é a do ponto antigo: pedir folha nova ao Artista de Personagens."
 		},
 		"icon_coach": {
 			"file": "res://assets/sprites/ui/icon_coach.png",
@@ -24746,7 +24645,8 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 255,
-			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_rope": {
 			"file": "res://assets/sprites/garage/tape_mark_rope.png",
@@ -24768,7 +24668,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"ghost_treadmill": {
 			"file": "res://assets/sprites/garage/ghost_treadmill.png",
@@ -24790,7 +24691,8 @@
 			},
 			"layer": "chao",
 			"z": -29,
-			"note": "Fase 5.1: silhueta riscada da esteira (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da esteira (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"ghost_rope": {
 			"file": "res://assets/sprites/garage/ghost_rope.png",
@@ -24812,7 +24714,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -39,
-			"note": "Fase 5.1: silhueta riscada da corda pendurada (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da corda pendurada (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"sign_cardboard": {
 			"file": "res://assets/sprites/garage/sign_cardboard.png",
@@ -25126,8 +25029,8 @@
 			"impact_frame": 0,
 			"positions": {
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
 			"drop": {
@@ -25386,8 +25289,8 @@
 		"gym_bg": {
 			"file": "res://assets/sprites/gym/gym_bg.png",
 			"frame_size": [
-				384,
-				272
+				640,
+				360
 			],
 			"frames": 1,
 			"fps": 0.0,
@@ -25396,12 +25299,12 @@
 				0
 			],
 			"pos": [
-				128,
-				18
+				0,
+				0
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Academia Boa Esquina inteira, sem aparelhos nem pessoas: parede creme com barrado verde descascado, viga de aço, 2 tubos, nome pintado, espelho trincado com fita, pôsteres desbotados, prateleira (Metrônomo em 240,118), quadro da mensalidade, banco, relógio de round, luvas penduradas, porta, piso de borracha e tatame gasto no canto da frente à esquerda. Luz fria já aplicada. Mesma caixa e mesmos pontos da garage_bg: troca só o fundo. Fase 5.1: o prego antigo (352,72) saiu; o gancho da corda fica em (296,166), na altura do ombro."
+			"note": "Fase 6d2: academia larga (tela inteira, 640x360 em 0,0). Parede do fundo x 70..569, chão até y 329, mesmo ponto de fuga. O miolo x 171..469 é a academia de antes (nome, espelho, pôsteres, prateleira com o Metrônomo em 240,118, quadro, banco, relógio de round, luvas, extintor, porta); pilares em x 164..174 e 468..478. Novos: 2 janelas altas (parede esquerda), quadro branco, suporte de halteres, kettlebell e medicine ball (ala esquerda), armários, bebedouro e árvore de anilhas (ala direita), espaldar (parede direita), tatame na frente à esquerda (embaixo do boneco). 4 tubos: os 2 de sempre (sprite gym_tube) e 2 novos pintados no fundo (x 104 e 536)."
 		},
 		"gym_tube": {
 			"file": "res://assets/sprites/gym/gym_tube.png",
@@ -25598,8 +25501,8 @@
 					280
 				],
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
 			"note": "Esteira branca com visor verde (academia, nível visual 0), parada. Mesmo quadro e pivô da treadmill_l0_idle."
@@ -25639,11 +25542,12 @@
 			],
 			"positions": {
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
-			"note": "Esteira branca com visor verde (academia, nível visual 0), parada no lado direito com a luz dos tubos."
+			"note": "Esteira branca com visor verde (academia, nível visual 0), parada no lado direito com a luz dos tubos.",
+			"note_6d2": "Fase 6d2: encostada na frente à direita, fora do caminho da porta; luz refeita para o ponto novo."
 		},
 		"treadmill_l1_idle_gym": {
 			"file": "res://assets/sprites/equipment/treadmill_l1_idle_gym.png",
@@ -25663,8 +25567,8 @@
 					280
 				],
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
 			"note": "Esteira branca com faixa verde e chave vermelha (academia, nível visual 1), parada. Mesmo quadro e pivô da treadmill_l1_idle."
@@ -25704,11 +25608,12 @@
 			],
 			"positions": {
 				"lado_direito": [
-					445,
-					267
+					466,
+					324
 				]
 			},
-			"note": "Esteira branca com faixa verde e chave vermelha (academia, nível visual 1), parada no lado direito com a luz dos tubos."
+			"note": "Esteira branca com faixa verde e chave vermelha (academia, nível visual 1), parada no lado direito com a luz dos tubos.",
+			"note_6d2": "Fase 6d2: encostada na frente à direita, fora do caminho da porta; luz refeita para o ponto novo."
 		},
 		"rope_l0_idle_gym": {
 			"file": "res://assets/sprites/equipment/rope_l0_idle_gym.png",
@@ -26091,12 +25996,13 @@
 			],
 			"positions": {
 				"canto": [
-					228,
-					283
+					192,
+					318
 				]
 			},
 			"sort_y": 270,
-			"note": "Boneco de lona crua com remendo de fita prata, num tatame azul velho (nível visual 0). DESCANSO (foco em outro aparelho): deitado de costas no tatame, no canto da frente à esquerda, com a luz da garagem. Ordenar como y 270."
+			"note": "Boneco de lona crua com remendo de fita prata, num tatame azul velho (nível visual 0). DESCANSO (foco em outro aparelho): deitado de costas no tatame, no canto da frente à esquerda, com a luz da garagem. Ordenar como y 270.",
+			"note_6d2": "Fase 6d2: em cima do tatame da frente à esquerda; luz conferida para o ponto novo."
 		},
 		"grappling_dummy_l0_rest_gym": {
 			"file": "res://assets/sprites/equipment/grappling_dummy_l0_rest_gym.png",
@@ -26112,12 +26018,13 @@
 			],
 			"positions": {
 				"canto": [
-					228,
-					283
+					192,
+					318
 				]
 			},
 			"sort_y": 270,
-			"note": "Boneco de lona crua com remendo de fita prata, num tatame azul velho (nível visual 0). Descanso na academia (em cima do tatame gasto do canto, luz dos tubos)."
+			"note": "Boneco de lona crua com remendo de fita prata, num tatame azul velho (nível visual 0). Descanso na academia (em cima do tatame gasto do canto, luz dos tubos).",
+			"note_6d2": "Fase 6d2: em cima do tatame da frente à esquerda; luz conferida para o ponto novo."
 		},
 		"grappling_dummy_l1_idle": {
 			"file": "res://assets/sprites/equipment/grappling_dummy_l1_idle.png",
@@ -26180,12 +26087,13 @@
 			],
 			"positions": {
 				"canto": [
-					228,
-					283
+					192,
+					318
 				]
 			},
 			"sort_y": 270,
-			"note": "Boneco de couro azul com alças e faixa preta, num tatame novo (nível visual 1: 'Guarda fechada'). DESCANSO (foco em outro aparelho): deitado de costas no tatame, no canto da frente à esquerda, com a luz da garagem. Ordenar como y 270."
+			"note": "Boneco de couro azul com alças e faixa preta, num tatame novo (nível visual 1: 'Guarda fechada'). DESCANSO (foco em outro aparelho): deitado de costas no tatame, no canto da frente à esquerda, com a luz da garagem. Ordenar como y 270.",
+			"note_6d2": "Fase 6d2: em cima do tatame da frente à esquerda; luz conferida para o ponto novo."
 		},
 		"grappling_dummy_l1_rest_gym": {
 			"file": "res://assets/sprites/equipment/grappling_dummy_l1_rest_gym.png",
@@ -26201,12 +26109,13 @@
 			],
 			"positions": {
 				"canto": [
-					228,
-					283
+					192,
+					318
 				]
 			},
 			"sort_y": 270,
-			"note": "Boneco de couro azul com alças e faixa preta, num tatame novo (nível visual 1: 'Guarda fechada'). Descanso na academia (em cima do tatame gasto do canto, luz dos tubos)."
+			"note": "Boneco de couro azul com alças e faixa preta, num tatame novo (nível visual 1: 'Guarda fechada'). Descanso na academia (em cima do tatame gasto do canto, luz dos tubos).",
+			"note_6d2": "Fase 6d2: em cima do tatame da frente à esquerda; luz conferida para o ponto novo."
 		},
 		"tape_mark_speed_bag": {
 			"file": "res://assets/sprites/garage/tape_mark_speed_bag.png",
@@ -26228,7 +26137,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -41,
-			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_grappling_dummy": {
 			"file": "res://assets/sprites/garage/tape_mark_grappling_dummy.png",
@@ -26251,7 +26161,8 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 266,
-			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado normal (dá para comprar, mouse fora). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"ghost_speed_bag": {
 			"file": "res://assets/sprites/garage/ghost_speed_bag.png",
@@ -26273,7 +26184,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Fase 5.1: silhueta riscada da plataforma da pera (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da plataforma da pera (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"ghost_grappling_dummy": {
 			"file": "res://assets/sprites/garage/ghost_grappling_dummy.png",
@@ -26296,7 +26208,8 @@
 			"layer": "chao",
 			"z": -29,
 			"sort_y": 267,
-			"note": "Fase 5.1: silhueta riscada da boneco deitado no tatame (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da boneco deitado no tatame (tracejado claro + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"fx_arrive_dust_small": {
 			"file": "res://assets/sprites/garage/fx_arrive_dust_small.png",
@@ -26314,8 +26227,8 @@
 			"impact_frame": 0,
 			"positions": {
 				"canto": [
-					228,
-					283
+					192,
+					318
 				]
 			},
 			"note": "Chegada do boneco: poeira baixa que abre para os lados + estrelinhas. 6 quadros a 12 fps, sem loop. Mesmo uso do fx_arrive_dust, em tamanho de tatame."
@@ -34202,7 +34115,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_rope_dim": {
 			"file": "res://assets/sprites/garage/tape_mark_rope_dim.png",
@@ -34224,7 +34138,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe na parede em volta do gancho da corda, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_treadmill_hi": {
 			"file": "res://assets/sprites/garage/tape_mark_treadmill_hi.png",
@@ -34247,7 +34162,8 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 255,
-			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_treadmill_dim": {
 			"file": "res://assets/sprites/garage/tape_mark_treadmill_dim.png",
@@ -34270,7 +34186,8 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 255,
-			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde a esteira vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_speed_bag_hi": {
 			"file": "res://assets/sprites/garage/tape_mark_speed_bag_hi.png",
@@ -34292,7 +34209,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -41,
-			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_speed_bag_dim": {
 			"file": "res://assets/sprites/garage/tape_mark_speed_bag_dim.png",
@@ -34314,7 +34232,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -41,
-			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe na parede onde a plataforma da pera vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_grappling_dummy_hi": {
 			"file": "res://assets/sprites/garage/tape_mark_grappling_dummy_hi.png",
@@ -34337,7 +34256,8 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 266,
-			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado ACESO: mouse em cima (a dica aparece) ou pulso lento de 'dá para comprar' (alternar com o normal a 2 fps). O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"tape_mark_grappling_dummy_dim": {
 			"file": "res://assets/sprites/garage/tape_mark_grappling_dummy_dim.png",
@@ -34360,7 +34280,8 @@
 			"layer": "chao",
 			"z": -30,
 			"sort_y": 266,
-			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes."
+			"note": "Fase 5.1: contorno de fita crepe no chão onde o tatame do boneco vai ficar, SEM plaquinha e sem texto. Estado APAGADO: trancado (pede outro aparelho antes). Usar com ghost_*_dim e o mark_padlock. O aparelho se lê pela silhueta ghost_* desenhada por cima. Mesmo quadro e pivô de antes.",
+			"unused_since": "6d2"
 		},
 		"ghost_rope_dim": {
 			"file": "res://assets/sprites/garage/ghost_rope_dim.png",
@@ -34382,7 +34303,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -39,
-			"note": "Fase 5.1: silhueta riscada da corda pendurada (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da corda pendurada (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"ghost_treadmill_dim": {
 			"file": "res://assets/sprites/garage/ghost_treadmill_dim.png",
@@ -34404,7 +34326,8 @@
 			},
 			"layer": "chao",
 			"z": -29,
-			"note": "Fase 5.1: silhueta riscada da esteira (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da esteira (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"ghost_speed_bag_dim": {
 			"file": "res://assets/sprites/garage/ghost_speed_bag_dim.png",
@@ -34426,7 +34349,8 @@
 			},
 			"layer": "frente_do_fundo",
 			"z": -40,
-			"note": "Fase 5.1: silhueta riscada da plataforma da pera (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da plataforma da pera (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"ghost_grappling_dummy_dim": {
 			"file": "res://assets/sprites/garage/ghost_grappling_dummy_dim.png",
@@ -34449,7 +34373,8 @@
 			"layer": "chao",
 			"z": -29,
 			"sort_y": 267,
-			"note": "Fase 5.1: silhueta riscada da boneco deitado no tatame (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca."
+			"note": "Fase 5.1: silhueta riscada da boneco deitado no tatame (tracejado apagado, para o estado trancado + miolo pontilhado), SEM cadeado e SEM texto. Desenhar por cima da tape_mark correspondente; é ela que diz qual aparelho falta. Some junto com a marca.",
+			"unused_since": "6d2"
 		},
 		"mark_padlock": {
 			"file": "res://assets/sprites/garage/mark_padlock.png",
@@ -34463,7 +34388,8 @@
 				3,
 				5
 			],
-			"note": "Cadeado cinza 7x10 para a marca TRANCADA (pede outro aparelho antes). Pivô no centro; ponto de cada marca em by_data_id.unlock_*.lock_pos. Não usar na marca que dá para comprar."
+			"note": "Cadeado cinza 7x10 para a marca TRANCADA (pede outro aparelho antes). Pivô no centro; ponto de cada marca em by_data_id.unlock_*.lock_pos. Não usar na marca que dá para comprar.",
+			"unused_since": "6d2"
 		},
 		"box_big": {
 			"file": "res://assets/sprites/box/box_big.png",
@@ -37102,7 +37028,7 @@
 			"file": "res://assets/sprites/garage/garage_daylight.png",
 			"frame_size": [
 				170,
-				70
+				90
 			],
 			"frames": 3,
 			"fps": 10.0,
@@ -37144,7 +37070,8 @@
 					0
 				]
 			},
-			"note": "Fase 6b1: luz do dia no chão. Recortada do garage_bg 1 passo mais clara na rampa (miolo junto à porta 2 passos), trapézio que abre para a esquerda e para a frente, borda em dither ordenado 4x4. 0 = fresta (y 220..236); 1 = meio (220..262); 2 = cheia (220..289, x 308..477 na base). As marcas do chão continuam (é o próprio chão)."
+			"note": "Fase 6b1: luz do dia no chão. Recortada do garage_bg 1 passo mais clara na rampa (miolo junto à porta 2 passos), trapézio que abre para a esquerda e para a frente, borda em dither ordenado 4x4. 0 = fresta (y 220..236); 1 = meio (220..262); 2 = cheia (220..289, x 308..477 na base). As marcas do chão continuam (é o próprio chão).",
+			"note_6d2": "Fase 6d2: refeita sobre o chão novo (mesmos passos de luz por pixel); 90 px de altura: o quadro cheio continua 20 px abaixo de y 289, esmaecendo em dither."
 		},
 		"garage_door_shadow": {
 			"file": "res://assets/sprites/garage/garage_door_shadow.png",
@@ -37163,7 +37090,8 @@
 				214
 			],
 			"layer": "floor",
-			"note": "Fase 6b1: 0 = dois pés contra a luz na fresta (blocos d1 7x4 em x 412..418 e 425..431, y 216..219) e as sombras deles esticadas 14 px; 1 = sombra comprida de quem está na soleira, 34 px de (423,221); 2 = 30 px de (414,228); 3 = 16 px de (410,236). Para a esquerda e para a frente. Assada sobre a luz do dia: desenhar depois do garage_daylight."
+			"note": "Fase 6b1: 0 = dois pés contra a luz na fresta (blocos d1 7x4 em x 412..418 e 425..431, y 216..219) e as sombras deles esticadas 14 px; 1 = sombra comprida de quem está na soleira, 34 px de (423,221); 2 = 30 px de (414,228); 3 = 16 px de (410,236). Para a esquerda e para a frente. Assada sobre a luz do dia: desenhar depois do garage_daylight.",
+			"note_6d2": "Fase 6d2: refeita sobre o chão novo e a luz do dia nova (mesmo desenho)."
 		},
 		"garage_crate": {
 			"file": "res://assets/sprites/garage/garage_crate.png",
@@ -37178,8 +37106,8 @@
 				20
 			],
 			"pos": [
-				238,
-				232
+				116,
+				234
 			],
 			"layer": "sorted",
 			"sort_y": 250,
@@ -71479,8 +71407,8 @@
 				219
 			],
 			"pos": [
-				254,
-				252
+				132,
+				254
 			],
 			"who": "primeiro"
 		},
@@ -71566,8 +71494,8 @@
 				67
 			],
 			"pos": [
-				254,
-				252
+				132,
+				254
 			],
 			"who": "primeiro"
 		},
@@ -71653,8 +71581,8 @@
 				67
 			],
 			"pos": [
-				254,
-				252
+				132,
+				254
 			],
 			"who": "primeiro"
 		},
@@ -71831,8 +71759,8 @@
 				67
 			],
 			"pos": [
-				254,
-				252
+				132,
+				254
 			],
 			"tap_frames": [
 				1,
@@ -73145,8 +73073,8 @@
 		"gym_half_dark": {
 			"file": "res://assets/sprites/gym/gym_half_dark.png",
 			"frame_size": [
-				384,
-				272
+				640,
+				360
 			],
 			"frames": 1,
 			"fps": 0.0,
@@ -73155,11 +73083,12 @@
 				0
 			],
 			"pos": [
-				128,
-				18
+				0,
+				0
 			],
 			"layer": "floor",
-			"note": "Fase 6c1: a metade direita da academia 1 passo mais escura (tubo da direita apagado, A1..A6 da chegada). É o próprio gym_bg -1 de x 340 em diante, com borda em dither ordenado 4x4 de x 300 a 339; transparente à esquerda. Furo transparente no retângulo da porta da rua (401,116,60,108), onde a gym_door escura (quadros 3..5) desenha. Sem alpha parcial. Fica abaixo das pessoas."
+			"note": "Fase 6c1: a metade direita da academia 1 passo mais escura (tubo da direita apagado, A1..A6 da chegada). É o próprio gym_bg -1 de x 340 em diante, com borda em dither ordenado 4x4 de x 300 a 339; transparente à esquerda. Furo transparente no retângulo da porta da rua (401,116,60,108), onde a gym_door escura (quadros 3..5) desenha. Sem alpha parcial. Fica abaixo das pessoas.",
+			"note_6d2": "Fase 6d2: agora 640x360 em (0,0): o gym_bg novo -1 de x 340 em diante, dither de x 300 a 339, furo na porta (401,116,60,108). O tubo novo da direita (x 536) escurece junto."
 		},
 		"gym_door": {
 			"file": "res://assets/sprites/gym/gym_door.png",
@@ -73213,13 +73142,14 @@
 					5
 				]
 			},
-			"note": "Fase 6c1: porta da rua da academia por cima da pintada no gym_bg (batente 401..454, vão 404..451 x 120..219). 0 = fechada (recorte do fundo); 1 = meio aberta, a folha a 45 graus (a mesma face apertada em x 418..451) e a rua na fresta; 2 = aberta para dentro, folha de perfil à direita (x 452..459) e a rua clara no vão (céu branco, fachada cream, y2 em dither, muro e calçada cream na mesma altura da garage_door_outside). 3..5 = os mesmos 1 passo mais escuros, menos a rua: usar enquanto o gym_half_dark estiver na tela. Pedido era 3 quadros; os 3 escuros entraram por causa da metade escura."
+			"note": "Fase 6c1: porta da rua da academia por cima da pintada no gym_bg (batente 401..454, vão 404..451 x 120..219). 0 = fechada (recorte do fundo); 1 = meio aberta, a folha a 45 graus (a mesma face apertada em x 418..451) e a rua na fresta; 2 = aberta para dentro, folha de perfil à direita (x 452..459) e a rua clara no vão (céu branco, fachada cream, y2 em dither, muro e calçada cream na mesma altura da garage_door_outside). 3..5 = os mesmos 1 passo mais escuros, menos a rua: usar enquanto o gym_half_dark estiver na tela. Pedido era 3 quadros; os 3 escuros entraram por causa da metade escura.",
+			"note_6d2": "Fase 6d2: as linhas de baixo (chão) refeitas sobre o chão novo; a porta não mudou."
 		},
 		"gym_daylight": {
 			"file": "res://assets/sprites/gym/gym_daylight.png",
 			"frame_size": [
 				146,
-				70
+				90
 			],
 			"frames": 2,
 			"fps": 10.0,
@@ -73249,7 +73179,8 @@
 					1
 				]
 			},
-			"note": "Fase 6c1: luz do dia no piso de borracha. O próprio gym_bg 1 passo mais claro (miolo junto à porta 2 passos), trapézio que abre para a esquerda e para a frente (y 221..289, base x 336..470), borda em dither ordenado. 0 = porta aberta; 1 = meio aberta (só a fresta da esquerda). Desenhar depois do gym_half_dark."
+			"note": "Fase 6c1: luz do dia no piso de borracha. O próprio gym_bg 1 passo mais claro (miolo junto à porta 2 passos), trapézio que abre para a esquerda e para a frente (y 221..289, base x 336..470), borda em dither ordenado. 0 = porta aberta; 1 = meio aberta (só a fresta da esquerda). Desenhar depois do gym_half_dark.",
+			"note_6d2": "Fase 6d2: refeita sobre o chão novo (mesmos passos de luz por pixel); 90 px de altura: o quadro cheio continua 20 px abaixo de y 289, esmaecendo em dither."
 		},
 		"wall_photo_old_gym": {
 			"file": "res://assets/sprites/gym/wall_photo_old_gym.png",
@@ -73298,8 +73229,8 @@
 				0
 			],
 			"pos": [
-				268,
-				242
+				146,
+				244
 			],
 			"layer": "sorted",
 			"sort_y": 251,
@@ -73318,13 +73249,14 @@
 				20
 			],
 			"pos": [
-				238,
-				232
+				116,
+				234
 			],
 			"layer": "sorted",
 			"sort_y": 250,
 			"point": "gym_mentor_spot",
-			"note": "Fase 6c1: o mesmo caixote do mentor com a luz dos tubos (sem o calor da lâmpada). Regra do sufixo _gym: na academia o jogo usa este no lugar do garage_crate. Visível na academia a partir do marco cena_primeira_academia."
+			"note": "Fase 6c1: o mesmo caixote do mentor com a luz dos tubos (sem o calor da lâmpada). Regra do sufixo _gym: na academia o jogo usa este no lugar do garage_crate. Visível na academia a partir do marco cena_primeira_academia.",
+			"note_6d2": "Fase 6d2: ponto novo; a luz dos tubos no ponto novo dá a mesma do antigo (arquivo igual)."
 		},
 		"coach_hang_photo": {
 			"action": "hang_photo",
@@ -76474,6 +76406,82 @@
 			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
 			"loop": false,
 			"mirror_ok": false,
+			"palette_variants": "helper_2",
+			"pivot": [
+				56,
+				74
+			],
+			"release_frame": 2,
+			"scene_name": "treadmill_put",
+			"who": "vizinho"
+		},
+		"helper_treadmill_put_right": {
+			"action": "treadmill_put",
+			"carried": "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/helper_treadmill_put_right.png",
+			"fps": 10.0,
+			"frame_size": [
+				112,
+				96
+			],
+			"frames": 3,
+			"frames_note": "Fase 6d2. Em (470,300), virado para a DIREITA (depois do helper_treadmill_carry_left espelhado): 0 abaixa a esteira dobrada (a mesma pegada do carry espelhado); 1 ela gira de volta e encosta no chão 24 px à frente do pé, no lugar do adereço (pivô 466,324), painel à esquerda da tela como a treadmill_l0_side; 2 a esteira vira o adereço NESTE quadro (não está na folha), ele endireita. Depois: helper_stand_left espelhada (a mesma pose da helper_stand).",
+			"glove": "none",
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-23
+					],
+					"hand_front": [
+						13,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-21
+					],
+					"hand_front": [
+						13,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-29
+					],
+					"hand_front": [
+						12,
+						-30
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-65
+			],
+			"head_by_frame": [
+				[
+					2,
+					-51
+				],
+				[
+					4,
+					-48
+				],
+				[
+					1,
+					-57
+				]
+			],
+			"light": "sem luz pintada (anda pela sala; como as folhas do John)",
+			"loop": false,
+			"mirror_ok": false,
+			"note_6d2": "Fase 6d2 (Artista de Personagens): versão própria virada para a DIREITA para a chegada à academia (primeira_academia.json, ajudante em (470,300), esteira em (466,324)). A helper_treadmill_put_left espelhada deixava a esteira 7 px acima do adereço no quadro 1. Gerador: tools/art/make_sprites_fase6c1.gd (HELPER.treadmill_put_right).",
 			"palette_variants": "helper_2",
 			"pivot": [
 				56,

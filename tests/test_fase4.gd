@@ -493,7 +493,7 @@ func _teste_dica_do_verde() -> void:
 		var f: Dictionary = base.duplicate(true)
 		f["reason"] = {"kind": k, "attribute": "agility", "faltaram": 100.0, "far_n": 12, "model": 0, "tip": 0, "better_tactic": "",
 			"stat": {"kind": "points", "n": 10, "k": 90}}
-		checar_igual(gs.textos_fim(f).wait_green, "VOLTE A ENFRENTAR ELE QUANDO A PRÉVIA FICAR VERDE", "derrota '%s': dica do verde" % k)
+		checar_igual(gs.textos_fim(f).wait_green, "ESPERE O VERDE", "derrota '%s': dica do verde" % k)  # 6d2: texto encurtado
 	var azar: Dictionary = base.duplicate(true)
 	azar["reason"] = {"kind": "luck", "attribute": "", "faltaram": -1.0, "far_n": 0, "model": 0, "tip": 0, "better_tactic": "",
 		"stat": {"kind": "luck_odds", "n": 9, "k": 0}}
@@ -535,7 +535,7 @@ func _teste_dica_do_verde() -> void:
 
 func _teste_textos_da_previa() -> void:
 	var gs := _novo("f4_previa_textos")
-	checar_igual(gs.previa().stake_win, "SE VENCER: $50 + 10 FAMA", "sem nós: prêmio sem bônus")
+	checar_igual(gs.previa().stake_win, "VENCER: $50 + 10 FAMA", "sem nós: prêmio sem bônus")  # 6d2: texto encurtado
 	checar_igual(gs.previa().stake_lose, "PERDER ENCERRA A CAMPANHA (METADE DO LEGADO)", "sem nós: perder = metade")
 	checar(not gs.previa().show_percent, "sem nós: sem porcentagem")
 	_ir_para_arvore(gs, 2000)
@@ -543,7 +543,7 @@ func _teste_textos_da_previa() -> void:
 		gs.comprar_no(id)
 	gs.nova_carreira()
 	var p: Dictionary = gs.previa()
-	checar_igual(p.stake_win, "SE VENCER: $75 (+50%) + 15 FAMA (+50%)", "prêmio com bônus e (+50%)")
+	checar_igual(p.stake_win, "VENCER: $75 (+50%) + 15 FAMA (+50%)", "prêmio com bônus e (+50%)")  # 6d2: texto encurtado
 	checar_igual(p.stake_lose, "PERDER ENCERRA A CAMPANHA (75% DO LEGADO)", "perder leva 75%")
 	checar(p.show_percent and p.percent_text.ends_with("%"), "porcentagem: %s" % p.percent_text)
 	for t in p.risks:

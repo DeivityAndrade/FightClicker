@@ -91,7 +91,7 @@ func folha(quadros: Array, cols: int, nome: String) -> void:
 	s.save_png(out + tag + "_" + nome + ".png")
 
 # regiao da sala onde ficam os atores (porta em x=423, chao ate y~275)
-const SALA := Rect2i(128, 96, 352, 192)
+const SALA := Rect2i(40, 120, 460, 210)
 
 ## Captura ate `cond` ficar falso (ou `max` s), a cada `passo`, e salva folhas de `lote` quadros.
 func gravar(nome: String, cond: Callable, passo: float, maximo: float, regiao: Rect2i = SALA, k: int = 2, lote: int = 6, cols: int = 2) -> void:
@@ -126,7 +126,7 @@ func olhar_discipulo(nome: String) -> void:
 
 func _initialize() -> void:
 	gs = root.get_node("GameState")
-	out = ProjectSettings.globalize_path("res://docs/arte/mockups/") + "fase6d_qa_"
+	out = ProjectSettings.globalize_path("res://docs/arte/mockups/") + "fase6d_qa2_"
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("p="):
 			var pp := a.substr(2).split(",")

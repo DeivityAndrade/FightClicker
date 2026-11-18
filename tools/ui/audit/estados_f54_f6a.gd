@@ -144,7 +144,7 @@ func _rodar_fase54() -> void:
 		_com_nos54(["body_jab"], 20)
 		await au._abrir()
 		var b: Node = au._cena.get_node("BotaoMapa")
-		au._exigir(b.position == Vector2(132, 22) and b.size == Vector2(22, 22), "f54_botao_gym", "botão em (132,22) 22x22")
+		au._exigir(b.position == Vector2(118, 22) and b.size == Vector2(22, 22), "f54_botao_gym", "6d2: botão em (118,22) 22x22, ao lado dos atributos")
 		await au._ver("f54_botao_gym")
 
 	# --- Tela de fim: o botão ÁRVORE com o ícone, o mapa por ele e a volta ---

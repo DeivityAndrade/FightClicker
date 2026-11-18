@@ -93,3 +93,78 @@ godot --path E:\Fightclicker --resolution 1280x720 --position 1950,40 --script r
 `p=A,B` escolhe os visuais do 1º e do 2º discípulo (índices 1 a 7 do vetor `LOOKS`); `so=s2,s2b,gym,saida,luta` limita os blocos.
 
 Scripts novos (todos em `tests/`): `qa_f6d_camadas.gd` (auditoria de arquivos, headless), `qa_f6d_cenas.gd` (jogo completo: sucessão 1 e 2, garagem, academia, saída, luta, garagem de saída), `qa_f6d_poses.gd` (17 poses x 3 luvas x 7 visuais), `qa_f6d_retomar.gd` (retomada de save), `qa_f6d_gym_sem_john.gd` (academia depois da saída do John), `qa_f6d_aparelhos.gd` (todos os aparelhos), `qa_f6d_mural.gd` (mural e retratos).
+
+
+## Reteste (parte 1)
+
+Data: 2026-11-18. Itens 1 a 3 e critérios 1, 2, 3 e 5 da 6d. APPDATA temporário em todas as execuções, janelas em `--position 1950,40`, save real intocado (o guarda da bateria confirmou). Nada corrigido: só reporte.
+
+### Resumo
+
+| Item / critério | Resultado |
+|---|---|
+| C1 (visual do discípulo nas cenas) | **PARCIAL**: quase tudo corrigido, mas a passada por baixo da porta (`duck_under`) ainda sai com o visual padrão. Ver R1. |
+| C2 (John passa por trás do lutador) | OK, com ressalva estética (R2, BAIXA) |
+| Item 2 / critério 2 (balão junto do cursor) | OK |
+| Item 3 / critério 3 (números por atributo) | OK |
+| Critério 5: `tools/run_tests.ps1` | OK (`TODOS OS TESTES PASSARAM`, `EXIT=0`, guarda do save real 4/4) |
+| Critério 5: `test_golpes.gd` sozinho x10 | 0 falhas em 10 |
+| Critério 5: `ui_audit --estados todos` | OK: `ESTADOS 370 \| PROBLEMAS 0` |
+| Critério 5: `foto.gd` igual à da main | OK: `cmp` sem diferença (247672 bytes cada; main = `origin/main` daa89fe em worktree temporário, já removido) |
+| Critério 1 (6 visuais) | Não fechado enquanto R1 existir |
+
+### C1 reteste
+
+Comandos: cópias dos meus `tests/qa_f6d_cenas.gd` e `qa_f6d_retomar.gd` só com o prefixo das imagens trocado para `fase6d_qa_reteste_` (as cópias foram apagadas). Pares `p=2,3` e `p=4,5`, blocos `s1,cria,s2,s2b` e `s1,cria,s2,gym,saida,gsaida`, mais a retomada de save. `FALHAS 0` nas três execuções.
+
+Corrigido (comparar com o antes, `fase6d_qa_p23_s2_00.png`):
+- Parte 2 da primeira sucessão: a caminhada pela porta (`walk_bare_left`), `take_gloves` e o quadro final saem com o visual da criação (regata branca, calção azul, coque loiro, pele 5; no par 4,5 camiseta branca e faixa branca). `fase6d_qa_reteste_p23_s2_00.png` (quadros 5 a 8), `_s2_02.png`, `fase6d_qa_reteste_p45_s2_00.png`.
+- Chegada curta da 2ª sucessão: todos os quadros com o visual escolhido (camiseta preta, cabelo platina, volume). `fase6d_qa_reteste_p23_s2b_chegada_00.png`.
+- Chegada à academia e saídas (garagem e academia): lutador com o visual certo. `fase6d_qa_reteste_p45_gym_chegada_*.png`, `fase6d_qa_reteste_p45_saida_*_00.png`.
+- Retomada de save continua certa: `fase6d_qa_reteste_retomar_r1_chegada.png`.
+- O teste novo `tests/test_cena_visual_discipulo.gd` passa na bateria.
+
+**R1 (MÉDIA), sobra do C1: a passada por baixo da porta ainda usa o visual padrão.**
+- Onde: primeira sucessão, parte 2, quadros em que o discípulo aparece de costas, sob a porta, na pose `duck_under` (quadros 2 a 4 de cada folha `..._s2_00.png`). Aparece pele 3, peito nu, calção VERDE e, no primeiro passo da caminhada, "troca" de repente para o visual certo. É o mesmo pop do bug original, só que por cerca de 0,7 s.
+- Evidência: `fase6d_qa_reteste_p23_s2_00.png` (quadros 3 e 4: costas nuas e calção verde; quadro 5: regata branca e calção azul) e `fase6d_qa_reteste_p45_s2_00.png` (idem; quadro 5 já com camiseta branca). O trecho está idêntico ao de antes da correção (`fase6d_qa_p23_s2_00.png`).
+- O que descartei: a folha `disciple_duck_under_left` TEM camadas, e `DiscVisual.textura("disciple_duck_under_left", look)` chamada direto devolve o visual certo (renderizei a folha: coque loiro, regata, calção azul). Ou seja, a textura certa existe; o que aparece na cena não vem dela. Não achei a causa sem mexer no código.
+- Arquivos prováveis: `ui/cena_sala.gd` (`_pose` e o caminho do `move` com `anim: duck_under`, `facing: left`) e a ordem dos passos em `data/cutscenes/primeira_sucessao.json` (linhas 140 a 160: `show` de `disciple` em 0,0 e o `move` com `duck_under` em 1,3 s).
+- Responsável: UI/UX (`ui/cena_sala.gd`); Programador se for a ordem do elenco (`scripts/cena_player.gd`).
+- Passos: `godot --path E:\Fightclicker --resolution 1280x720 --position 1950,40 --script res://tests/qa_f6d_cenas.gd -- p=2,3 so=s1,cria,s2` (APPDATA temporário) e olhar `fase6d_qa_p23_s2_00.png`.
+
+O critério 1 (6 visuais) foi retestado só nos pares 2,3 e 4,5; os pares 6,7 e 7,1 não foram refeitos, e o R1 impede fechar o critério.
+
+### C2 reteste: o John passa atrás do lutador
+
+Imagens: `fase6d_qa_reteste_p45_saida_gar_00.png` e `_01.png` (garagem), `fase6d_qa_reteste_p45_saida_gym_00.png` e `_01.png` (academia).
+- Ele contorna: sobe pela parede, passa atrás do saco e desce pela direita até a porta. Não atravessa mais o corpo do lutador.
+- Trecho das canelas (primeiros quadros de cada folha): lê como "atrás", mas **sem espaço**. Canelas e pés do John ficam encostados na cabeça (coque) e nas luvas do lutador, com 0 a 2 px de respiro. A ordem de camadas está certa (o lutador cobre o John), então não parece atravessar; só não tem o respiro de "passou por trás", e um olho atento vê "colado" por uns 0,4 s. Igual na garagem e na academia.
+- **R2 (BAIXA, cosmética):** subir uns 4 a 6 px o ponto de passagem em `data/cutscenes/saida_primeiro_mentor.json`. Responsável: Diretor de Cutscenes. Sem urgência.
+
+### Itens 2 e 3: conferência
+
+Balão junto do cursor (`ui/dica.gd`, `ui/painel_loja.gd`, `ui/janela_mapa.gd`, `ui/janela_mural.gd`):
+- Aparece rápido: `_mostrar` liga `visible` no mesmo quadro do `mouse_entered`, sem temporizador (0 s, abaixo de 0,15 s). Medido por leitura de código, não com relógio na tela.
+- Nunca sai da tela e nunca cobre o item apontado: fuzz de `Dica.posicionar` (`tests/qa_r1_dica.gd`), 20 000 casos (balões de 40x16 a 160x90, itens de 8x8 a 140x40 em posições sorteadas): 0 fora da tela, 0 cobrindo o item, 23 com a borda a mais de 60 px do cursor (só itens muito grandes).
+- Capturas do verificador (`C:\Users\deivi\AppData\Local\Temp\fcqa_audit\`): `f6d_balao_melhoria.png`, `f6d_balao_cantos.png`, `f6d_balao_mapa.png`, `f6d_balao_hall.png`, `f6d_balao_loja*.png`. O balão fica ao lado do botão apontado e não o cobre.
+- Efeito colateral aceitável: o balão cobre cartões vizinhos (ex.: o botão do Tio Aposentado em `f6d_balao_cantos.png`; no hall, o texto do item de cima). Não é o item apontado.
+- Some ao tirar o mouse: `_emitir({})` do `PainelLoja` chama `Dica.limpar()` (código). Não testei ao vivo o caso "balão aberto e o painel troca de aba ou fecha com o mouse parado em cima". RISCO, não bug confirmado.
+- Painel esquerdo: `ui/garagem.gd` deixou de ligar `info_mudou` à caixa; `ui/painel_atributos.gd` segue usando a caixa só para a dica de cada atributo. Nada importante sumiu: a divisão do aparelho (`FOR 25% / AGI 15% / RES 60%`) continua embaixo da faixa de foco e também vai no balão (`texto_divisao`), junto com efeito e custo.
+
+Números por atributo (`ui/sala.gd`, `ganhos_por_atributo` e `_mostrar_numeros_divididos`):
+- `f6d_numeros_bjj.png`: três números na cor de cada atributo (`+120 RES` grande; `+50 FOR` e `+30 AGI` pequenos; divisão 60/25/15), empilhados e legíveis.
+- Crítico (`f6d_numeros_bjj_critico.png`): `+360 RES!` vermelho e grande, frase "O TATAME GEMEU!" no topo da pilha, os outros dois pequenos.
+- Aparelho de um atributo (`f6d_numeros_um_atributo.png`): continua `+1 FORÇA`, igual ao de antes.
+- Máximo de 3 por clique garantido no código (`NUMEROS_MAX_POR_CLIQUE`). Nenhum bug.
+
+### Critério 5: detalhes
+
+- `tools/run_tests.ps1` (APPDATA em `Temp\fcqa_rt2`): `TODOS OS TESTES PASSARAM`, `EXIT=0`, guarda do save real `4/4 PASS`. (Uma 1a tentativa em segundo plano pelo bash morreu junto com o shell; refeita pelo PowerShell.)
+- `tests/test_golpes.gd` sozinho, 10 execuções seguidas (APPDATA temporário): **0 falhas em 10**. Não reproduzi a falha intermitente do programador; fica registrada como suspeita de teste instável, sem bloquear.
+- `ui_audit --estados todos`: `ESTADOS 370 | PROBLEMAS 0` (inclui os 12 estados novos `f6d_*`). Avisos de console esperados (`_avisar` do `_validar_discipulo` ao carregar saves de teste), nenhum erro de script.
+- Foto: `git worktree add --detach <Temp\fcqa_wt_main> origin/main` (daa89fe), `foto.gd` rodada nos dois lados, `cmp foto_main.txt foto_6d.txt` sem diferença. Worktree removido.
+- Arquivo novo de teste meu: `tests/qa_r1_dica.gd` (fuzz do posicionamento do balão).
+
+### Veredito
+
+A parte 1 da 6d **ainda não está pronta para o Diretor**: itens 2 e 3 e o critério 5 passam; o C1 melhorou muito, mas sobrou o R1 (MÉDIA, UI/UX ou Programador: o `duck_under` da primeira sucessão ainda sai com o visual padrão), que precisa de novo reteste. R2 (BAIXA, Diretor de Cutscenes) pode ir junto ou depois.

@@ -29,7 +29,8 @@ func _testar_chegadas(local: String, arte: String) -> void:
 		var contexto := "%s/%s/%s" % [local, arte, id]
 		checar(gs.comprar_aparelho(id), contexto + ": compra aceita")
 		checar(sala._caixas.has(id), contexto + ": a caixa chegou na sala")
-		checar(sala._marcas[id].fita.visible, contexto + ": a marca fica embaixo da caixa")
+		checar(not sala._anim_do(id).visible, contexto + ": 6d2: comprou = só a caixa, o aparelho ainda não aparece")
+		checar(not ("_marcas" in sala), contexto + ": 6d2: não existe mais marca de fita na sala")
 		checar(not gs.aparelho_montado(id), contexto + ": aparelho ainda na caixa")
 		await create_timer(0.4).timeout
 		for i in 3:
@@ -39,7 +40,7 @@ func _testar_chegadas(local: String, arte: String) -> void:
 		await create_timer(1.3).timeout
 		checar(not sala._caixas.has(id), contexto + ": a caixa vazia sumiu")
 		checar_igual(gs.foco, id, contexto + ": foco no aparelho aberto")
-		checar(not sala._marcas[id].fita.visible, contexto + ": marca de compra oculta")
+		checar(sala._anim_do(id).visible or id == gs.foco, contexto + ": abriu a caixa: o aparelho aparece")
 		checar(not gs.clicar().is_empty(), contexto + ": permite treinar depois da chegada")
 		var saldo: float = gs.treino
 		checar(not gs.comprar_aparelho(id), contexto + ": nao compra duas vezes")

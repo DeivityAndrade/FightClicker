@@ -312,7 +312,7 @@ func _teste_primeira_sucessao() -> void:
 	checar_igual(gs.escola.handover.stage, "arriving", "save grava arriving")
 	var t2 := _tocar_ate(p, f, "controle")
 	checar(f.controle, "a parte 2 devolve o controle")
-	checar(t2 <= 6.5 or not p.comp.exato, "parte 2 em até 6,5 s (%.2f s, exato: %s)" % [t2, str(p.comp.exato)])
+	checar(t2 <= 8.0 or not p.comp.exato, "parte 2 em até 6,5 s (%.2f s, exato: %s)" % [t2, str(p.comp.exato)])  # 6d2: sala larga, o John anda ~172 px até o caixote novo (parte 2 mede 7,55 s)
 	checar_igual([gs.sucessao_estado(), gs.escola.handover], ["none", null], "return_control termina a sucessão")
 	checar_igual(iniciou.size(), 1, "o cartão de início sai uma vez, no fim")
 	checar_igual(estados, ["scene_1", "creating", "scene_2", "none"], "estados na ordem")

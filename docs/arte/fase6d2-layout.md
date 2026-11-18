@@ -1,6 +1,6 @@
 # Fase 6d2: sala larga de verdade e pontos novos (proposta)
 
-Diretor de Arte, 2026-11-18. **Só proposta**: nenhum arquivo do jogo foi alterado (manifest, `assets/`, `ui/`, `scripts/`, `data/` intactos).
+Diretor de Arte, 2026-11-18. **Aprovado pelo dono e aplicado** em `assets/sprites` e no manifest (ver direcao-visual.md §28).
 Pedido do dono: "no fim você só aumentou o chão e as paredes"; pessoas, aparelhos e elementos mais espaçados e bem posicionados;
 aparelho não comprado totalmente invisível até a caixa ser aberta.
 
@@ -120,8 +120,8 @@ comprar fica o botão trancado da faixa de foco e o painel (sugestão ao UI/UX: 
 aparelho, que é o que `marca_clicada` fazia).
 
 ## 6. O que muda no manifest (resumo, quando for aprovado)
-1. `garage_bg` e `gym_bg`: novos fundos **640x360**, `pos` (0,0); `room_rect` vira (0,18,640,312). Os arquivos de hoje (384x272)
-   saem de uso. Os fundos do jogo serão gerados de novo, limpos (os PNGs `fase6d2_fundo_*` são a prévia).
+1. `garage_bg` e `gym_bg`: novos fundos **640x360**, `pos` (0,0); `room_rect` vira (0,18,640,312). Os originais (384x272)
+   ficam guardados em `tools/art/fonte_6d2/` (com `.gdignore`), de onde o gerador parte. **Aplicado.**
 2. Pontos da tabela da §4: `sprites.<pessoa>.pos`, `by_data_id.gym.people_pos`, `mentor_spot(_info)`, `gym_mentor_spot(_info)`,
    `mentor_2_spot(_info)`, `gym_mentor_2_spot(_info)`, `by_data_id.mentor_spot`, `by_data_id.mentor_2_spot`, `layout.box_slots`,
    `positions.lado_direito` de `treadmill_lN_idle|side(_gym)`, `positions.canto` de `grappling_dummy_lN_rest(_gym)`,

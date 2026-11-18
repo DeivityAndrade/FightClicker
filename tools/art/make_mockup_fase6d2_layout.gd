@@ -4,7 +4,10 @@ extends SceneTree
 ##
 ## Rodar a partir de uma pasta com um project.godot vazio (não dispara import no projeto):
 ##   godot --headless --path <pasta_vazia> --quit-after 60 --script E:/Fightclicker/tools/art/make_mockup_fase6d2_layout.gd
-##       [-- --saida <pasta>]      (sem --saida grava em docs/arte/mockups/)
+##       [-- --saida <pasta>] [--final [--assets <pasta>]]
+## --saida: onde vão os mockups (padrão docs/arte/mockups/). --final: grava também os sprites de verdade em assets/sprites
+## (ou em --assets, para testar): fundos 640x360, luz do dia, sombra da porta, porta e metade escura da academia e a luz
+## nova dos aparelhos que mudaram de ponto. Sempre parte dos originais em tools/art/fonte_6d2/. Manifest: tools/art/manifest_6d2.py.
 ##
 ## Como o fundo largo é feito:
 ## - a parede do fundo cresce para x 70..569 (era 170..469); mesmo ponto de fuga (320,-28), mesma linha do chão (y 220);
@@ -16,6 +19,10 @@ extends SceneTree
 
 const ROOT := "E:/Fightclicker/"
 var OUT := ROOT + "docs/arte/mockups/"
+## originais de antes da 6d2 (fundos 384x272 e as peças tiradas deles): o gerador sempre parte daqui, então pode rodar de novo
+const FONTE := ROOT + "tools/art/fonte_6d2/"
+var FINAL := false
+var ASSETS := ROOT + "assets/sprites/"
 var L
 var MAN := {}
 
@@ -87,6 +94,10 @@ func _init() -> void:
 	for i in args.size():
 		if args[i] == "--saida" and i + 1 < args.size():
 			OUT = args[i + 1].trim_suffix("/") + "/"
+		if args[i] == "--final":
+			FINAL = true
+		if args[i] == "--assets" and i + 1 < args.size():
+			ASSETS = args[i + 1].trim_suffix("/") + "/"
 	DirAccess.make_dir_recursive_absolute(OUT)
 	var f := FileAccess.open(ROOT + "assets/sprites/manifest.json", FileAccess.READ)
 	MAN = JSON.parse_string(f.get_as_text())
@@ -94,6 +105,8 @@ func _init() -> void:
 		REF[k] = _load(ROOT + "docs/arte/mockups/fase6d_ref_%s.png" % k)
 	BG["garagem"] = build_garage()
 	BG["academia"] = build_gym()
+	if FINAL:
+		write_assets()
 	for k in BG:
 		BG[k].save_png(OUT + "fase6d2_fundo_%s.png" % k)
 		_x2(BG[k]).save_png(OUT + "fase6d2_fundo_%s_x2.png" % k)
@@ -290,7 +303,7 @@ func build_garage() -> Image:
 	garage_beam(img)
 	garage_props(img, rng)
 	light_area(img, Rect2i(0, 0, 640, 360), GARAGE_LIGHTS, -3)
-	var old := _load(ROOT + "assets/sprites/garage/garage_bg.png")
+	var old := _load(FONTE + "garage_bg.png")
 	var full_old: Image = L.blank(640, 360)
 	full_old.blit_rect(old, Rect2i(Vector2i.ZERO, old.get_size()), OLD.position)
 	paste_old(img, full_old, COPY)
@@ -546,7 +559,7 @@ func build_gym() -> Image:
 	gym_beam(img)
 	gym_props(img, rng)
 	gym_light(img, Rect2i(0, 0, 640, 360))
-	var old := _load(ROOT + "assets/sprites/gym/gym_bg.png")
+	var old := _load(FONTE + "gym_bg.png")
 	var full_old: Image = L.blank(640, 360)
 	full_old.blit_rect(old, Rect2i(Vector2i.ZERO, old.get_size()), OLD.position)
 	paste_old(img, full_old, COPY)
@@ -1293,3 +1306,205 @@ func comparacao(local: String) -> void:
 		L.text(img, c[0], c[2], c[3] + 3, "white", 1, "ink")
 		img.blit_rect(c[1], Rect2i(0, 0, 640, 360), Vector2i(c[2], c[3] + lab))
 	img.save_png(OUT + "fase6d2_layout_%s_comparacao.png" % local)
+
+
+# ================================================================== --final: sprites de verdade em assets/sprites
+## Grava os 2 fundos 640x360 e refaz, sobre o chão novo, as peças que eram recortadas do fundo antigo
+## (luz do dia, sombra da porta, metade escura e porta da academia) e a luz pintada dos aparelhos que mudaram de ponto.
+## O manifest é atualizado por tools/art/manifest_6d2.py.
+func write_assets() -> void:
+	var og := _canvas(_load(FONTE + "garage_bg.png"))
+	var oy := _canvas(_load(FONTE + "gym_bg.png"))
+	var ng: Image = BG["garagem"]
+	var ny: Image = BG["academia"]
+	ng.save_png(ASSETS + "garage/garage_bg.png")
+	ny.save_png(ASSETS + "gym/gym_bg.png")
+	# luz do dia da garagem (3 quadros, 170x70 -> 170x90 com a ponta esmaecendo no chão novo)
+	var gd_old := _frames(_load(FONTE + "garage_daylight.png"), 170, 70)
+	var gd_new := []
+	for q in gd_old.size():
+		gd_new.append(derive_daylight(gd_old[q], Vector2i(308, 220), og, ng, 90))
+	_strip(gd_new).save_png(ASSETS + "garage/garage_daylight.png")
+	# sombra da porta, assada sobre a luz (0 sobre a luz 0; 1..3 sobre a luz 2)
+	var sh_old := _frames(_load(FONTE + "garage_door_shadow.png"), 64, 32)
+	var sh_new := []
+	for q in sh_old.size():
+		var li := 0 if q == 0 else 2
+		var base_old: Image = og.duplicate()
+		blend(base_old, gd_old[li], 308, 220)
+		var base_new: Image = ng.duplicate()
+		blend(base_new, gd_new[li], 308, 220)
+		sh_new.append(derive(sh_old[q], Vector2i(374, 214), base_old, base_new))
+	_strip(sh_new).save_png(ASSETS + "garage/garage_door_shadow.png")
+	# luz do dia da academia (2 quadros, 146x70 -> 146x90)
+	var yd_old := _frames(_load(FONTE + "gym_daylight.png"), 146, 70)
+	var yd_new := []
+	for q in yd_old.size():
+		yd_new.append(derive_daylight(yd_old[q], Vector2i(330, 220), oy, ny, 90))
+	_strip(yd_new).save_png(ASSETS + "gym/gym_daylight.png")
+	# porta da academia: as linhas de baixo eram chão
+	var door_old := _frames(_load(FONTE + "gym_door.png"), 60, 108)
+	var oy_dark := half_dark_apply(oy)
+	var ny_dark := half_dark_apply(ny)
+	var door_new := []
+	for q in door_old.size():
+		if q >= 3:
+			door_new.append(derive(door_old[q], Vector2i(401, 116), oy_dark, ny_dark))
+		else:
+			door_new.append(derive(door_old[q], Vector2i(401, 116), oy, ny))
+	_strip(door_new).save_png(ASSETS + "gym/gym_door.png")
+	# metade escura: agora 640x360 em (0,0), furo na porta
+	half_dark(ny).save_png(ASSETS + "gym/gym_half_dark.png")
+	# aparelhos com luz pintada que mudaram de ponto: [id, pasta, ponto antigo, ponto novo, pivô, luz, passo mínimo]
+	var rel := [["treadmill_l0_side", "equipment", Vector2i(445, 267), P.treadmill_side, Vector2i(43, 41), "garage", -2],
+		["treadmill_l1_side", "equipment", Vector2i(445, 267), P.treadmill_side, Vector2i(43, 41), "garage", -2],
+		["treadmill_l0_side_gym", "equipment", Vector2i(445, 267), P.treadmill_side, Vector2i(43, 41), "gym", 0],
+		["treadmill_l1_side_gym", "equipment", Vector2i(445, 267), P.treadmill_side, Vector2i(43, 41), "gym", 0],
+		["grappling_dummy_l0_rest", "equipment", Vector2i(228, 283), P.dummy_rest, Vector2i(32, 27), "garage", -1],
+		["grappling_dummy_l1_rest", "equipment", Vector2i(228, 283), P.dummy_rest, Vector2i(32, 27), "garage", -1],
+		["grappling_dummy_l0_rest_gym", "equipment", Vector2i(228, 283), P.dummy_rest, Vector2i(32, 27), "gym", 0],
+		["grappling_dummy_l1_rest_gym", "equipment", Vector2i(228, 283), P.dummy_rest, Vector2i(32, 27), "gym", 0],
+		["garage_crate_gym", "garage", Vector2i(238, 232), P.mentor + CRATE_OFF, Vector2i.ZERO, "gym", 0]]
+	for r in rel:
+		var src := _load(FONTE + str(r[0]) + ".png")
+		var tl_old: Vector2i = r[2] - r[4]
+		var tl_new: Vector2i = r[3] - r[4]
+		relight(src, tl_old, tl_new, str(r[5]), int(r[6])).save_png(ASSETS + str(r[1]) + "/" + str(r[0]) + ".png")
+	_cache.clear()
+	print("final: fundos, luz do dia, sombra da porta, porta e metade escura da academia e 9 aparelhos gravados em " + ASSETS)
+
+func _canvas(old: Image) -> Image:
+	var c: Image = L.blank(640, 360)
+	c.blit_rect(old, Rect2i(Vector2i.ZERO, old.get_size()), OLD.position)
+	return c
+
+func _frames(sheet: Image, fw: int, fh: int) -> Array:
+	var out := []
+	for q in sheet.get_width() / fw:
+		out.append(sheet.get_region(Rect2i(q * fw, 0, fw, fh)))
+	return out
+
+func _strip(frames: Array) -> Image:
+	var fw: int = frames[0].get_width()
+	var s: Image = L.blank(fw * frames.size(), frames[0].get_height())
+	for i in frames.size():
+		s.blit_rect(frames[i], Rect2i(0, 0, fw, frames[i].get_height()), Vector2i(i * fw, 0))
+	return s
+
+## passo na rampa que leva a cor b à cor p (99 se não estão na mesma rampa)
+func ramp_delta(b: Color, p: Color) -> int:
+	if b.a == 0.0:
+		return 99
+	if b.to_html(false) == p.to_html(false):
+		return 0
+	for n: int in [1, -1, 2, -2, 3, -3]:
+		if L.shade(b, n).to_html(false) == p.to_html(false):
+			return n
+	return 99
+
+## Refaz um sprite que era "o fundo com N passos de luz": mesmo N por pixel, agora sobre o fundo novo.
+## Pixel que não vem do fundo (desenho da porta, contorno) fica igual.
+func derive(old: Image, at: Vector2i, base_old: Image, base_new: Image) -> Image:
+	var out: Image = old.duplicate()
+	for y in old.get_height():
+		for x in old.get_width():
+			var p := old.get_pixel(x, y)
+			var sx := x + at.x
+			var sy := y + at.y
+			if p.a == 0.0 or sx < 0 or sy < 0 or sx >= 640 or sy >= 360:
+				continue
+			var n := ramp_delta(base_old.get_pixel(sx, sy), p)
+			if n != 99:
+				out.set_pixel(x, y, L.shade(base_new.get_pixel(sx, sy), n))
+	return out
+
+## Luz do dia: deriva os 70 px de hoje e, se o quadro chegava na borda de baixo da sala antiga (y 289), continua o trapézio
+## mais 20 px esmaecendo em dither (antes a faixa de baixo escondia o corte; agora o chão continua).
+func derive_daylight(old: Image, at: Vector2i, base_old: Image, base_new: Image, new_h: int) -> Image:
+	var d := derive(old, at, base_old, base_new)
+	var out: Image = L.blank(old.get_width(), new_h)
+	out.blit_rect(d, Rect2i(0, 0, d.get_width(), d.get_height()), Vector2i.ZERO)
+	var h := old.get_height()
+	var last := _row_span(old, h - 1)
+	var prev := _row_span(old, h - 21)
+	if last.x < 0 or prev.x < 0:
+		return out
+	var dl := float(last.x - prev.x) / 20.0
+	var dr := float(last.y - prev.y) / 20.0
+	for y in range(h, new_h):
+		var k := y - (h - 1)
+		var xl := int(round(last.x + dl * k))
+		var xr := int(round(last.y + dr * k))
+		var t := float(k) / float(new_h - h + 1)
+		for x in range(maxi(xl, 0), mini(xr + 1, old.get_width())):
+			var sx := x + at.x
+			var sy := y + at.y
+			if bayer(sx, sy) > t * 1.05 and on_floor(sx, sy):
+				out.set_pixel(x, y, L.shade(base_new.get_pixel(sx, sy), 1))
+	return out
+
+func _row_span(img: Image, y: int) -> Vector2i:
+	var a := -1
+	var b := -1
+	for x in img.get_width():
+		if img.get_pixel(x, y).a > 0.0:
+			if a < 0:
+				a = x
+			b = x
+	return Vector2i(a, b)
+
+func _hd_step(x: int, y: int) -> int:
+	if x >= 340:
+		return -1
+	if x >= 300 and bayer(x, y) < float(x - 300 + 1) / 41.0:
+		return -1
+	return 0
+
+func half_dark_apply(img: Image) -> Image:
+	var out: Image = img.duplicate()
+	for y in 360:
+		for x in 640:
+			if _hd_step(x, y) != 0:
+				out.set_pixel(x, y, L.shade(img.get_pixel(x, y), -1))
+	return out
+
+func half_dark(bg: Image) -> Image:
+	var out: Image = L.blank(640, 360)
+	var furo := Rect2i(401, 116, 60, 108)
+	for y in 360:
+		for x in 640:
+			if furo.has_point(Vector2i(x, y)):
+				continue
+			if _hd_step(x, y) != 0:
+				out.set_pixel(x, y, L.shade(bg.get_pixel(x, y), -1))
+	return out
+
+## Passo de luz antigo (a conta que pintou o sprite) e novo (sala larga) por pixel; aplica a diferença.
+func relight(src: Image, tl_old: Vector2i, tl_new: Vector2i, kind: String, min_step: int) -> Image:
+	var out: Image = src.duplicate()
+	for y in src.get_height():
+		for x in src.get_width():
+			var c := src.get_pixel(x, y)
+			if c.a == 0.0:
+				continue
+			var a: int
+			var b: int
+			if kind == "garage":
+				a = light_step(x + tl_old.x, y + tl_old.y, [GARAGE_LIGHTS[0]], min_step)
+				b = light_step(x + tl_new.x, y + tl_new.y, GARAGE_LIGHTS, min_step)
+			else:
+				a = mini(gym_step_old(x + tl_old.x, y + tl_old.y), 0)
+				b = mini(gym_step(x + tl_new.x, y + tl_new.y), 0)
+			if b != a:
+				out.set_pixel(x, y, L.shade(c, b - a))
+	return out
+
+func gym_step_old(x: int, y: int) -> int:
+	var best := -9.0
+	for t: Vector2i in TUBES:
+		var d := Vector2(x - t.x, (y - t.y - 30) * 0.8).length() / 260.0
+		best = maxf(best, 0.95 - d * 1.9)
+	best -= clampf(float(y - 250) / 120.0, 0.0, 0.35)
+	var base := floorf(best)
+	var fr := clampf((best - base - 0.5) * 3.0 + 0.5, 0.0, 1.0)
+	return clampi(int(base) + (1 if fr > bayer(x, y) else 0), -2, 1)

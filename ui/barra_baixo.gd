@@ -1,38 +1,36 @@
 class_name BarraBaixo
 extends Control
-## Barra de baixo: "por clique" e "auto /s", os 3 botões de foco, a dica de primeira vez e,
-## à direita, os botões LUTAR! (vermelho = arriscar) e APOSENTAR (roxo = Legado).
-## Os botões só pedem a ação (sinais): quem abre a prévia/confirmação é o Fluxo.
+## Faixa de baixo (6d2, 30 px): "+N /CLIQUE", os botões de foco numa linha, LUTAR! e PASSAR O POSTO (só o ícone, a descrição
+## vem no balão). Os botões só pedem a ação (sinais): quem abre a prévia/confirmação é o Fluxo.
+## Foco trancado: o clique não treina nem troca o foco; pede a compra (`compra_pedida`) e a garagem abre o painel no cartão dele.
 
 signal lutar_pedido
 signal aposentar_pedido
-signal compra_pedida(aparelho: String)  # clique no botão de foco trancado: a garagem abre a aba TREINO
+signal compra_pedida(aparelho: String)  # clique no botão de foco trancado: a garagem abre o painel no cartão do aparelho
 
-const LARG_BOTAO := 122.0  # 3 botões de foco
-const PASSO_BOTAO := 128.0
-const LARG_BOTAO_4 := 90.0  # 4 botões de foco (Fase 5, com o aparelho da arte): largura 90, passo 94 (x 134, 228, 322, 416)
-const PASSO_BOTAO_4 := 94.0
-const X0 := 134.0
-const X_CHIP := 506.0  # borda direita do chip da arte (alinhado à direita da área dos botões de foco)
-const ABREVIACOES := {"RESISTÊNCIA": "RESIST."}  # só no botão estreito: "RESISTÊNCIA" tem 65 px e o texto cabe em 54
+const ALTURA := 30.0
+const Y0 := 330.0
+const X_BOTOES := 92.0
+const LARG_BOTAO := 86.0
+const PASSO_BOTAO := 90.0
+const ALTURA_BOTAO := 20.0
+const Y_BOTAO := 5.0
+const REGIAO_CLIQUE := 84.0  # largura de "+N /CLIQUE" (x 4..88)
+const LUTAR := Rect2(507, 3, 102, 24)
+const POSTO := Rect2(613, 4, 22, 22)
+const X_SALVO := 456.0
+const X_AJUDA := 492.0
 
 var _por_clique: Label
-var _auto: Label
+var _sufixo: Label
 var _dica: Label
-var _dica_espaco: Label
 var _salvo: Label
-var _botoes: Dictionary = {}  # aparelho -> {botao, sublinhado, estilo}
+var _botoes: Dictionary = {}  # aparelho -> {botao, dono, trancado, estilo, id}
 var _ajuda: Button
 var _ids_botoes := ""  # aparelhos da carreira que têm botão agora (refaz os botões se a lista mudar)
-var _larg := LARG_BOTAO
-var _passo := PASSO_BOTAO
-var _f11: Label
-var _chip: Control  # Fase 5: HUD da arte
-var _chip_fundo: NinePatchRect
-var _chip_icone: TextureRect
-var _chip_texto: Label
-var _chip_chave := ""
-var _dica_aposentar := false  # a dica da academia está no ar: APOSENTAR "respira" em roxo
+var _fundo: Panel
+var _focos: Control  # a fileira dos botões de foco (iguais entre si); LUTAR, PASSAR O POSTO e "?" têm tamanhos próprios
+var _dica_aposentar := false  # a dica da academia está no ar: o botão de passar o posto "respira" em roxo
 var _t_poll := 0.0
 var _lutar: Button
 var _aposentar: Button
@@ -41,44 +39,62 @@ var _janela_aberta := false
 var _t := 0.0
 var _ultimo := ""
 var _pulso_foco := false
+var _so_sala := false
+var _dica_livre := true  # há largura para a dica da primeira vez depois dos botões de foco
+var _tween_salvo: Tween
 
 
 func _ready() -> void:
-	position = Vector2(0, 290)
-	size = Vector2(640, 70)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var ui: Dictionary = GameState.dados.ui
-	UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, 70))
+	position = Vector2(0, Y0)
+	z_index = 1200
+	size = Vector2(640, ALTURA)
+	mouse_filter = Control.MOUSE_FILTER_STOP  # a faixa segura o clique: nada por baixo (a sala) recebe
+	_fundo = UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, ALTURA))
 
-	UiTema.rotulo(self, str(ui.get("per_click", "POR CLIQUE")).to_upper(), UiTema.G2, 8, 8)
-	_por_clique = UiTema.rotulo(self, "+1", UiTema.COL_TREINO, 8, 22)  # txt_hero
+	_por_clique = UiTema.rotulo(self, "+1", UiTema.COL_TREINO, 6, 4)  # txt_hero
 	_por_clique.scale = Vector2(2, 2)
-	_auto = UiTema.rotulo(self, "", UiTema.COL_TREINO, 8, 44)
-	_salvo = UiTema.rotulo(self, "", UiTema.COL_DISABLED, 8, 56, 118)
-
-	UiTema.rotulo(self, str(ui.get("focus_label", "FOCO DE TREINO")).to_upper(), UiTema.COL_TEXT_2, X0 + 2, 3)
-	_f11 = UiTema.rotulo(self, str(ui.get("fullscreen_hint", "F11 TELA CHEIA")).to_upper(), UiTema.COL_DISABLED, X0, 3, 372, HORIZONTAL_ALIGNMENT_RIGHT)
-	_f11.visible = false  # Fase 5.1: as teclas (F11 inclusive) são nível 3: aparecem na dica do "?"
+	UiTema.alinhar(_por_clique, "ignore")
+	_sufixo = UiTema.rotulo(self, UiTema.txt("per_click_short", "/CLIQUE"), UiTema.G2, 20, 13)
+	UiTema.alinhar(_sufixo, "ignore")
+	_salvo = UiTema.rotulo(self, "", UiTema.COL_DISABLED, X_SALVO, UiTema.y_texto(Rect2(0, 0, 640, ALTURA)), 30, HORIZONTAL_ALIGNMENT_RIGHT)
+	_salvo.modulate.a = 0.0
+	UiTema.alinhar(_salvo, "ignore")
+	set_meta("ui_align_row", "free")
+	_focos = Control.new()
+	_focos.name = "Focos"
+	_focos.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_focos.size = Vector2(640, ALTURA)
+	add_child(_focos)
 	_montar_ajuda()
-	_montar_chip()
 	_reconstruir_botoes()
 
-	_dica = UiTema.rotulo(self, "", UiTema.Y1, X0, 56, 378, HORIZONTAL_ALIGNMENT_CENTER)
-	# Lembrete fixo (some enquanto a dica da primeira vez pisca no mesmo lugar): Espaço treina como o clique.
-	_dica_espaco = UiTema.rotulo(self, "", UiTema.P2, X0, 56, 378, HORIZONTAL_ALIGNMENT_CENTER)
+	# Dica da primeira vez (some no primeiro treino): ao lado dos botões, em até 2 linhas.
+	_dica = UiTema.rotulo(self, "", UiTema.Y1, 364, 5, 88, HORIZONTAL_ALIGNMENT_LEFT)
+	UiTema.alinhar(_dica, "ignore")
+	_posicionar_dica()
 	_montar_lutar()
 	_montar_aposentar()
 
 	GameState.clicou.connect(func(_g: float, _c: bool, _a: String, _b: String, _t2: String) -> void: _dica_ativa = false)
-	GameState.salvo.connect(func(h: String) -> void: _salvo.text = str(GameState.dados.ui.get("saved_footer", "SALVO {hora}")).to_upper().replace("{HORA}", h))
+	GameState.salvo.connect(_ao_salvo)
 	GameState.carreira_mudou.connect(_checar_dica)
 	GameState.arte_mudou.connect(func(_a: String) -> void: atualizar())
 	_checar_dica()
 	atualizar()
 
 
-## Refaz os botões de foco quando a lista de aparelhos da carreira muda (escolha da arte, NOVA CARREIRA): 3 botões de 122 px,
-## ou 4 de 90 px com o aparelho da arte.
+## Texto "SALVO" discreto: acende ao salvar e some em ~2 s (o texto fixo com a hora saiu da tela).
+func _ao_salvo(_hora: String) -> void:
+	_salvo.text = UiTema.txt("saved_footer", "SALVO").replace("{HORA}", "").strip_edges()
+	if _tween_salvo != null and _tween_salvo.is_valid():
+		_tween_salvo.kill()
+	_salvo.modulate.a = 1.0
+	_tween_salvo = create_tween()
+	_tween_salvo.tween_interval(1.4)
+	_tween_salvo.tween_property(_salvo, "modulate:a", 0.0, 0.6)
+
+
+## Refaz os botões de foco quando a lista de aparelhos da carreira muda (escolha da arte, NOVA CARREIRA): 3 ou 4 botões de 86 px.
 func _reconstruir_botoes() -> void:
 	var lista: Array = GameState.aparelhos_da_carreira()
 	var ids: Array = lista.map(func(a: Dictionary) -> String: return str(a.id))
@@ -88,140 +104,55 @@ func _reconstruir_botoes() -> void:
 	_ids_botoes = chave
 	for id in _botoes:
 		_botoes[id].botao.queue_free()
-		_botoes[id].sub.queue_free()
 	_botoes.clear()
-	_larg = LARG_BOTAO_4 if lista.size() > 3 else LARG_BOTAO
-	_passo = PASSO_BOTAO_4 if lista.size() > 3 else PASSO_BOTAO
 	var i := 0
 	for ap in lista:
 		_botoes[ap.id] = _montar_botao(ap, i)
 		i += 1
 	_ultimo = ""
+	_posicionar_dica()
 
 
-## Texto de uma linha do botão que cabe em `max` px: o texto inteiro, a abreviação conhecida ou cortado com ponto.
-func _cabe(texto: String, max_: float) -> String:
-	if UiTema.largura_visivel(texto) <= max_:
-		return texto
-	if ABREVIACOES.has(texto):
-		return ABREVIACOES[texto]
-	var t := texto
-	while t.length() > 1 and UiTema.largura_visivel(t + ".") > max_:
-		t = t.left(t.length() - 1)
-	return t + "."
+## B3: a dica da primeira vez fica depois do último botão e só até a "?" (x 488); sem 70 px livres (4 focos), ela não aparece.
+func _posicionar_dica() -> void:
+	if _dica == null:
+		return
+	var x_dica := X_BOTOES + float(GameState.aparelhos_da_carreira().size()) * PASSO_BOTAO + 2.0
+	_dica.position.x = x_dica
+	_dica_livre = 488.0 - x_dica >= 70.0
+	_dica.custom_minimum_size.x = maxf(0.0, minf(88.0, 488.0 - x_dica))
+	_dica.size.x = _dica.custom_minimum_size.x
 
 
 func _montar_botao(ap: Dictionary, i: int) -> Dictionary:
-	var x := X0 + i * _passo
-	var estreito := _larg < LARG_BOTAO
-	var largura_texto := _larg - 36.0  # 20 px de ícone + 16 px do número da tecla
-	var b := UiTema.botao(self, Rect2(x, 14, _larg, 34))
-	UiTema.alinhar(b, "left")  # conteudo a esquerda (icone, duas linhas, numero da tecla): so confere o eixo vertical
-	var cor := UiTema.P2 if str(ap.get("art", "")) != "" else UiTema.cor_atributo(ap.attribute)  # arte marcial = roxo
-	var dono: Array = []  # conteúdo do botão montado (aparelho comprado)
+	var x := X_BOTOES + float(i) * PASSO_BOTAO
+	var b := UiTema.botao(_focos, Rect2(x, Y_BOTAO, LARG_BOTAO, ALTURA_BOTAO))
 	# Aparelho da arte: ícone da arte (art_boxing_9 / art_bjj_9) no lugar do ícone do atributo (ele treina os três).
 	var arte_ap := str(ap.get("art", ""))
 	var icone_foco := "art_%s_9" % arte_ap if arte_ap != "" else "icon_" + str(ap.attribute)
 	if UiTema.sprite(icone_foco).is_empty():
 		icone_foco = "icon_" + str(ap.attribute)
-	dono.append(UiTema.textura_rect(b, icone_foco, 7, 11))
 	var linhas: Array = ap.get("focus_label", ["", ""])
-	dono.append(UiTema.rotulo(b, _cabe(str(linhas[0]).to_upper(), largura_texto), UiTema.WHITE, 20, 4))
-	dono.append(UiTema.rotulo(b, _cabe(str(linhas[1]).to_upper(), largura_texto), UiTema.G3, 20, 15))
-	dono.append(UiTema.rotulo(b, str(i + 1), UiTema.G1, _larg - 14, 4, 8, HORIZONTAL_ALIGNMENT_RIGHT))
-	# Fase 4b, aparelho que ainda não chegou: cadeado 16x16 no lugar do ícone do atributo, nome, preço (ícone de
-	# Treino + número) ou "DEPOIS DA ESTEIRA". Sem número de tecla (o teclado pula os trancados) e sem sublinhado.
-	var trancado: Dictionary = {}
-	var u: Dictionary = GameState.desbloqueio(str(ap.id))
-	if not u.is_empty():
-		var m: Dictionary = UiTema.manifest().get("by_data_id", {}).get(str(u.get("id", "")), {})
-		trancado = {
-			"m": m,
-			"cadeado": UiTema.textura_rect(b, str(m.get("icon_locked", "icon_treadmill_locked")), 2, 9),
-			"nome": UiTema.rotulo(b, GameState.nome_curto_aparelho(str(ap.id)).to_upper(), UiTema.WHITE, 20, 4),
-			"moeda": UiTema.textura_rect(b, "icon_treino", 20, 16),
-			"preco": UiTema.rotulo(b, "", UiTema.Y1, 32, 15),
-			"depois": UiTema.rotulo(b, "", UiTema.G1, 20, 15),
-			"estreito": estreito,
-		}
-		if estreito:
-			# Botão de 90 px: "DEPOIS DA ESTEIRA" (101 px) quebra em duas linhas abaixo do nome (que sobe um pouco).
-			var depois: Label = trancado["depois"]
-			depois.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			depois.custom_minimum_size = Vector2(_larg - 24.0, 0)
-			depois.size = Vector2(_larg - 24.0, 18)
-			depois.position = Vector2(20, 11)
-			trancado["nome"].position = Vector2(20, 2)
-		for k in trancado:
-			if trancado[k] is Control:
-				UiTema.alinhar(trancado[k], "left")  # colado à esquerda do botão, como o conteúdo dos outros botões de foco
-	var sub := ColorRect.new()
-	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sub.color = cor
-	sub.position = Vector2(x + 3, 50)
-	sub.size = Vector2(_larg - 6, 2)
-	add_child(sub)
+	var nome := str(linhas[1] if linhas.size() > 1 else linhas[0]).to_upper()
+	# Aparelho comprado: ícone do atributo + nome, como grupo centralizado. O botão não tem texto próprio.
+	var r_dono := UiTema.botao_conteudo(b, nome, UiTema.WHITE, 1, icone_foco, 4.0)
+	var dono: Array = [r_dono, b.get_meta("icone")]
+	# Aparelho que ainda não chegou: cadeado + nome (o preço e o motivo vêm no balão). Um segundo grupo, mesmo centro.
+	var r_tr := UiTema.botao_conteudo(b, GameState.nome_curto_aparelho(str(ap.id)).to_upper(), UiTema.WHITE, 1, "mark_padlock", 4.0)
+	var trancado: Array = [r_tr, b.get_meta("icone")]
+	b.set_meta("icone", dono[1])
 	var id: String = ap.id
-	b.mouse_entered.connect(func() -> void: Dica.pedir(_texto_foco(id)))
+	b.mouse_entered.connect(func() -> void: Dica.pedir(_texto_foco(id), b))
 	b.mouse_exited.connect(func() -> void: Dica.limpar())
 	b.pressed.connect(func() -> void:
 		if GameState.aparelho_montado(id):
 			GameState.definir_foco(id)
 			atualizar()
 		else:
-			compra_pedida.emit(id)  # trancado: não troca o foco, só aponta a compra na aba TREINO
+			compra_pedida.emit(id)  # trancado: não troca o foco, só pede a compra no painel
 	)
-	return {"botao": b, "sub": sub, "estilo": "ui_button_normal", "dono": dono, "trancado": trancado, "id": id}
-
-
-## Chip da arte (Fase 5): ícone da arte + "BOXE: +50% NO SEU CLIQUE" / "JIU-JITSU: EQUIPE +48%". Alinhado à direita em x 506,
-## sobre a linha do "FOCO DE TREINO" (no lugar do aviso F11, que some enquanto o chip está na tela). Some sem arte.
-func _montar_chip() -> void:
-	_chip = Control.new()
-	_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_chip.position = Vector2(X_CHIP - 40.0, -1)  # y 289 da tela: encosta na borda de cima da barra
-	_chip.size = Vector2(40, 13)
-	_chip.visible = false
-	_chip.set_meta("ui_margens", "h")
-	add_child(_chip)
-	_chip_fundo = UiTema.nine_patch(_chip, "ui_art_chip", Rect2(0, 0, 40, 13))
-	_chip_icone = UiTema.textura_rect(_chip, "art_boxing_9", 3, 2)
-	_chip_texto = UiTema.rotulo(_chip, "", UiTema.P2, 15, 3)
-	UiTema.alinhar(_chip, "right")
-
-
-func _atualizar_chip() -> void:
-	_chip.visible = false  # Fase 5.1: o chip da arte saiu da tela (a arte aparece na dica do nome do local)
-	_f11.visible = false
-	return
-	var texto := GameState.texto_hud_arte().to_upper()
-	var max_ := GameState.arte_no_teto()
-	var chave := "%s|%s|%s" % [GameState.arte_id, texto, max_]
-	if chave == _chip_chave:
-		return
-	_chip_chave = chave
-	_chip.visible = texto != ""
-	_f11.visible = texto == ""
-	if texto == "":
-		return
-	_chip_texto.text = texto
-	_chip_texto.add_theme_color_override("font_color", UiTema.Y1 if max_ else UiTema.P2)
-	_chip_icone.texture = UiTema.textura("art_%s_9" % GameState.arte_id)
-	var w := roundf(UiTema.largura_visivel(texto)) + 18.0  # 3 de folga + 9 do ícone + 3 + texto + 3 de folga (margens iguais)
-	_chip.size = Vector2(w, 13)
-	_chip_fundo.size = Vector2(w, 13)
-	_chip.position = Vector2(X_CHIP - w, -1)
-
-
-## Linha de baixo do botão de foco: com o aparelho da arte em foco mostra a divisão do treino ("FOR 40% / AGI 45% / RES 15%");
-## com os outros, o lembrete do Espaço.
-func _atualizar_dica_foco() -> void:
-	var divisao := GameState.texto_divisao(GameState.foco).to_upper()
-	if divisao != "":
-		_dica_espaco.text = divisao
-		_dica_espaco.add_theme_color_override("font_color", UiTema.COL_LEGACY)
-	else:
-		_dica_espaco.text = ""  # Fase 5.1: o lembrete do Espaço é nível 3 (dica do "?")
+	return {"botao": b, "estilo": "ui_button_normal", "dono": dono, "trancado": trancado, "id": id,
+		"m": UiTema.manifest().get("by_data_id", {}).get(str(GameState.desbloqueio(str(ap.id)).get("id", "")), {})}
 
 
 ## Dica do botão de foco de um aparelho que não está montado (preço, requisito, caixa).
@@ -246,25 +177,37 @@ func _texto_foco(id: String) -> String:
 	return ""
 
 
-## "?" pequeno da barra: as teclas (Espaço, Shift, 1 a 4, F11) são nível 3 e aparecem na dica.
+## "?" pequeno da faixa: as teclas (Espaço, Shift, 1 a 4, L, E, H, F11) aparecem no balão.
 func _montar_ajuda() -> void:
-	_ajuda = UiTema.botao(self, Rect2(X0 + 372.0 - 12.0, 53, 12, 12))
+	_ajuda = UiTema.botao(self, Rect2(X_AJUDA, 9, 12, 12))
 	UiTema.botao_conteudo(_ajuda, "?", UiTema.COL_TEXT_2, 1)
-	_ajuda.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_keys")))
+	_ajuda.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_keys"), _ajuda))
 	_ajuda.mouse_exited.connect(func() -> void: Dica.limpar())
 
 
 func _montar_lutar() -> void:
-	_lutar = UiTema.botao_estilizado(self, Rect2(520, 5, 112, 34), "ui_button_fight")
-	UiTema.botao_conteudo(_lutar, UiTema.txt("fight_button", "LUTAR!"), UiTema.Y2, 2, "icon_fight", 4.0)
+	_lutar = UiTema.botao_estilizado(self, LUTAR, "ui_button_fight")
+	UiTema.botao_conteudo(_lutar, UiTema.txt("fight_button", "LUTAR!"), UiTema.Y2, 2)
 	_lutar.pressed.connect(func() -> void: lutar_pedido.emit())
 
 
+## PASSAR O POSTO: só o ícone da luva que passa; o nome e o Legado que ele leva vêm no balão ao passar o mouse.
 func _montar_aposentar() -> void:
-	_aposentar = UiTema.botao_estilizado(self, Rect2(520, 43, 112, 22), "ui_button_retire")
-	# Fase 5.3: "PASSAR O POSTO" com o ícone da luva que passa (o mesmo desenho do botão da prévia do dia).
-	UiTema.botao_conteudo(_aposentar, UiTema.txt("retire_button", "PASSAR O POSTO"), UiTema.P2, 1, "icon_pass_post", 3.0)
+	_aposentar = UiTema.botao_estilizado(self, POSTO, "ui_button_retire")
+	var a := UiTema.area_botao(_aposentar)
+	var q := UiTema.tamanho_quadro("icon_pass_post")
+	UiTema.textura_rect(_aposentar, "icon_pass_post", roundf(a.position.x + (a.size.x - q.x) / 2.0), UiTema.y_imagem(a, q.y))
 	_aposentar.pressed.connect(func() -> void: aposentar_pedido.emit())
+	_aposentar.mouse_entered.connect(func() -> void: Dica.pedir(_texto_posto(), _aposentar))
+	_aposentar.mouse_exited.connect(func() -> void: Dica.limpar())
+
+
+func _texto_posto() -> String:
+	var texto := UiTema.txt("retire_button", "PASSAR O POSTO")
+	var d: Dictionary = GameState.dica_aposentar()
+	if bool(d.get("show", false)):
+		texto += "\n" + str(d.get("text", "")).to_upper()
+	return texto
 
 
 func _checar_dica() -> void:
@@ -285,10 +228,24 @@ func definir_janela_aberta(aberta: bool) -> void:
 	atualizar()
 
 
+## Modo "só a sala": some tudo menos o LUTAR (e o Treino, que é do HUD).
+func modo_so_sala(ativo: bool) -> void:
+	_so_sala = ativo
+	_fundo.visible = not ativo
+	_por_clique.visible = not ativo
+	_sufixo.visible = not ativo and _sufixo.visible
+	_ajuda.visible = not ativo
+	_aposentar.visible = not ativo
+	for id in _botoes:
+		_botoes[id].botao.visible = not ativo
+	if not ativo:
+		_ultimo = ""
+		atualizar()
+
+
 func atualizar() -> void:
 	_reconstruir_botoes()
-	_atualizar_chip()
-	# LUTAR! e APOSENTAR só entre lutas: desabilitados durante a luta, com a tela de fim e depois do cinturão.
+	# LUTAR! e PASSAR O POSTO só entre lutas: desabilitados durante a luta, com a tela de fim e depois do cinturão.
 	var pode_lutar := GameState.pode_lutar() and not _janela_aberta
 	var pode_aposentar := GameState.pode_aposentar() and not _janela_aberta
 	_lutar.disabled = not pode_lutar
@@ -298,20 +255,30 @@ func atualizar() -> void:
 		_lutar.modulate = Color(0.62, 0.6, 0.66)
 
 	var foco := GameState.foco
-	var texto_auto := "%s +%s/S" % [str(GameState.dados.ui.get("auto", "AUTO")).to_upper(),
-		NumberFormat.fmt(GameState.producao_total())]
 	var estados := ""
 	for id in _botoes:
 		estados += GameState.estado_aparelho(id).left(2) + ","  # o(wned) b(uyable) m(issing) l(ocked)
-	var chave := "%s|%s|%s|%s" % [NumberFormat.fmt(GameState.por_clique()), texto_auto, foco, estados]
+	var chave := "%s|%s|%s" % [NumberFormat.fmt(GameState.por_clique()), foco, estados]
 	if chave != _ultimo:
 		_ultimo = chave
-		_por_clique.text = "+%s" % NumberFormat.fmt(GameState.por_clique())
-		_por_clique.add_theme_color_override("font_color", UiTema.COL_TREINO)
-		_auto.text = texto_auto
+		_atualizar_por_clique()
 		for id in _botoes:
 			_aplicar_botao(_botoes[id], foco)
-	_atualizar_dica_foco()
+
+
+## "+N" em 2x e "/CLIQUE" pequeno ao lado, na região x 4..88. Se o número é grande, o sufixo sai e, se ainda assim não cabe, o número vai a 1x.
+func _atualizar_por_clique() -> void:
+	var texto := "+%s" % NumberFormat.fmt(GameState.por_clique())
+	_por_clique.text = texto
+	_por_clique.add_theme_color_override("font_color", UiTema.COL_TREINO)
+	var w2 := UiTema.largura_visivel(texto) * 2.0
+	var ws := UiTema.largura_visivel(_sufixo.text)
+	var escala := 2 if w2 <= REGIAO_CLIQUE else 1
+	_por_clique.scale = Vector2(escala, escala)
+	_por_clique.position = Vector2(6, UiTema.y_texto(Rect2(0, 0, 640, ALTURA), escala))
+	var w := w2 if escala == 2 else UiTema.largura_visivel(texto)
+	_sufixo.visible = not _so_sala and 6.0 + w + 2.0 + ws <= 6.0 + REGIAO_CLIQUE
+	_sufixo.position.x = 6.0 + w + 2.0
 
 
 ## Botão de foco do aparelho: normal (montado) ou trancado (comprável / sem Treino / depois do anterior).
@@ -320,12 +287,10 @@ func _aplicar_botao(d: Dictionary, foco: String) -> void:
 	var estado := GameState.estado_aparelho(id)
 	var montado := estado == "owned"
 	for n in d.dono:
-		n.visible = montado
-	var tr: Dictionary = d.trancado
-	for k in ["cadeado", "nome", "moeda", "preco", "depois"]:
-		if tr.has(k):
-			tr[k].visible = not montado and k in ["cadeado", "nome"]  # Fase 5.1: sem preço no botão (o preço vem na dica)
-	if montado or tr.is_empty():
+		(n as CanvasItem).visible = montado
+	for n in d.trancado:
+		(n as CanvasItem).visible = not montado
+	if montado:
 		var ativo: bool = id == foco
 		var atributo := GameState.atributo_do_aparelho(id)
 		var estilo := "ui_button_focus_" + atributo if ativo else "ui_button_normal"
@@ -334,22 +299,15 @@ func _aplicar_botao(d: Dictionary, foco: String) -> void:
 		if estilo != d.estilo:
 			d.estilo = estilo
 			UiTema.aplicar_estilo_botao(d.botao, estilo)
-		d.sub.visible = ativo
 		return
-	d.sub.visible = false
-	var m: Dictionary = tr.m
-	var t: Dictionary = GameState.textos_trancado(id)
 	var cor_nome := UiTema.COL_TEXT_1 if estado == "buyable" else (UiTema.COL_TEXT_2 if estado in ["missing", "boxed"] else UiTema.COL_DISABLED)
-	tr.nome.add_theme_color_override("font_color", cor_nome)
-	tr.nome.position.y = UiTema.y_texto(UiTema.area_botao(d.botao))  # uma linha só: centrada na altura do botão
-	tr.cadeado.texture = UiTema.textura(str(m.get("icon_locked_buyable" if estado == "buyable" else "icon_locked", "")))
+	(d.trancado[0] as Label).add_theme_color_override("font_color", cor_nome)
 	_estilo_trancado(d, "locked" if estado == "boxed" else estado, false)
 
 
 ## Moldura do botão trancado. O comprável alterna com o quadro de pulso (3 fps) para chamar a atenção.
 func _estilo_trancado(d: Dictionary, estado: String, pulso: bool) -> void:
-	var m: Dictionary = d.trancado.m
-	var fotos: Dictionary = m.get("focus_button", {})
+	var fotos: Dictionary = d.m.get("focus_button", {})
 	var chave_estilo := "buyable_pulse" if estado == "buyable" and pulso else estado
 	var estilo := str(fotos.get(chave_estilo, "ui_button_focus_locked_" + chave_estilo))
 	if estilo == d.estilo:
@@ -362,16 +320,14 @@ func _estilo_trancado(d: Dictionary, estado: String, pulso: bool) -> void:
 func _process(delta: float) -> void:
 	_t += delta
 	var ap := GameState.dados.aparelho(GameState.foco)
-	_dica.visible = _dica_ativa
-	_dica_espaco.visible = not _dica_ativa
-	# O HUD da arte do Jiu-jitsu sobe com o tempo (1 leitura por segundo) e a dica de aposentar da academia depende de relógio.
+	_dica.visible = _dica_ativa and not _so_sala and _dica_livre
+	# A dica de passar o posto da academia depende de relógio (1 leitura por segundo).
 	_t_poll += delta
 	if _t_poll >= 1.0:
 		_t_poll = 0.0
-		_atualizar_chip()
 		_dica_aposentar = bool(GameState.dica_aposentar().get("show", false))
 	if _dica_aposentar and not _aposentar.disabled:
-		_aposentar.modulate = Color.WHITE.lerp(Color(1.3, 1.15, 1.45), 0.5 + 0.5 * sin(_t * 4.0))  # APOSENTAR respira em roxo
+		_aposentar.modulate = Color.WHITE.lerp(Color(1.3, 1.15, 1.45), 0.5 + 0.5 * sin(_t * 4.0))  # respira em roxo
 	if _dica_ativa:
 		_dica.text = str(ap.get("first_hint", "")).to_upper()
 		_dica.modulate.a = 0.65 + 0.35 * (0.5 + 0.5 * sin(_t * 5.0))
@@ -381,7 +337,7 @@ func _process(delta: float) -> void:
 		_pulso_foco = pulso
 		for id in _botoes:
 			var d: Dictionary = _botoes[id]
-			if not d.trancado.is_empty() and GameState.estado_aparelho(id) == "buyable":
+			if GameState.estado_aparelho(id) == "buyable":
 				_estilo_trancado(d, "buyable", pulso)
 	# LUTAR! "respira" de leve quando está disponível (convite sem gritar).
 	if not _lutar.disabled:

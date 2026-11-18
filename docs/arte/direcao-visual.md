@@ -1007,9 +1007,60 @@ nas chaves novas; não grava se a conferência do mural falhar). A camada do sí
 - O busto é recorte de pose de corpo inteiro (braços caídos). Um retrato feito para o mural (ombro virado, olhar para a câmera, luz de estúdio) pediria uma folha `bust` própria com as mesmas camadas.
 - A roseta e os ícones do hall são placeholder honesto; os ícones cinza são conversão por luminância.
 
-## 27. Fase 6d (tela principal maior: proposta, aguardando o dono)
+## 27. Fase 6d (tela principal maior: o dono escolheu a C; a sala larga vale pelo §28)
 Opções A (gavetas), B (HUD mínimo) e C (híbrido, recomendada) em `docs/arte/fase6d-tela-opcoes.md`; mockups
 `mockups/fase6d_tela_*.png` (gerador `tools/art/make_mockup_fase6d_tela.gd`). Regra proposta para qualquer opção: a sala de
 384x272 **não se move** (alvo em x 281..362); o fundo cresce para 640x360 continuando a mesma perspectiva (ponto de fuga
 320,-28), e a UI vira plaquetas flutuantes que nunca encostam na zona do alvo (x 273..370, y 150..291) quando fechadas.
 Enquanto o dono não escolher, o §2 (layout com painéis laterais) continua valendo.
+
+## 28. Fase 6d2 (sala larga de verdade, pontos novos, aparelho invisível até a caixa)
+Aprovado pelo dono em 2026-11-18. Proposta completa, tabela de pontos e ajustes das cenas: `docs/arte/fase6d2-layout.md`.
+Gerador: `tools/art/make_mockup_fase6d2_layout.gd` (pasta temporária com `project.godot` vazio; `-- --final` grava os sprites; parte
+sempre dos originais guardados em `tools/art/fonte_6d2/`, então pode rodar de novo). Manifest: `python tools/art/manifest_6d2.py`
+(só as chaves desta fase, mantém tab/CRLF; rodar de novo não muda nada). Mockups: `mockups/fase6d2_layout_*.png`.
+
+### 28.1 Geometria nova (substitui a tabela do §4 e o layout do §2 na tela principal)
+| Elemento | Valor |
+|---|---|
+| Sala | tela inteira: `room_rect` = (0,18,640,312); HUD em cima, faixa de 30 px embaixo (y 330), painel da opção C por cima à direita |
+| Fundos | `garage_bg` / `gym_bg` 640x360 em (0,0) |
+| Parede do fundo | x 70..569, até y 220; **miolo x 171..469 = a sala de antes, pixel a pixel** (nada de parede mudou de lugar) |
+| Pilares | x 164..174 e 468..478 (escondem as emendas; a sala lê como 3 vãos) |
+| Ponto de fuga | (320,-28), igual |
+| Chão | de y 220 até y 329; meia-largura = 250·(y+28)/248 (de y ~289 para baixo cobre a tela toda) |
+| Paredes laterais | cunhas x 0..69 e 570..639; altura de um ponto da parede do fundo `yb` na coluna x: −28 + (yb+28)·|320−x|/250 |
+| Alvo | **igual**: lutador (303,272), saco (336,183), zona protegida x 273..370, y 150..291 |
+| Painel fixado | cobre x 506..639: ali só decoração e quem não decide nada (vizinho 3, Prof. Nelson, 28 px da esteira) |
+
+Fileiras: fundo (pés y 236..262), alvo (272), frente (pés y 318..327). Fundo e frente não se tocam: é isso que dá espaço.
+
+### 28.2 Peças novas e refeitas
+- **Garagem:** janela basculante e cano (parede esquerda), chapa de ferramentas + bancada com morsa, caixa de ferramentas, balde e
+  aro (ala esquerda), geladeira velha, pilha de pneus, relógio de luz, mangueira (ala direita), escada de alumínio (parede direita),
+  juntas e manchas no chão novo. Luz: a lâmpada de sempre + janela (34,176) + luminária de obra (540,70).
+- **Academia:** 2 janelas altas (parede esquerda), quadro branco da semana, suporte de halteres, kettlebell, medicine ball (ala
+  esquerda), 3 armários, bebedouro, árvore de anilhas (ala direita), espaldar (parede direita), piso em xadrez em toda a largura e
+  tatame na frente à esquerda. 2 tubos novos pintados no fundo (x 104 e 536); o `gym_tube` continua só nos 2 de sempre.
+- **Refeitas sobre o chão novo** (mesmos passos de luz por pixel): `garage_daylight` (170x**90**), `garage_door_shadow`,
+  `gym_daylight` (146x**90**; os quadros cheios continuam 20 px abaixo de y 289, esmaecendo), `gym_door` (as linhas de chão),
+  `gym_half_dark` (agora **640x360 em 0,0**, furo na porta).
+- **Luz refeita para o ponto novo:** `treadmill_l0|l1_side(_gym)`, `grappling_dummy_l0|l1_rest_gym`
+  (`grappling_dummy_*_rest` da garagem e `garage_crate_gym` passaram pela mesma conta e saíram iguais; `garage_crate` não tem luz).
+
+### 28.3 Pontos
+Tabela completa em `fase6d2-layout.md` §4. Resumo: Osmar, foto, mural, saco de lado, gancho da corda e pera na parede **iguais**;
+John/último sentado (132,254) com caixote em (116,234); 2º mentor (62,256); vizinhos (72,322), (126,322), (590,322); tios (400,324),
+(484,262); Prof. Nelson (548,250); esteira encostada (466,324); boneco deitado (192,318); caixas: esteira (466,324), arte (192,318),
+luva (292,327), corda (348,327); bolsa do John (146,244). Conferido pixel a pixel: 0 sobreposições, nada na zona do alvo nem no caminho
+da porta, balão do Osmar livre.
+
+### 28.4 Aparelho não comprado = invisível
+Antes de comprar: **nada** na sala. Comprado: **só a caixa**. Caixa aberta: o aparelho (chegadas de sempre). Nos 4 `unlock_*` saíram
+`floor_mark`, `ghost`, `ghost_dim`, `mark_states`, `mark_pos`, `lock`, `lock_pos`, `sign` e `mark_note_fase51`; entrou
+`room_before_box: "nothing"`. `tape_mark_*`, `ghost_*` e `mark_padlock` ficam no projeto com `unused_since: "6d2"`. O "dá para
+comprar" mora só na faixa de focos e no painel. **Isto substitui o §16 (marca de fita) e o §18.3.**
+
+### 28.5 Placeholder / precisa de pixel artist
+- Os fundos são montagem por código; os pilares existem para esconder a emenda com a sala antiga. À mão, cada fundo seria pintado inteiro.
+- As pessoas (vizinhos, tios, Prof. Nelson) ainda têm a luz pintada dos pontos antigos: pedido de folhas novas ao Artista de Personagens.

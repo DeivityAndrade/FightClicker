@@ -655,7 +655,7 @@ func _teste_previa() -> void:
 	for t in p.risks:
 		checar(p.risks[t].label in ["easy", "even", "hard"], "rótulo válido (%s)" % t)
 	checar_igual(p.risk, p.risks[gs.tatica].label, "risco da tática escolhida")
-	checar_igual(p.stake_win, "SE VENCER: $50 + 10 FAMA", "prêmio em jogo")
+	checar_igual(p.stake_win, "VENCER: $50 + 10 FAMA", "prêmio em jogo")  # 6d2: texto encurtado
 	checar_igual(p.lead, "strength", "destaque: ele é muito mais forte")
 	checar(not p.stake_belt, "o 1º não é a luta do cinturão")
 	checar_igual(gs.para_save(), antes, "abrir a prévia não muda nada (critério 4)")

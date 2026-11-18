@@ -53,7 +53,7 @@ func abrir_com() -> void:
 	_montar_linhas(ativos)
 	# Rodapé: divisor, a luva que ele recebe e CONFIRMAR.
 	divisor(_origem.x + 6.0, _origem.y + rodape, larg - 12.0)
-	UiTema.rotulo_centro(painel, UiTema.txt("disc_glove_line", "LUVA: O PAR DO JOHN"), UiTema.R3, 320.0, _origem.y + rodape + 8.0)
+	# 6d2: a linha "LUVA: O PAR DO JOHN" saiu (repete a descrição da luva).
 	var b := botao_texto(Rect2(roundf(320.0 - 60.0), _origem.y + rodape + 24.0, 120, 22), UiTema.txt("disc_confirm", "CONFIRMAR"), UiTema.GR3)
 	b.set_meta("ui_pos", "center_h")
 	b.pressed.connect(_confirmar)

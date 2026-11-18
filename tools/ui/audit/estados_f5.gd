@@ -160,7 +160,7 @@ func _rodar_fase5() -> void:
 		au.gs.arte_segundos = 900.0
 		await au._abrir()
 		await au._esperar(1.2)
-		au._exigir(not au._cena.get_node("BarraBaixo")._chip.visible, "f5_chip_jj_max", "Fase 5.1: o chip da arte saiu da tela (vai na dica do local)")
+		au._exigir(au._cena.get_node("BarraBaixo").find_children("*", "Label", true, false).filter(func(l): return l.visible and str(l.text).begins_with("JIU")).is_empty(), "f5_chip_jj_max", "Fase 5.1: o chip da arte saiu da tela (vai na dica do local)")
 		await au._ver("f5_chip_jj_max")
 	if au._quer("f5_teclas_arte"):
 		au._novo_jogo()
@@ -332,8 +332,8 @@ func _rodar_fase51() -> void:
 			await au._ver("f51_hover_local")
 			au._sem_dica()
 		if au._quer("f51_hover_proxima"):
-			var bloco: Node = au._cena.get_node("PainelAtributos").find_children("*", "BlocoProxima", true, false)[0]
-			au._dica_em(bloco._texto_premio(), Vector2(20, 130))
+			var bloco: Node = au._cena.get_node("PainelProxima").bloco
+			au._dica_em(bloco._texto_premio(), Vector2(20, 90))
 			await au._esperar(0.1)
 			await au._ver("f51_hover_proxima")
 			au._sem_dica()
@@ -343,10 +343,11 @@ func _rodar_fase51() -> void:
 			await au._ver("f51_hover_teclas")
 			au._sem_dica()
 		if au._quer("f51_hover_atributo"):
-			au._cena.get_node("PainelAtributos").mostrar_info({"titulo": "Agilidade", "texto": "Esquiva e velocidade.", "extra": "Compre a corda para treinar"})
+			# 6d2: a dica do atributo sai no balão (Dica), perto do cursor; o painel de atributos é só ícone, barra e número
+			au._dica_em(au._cena.get_node("PainelAtributos")._texto_dica("agility"), Vector2(60, 40))
 			await au._esperar(0.1)
 			await au._ver("f51_hover_atributo")
-			au._cena.get_node("PainelAtributos").mostrar_info({})
+			au._sem_dica()
 		if au._quer("f51_hover_assist"):
 			au._dica_em(au.gs.texto_ui("hint_assist"), Vector2(300, 250))
 			await au._esperar(0.1)
@@ -368,22 +369,21 @@ func _rodar_fase51() -> void:
 		await au._abrir()
 		au._estado = "f51_marcas"
 		var sala: Node = au._cena.get_node("Sala")
-		au._exigir(sala._marcas["treadmill"].fita.nome_sprite == "tape_mark_treadmill", au._estado, "esteira comprável: marca normal")
-		au._exigir(sala._marcas["jump_rope"].fita.nome_sprite == "tape_mark_rope_dim" and sala._marcas["jump_rope"].cadeado.visible, au._estado,
-			"corda trancada: marca _dim com cadeado")
+		au._exigir(not au._aparelho_visivel("treadmill") and not au._aparelho_visivel("jump_rope"), au._estado,
+			"6d2: antes da compra não aparece nada na sala (sem fita, silhueta nem cadeado)")
+		au._exigir(not ("_marcas" in sala), au._estado, "6d2: a sala não tem mais marcas de fita")
 		await au._ver("f51_marcas")
 		if au._quer("f51_marca_hover"):
-			sala._hover_em(Vector2(445, 267))
-			au._dica_em(sala._texto_marca("treadmill"), Vector2(430, 200))
-			au._exigir(sala._marcas["treadmill"].fita.nome_sprite == "tape_mark_treadmill_hi", "f51_marca_hover", "o mouse acende a marca _hi")
+			sala._hover_em(Vector2(466, 324))  # onde ficava a marca da esteira: agora é só chão, sem dica
 			await au._esperar(0.1)
+			au._exigir(not au._dica_inst().visible, "f51_marca_hover", "6d2: o chão vazio não mostra dica")
 			await au._ver("f51_marca_hover")
 			sala._sair_hover()
 			au._sem_dica()
 		if au._quer("f51_marca_trancada"):
-			sala._hover_em(Vector2(296, 166))
-			au._dica_em(sala._texto_marca("jump_rope"), Vector2(250, 120))
+			sala._hover_em(Vector2(296, 166))  # o prego da corda: sem corda comprada, nada ali
 			await au._esperar(0.1)
+			au._exigir(not au._dica_inst().visible, "f51_marca_trancada", "6d2: o prego vazio não mostra dica")
 			await au._ver("f51_marca_trancada")
 			sala._sair_hover()
 			au._sem_dica()
@@ -416,20 +416,20 @@ func _rodar_fase51() -> void:
 		await au._ver("f51_caixa_0")
 		var tr0: float = au.gs.treino
 		if au._quer("f51_caixa_hover"):
-			sala._hover_em(Vector2(445, 250))
+			sala._hover_em(sala._caixas["treadmill"].area().get_center())
 			await au._esperar(0.1)
 			au._exigir(au._dica_inst().visible, "f51_caixa_hover", "a caixa da a dica no hover")
 			await au._ver("f51_caixa_hover")
 			sala._sair_hover()
-		sala._clique_em(Vector2(445, 250))  # clique de mouse na caixa
+		sala._clique_em(sala._caixas["treadmill"].area().get_center())  # clique de mouse na caixa
 		await au._esperar(0.3)
 		au._exigir(au.gs.cliques_faltando("treadmill") == 2 and au.gs.treino == tr0, "f51_caixa_1", "1 clique: faltam 2 e o clique nao treina")
 		await au._ver("f51_caixa_1")
-		sala._clique_em(Vector2(445, 250))
+		sala._clique_em(sala._caixas["treadmill"].area().get_center())
 		await au._esperar(0.3)
 		au._exigir(au.gs.cliques_faltando("treadmill") == 1, "f51_caixa_2", "2 cliques: falta 1")
 		await au._ver("f51_caixa_2")
-		sala._clique_em(Vector2(445, 250))
+		sala._clique_em(sala._caixas["treadmill"].area().get_center())
 		await au._esperar(0.12)
 		au._exigir(au.gs.aparelho_montado("treadmill") and au.gs.foco == "treadmill" and not au.gs.tem_caixa("treadmill"), "f51_caixa_abrindo",
 			"3 cliques abrem: aparelho montado e foco nele")

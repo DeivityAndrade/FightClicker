@@ -6,6 +6,7 @@ extends Control
 @onready var _sala: Sala = $Sala
 @onready var _hud: Hud = $Hud
 @onready var _esq: PainelAtributos = $PainelAtributos
+@onready var _prox: PainelProxima = $PainelProxima
 @onready var _dir: PainelLoja = $PainelLoja
 @onready var _barra: BarraBaixo = $BarraBaixo
 @onready var _fluxo: Fluxo = $Fluxo
@@ -17,6 +18,9 @@ var _faixa: FaixaAviso
 var _cursor: AnimSprite
 var _sujo := true
 var _mouse_escondido := false
+var _so_sala := false  # tecla H: some a interface, ficam a sala, o Treino e o LUTAR
+var _cena_ui: CenaUi
+var cena_forcada := false  # gancho dos testes: age como se houvesse cena em andamento
 
 
 func _ready() -> void:
@@ -26,8 +30,7 @@ func _ready() -> void:
 
 	# Fase 6d: a descrição dos itens da loja/melhorias aparece no balão colado ao cursor (Dica, pelo próprio PainelLoja);
 	# a caixa de informação do painel de atributos fica só para a dica de cada atributo.
-	# Marca de fita no chão/parede e botão de foco trancado: nenhum dos dois treina nem troca o foco, só apontam a compra.
-	_sala.marca_clicada.connect(_apontar_compra)
+	# Botão de foco trancado (aparelho não comprado): não treina nem troca o foco, só abre o painel no cartão dele.
 	_sala.mural_clicado.connect(func() -> void: _fluxo.abrir_mural())  # 6c2: o mural da parede abre a janela do mural
 	_barra.compra_pedida.connect(_apontar_compra)
 
@@ -48,7 +51,7 @@ func _ready() -> void:
 	_cursor.visible = false
 	add_child(_cursor)
 
-	_botao_mapa = BotaoMapa.new()  # Fase 5.4: o mapa da árvore fica atrás deste botão (132,22), brilha quando há compra
+	_botao_mapa = BotaoMapa.new()  # Fase 5.4: o mapa da árvore fica atrás deste botão (118,22), brilha quando há compra
 	add_child(_botao_mapa)
 	_botao_mapa.pressed.connect(_fluxo.abrir_arvore)
 	add_child(Dica.new())  # Fase 5.1: dica flutuante do nível 3 (hover)
@@ -93,11 +96,18 @@ func _atualizar_tudo() -> void:
 	_sujo = false
 	_hud.atualizar()
 	_esq.atualizar()
+	_prox.bloco.atualizar()
 	_dir.atualizar()
 	_barra.atualizar()
 
 
 func _process(_delta: float) -> void:
+	# O painel fecha sozinho durante as cenas (a cena do posto, a chegada à academia, a saída do John) e volta como estava.
+	var em_cena := cena_forcada or GameState.cena_sala != "" or GameState.sucessao_estado() != "none" or (_cena_ui != null and _cena_ui.player != null and _cena_ui.player.ativa)
+	_dir.forcar_fechado(em_cena)
+	Balao.limite_direito = minf(_dir.borda_esquerda() - 6.0, 636.0) if _dir.esta_aberto() and _dir.esta_fixado() else 636.0
+	if _so_sala:
+		_aplicar_so_sala()
 	_sala.janela_aberta = _fluxo.ocupado()  # caixa não recebe clique com janela, prévia ou luta por cima
 	_sala.dica_ativa = _barra.dica_ativa()
 	# Sobre a sala: esconde o cursor do sistema e desenha a luva (mesma arte da mão do lutador).
@@ -125,6 +135,45 @@ func _tecla_espaco(event: InputEventKey) -> void:
 	_sala.treinar_pelo_teclado()
 
 
+## L abre/fecha a loja, E a equipe (aba TREINO), H mostra só a sala (some a interface, ficam o Treino e o LUTAR).
+func _atalho_painel(tecla: int) -> bool:
+	var aba := ""
+	match tecla:
+		KEY_L:
+			aba = PainelLoja.ABA_LOJA
+		KEY_E:
+			aba = PainelLoja.ABA_TREINO
+		KEY_H:
+			definir_so_sala(not _so_sala)
+			return true
+		_:
+			return false
+	if _so_sala:
+		definir_so_sala(false)  # O1: L ou E tira do "só a sala" e abre o painel na aba pedida
+		_dir.abrir(aba)
+	else:
+		_dir.alternar(aba)  # O2: mesma aba aberta fecha (e solta o FIXAR); outra aba só troca e continua fixado
+	return true
+
+
+func definir_so_sala(ativo: bool) -> void:
+	_so_sala = ativo
+	_hud.modo_so_sala(ativo)
+	_barra.modo_so_sala(ativo)
+	if not ativo:
+		for n in [_esq, _prox, _botao_mapa, _dir]:
+			(n as CanvasItem).visible = true
+
+
+func esta_so_sala() -> bool:
+	return _so_sala
+
+
+func _aplicar_so_sala() -> void:
+	for n in [_esq, _prox, _botao_mapa, _dir]:
+		(n as CanvasItem).visible = false
+
+
 # Teclas 1 a 4 trocam o foco (a 4ª só existe na carreira com arte) (atalho para trocar sem mexer o mouse).
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_SPACE:
@@ -133,6 +182,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if _fluxo.ocupado():
 			return  # prévia, luta ou janela aberta: os atalhos da garagem ficam quietos
+		if not _debug.visible and not GameState.acoes_bloqueadas() and _atalho_painel(event.keycode):
+			get_viewport().set_input_as_handled()
+			return
 		var i: int = event.keycode - KEY_1
 		var lista: Array = GameState.aparelhos_da_carreira()
 		if i >= 0 and i < lista.size():
@@ -160,8 +212,9 @@ func _montar_fala() -> void:
 	cena_ui.sala = _sala
 	cena_ui.fluxo = _fluxo
 	cena_ui.balao = _balao
-	cena_ui.alvos = [_hud, _esq, _dir, _barra, _botao_mapa, _faixa, $FaixaAssistido]
+	cena_ui.alvos = [_hud, _esq, _prox, _dir, _barra, _botao_mapa, _faixa, $FaixaAssistido]
 	add_child(cena_ui)
+	_cena_ui = cena_ui
 
 
 ## O GameState pediu uma fala: o balão nasce preso à cabeça de quem fala (nunca cobre o alvo; sem espaço, a fala some).
@@ -179,3 +232,6 @@ func _ao_fala_pedida(speaker: String, texto: String, id: String) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		GameState.registrar_clique()
+		# Clique na sala: o painel solto fecha (o fixado fica). Clique no próprio painel ou na aba não conta.
+		if _dir.esta_aberto() and not _dir.esta_fixado() and get_viewport().gui_get_hovered_control() == _sala:
+			_dir.fechar_se_solto()

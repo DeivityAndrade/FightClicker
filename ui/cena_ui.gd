@@ -7,7 +7,6 @@ extends Control
 ## chegada = estado final aplicado sem tocar (design §1.4).
 
 const TELA := Vector2(640, 360)
-const JANELA := Rect2(128, 18, 384, 272)  # a janela da cena = a sala
 const BOTAO := Rect2(570, 334, 62, 18)
 
 var sala: Sala
@@ -65,8 +64,8 @@ func _montar_barras() -> void:
 	_barras.visible = false
 	_barras.set_meta("ui_align", "ignore")
 	add_child(_barras)
-	# Tudo fora da janela 384x272 da sala (prancha: a cena é uma janela no meio de uma tela preta).
-	var j := JANELA
+	# Tudo fora da janela da sala fica preto (6d2: só as faixas de cima e de baixo).
+	var j := Sala.area()  # a janela da cena = a sala (6d2: a tela toda, sobram as faixas de cima e de baixo)
 	for r in [Rect2(0, 0, TELA.x, j.position.y), Rect2(0, j.end.y, TELA.x, TELA.y - j.end.y),
 			Rect2(0, j.position.y, j.position.x, j.size.y), Rect2(j.end.x, j.position.y, TELA.x - j.end.x, j.size.y)]:
 		var c := ColorRect.new()

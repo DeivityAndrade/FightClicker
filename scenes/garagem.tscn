@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://ui/garagem.gd" id="1_garagem"]
 [ext_resource type="Script" path="res://ui/sala.gd" id="2_sala"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://ui/debug_overlay.gd" id="7_debug"]
 [ext_resource type="Script" path="res://ui/fluxo.gd" id="8_fluxo"]
 [ext_resource type="Script" path="res://ui/faixa_assistido.gd" id="9_assist"]
+[ext_resource type="Script" path="res://ui/painel_proxima.gd" id="10_prox"]
 
 [node name="Garagem" type="Control"]
 layout_mode = 3
@@ -42,6 +43,10 @@ script = ExtResource("3_hud")
 [node name="PainelAtributos" type="Control" parent="."]
 layout_mode = 0
 script = ExtResource("4_esq")
+
+[node name="PainelProxima" type="Control" parent="."]
+layout_mode = 0
+script = ExtResource("10_prox")
 
 [node name="PainelLoja" type="Control" parent="."]
 layout_mode = 0

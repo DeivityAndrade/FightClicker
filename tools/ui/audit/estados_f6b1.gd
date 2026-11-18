@@ -61,17 +61,17 @@ func _rodar_fase6b1() -> void:
 		await au._ver("f6b1_s6")
 		await _ate(t1, 1.9)
 		await au._ver("f6b1_s7")
-		await _ate(t1, 4.3)
+		await _ate(t1, 6.4)  # 6d2: o John anda ~172 px até o caixote novo: a fala sai em 5,48 s (era 3,4)
 		au._exigir(au._balao().ativo(), "f6b1_s8", "o balão 'vamos ver sua guarda.' deveria estar na tela")
 		au._checar_balao_6b1("f6b1_s8", "first")
 		await au._ver("f6b1_s8")
-		await _ate(t1, 5.3)
+		await _ate(t1, 6.9)
 		await au._ver("f6b1_s9")
-		for i in 40:
+		for i in 60:
 			if au.gs.sucessao_estado() == "none":
 				break
 			await au._esperar(0.1)
-		au._exigir(au.gs.sucessao_estado() == "none", "f6b1_s10", "o controle volta em ~6 s (%s)" % au.gs.sucessao_estado())
+		au._exigir(au.gs.sucessao_estado() == "none", "f6b1_s10", "o controle volta em ~8 s (%s)" % au.gs.sucessao_estado())
 		await au._esperar(0.5)
 		au._exigir(sala.mentor_visivel() and not sala.cena.ator_visivel("first"), "f6b1_s10", "o John sentado agora é o mentor da sala")
 		au._cena.get_node("Fluxo").fechar_cartao_aberto()  # o clique que fecha o cartão "o que você trouxe" não treina
@@ -189,7 +189,7 @@ func _rodar_fase6b1() -> void:
 		await au._esperar(0.6)
 		var sala_m: Node = au._cena.get_node("Sala")
 		au._exigir(sala_m.mentor_visivel() and sala_m._caixote.visible, "f6b1_mentor_sentado", "John sentado no caixote em mentor_spot")
-		au._exigir(sala_m._mentor.position == Vector2(254, 252), "f6b1_mentor_sentado", "pés do mentor em mentor_spot: %s" % str(sala_m._mentor.position))
+		au._exigir(sala_m._mentor.position == sala_m.ponto_mentor(), "f6b1_mentor_sentado", "pés do mentor em mentor_spot: %s" % str(sala_m._mentor.position))
 		await au._ver("f6b1_mentor_sentado")
 		var cu2: Node = au._cena_ui()
 		for caso in [["f6b1_mentor_balao", "vamos ver sua guarda."], ["f6b1_mentor_balao_isso", "isso."]]:
