@@ -1006,3 +1006,10 @@ nas chaves novas; não grava se a conferência do mural falhar). A camada do sí
 - Sentado (`disciple_sit_rest`) sem parte de cima, a coxa fica atrás dos braços: o símbolo da perna quase some. Aceito.
 - O busto é recorte de pose de corpo inteiro (braços caídos). Um retrato feito para o mural (ombro virado, olhar para a câmera, luz de estúdio) pediria uma folha `bust` própria com as mesmas camadas.
 - A roseta e os ícones do hall são placeholder honesto; os ícones cinza são conversão por luminância.
+
+## 27. Fase 6d (tela principal maior: proposta, aguardando o dono)
+Opções A (gavetas), B (HUD mínimo) e C (híbrido, recomendada) em `docs/arte/fase6d-tela-opcoes.md`; mockups
+`mockups/fase6d_tela_*.png` (gerador `tools/art/make_mockup_fase6d_tela.gd`). Regra proposta para qualquer opção: a sala de
+384x272 **não se move** (alvo em x 281..362); o fundo cresce para 640x360 continuando a mesma perspectiva (ponto de fuga
+320,-28), e a UI vira plaquetas flutuantes que nunca encostam na zona do alvo (x 273..370, y 150..291) quando fechadas.
+Enquanto o dono não escolher, o §2 (layout com painéis laterais) continua valendo.

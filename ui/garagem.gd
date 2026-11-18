@@ -24,7 +24,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = _tema()
 
-	_dir.info_mudou.connect(_esq.mostrar_info)
+	# Fase 6d: a descrição dos itens da loja/melhorias aparece no balão colado ao cursor (Dica, pelo próprio PainelLoja);
+	# a caixa de informação do painel de atributos fica só para a dica de cada atributo.
 	# Marca de fita no chão/parede e botão de foco trancado: nenhum dos dois treina nem troca o foco, só apontam a compra.
 	_sala.marca_clicada.connect(_apontar_compra)
 	_sala.mural_clicado.connect(func() -> void: _fluxo.abrir_mural())  # 6c2: o mural da parede abre a janela do mural

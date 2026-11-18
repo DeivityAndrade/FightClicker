@@ -87,12 +87,12 @@ Regras da cena inteira: interface ligada, o soco vale do primeiro ao último qua
 | # | Tempo | Câmera | Quem e como | Fala | Passa para o próximo |
 |---|---|---|---|---|---|
 | **J1** Levanta e pega a bolsa | 0,0–1,6 s | Sala 1x, interface ligada | O John levanta do caixote e pega uma bolsa de lona que estava atrás dele. A bolsa só existe a partir daqui | — | Ele começa a andar |
-| **J2** Atravessa a sala | 1,6–4,3 s | igual | Anda a 48 px/s de (254,252) até (380,246), **por trás do saco e do lutador**. O soco do jogador passa na frente dele | — | Ele para perto da porta |
-| **J3** Olha a sala | 4,3–5,6 s | igual | Vira para a esquerda e olha a sala por 1,3 s, com a bolsa no ombro | — | O balão entra |
-| **J4** "vou procurar meu rumo." | 5,6–10,0 s | igual | Parado. Dois balões passivos seguidos, empurrados para a direita do alvo | **John:** "vou procurar meu rumo." (`saida_rumo_1`) e "cuidem bem disso aqui." (`saida_rumo_2`) | O Osmar responde |
-| **J5** "vê se manda notícia." | 10,0–12,4 s | igual | O Osmar responde do lugar dele, sem andar. O John acena com a cabeça, uma vez | **Osmar:** "vê se manda notícia." (`saida_resposta`) | O John vira para a porta |
-| **J6** Sai pela porta da rua | 12,4–13,9 s | igual | Abre a porta, sai, a porta fecha. Ninguém se despede de novo | — | A sala segue |
-| **J7** O caixote tem outro dono | 13,9–16,5 s | igual | O último que passou o posto anda do ponto de pé (150,262) até o caixote e senta. Na Carreira 2 não há ninguém: o caixote fica vazio | — | Fim. O treino nunca parou |
+| **J2** Atravessa a sala | 1,6–4,8 s | igual | Anda a 48 px/s em 3 trechos: do caixote sobe até o fundo do piso (274,224), segue rente à parede até (364,224), **48 px atrás do lutador e atrás do saco**, e só desce até (380,246) depois do saco. Na faixa do lutador só as canelas dele passam atrás da cabeça do lutador (correção do C2 da 6d) | — | Ele para perto da porta |
+| **J3** Olha a sala | 4,8–6,1 s | igual | Vira para a esquerda e olha a sala por 1,3 s, com a bolsa no ombro | — | O balão entra |
+| **J4** "vou procurar meu rumo." | 6,1–10,5 s | igual | Parado. Dois balões passivos seguidos, empurrados para a direita do alvo | **John:** "vou procurar meu rumo." (`saida_rumo_1`) e "cuidem bem disso aqui." (`saida_rumo_2`) | O Osmar responde |
+| **J5** "vê se manda notícia." | 10,5–12,9 s | igual | O Osmar responde do lugar dele, sem andar. O John acena com a cabeça, uma vez | **Osmar:** "vê se manda notícia." (`saida_resposta`) | O John vira para a porta |
+| **J6** Sai pela porta da rua | 12,9–14,4 s | igual | Abre a porta, sai, a porta fecha. Ninguém se despede de novo | — | A sala segue |
+| **J7** O caixote tem outro dono | 14,4–17,0 s | igual | O último que passou o posto anda do ponto de pé (150,262) até o caixote e senta. Na Carreira 2 não há ninguém: o caixote fica vazio | — | Fim. O treino nunca parou |
 | **J8** Na garagem (reserva) | mesmos tempos | igual | Tudo igual até o J5. No J6 a porta de enrolar sobe, emperra, e ele passa por baixo, como sempre fez. A porta desce sozinha | as mesmas | Fim |
 
 ### Se o jogador interromper

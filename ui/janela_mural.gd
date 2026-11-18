@@ -295,6 +295,19 @@ func _no(n: Dictionary, y: float) -> void:
 			cor = UiTema.R3
 		_:
 			texto = UiTema.txt("hall_buy_only_end", "COMPRA NO FIM DA CAMPANHA")
+	# Fase 6d: balão colado ao cursor com o que o nó dá (descrição inteira), o preço e o estado.
+	var linhas_dica: Array = [
+		{"texto": nome_no, "cor": UiTema.WHITE},
+		{"texto": UiTema.txt(str(n.id) + "_desc", str(n.effect_text)), "cor": UiTema.G3},
+		{"texto": texto, "cor": cor if estado != "closed" else UiTema.G2},
+	]
+	var area := Control.new()
+	area.name = "Hover"
+	area.mouse_filter = Control.MOUSE_FILTER_PASS
+	area.size = linha.size
+	UiTema.alinhar(area, "ignore")
+	linha.add_child(area)
+	_ligar_balao(area, linhas_dica, linha)
 	var w := roundf(UiTema.largura_visivel(texto)) + 12.0
 	var rect := Rect2(20, 30, w, 11)
 	if estado == "buyable":
@@ -305,11 +318,18 @@ func _no(n: Dictionary, y: float) -> void:
 		b.mouse_exited.connect(func() -> void: b.modulate = Color.WHITE)
 		UiTema.botao_conteudo(b, texto, cor)
 		b.name = "Comprar"
+		_ligar_balao(b, linhas_dica, linha)  # o botão fica por cima da área: também mostra o balão
 		var id := str(n.id)
 		b.pressed.connect(func() -> void: _comprar(id))
 	else:
 		var chip := UiTema.nine_patch(linha, "ui_honor_chip", rect)
 		UiTema.rotulo_centrado(chip, UiTema.area_nove("ui_honor_chip", rect.size), texto, cor)
+
+
+func _ligar_balao(c: Control, linhas: Array, alvo: Control) -> void:
+	c.mouse_entered.connect(func() -> void: Dica.pedir_linhas(linhas, alvo))
+	c.mouse_exited.connect(Dica.limpar)
+	c.tree_exiting.connect(Dica.limpar)  # a linha é refeita depois da compra e a janela fecha: o balão não fica órfão
 
 
 func _comprar(id: String) -> void:

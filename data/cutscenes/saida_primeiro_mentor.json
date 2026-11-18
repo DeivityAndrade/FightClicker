@@ -61,21 +61,25 @@
       ] }
     ] },
 
-    { "_q": "J2 Atravessa a sala por trás do saco (1,6-4,3)", "_t": 1.6, "_nota": "126 px a 48 px/s. y 246-252: atrás do saco (ordem 253) e do lutador (272); nunca cobre o alvo.", "type": "move", "actor": "first", "to": [380, 246], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+    { "_q": "J2 Atravessa a sala por trás, rente à parede (1,6-4,8)", "_t": 1.6, "_nota": "Bug C2 da 6d: em y 246 ele passava colado e sobreposto ao lutador (303,272). Agora sobe até y 224 (fundo do piso, 48 px atrás dos pés do lutador), cruza por trás do lutador e do saco, e só desce até o ponto de fala depois de x 356 (fim do saco). Na faixa do lutador só as canelas dele passam atrás da cabeça e das luvas do lutador; nunca cobre o alvo. 151,6 px a 48 px/s = 3,16 s.", "type": "sequence", "steps": [
+      { "_t": 1.6, "_nota": "34,4 px: sai do caixote para o fundo, ainda à esquerda do lutador (x 274 < 285)", "type": "move", "actor": "first", "to": [274, 224], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+      { "_t": 2.32, "_nota": "90 px rente à parede, atrás do lutador e do saco (ordem 224 < 253 < 272)", "type": "move", "actor": "first", "to": [364, 224], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+      { "_t": 4.2, "_nota": "27,2 px: desce até o ponto de fala, já à direita do saco", "type": "move", "actor": "first", "to": [380, 246], "speed": 48, "anim": "walk_duffel", "facing": "right" }
+    ] },
 
-    { "_q": "J3 Olha a sala (4,3-5,6)", "_t": 4.3, "type": "pose", "actor": "first", "anim": "look_room_left", "facing": "left", "hold": 1.0 },
+    { "_q": "J3 Olha a sala (4,8-6,1)", "_t": 4.8, "type": "pose", "actor": "first", "anim": "look_room_left", "facing": "left", "hold": 1.0 },
 
-    { "_q": "J4 'vou procurar meu rumo.' / 'cuidem bem disso aqui.' (5,6-10,0)", "_t": 5.6, "type": "say", "line": "saida_rumo_1", "mode": "passive", "hold": 0.9 },
-    { "_t": 7.7, "type": "say", "line": "saida_rumo_2", "mode": "passive", "hold": 1.1 },
+    { "_q": "J4 'vou procurar meu rumo.' / 'cuidem bem disso aqui.' (6,1-10,5)", "_t": 6.1, "type": "say", "line": "saida_rumo_1", "mode": "passive", "hold": 0.9 },
+    { "_t": 8.2, "type": "say", "line": "saida_rumo_2", "mode": "passive", "hold": 1.1 },
 
-    { "_q": "J5 'vê se manda notícia.' (10,0-12,4)", "_t": 10.0, "_nota": "O Osmar responde sem sair do lugar. Na academia, as folhas _gym (luz dos tubos).", "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "talk", "loop": true, "wait": false },
-    { "_t": 10.0, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "talk_gym", "loop": true, "wait": false },
-    { "_t": 10.0, "type": "say", "line": "saida_resposta", "mode": "passive", "hold": 0.9 },
-    { "_t": 12.0, "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "idle", "loop": true, "wait": false },
-    { "_t": 12.0, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "idle_gym", "loop": true, "wait": false },
-    { "_t": 12.0, "_nota": "Um aceno de cabeça, um só. Não é o gesto dos dois toques.", "type": "pose", "actor": "first", "anim": "nod_left", "facing": "left" },
+    { "_q": "J5 'vê se manda notícia.' (10,5-12,9)", "_t": 10.5, "_nota": "O Osmar responde sem sair do lugar. Na academia, as folhas _gym (luz dos tubos).", "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "talk", "loop": true, "wait": false },
+    { "_t": 10.5, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "talk_gym", "loop": true, "wait": false },
+    { "_t": 10.5, "type": "say", "line": "saida_resposta", "mode": "passive", "hold": 0.9 },
+    { "_t": 12.5, "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "idle", "loop": true, "wait": false },
+    { "_t": 12.5, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "idle_gym", "loop": true, "wait": false },
+    { "_t": 12.5, "_nota": "Um aceno de cabeça, um só. Não é o gesto dos dois toques.", "type": "pose", "actor": "first", "anim": "nod_left", "facing": "left" },
 
-    { "_q": "J6 Sai. Academia: pela porta da rua (12,4-13,9)", "_t": 12.4, "if": { "location": "gym" }, "type": "sequence", "steps": [
+    { "_q": "J6 Sai. Academia: pela porta da rua (12,9-14,4)", "_t": 12.9, "if": { "location": "gym" }, "type": "sequence", "steps": [
       { "type": "prop", "id": "gym_door", "anim": "open", "wait": false },
       { "type": "sound", "id": "gym_door_open", "volume": 0.5 },
       { "type": "parallel", "steps": [
@@ -93,7 +97,7 @@
       { "type": "prop", "id": "gym_light", "visible": false },
       { "type": "wait", "seconds": 0.1 }
     ] },
-    { "_q": "J6/J8 Sai. Garagem: por baixo da porta de enrolar, como sempre", "_t": 12.4, "if": { "location": "garage" }, "type": "sequence", "steps": [
+    { "_q": "J6/J8 Sai. Garagem: por baixo da porta de enrolar, como sempre", "_t": 12.9, "if": { "location": "garage" }, "type": "sequence", "steps": [
       { "type": "prop", "id": "door_outside", "visible": true },
       { "type": "prop", "id": "daylight", "visible": true, "anim": "open_fast", "wait": false },
       { "type": "sound", "id": "door_roll", "volume": 0.7 },
@@ -111,9 +115,9 @@
       { "type": "prop", "id": "door_outside", "visible": false }
     ] },
 
-    { "_q": "J7 O último que passou o posto senta no caixote (13,9-16,5)", "_t": 13.9, "_nota": "seat_spot = ponto de sentar do local (mentor_spot ou gym_mentor_spot). 104 px a 48 px/s.", "type": "move", "actor": "last", "to": "seat_spot", "seconds": 2.2, "anim": "walk_bare", "facing": "right" },
-    { "_t": 16.1, "type": "pose", "actor": "last", "anim": "sit_down" },
-    { "_t": 16.5, "type": "pose", "actor": "last", "anim": "sit_rest", "loop": true, "wait": false }
+    { "_q": "J7 O último que passou o posto senta no caixote (14,4-17,0)", "_t": 14.4, "_nota": "seat_spot = ponto de sentar do local (mentor_spot ou gym_mentor_spot). 104 px a 48 px/s.", "type": "move", "actor": "last", "to": "seat_spot", "seconds": 2.2, "anim": "walk_bare", "facing": "right" },
+    { "_t": 16.6, "type": "pose", "actor": "last", "anim": "sit_down" },
+    { "_t": 17, "type": "pose", "actor": "last", "anim": "sit_rest", "loop": true, "wait": false }
   ],
 
   "reactions": [],

@@ -8,6 +8,9 @@ const AREA := Rect2(128, 18, 384, 272)
 const ALVO := Rect2(312, 182, 48, 90)  # área clicável central (manifest.click_area)
 const PONTO_PADRAO := Vector2(336, 222)
 const POOL_NUMEROS := 24
+const NUMEROS_FOLGA := 6.0  # 6d: espaço vertical entre os números de um mesmo clique
+const NUMEROS_MAX_POR_CLIQUE := 3  # 6d: no máximo 3 números por clique (um por atributo que subiu)
+const ESCALA_GRANDE_A_PARTIR := 0.75  # 6d: ganho >= 75% do maior sai grande (2x); abaixo disso, pequeno (1x)
 const POOL_FX := 6
 # Deslocamentos em x dos números sucessivos: espalham a coluna quando se clica rápido.
 const DESVIOS_X := [-30, 30, 0]
@@ -562,7 +565,11 @@ func _area_lateral(id: String) -> Rect2:
 func _ao_clicar(ganho: float, critico: bool, aparelho: String, atributo: String, texto: String) -> void:
 	var p := _pos_clique
 	_pos_clique = PONTO_PADRAO
-	_mostrar_numero(p, ganho, critico, atributo, texto)
+	var partes := ganhos_por_atributo(ganho, aparelho)
+	if partes.size() > 1:
+		_mostrar_numeros_divididos(p, partes, critico, texto)  # 6d: um número por atributo que subiu
+	else:
+		_mostrar_numero(p, ganho, critico, atributo, texto)
 	_reagir(aparelho, critico)
 	_tremer(2 if critico else 1, 0.16 if critico else 0.07)
 	sfx.golpe(aparelho, critico)
@@ -588,6 +595,65 @@ func _mostrar_numero(p: Vector2, ganho: float, critico: bool, atributo: String, 
 		n.iniciar("+%s %s" % [NumberFormat.fmt(ganho), nome], UiTema.cor_atributo(atributo).lerp(UiTema.WHITE, 0.55 if atributo == "strength" else 0.25),
 			false, "", Vector2(x, y), 0.55, 30.0)
 	_afastar_antigos(n, critico)
+
+
+## Fase 6d: quanto cada atributo subiu neste clique: [{atributo, ganho}] do maior para o menor (empate: ordem do jogo),
+## só os que subiram (e aparecem na tela com valor), no máximo 3. A conta é a mesma do GameState (ganho x fração da `divisao_aparelho`); aparelho de
+## um atributo só devolve 1 item (e a sala usa o número de sempre).
+static func ganhos_por_atributo(ganho: float, aparelho: String) -> Array:
+	var div: Dictionary = GameState.divisao_aparelho(aparelho)
+	var ordem: Array = GameState.dados.atributos
+	var lista: Array = []
+	for a in div:
+		var g := ganho * float(div[a])
+		if g > 0.0 and NumberFormat.fmt(g) != "0":  # fatia que aparece como "+0" não conta como "subiu" na tela
+			lista.append({"atributo": str(a), "ganho": g})
+	lista.sort_custom(func(x: Dictionary, y: Dictionary) -> bool:
+		if not is_equal_approx(float(x.ganho), float(y.ganho)):
+			return float(x.ganho) > float(y.ganho)
+		return ordem.find(x.atributo) < ordem.find(y.atributo))
+	return lista.slice(0, NUMEROS_MAX_POR_CLIQUE)
+
+
+## Escala (inteira, para não borrar o pixel art) de cada número: o maior e os quase iguais a ele saem grandes (2x),
+## os menores ficam pequenos (1x).
+static func escala_do_ganho(ganho: float, maior: float) -> float:
+	return 2.0 if maior > 0.0 and ganho / maior >= ESCALA_GRANDE_A_PARTIR else 1.0
+
+
+## Aparelho de vários atributos (Jiu-jitsu etc.): um número por atributo, na cor dele, empilhados subindo do ponto do
+## clique (o maior embaixo, perto do clique). No crítico o maior leva o vermelho, o "!" e a frase de sabor.
+func _mostrar_numeros_divididos(p: Vector2, partes: Array, critico: bool, texto: String) -> void:
+	var maior := float(partes[0].ganho)
+	var escalas: Array[float] = []
+	var altura_total := 0.0
+	for i in partes.size():
+		var e := escala_do_ganho(float(partes[i].ganho), maior)
+		escalas.append(e)
+		altura_total += 7.0 * e + (NUMEROS_FOLGA if i > 0 else 0.0)
+	var dx := float(DESVIOS_X[_desvio_i % DESVIOS_X.size()])
+	_desvio_i += 1
+	var x := clampf(p.x + dx, AREA.position.x + 60.0, AREA.end.x - 60.0)
+	var y := clampf(p.y - 6.0, AREA.position.y + 40.0 + altura_total, AREA.end.y - 8.0)
+	var y_i := y - (4.0 if critico else 0.0)
+	_ordem += 1
+	for i in partes.size():
+		var n := _pegar_numero()
+		var a: String = partes[i].atributo
+		var sigla := str(GameState.dados.atributo_info(a).get("name", a)).to_upper().left(3)
+		var rotulo := "+%s %s" % [NumberFormat.fmt(float(partes[i].ganho)), sigla]
+		n.definir_z(Z_NUMEROS + (1000 if critico else 0) + (_ordem * 3 + (partes.size() - i)) % 900)
+		var xi := x + (0.0 if i == 0 else (-18.0 if i % 2 == 1 else 18.0))
+		if i > 0:
+			y_i -= (7.0 * escalas[i - 1] + 7.0 * escalas[i]) / 2.0 + NUMEROS_FOLGA
+		if critico and i == 0:
+			n.iniciar(rotulo + "!", UiTema.R3, true, texto if partes.size() == 1 else "", Vector2(xi, y_i), 0.85, 34.0)
+		else:
+			var cor := UiTema.cor_atributo(a).lerp(UiTema.WHITE, 0.55 if a == "strength" else 0.25)
+			# A frase do crítico fica no topo da pilha (a linha extra nasce acima do número que a leva).
+			var frase := texto if critico and i == partes.size() - 1 else ""
+			n.iniciar(rotulo, cor, false, frase, Vector2(xi, y_i), 0.6 if escalas[i] > 1.0 else 0.5, 30.0, 1.0, escalas[i])
+		_afastar_antigos(n, critico and i == 0)
 
 
 ## Empurra para cima os números antigos que ficariam sob o novo (crítico empurra tudo; normal só os normais).
@@ -1927,7 +1993,7 @@ class Numero extends RefCounted:
 		return _t / _dur if ativo else 2.0
 
 	func iniciar(texto: String, cor: Color, grande: bool, linha_extra: String, origem: Vector2,
-			dur: float, subida: float, alfa: float = 1.0) -> void:
+			dur: float, subida: float, alfa: float = 1.0, escala: float = 0.0) -> void:
 		ativo = true
 		_t = 0.0
 		_dur = dur
@@ -1937,7 +2003,7 @@ class Numero extends RefCounted:
 		_principal.text = texto
 		_principal.add_theme_color_override("font_color", cor)
 		self.grande = grande
-		_principal.scale = Vector2(2, 2) if grande else Vector2.ONE
+		_principal.scale = Vector2(escala, escala) if escala > 0.0 else (Vector2(2, 2) if grande else Vector2.ONE)
 		_extra.visible = linha_extra != ""
 		_extra.text = linha_extra
 		_extra.add_theme_color_override("font_color", UiTema.Y2)

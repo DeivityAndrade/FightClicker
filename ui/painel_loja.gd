@@ -489,53 +489,96 @@ func _sobre(chave: String) -> void:
 	_emitir_info()
 
 
+## Item (dicionário do cartão) do `_hover` atual, ou {} (a luva em uso não tem botão nem preço).
+func _item_do_hover() -> Dictionary:
+	if _hover == "l":
+		return _luva
+	if _hover == "c":
+		return _crew
+	if _hover == "m":
+		return _metro
+	var id := _hover.substr(2)
+	if _hover.begins_with("g:"):
+		return _gens.get(id, {})
+	if _hover.begins_with("p:"):
+		return _pagos.get(id, {})
+	if _hover.begins_with("a:"):
+		return _unl.get(id, {})
+	if _hover.begins_with("u:"):
+		return _ups.get(id, {})
+	return {}
+
+
+## Fase 6d: a descrição vai no balão colado ao cursor (componente Dica), não mais na caixa do painel da esquerda.
+## O sinal `info_mudou` continua saindo (quem quiser ouvir). O balão leva nome, descrição, efeito e custo.
+func _emitir(info: Dictionary) -> void:
+	info_mudou.emit(info)
+	if info.is_empty():
+		Dica.limpar()
+		return
+	var linhas: Array = [{"texto": str(info.get("titulo", "")), "cor": UiTema.WHITE}]
+	if str(info.get("texto", "")) != "":
+		linhas.append({"texto": str(info.texto), "cor": UiTema.G3})
+	for l in str(info.get("extra", "")).split("\n"):
+		linhas.append({"texto": l, "cor": UiTema.Y1})
+	var item := _item_do_hover()
+	if not item.is_empty() and item.has("preco") and item.preco.visible and str(item.preco.text) != "" \
+			and str(info.get("extra", "")) != str(GameState.dados.ui.get("maxed", "MÁXIMO")):
+		var chave := "tip_cost_money" if str(item.get("moeda", "")) == "icon_money" else "tip_cost_treino"
+		var padrao := "CUSTO: {n} DINHEIRO" if chave == "tip_cost_money" else "CUSTO: {n} TREINO"
+		linhas.append({"texto": UiTema.txt(chave, padrao, {"n": str(item.preco.text)}),
+			"cor": UiTema.COL_MONEY if chave == "tip_cost_money" else UiTema.COL_TREINO})
+	var alvo: Control = item.get("botao", null)  # o item apontado é o botão (o balão nunca o cobre)
+	Dica.pedir_linhas(linhas, alvo)
+
+
 func _emitir_info() -> void:
 	if _hover == "":
-		info_mudou.emit({})
+		_emitir({})
 		return
 	if _hover == "la":
 		var eq: Dictionary = GameState.luva_equipada()
 		var desc := str(eq.get("description", ""))
 		if str(eq.get("id", "glove_old")) == "glove_old":
 			desc = GameState.descricao_luva_inicial()  # "O par do John..." (variante do discípulo: "Agora é seu.")
-		info_mudou.emit({"titulo": eq.get("name", ""), "texto": desc, "extra": ""})
+		_emitir({"titulo": eq.get("name", ""), "texto": desc, "extra": ""})
 		return
 	if _hover == "l":
 		var l: Dictionary = GameState.proxima_luva()
 		if l.is_empty():
 			l = GameState.luva_equipada()
-			info_mudou.emit({"titulo": l.get("name", ""), "texto": l.get("description", ""),
+			_emitir({"titulo": l.get("name", ""), "texto": l.get("description", ""),
 				"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
-			info_mudou.emit({"titulo": l.get("name", ""), "texto": l.get("description", ""),
+			_emitir({"titulo": l.get("name", ""), "texto": l.get("description", ""),
 				"extra": GameState.texto_efeito_loja(l)})
 		return
 	if _hover == "c":
 		var cd: Dictionary = GameState.lutas.crew_click
-		info_mudou.emit({"titulo": cd.get("name", ""), "texto": cd.get("description", ""),
+		_emitir({"titulo": cd.get("name", ""), "texto": cd.get("description", ""),
 			"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO")) if GameState.crew_click_comprado else GameState.texto_efeito_crew_click()})
 		return
 	if _hover == "m":
 		var def: Dictionary = GameState.proximo_metronomo()
 		if def.is_empty():
 			def = GameState.metronomo_atual()
-			info_mudou.emit({"titulo": def.get("name", ""), "texto": def.get("description", ""),
+			_emitir({"titulo": def.get("name", ""), "texto": def.get("description", ""),
 				"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
 			var extra := GameState.texto_efeito_metronomo(def)
 			if GameState.nivel_metronomo == 0 and GameState.assistido_disponivel():
 				# O modo assistido é o "nível 0" do Metrônomo: mostra o que o jogador tem agora.
 				extra += "\n" + UiTema.txt("shop_metronome_now", "", {"s": "%.1f" % GameState.assistido_intervalo()})
-			info_mudou.emit({"titulo": def.get("name", ""), "texto": def.get("description", ""), "extra": extra})
+			_emitir({"titulo": def.get("name", ""), "texto": def.get("description", ""), "extra": extra})
 		return
 	var id := _hover.substr(2)
 	if _hover.begins_with("p:"):
 		var gp: Dictionary = GameState.lutas.gerador_pago(id)
-		info_mudou.emit({"titulo": gp.get("name", id), "texto": gp.get("description", ""),
+		_emitir({"titulo": gp.get("name", id), "texto": gp.get("description", ""),
 			"extra": GameState.texto_efeito_loja(gp)})
 	elif _hover.begins_with("g:"):
 		var g: Dictionary = GameState.dados.gerador(id)
-		info_mudou.emit({"titulo": g.get("name", id), "texto": g.get("description", ""),
+		_emitir({"titulo": g.get("name", id), "texto": g.get("description", ""),
 			"extra": "+%s/S CADA" % NumberFormat.fmt(float(g.get("production", 0.0)))})
 	elif _hover.begins_with("a:") or not GameState.aparelho_montado(id):
 		# Aparelho que ainda não chegou: nome, descrição e de onde ele vem.
@@ -544,7 +587,7 @@ func _emitir_info() -> void:
 		var divisao := GameState.texto_divisao(id)
 		if divisao != "":
 			extra += "\n" + divisao  # aparelho da arte: como o treino se divide nos atributos
-		info_mudou.emit({"titulo": GameState.dados.aparelho(id).get("name", id), "texto": u.get("description", ""),
+		_emitir({"titulo": GameState.dados.aparelho(id).get("name", id), "texto": u.get("description", ""),
 			"extra": extra})
 	else:
 		var m: Dictionary = GameState.proxima_melhoria(id)
@@ -553,9 +596,9 @@ func _emitir_info() -> void:
 			# No máximo, mostra o aparelho do nível atual (última melhoria), não o do nível 0.
 			var ups: Array = ap.get("upgrades", [])
 			var atual: Dictionary = ups[ups.size() - 1] if not ups.is_empty() else {}
-			info_mudou.emit({"titulo": atual.get("name", ap.get("name", id)), "texto": "", "extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
+			_emitir({"titulo": atual.get("name", ap.get("name", id)), "texto": "", "extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
-			info_mudou.emit({"titulo": m.get("name", ""), "texto": m.get("description", ""),
+			_emitir({"titulo": m.get("name", ""), "texto": m.get("description", ""),
 				"extra": GameState.texto_efeito_melhoria(m)})
 
 

@@ -873,12 +873,14 @@ func mostrar_cartao(id: String) -> void:
 	c.size = Vector2(CARTAO_L, altura)
 	var d: Dictionary = _vis[id]
 	var centro_tela: Vector2 = d.centro - Vector2(_cam) + VP.position
-	var x := centro_tela.x + float(d.raio) + 6.0
-	if x + CARTAO_L > VP.end.x - 2.0:
-		x = centro_tela.x - float(d.raio) - 6.0 - CARTAO_L
-	x = clampf(x, VP.position.x + 2.0, VP.end.x - 2.0 - CARTAO_L)
-	var y := clampf(centro_tela.y - altura / 2.0, VP.position.y + 2.0, VP.end.y - 2.0 - altura)
-	c.position = Vector2(roundf(x), roundf(y))
+	# Fase 6d: a mesma regra do balão do jogo todo (Dica.posicionar): ao lado do cursor, dentro da janela do mapa e
+	# sem cobrir o nó apontado. Sem mouse sobre o nó (verificador, teclado), usa o centro do nó.
+	var r_no := float(d.raio)
+	var alvo_no := Rect2(centro_tela - Vector2(r_no, r_no), Vector2(r_no, r_no) * 2.0)
+	var mouse := painel.get_local_mouse_position()
+	if not alvo_no.grow(10.0).has_point(mouse):
+		mouse = centro_tela
+	c.position = Dica.posicionar(Vector2(CARTAO_L, altura), mouse, alvo_no, VP.grow(-2.0))
 	painel.add_child(c)
 	_cartao = c
 	_cartao_id = id

@@ -172,7 +172,10 @@ func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: f
 	sp.definir(nome)
 	if a.char == "current_player":
 		var lk: Dictionary = a.get("look", {})
-		sp.texture = DiscVisual.textura(nome, lk if not lk.is_empty() else _look(), lk.is_empty() and GameState.simbolo_no_lutador())
+		# O visual do discípulo é relido a cada pose: o elenco é resolvido no começo da cena, antes do CONFIRMAR.
+		var vivo: Dictionary = GameState.visual_lutador()
+		var usar: Dictionary = vivo if not vivo.is_empty() else (lk if not lk.is_empty() else _look())
+		sp.texture = DiscVisual.textura(nome, usar, lk.is_empty() and GameState.simbolo_no_lutador())
 	elif str(_personagens.get(a.char, {}).get("palette", "")) != "":
 		sp.texture = _textura_paleta(nome, str(_personagens[a.char].palette))  # o 2º vizinho: regata vermelha
 	a.nome = nome

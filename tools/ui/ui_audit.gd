@@ -101,6 +101,10 @@ const ESTADOS_TODOS := [
 	"f6c2_previa_falta", "f6c2_previa_falta_max", "f6c2_cartao_mural",
 	"f6c2_balao_mentor_john", "f6c2_balao_mentor_last",
 	"f6c2_simbolo_peito", "f6c2_simbolo_perna", "f6c2_simbolo_luta",
+	# Fase 6d: balão de descrição colado ao cursor (loja, melhorias, mapa, hall) e números do treino por atributo
+	"f6d_balao_gerador", "f6d_balao_melhoria", "f6d_balao_melhoria_baixo", "f6d_balao_loja", "f6d_balao_loja_metronomo",
+	"f6d_balao_cantos", "f6d_balao_mapa", "f6d_balao_hall",
+	"f6d_numeros_bjj", "f6d_numeros_bjj_critico", "f6d_numeros_pera", "f6d_numeros_um_atributo",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -122,6 +126,7 @@ var _f54_f6a = preload("res://tools/ui/audit/estados_f54_f6a.gd").new(self)
 var _f6b1 = preload("res://tools/ui/audit/estados_f6b1.gd").new(self)
 var _f6b2_f6c1 = preload("res://tools/ui/audit/estados_f6b2_f6c1.gd").new(self)
 var _f6c2 = preload("res://tools/ui/audit/estados_f6c2.gd").new(self)
+var _f6d = preload("res://tools/ui/audit/estados_f6d.gd").new(self)
 
 
 func _initialize() -> void:
@@ -346,6 +351,7 @@ func _rodar() -> void:
 	await _f6b2_f6c1._rodar_fase6c1()
 	await _f6b2_f6c1._rodar_fase6c1_extra()
 	await _f6c2._rodar_fase6c2()
+	await _f6d._rodar_fase6d()
 	_fechar_cena()
 
 
