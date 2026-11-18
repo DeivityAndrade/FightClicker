@@ -1,11 +1,24 @@
 class_name PainelLoja
 extends Control
-## Painel direito, com duas abas:
+## Painel que entra pela direita (6d2), com duas abas:
 ##  - TREINO: EQUIPE (geradores, botão CHAMAR) e MELHORIAS (próximo nível por aparelho), pagos em Treino;
 ##  - LOJA: Prof. Nelson (gerador pago) e luvas, pagos em DINHEIRO (só vem das lutas).
 ## Preços e "pode comprar" vêm do GameState; botão desabilitado quando não dá para pagar (ou durante a luta).
 
 signal info_mudou(info: Dictionary)  # {} = limpar; senão {titulo, texto, extra}
+signal estado_mudou  # abriu, fechou ou fixou (a garagem ajusta o balão e o resto)
+
+## Fechado, o painel fica fora da tela e só a aba de borda aparece (com o selo do que dá para comprar). Aberto solto, fecha com um
+## clique na sala; fixado (botão FIXAR ABERTO) fica igual ao de antes da 6d2. Durante as cenas ele fecha sozinho e volta como estava.
+const X_ABERTO := 508.0
+const X_FECHADO := 640.0
+const Y_PAINEL := 18.0
+const ALTURA_PAINEL := 296.0
+const TEMPO_DESLIZE := 0.15
+const LARG_ALCA := 24.0
+const ALTURA_ALCA := 58.0
+const Y_ALCA := 102.0  # dentro do painel (y 120 da tela)
+const DESLOC_RESERVA := 22.0  # a aba LOJA abre espaço para o aviso GUARDE $N quando há reserva da mudança
 
 const ALTURA_CARTAO := 44.0
 const PASSO := 45.0
@@ -38,22 +51,43 @@ var _tab: Dictionary = {}  # nome -> {botao, rotulo}
 var _alerta_loja: Label
 var _t := 0.0
 var _janela_loja: Control
+var _cartoes_loja: Control  # os cartões da LOJA; descem DESLOC_RESERVA quando o aviso da reserva aparece
+var _div_reserva: ColorRect
 var _altura_loja := 0.0
+var _reserva_ativa := false
 var _crew: Dictionary = {}  # Grito da equipe (Fase 5.2); {} = a melhoria não existe nos dados
 var _luva_atual: Label
 var _luva_atual_icone: TextureRect
 var _rot_melhorias: Label
 var _div_melhorias: ColorRect
 var _y_melhorias := 0.0
+var _corpo: Control  # o painel em si (desliza); a aba de borda (_alca) fica ao lado dele
+var _alca: Control
+var _alca_selo: Dictionary = {}  # {treino, dinheiro, seta, contorno}
+var _aberto := false
+var _fixo := false
+var _forcado_fechado := false  # cena em andamento: o painel fecha sozinho
+var _tween_x: Tween
+var _btn_fixar: Button
+var _txt_fixar: Label
+var _txt_fixado: Label
 
 
 func _ready() -> void:
-	position = Vector2(512, 18)
-	size = Vector2(128, 272)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_meta("ui_margens", "h")  # conteúdo com a mesma margem à esquerda e à direita
+	position = Vector2(0, Y_PAINEL)
+	size = Vector2(640, ALTURA_PAINEL)
+	z_index = 1200  # por cima da sala (o mundo dela vai a z 100 + y dos pés): ninguém "atravessa" o painel
+	mouse_filter = Control.MOUSE_FILTER_IGNORE  # só o corpo e a aba seguram o clique
 	var ui: Dictionary = GameState.dados.ui
-	UiTema.painel(self, "ui_panel", Rect2(0, 0, 128, 272))
+	_corpo = Control.new()
+	_corpo.name = "Corpo"
+	_corpo.mouse_filter = Control.MOUSE_FILTER_STOP  # a sala fica por baixo: o clique no painel não vai para ela
+	_corpo.position = Vector2(X_FECHADO, 0)
+	_corpo.size = Vector2(128, ALTURA_PAINEL)
+	_corpo.visible = false
+	_corpo.set_meta("ui_margens", "h")  # conteúdo com a mesma margem à esquerda e à direita
+	add_child(_corpo)
+	UiTema.painel(_corpo, "ui_panel", Rect2(0, 0, 128, ALTURA_PAINEL))
 
 	_montar_abas()
 	_janela_treino = _novo_container()
@@ -102,18 +136,23 @@ func _ready() -> void:
 		seta.position = Vector2(60, 18 if seta == _seta_cima else 266)
 		seta.visible = false
 		UiTema.alinhar(seta, "ignore")  # indicador por cima do conteúdo: posição livre de propósito
-		add_child(seta)
+		_corpo.add_child(seta)
 
 	# --- Aba LOJA ---
-	UiTema.rotulo(_aba_loja, UiTema.txt("shop_title", "LOJA"), UiTema.COL_TEXT_1, 8, 0)
-	_sub_loja = UiTema.rotulo(_aba_loja, UiTema.txt("shop_sub", "Dinheiro de luta, só aqui."), UiTema.COL_TEXT_2, 8, 10, 112)
-	_divisor(_aba_loja, 29, UiTema.G0)
-	y = 33.0
+	# 6d2: sem título nem subtítulo (a aba já se chama LOJA e o ícone $ diz a moeda). Só o aviso da reserva da mudança, quando existe.
+	_sub_loja = UiTema.rotulo(_aba_loja, "", UiTema.COL_MONEY, 8, 1, 112)
+	_sub_loja.visible = false
+	_div_reserva = _divisor(_aba_loja, 20, UiTema.G0)
+	_div_reserva.visible = false
+	_cartoes_loja = Control.new()
+	_cartoes_loja.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cartoes_loja.size = Vector2(128, 10)
+	_aba_loja.add_child(_cartoes_loja)
+	y = 2.0
 	for g in GameState.lutas.geradores_pagos:
 		_pagos[g.id] = _montar_gerador_pago(g, y)
 		y += ALTURA_CARTAO_LOJA + 3.0
-	# Fase 5.3 (pendência da 5.2): o Grito da equipe sobe para logo depois do Prof. Nelson, visível sem rolar a aba
-	# (antes era o 4º cartão, fora dos 250 px da janela).
+	# Fase 5.3 (pendência da 5.2): o Grito da equipe sobe para logo depois do Prof. Nelson, visível sem rolar a aba.
 	if not GameState.lutas.crew_click.is_empty():
 		_crew = _montar_crew(y)
 		y += ALTURA_CARTAO_LOJA + 3.0
@@ -121,8 +160,8 @@ func _ready() -> void:
 	y += ALTURA_CARTAO_LOJA + 3.0
 	_metro = _montar_metronomo(y)
 	y += ALTURA_CARTAO_LOJA + 1.0
-	_luva_atual_icone = UiTema.textura_rect(_aba_loja, "icon_glove_old", 6, y - 1)
-	_luva_atual = UiTema.rotulo(_aba_loja, "", UiTema.G3, 26, y + 3, 96)
+	_luva_atual_icone = UiTema.textura_rect(_cartoes_loja, "icon_glove_old", 6, y - 1)
+	_luva_atual = UiTema.rotulo(_cartoes_loja, "", UiTema.G3, 26, y + 3, 96)
 	# Fase 6b1: passar o mouse na luva em uso mostra o cartão dela (a luva inicial: "O par do John").
 	var hov_luva := Control.new()
 	hov_luva.position = Vector2(4, y - 2)
@@ -130,9 +169,13 @@ func _ready() -> void:
 	hov_luva.set_meta("ui_align", "ignore")
 	hov_luva.mouse_entered.connect(func() -> void: _sobre("la"))
 	hov_luva.mouse_exited.connect(func() -> void: _sobre(""))
-	_aba_loja.add_child(hov_luva)
+	_cartoes_loja.add_child(hov_luva)
 	_altura_loja = y + 18.0
+	_cartoes_loja.size.y = _altura_loja
 	_aba_loja.size.y = _altura_loja
+
+	_montar_fixar()
+	_montar_alca()
 
 	GameState.crew_click_mudou.connect(func(_c: bool) -> void: atualizar())
 	GameState.nova_carreira_iniciada.connect(func(_c: Dictionary) -> void: atualizar())
@@ -145,6 +188,7 @@ func _ready() -> void:
 	GameState.metronomo_mudou.connect(func(_n: int) -> void: atualizar())
 	_trocar_aba(ABA_TREINO)
 	atualizar()
+	_aplicar_estado(false)
 	_primeira = false
 
 
@@ -153,7 +197,7 @@ func _novo_container() -> Control:
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	c.position = Vector2(0, 19)
 	c.size = Vector2(128, 250)
-	add_child(c)
+	_corpo.add_child(c)
 	return c
 
 
@@ -174,7 +218,7 @@ func _montar_abas() -> void:
 		ABA_LOJA: UiTema.txt("shop_title", "LOJA")}
 	var x := 4.0
 	for id in [ABA_TREINO, ABA_LOJA]:
-		var b := UiTema.botao(self, Rect2(x, 3, 58, 14))
+		var b := UiTema.botao(_corpo, Rect2(x, 3, 58, 14))
 		var r := UiTema.botao_conteudo(b, nomes[id], UiTema.COL_TEXT_2, 1, "icon_treino" if id == ABA_TREINO else "icon_money", 3.0)
 		var icone: TextureRect = b.get_meta("icone")
 		var aba_id: String = id
@@ -204,6 +248,170 @@ func _trocar_aba(nome: String) -> void:
 	_hover = ""
 	_emitir_info()
 	atualizar()
+
+
+# --- 6d2: abrir, fechar, fixar, aba de borda ---
+
+func _montar_fixar() -> void:
+	_btn_fixar = UiTema.botao(_corpo, Rect2(4, 275, 120, 16))
+	_txt_fixar = UiTema.botao_conteudo(_btn_fixar, UiTema.txt("pin_panel", "FIXAR ABERTO"), UiTema.COL_TEXT_2, 1)
+	_txt_fixado = UiTema.botao_conteudo(_btn_fixar, UiTema.txt("pin_panel_on", "FIXADO"), UiTema.P2, 1)
+	_txt_fixado.visible = false
+	_btn_fixar.pressed.connect(func() -> void: fixar(not _fixo))
+
+
+## A aba de borda: ícone de Treino e de Dinheiro com o número do que dá para comprar (verde / ouro), seta e contorno quando há compra.
+func _montar_alca() -> void:
+	_alca = Control.new()
+	_alca.name = "Alca"
+	_alca.mouse_filter = Control.MOUSE_FILTER_STOP
+	_alca.position = Vector2(X_FECHADO - LARG_ALCA, Y_ALCA)
+	_alca.size = Vector2(LARG_ALCA, ALTURA_ALCA)
+	add_child(_alca)
+	UiTema.painel(_alca, "ui_panel", Rect2(0, 0, LARG_ALCA, ALTURA_ALCA))
+	_alca_selo["treino_icone"] = UiTema.textura_rect(_alca, "icon_treino", 4, 8)
+	_alca_selo["treino"] = UiTema.rotulo(_alca, "", UiTema.COL_TREINO, 15, 6)
+	_alca_selo["dinheiro_icone"] = UiTema.textura_rect(_alca, "icon_money", 4, 24)
+	_alca_selo["dinheiro"] = UiTema.rotulo(_alca, "", UiTema.COL_MONEY, 15, 22)
+	_alca_selo["seta"] = UiTema.rotulo_centrado(_alca, Rect2(0, 38, LARG_ALCA, 16), "<", UiTema.COL_TEXT_2, 1, false, "center_h")
+	var cont := ReferenceRect.new()
+	cont.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cont.border_color = UiTema.COL_BUYABLE
+	cont.border_width = 1.0
+	cont.editor_only = false
+	cont.size = _alca.size
+	cont.visible = false
+	UiTema.alinhar(cont, "ignore")
+	_alca.add_child(cont)
+	_alca_selo["contorno"] = cont
+	for k in ["treino", "dinheiro"]:
+		UiTema.alinhar(_alca_selo[k], "ignore")
+	var botao := Button.new()  # a aba toda é um botão invisível: clique abre/fecha
+	botao.focus_mode = Control.FOCUS_NONE
+	botao.flat = true
+	botao.size = _alca.size
+	UiTema.alinhar(botao, "ignore")
+	botao.pressed.connect(func() -> void: alternar())
+	botao.mouse_entered.connect(func() -> void: Dica.pedir(UiTema.txt("hint_panel_tab", "L: LOJA
+E: EQUIPE"), _alca))
+	botao.mouse_exited.connect(func() -> void: Dica.limpar())
+	_alca.add_child(botao)
+
+
+func esta_aberto() -> bool:
+	return _aberto and not _forcado_fechado
+
+
+func esta_fixado() -> bool:
+	return _fixo
+
+
+## Borda esquerda do painel agora (a garagem usa para o balão não passar por baixo dele).
+func borda_esquerda() -> float:
+	return _corpo.position.x if _corpo.visible else X_FECHADO
+
+
+## Abre o painel (solto). `aba` ("treino" / "loja") troca a aba; "" mantém a atual. `animar` false = sem deslizar (testes).
+func abrir(aba: String = "", animar: bool = true) -> void:
+	if aba != "" and aba != _aba:
+		_trocar_aba(aba)
+	_aberto = true
+	_aplicar_estado(animar)
+
+
+func fechar(animar: bool = true) -> void:
+	_aberto = false
+	_fixo = false
+	_aplicar_estado(animar)
+
+
+func alternar(aba: String = "") -> void:
+	if esta_aberto() and (aba == "" or aba == _aba):
+		fechar()
+	else:
+		abrir(aba)
+
+
+## Fixa (ou solta) o painel aberto. Fixar abre.
+func fixar(sim: bool, animar: bool = true) -> void:
+	_fixo = sim
+	if sim:
+		_aberto = true
+	_aplicar_estado(animar)
+
+
+## Atalho para quem monta o estado de uma vez (a garagem, os testes).
+func definir_estado(aberto: bool, fixo: bool, animar: bool = false) -> void:
+	_aberto = aberto or fixo
+	_fixo = fixo
+	_aplicar_estado(animar)
+
+
+## Clique na sala: o painel solto fecha; o fixado fica.
+func fechar_se_solto() -> void:
+	if _aberto and not _fixo:
+		fechar()
+
+
+## Cena em andamento: fecha sozinho (mesmo fixado) e volta como estava no fim.
+func forcar_fechado(sim: bool) -> void:
+	if sim == _forcado_fechado:
+		return
+	_forcado_fechado = sim
+	_aplicar_estado(not sim)  # a cena apaga a interface: o painel some na hora; na volta ele desliza
+
+
+func _aplicar_estado(animar: bool) -> void:
+	var alvo := X_ABERTO if esta_aberto() else X_FECHADO
+	_btn_fixar.visible = true
+	_txt_fixar.visible = not _fixo
+	_txt_fixado.visible = _fixo
+	UiTema.aplicar_estilo_botao(_btn_fixar, "ui_button_pressed" if _fixo else "ui_button_normal")
+	(_alca_selo.seta as Label).text = ">" if esta_aberto() else "<"
+	if _tween_x != null and _tween_x.is_valid():
+		_tween_x.kill()
+	if animar and is_inside_tree() and absf(_corpo.position.x - alvo) > 0.5:
+		_corpo.visible = true
+		_tween_x = create_tween()
+		_tween_x.tween_method(_definir_x, _corpo.position.x, alvo, TEMPO_DESLIZE).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	else:
+		_definir_x(alvo)
+	estado_mudou.emit()
+
+
+func _definir_x(x: float) -> void:
+	x = roundf(x)
+	_corpo.position.x = x
+	_corpo.visible = x < X_FECHADO - 0.5
+	_alca.position.x = x - LARG_ALCA
+
+
+## Quantas coisas dá para comprar agora: [Treino (equipe, melhorias, aparelhos), Dinheiro (loja)].
+func contagem_compraveis() -> Array:
+	var t := 0
+	var d := 0
+	if not GameState.acoes_bloqueadas():
+		for it in _gens.values():
+			t += 1 if bool(it.pode) else 0
+		for id in _ups:
+			t += 1 if _ups[id].cartao.visible and bool(_ups[id].pode) else 0
+		for id in _unl:
+			t += 1 if _unl[id].cartao.visible and not _unl[id].colapsado and bool(_unl[id].pode) else 0
+		for it in _pagos.values():
+			d += 1 if bool(it.pode) else 0
+		for it in [_luva, _metro, _crew]:
+			d += 1 if not it.is_empty() and bool(it.pode) else 0
+	return [t, d]
+
+
+func _atualizar_alca() -> void:
+	var c := contagem_compraveis()
+	for i in 2:
+		var k: String = ["treino", "dinheiro"][i]
+		var n: int = c[i]
+		(_alca_selo[k] as Label).text = str(mini(n, 9)) if n > 0 else ""
+		(_alca_selo[k + "_icone"] as TextureRect).modulate = Color.WHITE if n > 0 else Color(1, 1, 1, 0.55)
+	(_alca_selo.contorno as ReferenceRect).visible = int(c[0]) + int(c[1]) > 0
 
 
 ## A loja tem algo que dá para comprar agora? (a aba LOJA pisca um "!" quando não está aberta)
@@ -342,7 +550,7 @@ func _atributos_da_arte(ap: Dictionary) -> String:
 
 # Cartão da loja: ícone 16x16, nome, quantidade/nível, efeito, aviso de saldo e botão com o preço em $.
 func _montar_gerador_pago(g: Dictionary, y: float) -> Dictionary:
-	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
+	var c := _cartao(_cartoes_loja, y, ALTURA_CARTAO_LOJA)
 	var ids: Dictionary = UiTema.manifest().get("by_data_id", {}).get(g.id, {})
 	UiTema.textura_rect(c, str(ids.get("icon", "icon_coach")), 5, 4)
 	UiTema.rotulo(c, str(g.get("name", g.id)).to_upper(), UiTema.WHITE, 26, 3, 92)
@@ -360,7 +568,7 @@ func _montar_gerador_pago(g: Dictionary, y: float) -> Dictionary:
 
 
 func _montar_luva(y: float) -> Dictionary:
-	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
+	var c := _cartao(_cartoes_loja, y, ALTURA_CARTAO_LOJA)
 	var icone := UiTema.textura_rect(c, "icon_glove_l1", 5, 4)
 	var nome := UiTema.rotulo(c, "", UiTema.WHITE, 26, 3, 92)
 	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_1, 26, 12)
@@ -379,7 +587,7 @@ func _montar_luva(y: float) -> Dictionary:
 # Grito da equipe (Fase 5.2, dinheiro): ícone, nome, o efeito (CLIQUE +N (1 S DA EQUIPE), em 2 linhas) e o botão com o preço.
 func _montar_crew(y: float) -> Dictionary:
 	var d: Dictionary = GameState.lutas.crew_click
-	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
+	var c := _cartao(_cartoes_loja, y, ALTURA_CARTAO_LOJA)
 	UiTema.textura_rect(c, str(d.get("icon", "icon_crew_click")), 5, 4)
 	UiTema.rotulo(c, str(d.get("name", "")).to_upper(), UiTema.WHITE, 26, 3, 92)
 	var efeito := UiTema.rotulo(c, "", UiTema.COL_TEXT_2, 26, 12, 92)
@@ -396,7 +604,7 @@ func _montar_crew(y: float) -> Dictionary:
 # Metrônomo (Fase 4, dinheiro): ícone do nível à venda, nome do nível, X/3, "1 SOCO A CADA 2.0 S" e o botão com o preço.
 # O efeito é largo (98 px), por isso fica embaixo do ícone, na largura toda do cartão.
 func _montar_metronomo(y: float) -> Dictionary:
-	var c := _cartao(_aba_loja, y, ALTURA_CARTAO_LOJA)
+	var c := _cartao(_cartoes_loja, y, ALTURA_CARTAO_LOJA)
 	var icone := UiTema.textura_rect(c, "icon_metronome_l1", 5, 4)
 	var nome := UiTema.rotulo(c, "", UiTema.WHITE, 26, 3, 92)
 	var nivel := UiTema.rotulo(c, "", UiTema.COL_TEXT_1, 26, 12)
@@ -449,7 +657,7 @@ func _comprar_aparelho(id: String) -> void:
 
 ## Clique na marca do chão/parede ou no botão de foco trancado: abre a aba TREINO e o cartão de compra pisca 3 vezes.
 func destacar_compra(id: String) -> void:
-	_trocar_aba(ABA_TREINO)
+	abrir(ABA_TREINO)
 	if _unl.has(id) and _unl[id].cartao.visible:
 		_rolar_para(_unl[id].cartao)
 		_piscar_unlock(_unl[id])
@@ -489,53 +697,93 @@ func _sobre(chave: String) -> void:
 	_emitir_info()
 
 
+## Item (dicionário do cartão) do `_hover` atual, ou {} (a luva em uso não tem botão nem preço).
+func _item_do_hover() -> Dictionary:
+	if _hover == "l":
+		return _luva
+	if _hover == "c":
+		return _crew
+	if _hover == "m":
+		return _metro
+	var id := _hover.substr(2)
+	if _hover.begins_with("g:"):
+		return _gens.get(id, {})
+	if _hover.begins_with("p:"):
+		return _pagos.get(id, {})
+	if _hover.begins_with("a:"):
+		return _unl.get(id, {})
+	if _hover.begins_with("u:"):
+		return _ups.get(id, {})
+	return {}
+
+
+## Fase 6d: a descrição vai no balão colado ao cursor (componente Dica), não mais na caixa do painel da esquerda.
+## O sinal `info_mudou` continua saindo (quem quiser ouvir). O balão leva nome, descrição, efeito e custo.
+func _emitir(info: Dictionary) -> void:
+	info_mudou.emit(info)
+	if info.is_empty():
+		Dica.limpar()
+		return
+	var linhas: Array = [{"texto": str(info.get("titulo", "")), "cor": UiTema.WHITE}]
+	if str(info.get("texto", "")) != "":
+		linhas.append({"texto": str(info.texto), "cor": UiTema.G3})
+	for l in str(info.get("extra", "")).split("\n"):
+		linhas.append({"texto": l, "cor": UiTema.Y1})
+	var item := _item_do_hover()
+	if not item.is_empty() and item.has("preco") and item.preco.visible and str(item.preco.text) != "" \
+			and str(info.get("extra", "")) != str(GameState.dados.ui.get("maxed", "MÁXIMO")):
+		var chave := "tip_cost_money" if str(item.get("moeda", "")) == "icon_money" else "tip_cost_treino"
+		var padrao := "CUSTO: {n} DINHEIRO" if chave == "tip_cost_money" else "CUSTO: {n} TREINO"
+		linhas.append({"texto": UiTema.txt(chave, padrao, {"n": str(item.preco.text)}),
+			"cor": UiTema.COL_MONEY if chave == "tip_cost_money" else UiTema.COL_TREINO})
+	var alvo: Control = item.get("botao", null)  # o item apontado é o botão (o balão nunca o cobre)
+	Dica.pedir_linhas(linhas, alvo)
+
+
 func _emitir_info() -> void:
 	if _hover == "":
-		info_mudou.emit({})
+		_emitir({})
 		return
 	if _hover == "la":
 		var eq: Dictionary = GameState.luva_equipada()
 		var desc := str(eq.get("description", ""))
 		if str(eq.get("id", "glove_old")) == "glove_old":
 			desc = GameState.descricao_luva_inicial()  # "O par do John..." (variante do discípulo: "Agora é seu.")
-		info_mudou.emit({"titulo": eq.get("name", ""), "texto": desc, "extra": ""})
+		_emitir({"titulo": eq.get("name", ""), "texto": desc, "extra": ""})
 		return
 	if _hover == "l":
 		var l: Dictionary = GameState.proxima_luva()
 		if l.is_empty():
 			l = GameState.luva_equipada()
-			info_mudou.emit({"titulo": l.get("name", ""), "texto": l.get("description", ""),
+			_emitir({"titulo": l.get("name", ""), "texto": l.get("description", ""),
 				"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
-			info_mudou.emit({"titulo": l.get("name", ""), "texto": l.get("description", ""),
+			_emitir({"titulo": l.get("name", ""), "texto": l.get("description", ""),
 				"extra": GameState.texto_efeito_loja(l)})
 		return
 	if _hover == "c":
 		var cd: Dictionary = GameState.lutas.crew_click
-		info_mudou.emit({"titulo": cd.get("name", ""), "texto": cd.get("description", ""),
+		_emitir({"titulo": cd.get("name", ""), "texto": cd.get("description", ""),
 			"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO")) if GameState.crew_click_comprado else GameState.texto_efeito_crew_click()})
 		return
 	if _hover == "m":
 		var def: Dictionary = GameState.proximo_metronomo()
 		if def.is_empty():
 			def = GameState.metronomo_atual()
-			info_mudou.emit({"titulo": def.get("name", ""), "texto": def.get("description", ""),
+			_emitir({"titulo": def.get("name", ""), "texto": def.get("description", ""),
 				"extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
 			var extra := GameState.texto_efeito_metronomo(def)
-			if GameState.nivel_metronomo == 0 and GameState.assistido_disponivel():
-				# O modo assistido é o "nível 0" do Metrônomo: mostra o que o jogador tem agora.
-				extra += "\n" + UiTema.txt("shop_metronome_now", "", {"s": "%.1f" % GameState.assistido_intervalo()})
-			info_mudou.emit({"titulo": def.get("name", ""), "texto": def.get("description", ""), "extra": extra})
+			_emitir({"titulo": def.get("name", ""), "texto": def.get("description", ""), "extra": extra})
 		return
 	var id := _hover.substr(2)
 	if _hover.begins_with("p:"):
 		var gp: Dictionary = GameState.lutas.gerador_pago(id)
-		info_mudou.emit({"titulo": gp.get("name", id), "texto": gp.get("description", ""),
+		_emitir({"titulo": gp.get("name", id), "texto": gp.get("description", ""),
 			"extra": GameState.texto_efeito_loja(gp)})
 	elif _hover.begins_with("g:"):
 		var g: Dictionary = GameState.dados.gerador(id)
-		info_mudou.emit({"titulo": g.get("name", id), "texto": g.get("description", ""),
+		_emitir({"titulo": g.get("name", id), "texto": g.get("description", ""),
 			"extra": "+%s/S CADA" % NumberFormat.fmt(float(g.get("production", 0.0)))})
 	elif _hover.begins_with("a:") or not GameState.aparelho_montado(id):
 		# Aparelho que ainda não chegou: nome, descrição e de onde ele vem.
@@ -544,7 +792,7 @@ func _emitir_info() -> void:
 		var divisao := GameState.texto_divisao(id)
 		if divisao != "":
 			extra += "\n" + divisao  # aparelho da arte: como o treino se divide nos atributos
-		info_mudou.emit({"titulo": GameState.dados.aparelho(id).get("name", id), "texto": u.get("description", ""),
+		_emitir({"titulo": GameState.dados.aparelho(id).get("name", id), "texto": u.get("description", ""),
 			"extra": extra})
 	else:
 		var m: Dictionary = GameState.proxima_melhoria(id)
@@ -553,9 +801,9 @@ func _emitir_info() -> void:
 			# No máximo, mostra o aparelho do nível atual (última melhoria), não o do nível 0.
 			var ups: Array = ap.get("upgrades", [])
 			var atual: Dictionary = ups[ups.size() - 1] if not ups.is_empty() else {}
-			info_mudou.emit({"titulo": atual.get("name", ap.get("name", id)), "texto": "", "extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
+			_emitir({"titulo": atual.get("name", ap.get("name", id)), "texto": "", "extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
-			info_mudou.emit({"titulo": m.get("name", ""), "texto": m.get("description", ""),
+			_emitir({"titulo": m.get("name", ""), "texto": m.get("description", ""),
 				"extra": GameState.texto_efeito_melhoria(m)})
 
 
@@ -620,8 +868,12 @@ func atualizar() -> void:
 	# LOJA (em dinheiro). Fase 5: entre o cinturão e a mudança, o que deixaria menos que o preço da mudança é recusado,
 	# e o cartão diz o motivo (GUARDE $1.00K), nunca só o botão apagado.
 	var reserva := GameState.reserva_mudanca() > 0.0
-	_sub_loja.text = GameState.texto_reserva().to_upper() if reserva else UiTema.txt("shop_sub", "Dinheiro de luta, só aqui.")
-	_sub_loja.add_theme_color_override("font_color", UiTema.COL_MONEY if reserva else UiTema.COL_TEXT_2)
+	_sub_loja.text = GameState.texto_reserva().to_upper() if reserva else ""
+	_sub_loja.visible = reserva
+	_div_reserva.visible = reserva
+	if reserva != _reserva_ativa:
+		_reserva_ativa = reserva
+		_cartoes_loja.position.y = DESLOC_RESERVA if reserva else 0.0
 	for g in GameState.lutas.geradores_pagos:
 		var item: Dictionary = _pagos[g.id]
 		var custo := GameState.custo_gerador_pago(g.id)
@@ -635,6 +887,7 @@ func atualizar() -> void:
 	_alerta_loja.visible = _loja_tem_compra() and _aba != ABA_LOJA
 	_fechar_no_dia()
 	_destacar_mais_barato()
+	_atualizar_alca()
 	if _hover != "":
 		_emitir_info()
 
@@ -665,14 +918,14 @@ func _aviso_loja(custo: float, pode: bool) -> String:
 		return ""
 	if GameState.loja_estado(custo) == "reserve":
 		return GameState.texto_reserva(true).to_upper()
-	return UiTema.txt("shop_no_money", "Falta dinheiro")
+	return UiTema.txt("shop_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, custo - GameState.dinheiro))})
 
 
 # --- Rolagem da aba TREINO (Fase 5) ---
 
 ## A altura do conteúdo cresce 1 cartão quando o aparelho da arte existe. Reajusta o limite e as setas.
 func _ajustar_rolagem(existe_arte: bool) -> void:
-	var altura := _altura_treino if _aba == ABA_TREINO else _altura_loja
+	var altura := _altura_treino if _aba == ABA_TREINO else _altura_loja + (DESLOC_RESERVA if _reserva_ativa else 0.0)
 	_rolagem_max = maxf(0.0, altura - ALTURA_JANELA + 2.0)
 	_rolar_a(_rolagem)
 
@@ -700,7 +953,7 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.button_index != MOUSE_BUTTON_WHEEL_UP and event.button_index != MOUSE_BUTTON_WHEEL_DOWN:
 		return
-	if not Rect2(Vector2.ZERO, size).has_point(get_local_mouse_position()):
+	if not _corpo.visible or not Rect2(Vector2.ZERO, _corpo.size).has_point(_corpo.get_local_mouse_position()):
 		return
 	_rolar_a(_rolagem + (-PASSO_ROLAGEM if event.button_index == MOUSE_BUTTON_WHEEL_UP else PASSO_ROLAGEM))
 	get_viewport().set_input_as_handled()

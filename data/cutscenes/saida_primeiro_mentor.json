@@ -6,7 +6,7 @@
   "once": true,
   "blocking": false,
   "register": "cotidiano",
-  "max_seconds": 14,
+  "max_seconds": 20,
 
   "trigger": {
     "_nota": "Evento novo (design §6.1-6.2): o GameState avisa quando a saída está devida, a sala está calma e o John está desenhado.",
@@ -22,11 +22,11 @@
     "view": "room",
     "_location": "any = o local em que o jogador está (formato §9 item 19).",
     "location": "any",
-    "window": [128, 18, 384, 272],
+    "window": [0, 18, 640, 312],
     "_hide": "A cena só assume quem ela mexe. Lutador, equipe, aparelhos e interface continuam vivos.",
     "hide": ["mentors", "coach"],
     "props": {
-      "duffel":       { "_nota": "A bolsa dele, atrás do caixote. Some quando ele a pega (daí em diante está nas folhas dele).", "sprite": "john_duffel", "pos": [268, 242], "layer": "sorted", "sort_y": 251, "visible": false },
+      "duffel":       { "_nota": "A bolsa dele, atrás do caixote (sala larga: = gym_arrival_scene.duffel, 146,244; adereço ainda não lê ponto por nome, formato §9 item 25). Some quando ele a pega (daí em diante está nas folhas dele).", "sprite": "john_duffel", "pos": [146, 244], "layer": "sorted", "sort_y": 251, "visible": false },
       "gym_door":     { "location": "gym", "_nota": "Tubos acesos: quadros claros 0..2.", "sprite": "gym_door", "pos": [401, 116], "layer": "wall", "anim": "closed" },
       "gym_light":    { "location": "gym", "_nota": "Luz do dia no piso da academia: quadro 1 = porta meio aberta, 0 = aberta.", "sprite": "gym_daylight", "pos": [330, 220], "layer": "floor", "visible": false },
       "door_outside": { "location": "garage", "sprite": "garage_door_outside", "pos": [382, 168], "layer": "wall", "visible": false },
@@ -36,9 +36,9 @@
   },
 
   "actors": {
-    "first": { "_nota": "Nasce onde a sala o desenha: sentado no ponto seat do local (formato §9 item 19). pos é o reserva.", "character": "first_fighter", "glove": "none", "from_room": "seat", "pos": [254, 252], "facing": "right", "anim": "sit_rest" },
+    "first": { "_nota": "Nasce onde a sala o desenha: sentado no ponto seat do local (formato §9 item 19). pos é o reserva.", "character": "first_fighter", "glove": "none", "from_room": "seat", "pos": [132, 254], "facing": "right", "anim": "sit_rest" },
     "coach": { "character": "coach", "from_room": "coach", "pos": [196, 236], "facing": "right", "anim": "idle" },
-    "last":  { "_nota": "O último que passou o posto, em pé. Não existe na Carreira 2: os passos dele são pulados.", "character": "mentor:last", "optional": true, "glove": "none", "from_room": "stand", "pos": [150, 262], "facing": "right", "anim": "stand_bare" }
+    "last":  { "_nota": "O último que passou o posto, em pé. Não existe na Carreira 2: os passos dele são pulados.", "character": "mentor:last", "optional": true, "glove": "none", "from_room": "stand", "pos": [62, 256], "facing": "right", "anim": "stand_bare" }
   },
 
   "lines": {
@@ -61,21 +61,26 @@
       ] }
     ] },
 
-    { "_q": "J2 Atravessa a sala por trás do saco (1,6-4,3)", "_t": 1.6, "_nota": "126 px a 48 px/s. y 246-252: atrás do saco (ordem 253) e do lutador (272); nunca cobre o alvo.", "type": "move", "actor": "first", "to": [380, 246], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+    { "_q": "J2 Atravessa a sala por trás do lutador, rente à parede (1,6-7,4)", "_t": 1.6, "_nota": "Sala larga (6d2): sai do caixote novo (seat_spot, 132,254). Passa 22 px na frente do Osmar (196,236), porque em linha reta cruzaria o corpo dele; sobe até y 220 (linha do chão com a parede: 52 px atrás dos pés do lutador, 4 px mais alto que antes, pedido R2 do QA), cruza por trás do lutador e do saco e só desce até o ponto de fala depois de x 356 (fim do saco). Nunca cobre o alvo. ~280 px a 48 px/s = ~5,8 s.", "type": "sequence", "steps": [
+      { "_t": 1.6, "_nota": "~108 px pela frente do Osmar (y 254 -> 258)", "type": "move", "actor": "first", "to": [240, 258], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+      { "_t": 3.85, "_nota": "51 px: sobe para o fundo, ainda à esquerda do lutador (x 274 < 285)", "type": "move", "actor": "first", "to": [274, 220], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+      { "_t": 4.91, "_nota": "90 px rente à parede, atrás do lutador e do saco (ordem 220 < 253 < 272)", "type": "move", "actor": "first", "to": [364, 220], "speed": 48, "anim": "walk_duffel", "facing": "right" },
+      { "_t": 6.79, "_nota": "30,5 px: desce até o ponto de fala, já à direita do saco", "type": "move", "actor": "first", "to": [380, 246], "speed": 48, "anim": "walk_duffel", "facing": "right" }
+    ] },
 
-    { "_q": "J3 Olha a sala (4,3-5,6)", "_t": 4.3, "type": "pose", "actor": "first", "anim": "look_room_left", "facing": "left", "hold": 1.0 },
+    { "_q": "J3 Olha a sala (7,4-8,7)", "_t": 7.42, "type": "pose", "actor": "first", "anim": "look_room_left", "facing": "left", "hold": 1.0 },
 
-    { "_q": "J4 'vou procurar meu rumo.' / 'cuidem bem disso aqui.' (5,6-10,0)", "_t": 5.6, "type": "say", "line": "saida_rumo_1", "mode": "passive", "hold": 0.9 },
-    { "_t": 7.7, "type": "say", "line": "saida_rumo_2", "mode": "passive", "hold": 1.1 },
+    { "_q": "J4 'vou procurar meu rumo.' / 'cuidem bem disso aqui.' (8,7-13,1)", "_t": 8.72, "type": "say", "line": "saida_rumo_1", "mode": "passive", "hold": 0.9 },
+    { "_t": 10.82, "type": "say", "line": "saida_rumo_2", "mode": "passive", "hold": 1.1 },
 
-    { "_q": "J5 'vê se manda notícia.' (10,0-12,4)", "_t": 10.0, "_nota": "O Osmar responde sem sair do lugar. Na academia, as folhas _gym (luz dos tubos).", "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "talk", "loop": true, "wait": false },
-    { "_t": 10.0, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "talk_gym", "loop": true, "wait": false },
-    { "_t": 10.0, "type": "say", "line": "saida_resposta", "mode": "passive", "hold": 0.9 },
-    { "_t": 12.0, "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "idle", "loop": true, "wait": false },
-    { "_t": 12.0, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "idle_gym", "loop": true, "wait": false },
-    { "_t": 12.0, "_nota": "Um aceno de cabeça, um só. Não é o gesto dos dois toques.", "type": "pose", "actor": "first", "anim": "nod_left", "facing": "left" },
+    { "_q": "J5 'vê se manda notícia.' (13,1-15,5)", "_t": 13.12, "_nota": "O Osmar responde sem sair do lugar. Na academia, as folhas _gym (luz dos tubos).", "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "talk", "loop": true, "wait": false },
+    { "_t": 13.12, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "talk_gym", "loop": true, "wait": false },
+    { "_t": 13.12, "type": "say", "line": "saida_resposta", "mode": "passive", "hold": 0.9 },
+    { "_t": 15.12, "if": { "location": "garage" }, "type": "pose", "actor": "coach", "anim": "idle", "loop": true, "wait": false },
+    { "_t": 15.12, "if": { "location": "gym" }, "type": "pose", "actor": "coach", "anim": "idle_gym", "loop": true, "wait": false },
+    { "_t": 15.12, "_nota": "Um aceno de cabeça, um só. Não é o gesto dos dois toques.", "type": "pose", "actor": "first", "anim": "nod_left", "facing": "left" },
 
-    { "_q": "J6 Sai. Academia: pela porta da rua (12,4-13,9)", "_t": 12.4, "if": { "location": "gym" }, "type": "sequence", "steps": [
+    { "_q": "J6 Sai. Academia: pela porta da rua (15,5-17,0)", "_t": 15.52, "if": { "location": "gym" }, "type": "sequence", "steps": [
       { "type": "prop", "id": "gym_door", "anim": "open", "wait": false },
       { "type": "sound", "id": "gym_door_open", "volume": 0.5 },
       { "type": "parallel", "steps": [
@@ -93,7 +98,7 @@
       { "type": "prop", "id": "gym_light", "visible": false },
       { "type": "wait", "seconds": 0.1 }
     ] },
-    { "_q": "J6/J8 Sai. Garagem: por baixo da porta de enrolar, como sempre", "_t": 12.4, "if": { "location": "garage" }, "type": "sequence", "steps": [
+    { "_q": "J6/J8 Sai. Garagem: por baixo da porta de enrolar, como sempre", "_t": 15.52, "if": { "location": "garage" }, "type": "sequence", "steps": [
       { "type": "prop", "id": "door_outside", "visible": true },
       { "type": "prop", "id": "daylight", "visible": true, "anim": "open_fast", "wait": false },
       { "type": "sound", "id": "door_roll", "volume": 0.7 },
@@ -111,9 +116,9 @@
       { "type": "prop", "id": "door_outside", "visible": false }
     ] },
 
-    { "_q": "J7 O último que passou o posto senta no caixote (13,9-16,5)", "_t": 13.9, "_nota": "seat_spot = ponto de sentar do local (mentor_spot ou gym_mentor_spot). 104 px a 48 px/s.", "type": "move", "actor": "last", "to": "seat_spot", "seconds": 2.2, "anim": "walk_bare", "facing": "right" },
-    { "_t": 16.1, "type": "pose", "actor": "last", "anim": "sit_down" },
-    { "_t": 16.5, "type": "pose", "actor": "last", "anim": "sit_rest", "loop": true, "wait": false }
+    { "_q": "J7 O último que passou o posto senta no caixote (17,0-18,9)", "_t": 17.02, "_nota": "seat_spot = ponto de sentar do local (mentor_spot ou gym_mentor_spot). sala larga: ~70 px de 62,256 a 132,254, a 48 px/s = ~1,46 s.", "type": "move", "actor": "last", "to": "seat_spot", "speed": 48, "anim": "walk_bare", "facing": "right" },
+    { "_t": 18.48, "type": "pose", "actor": "last", "anim": "sit_down" },
+    { "_t": 18.88, "type": "pose", "actor": "last", "anim": "sit_rest", "loop": true, "wait": false }
   ],
 
   "reactions": [],

@@ -153,7 +153,7 @@ func _teste_melhorias_e_multiplicadores() -> void:
 	checar(not gs.comprar_melhoria("punching_bag"), "compra recusada em linha completa")
 	checar_igual(gs.treino, 1.0e9, "recusa em linha completa não gasta")
 	checar_igual(gs.nivel_melhoria("punching_bag"), 4, "nível 4")
-	checar_igual(gs.texto_efeito_melhoria(gs.dados.aparelho("punching_bag").upgrades[0]), "x3 POR CLIQUE: SACO", "texto do efeito")
+	checar_igual(gs.texto_efeito_melhoria(gs.dados.aparelho("punching_bag").upgrades[0]), "x3: SACO", "texto do efeito")  # 6d2: texto encurtado
 	checar_igual(gs.texto_ui("panel_attributes"), "ATRIBUTOS", "texto_ui lê chave")
 	checar_igual(gs.texto_ui("nao_existe", "x"), "x", "texto_ui usa padrão")
 	gs.free()

@@ -17,7 +17,7 @@
   "stage": {
     "view": "room",
     "location": "garage",
-    "window": [128, 18, 384, 272],
+    "window": [0, 18, 640, 312],
     "hide": ["player", "crew"],
     "props": {
       "bag":          { "room_object": "punching_bag" },

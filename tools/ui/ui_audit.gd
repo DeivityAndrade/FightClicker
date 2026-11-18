@@ -101,6 +101,14 @@ const ESTADOS_TODOS := [
 	"f6c2_previa_falta", "f6c2_previa_falta_max", "f6c2_cartao_mural",
 	"f6c2_balao_mentor_john", "f6c2_balao_mentor_last",
 	"f6c2_simbolo_peito", "f6c2_simbolo_perna", "f6c2_simbolo_luta",
+	# Fase 6d: balão de descrição colado ao cursor (loja, melhorias, mapa, hall) e números do treino por atributo
+	"f6d_balao_gerador", "f6d_balao_melhoria", "f6d_balao_melhoria_baixo", "f6d_balao_loja", "f6d_balao_loja_metronomo",
+	"f6d_balao_cantos", "f6d_balao_mapa", "f6d_balao_hall",
+	"f6d_numeros_bjj", "f6d_numeros_bjj_critico", "f6d_numeros_pera", "f6d_numeros_um_atributo",
+	# Fase 6d2: tela C (sala larga, faixa de 30 px, painel pela direita, atalhos L/E/H, aparelho invisível até a caixa)
+	"f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_painel_fixado", "f6d2_so_sala", "f6d2_foco_trancado", "f6d2_aparelho_invisivel",
+	"f6d2_aparelho_caixa", "f6d2_aparelho_aberto", "f6d2_garagem_cheia", "f6d2_garagem_pequena", "f6d2_academia_cheia", "f6d2_academia_pequena",
+	"f6d2_clique_fecha", "f6d2_cena_fecha",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -122,6 +130,8 @@ var _f54_f6a = preload("res://tools/ui/audit/estados_f54_f6a.gd").new(self)
 var _f6b1 = preload("res://tools/ui/audit/estados_f6b1.gd").new(self)
 var _f6b2_f6c1 = preload("res://tools/ui/audit/estados_f6b2_f6c1.gd").new(self)
 var _f6c2 = preload("res://tools/ui/audit/estados_f6c2.gd").new(self)
+var _f6d = preload("res://tools/ui/audit/estados_f6d.gd").new(self)
+var _f6d2 = preload("res://tools/ui/audit/estados_f6d2.gd").new(self)
 
 
 func _initialize() -> void:
@@ -346,6 +356,8 @@ func _rodar() -> void:
 	await _f6b2_f6c1._rodar_fase6c1()
 	await _f6b2_f6c1._rodar_fase6c1_extra()
 	await _f6c2._rodar_fase6c2()
+	await _f6d._rodar_fase6d()
+	await _f6d2._rodar_fase6d2()
 	_fechar_cena()
 
 
@@ -392,8 +404,16 @@ func _txt(chave: String) -> String:
 	return str(gs.preencher(gs.texto_ui(chave, ""), {})).to_upper()
 
 
+## 6d2: não existe mais marca de fita. Continua respondendo "falta comprar o aparelho" (o que a marca significava); o que a sala
+## mostra de verdade (nada, só a caixa, o aparelho) é conferido pelos estados f6d2_.
 func _marca_visivel(id: String) -> bool:
-	return bool(_cena.get_node("Sala")._marcas[id].fita.visible)
+	var e: String = gs.estado_aparelho(id)
+	return e != "owned" and e != "absent"
+
+
+## O sprite do aparelho está desenhado na sala?
+func _aparelho_visivel(id: String) -> bool:
+	return bool(_cena.get_node("Sala")._anim_do(id).visible)
 
 
 func _tecla(codigo: Key, aperta: bool, eco: bool = false, direita: bool = false) -> void:
@@ -445,11 +465,24 @@ func _novo_jogo() -> void:
 		gs.geradores[g.id] = 3
 
 
+## Como o painel da direita (loja e equipe) fica ao abrir a tela: "fixo" (como a tela de antes da 6d2: os estados antigos mostram o
+## painel), "solto" (aberto, fecha com clique na sala) ou "fechado" (só a aba de borda). Os estados f6d2_ trocam.
+var painel_modo := "fixo"
+
+
 func _abrir() -> void:
 	_fechar_cena()
 	_cena = load("res://scenes/main.tscn").instantiate()
 	root.add_child(_cena)
+	await process_frame
+	_aplicar_painel_modo()
 	await _esperar(0.5)
+
+
+func _aplicar_painel_modo() -> void:
+	var p: Node = _cena.get_node_or_null("PainelLoja")
+	if p != null:
+		p.definir_estado(painel_modo != "fechado", painel_modo == "fixo", false)
 
 
 func _fechar_cena() -> void:
@@ -1013,7 +1046,7 @@ func _garagem_arte(arte: String, ids: Array, treino: float, foco: String = "punc
 
 
 func _botao_mudar() -> Button:
-	for b in _cena.get_node("PainelAtributos").find_children("*", "Button", true, false):
+	for b in _cena.get_node("PainelProxima").find_children("*", "Button", true, false):
 		return b
 	return null
 
@@ -1068,7 +1101,7 @@ func _auditar_mapa() -> void:
 
 
 const NO_COVER_6A := Rect2(310, 180, 52, 94)
-const UTIL_6A := Rect2(132, 22, 375, 263)
+const UTIL_6A := Rect2(4, 22, 632, 304)  # 6d2: a sala é a tela toda (menos o HUD e a faixa de baixo)
 
 
 func _balao() -> Node:

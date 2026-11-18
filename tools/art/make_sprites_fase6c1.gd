@@ -1501,7 +1501,13 @@ const HELPER := {
 		"note": "Anda com a esteira DOBRADA carregada de lado, um pouco à frente do corpo (o tronco aparece atrás dela; a mão de perto fecha na borda do deque, a de trás segura a coluna), de (430,222) a (440,250), virado para a ESQUERDA. 1 e 4 = pé pousa."},
 	"treadmill_put": {"left": true, "fps": 10, "loop": false, "fr": "TREADF", "release_frame": 2,
 		"note": "Em (440,250): 0 abaixa a esteira dobrada dobrando os joelhos (base 4 px acima do chão); 1 ela gira de volta e encosta no chão no lugar (pivô 445,267); 2 a esteira vira o adereço da sala NESTE quadro (não está na folha), ele endireita."},
+	# Fase 6d2 (sala larga): ele desce para a frente à direita, então pousa virado para a DIREITA. Não dá para espelhar a
+	# _left: a esteira cairia 7 px acima do adereço (o quadro 1 é desenhado para 17 px à frente do pé, aqui são 24).
+	"treadmill_put_right": {"left": false, "fps": 10, "loop": false, "fr": "TREADF", "release_frame": 2,
+		"note": "Fase 6d2. Em (470,300), virado para a DIREITA (depois do helper_treadmill_carry_left espelhado): 0 abaixa a esteira dobrada (a mesma pegada do carry espelhado); 1 ela gira de volta e encosta no chão 24 px à frente do pé, no lugar do adereço (pivô 466,324), painel à esquerda da tela como a treadmill_l0_side; 2 a esteira vira o adereço NESTE quadro (não está na folha), ele endireita. Depois: helper_stand_left espelhada (a mesma pose da helper_stand)."},
 }
+const TM_PIV_6D2 := Vector2(466, 324)
+const P_TM_END_6D2 := Vector2(470, 300)
 
 func helper_stand(dy: float) -> Dictionary:
 	var o := stand_base(dy)
@@ -1606,8 +1612,9 @@ func helper_poses(id: String) -> Array:
 				o.erase("_ar")
 				out.append(G(tm_fold_hold(o, -49.0 + bob)))
 			return out
-		"treadmill_put":
-			var rel := TM_PIV - P_TM_END   # (5,17) na tela; na pose montada para a direita, x troca de sinal
+		"treadmill_put", "treadmill_put_right":
+			var direita: bool = id == "treadmill_put_right"
+			var rel := (TM_PIV_6D2 - P_TM_END_6D2) if direita else (TM_PIV - P_TM_END)   # na tela; montada para a direita: na _left o x troca de sinal
 			var f0 := {"hip": V(-1, -26), "top": V(1, -44), "head": V(2, -51), "sl": V(-6, -41), "sr": V(8, -41), "toel": V(-2, 0), "toer": V(10, 0),
 				"kl": V(1, -0.2), "kr": V(1, -0.2)}
 			# (refeito) 0 abaixa a esteira DOBRADA (a mesma pegada do carry), joelhos dobrados, base 3 px acima do chão
@@ -1616,7 +1623,8 @@ func helper_poses(id: String) -> Array:
 				"kl": V(1, -0.2), "kr": V(1, -0.2), "hl": V(-6, -21), "pl": V(-0.3, 1), "stl": "open", "gkl": "diagdown", "hr": V(13, -21), "pr": V(0.3, 1), "str": "open", "gkr": "diagdown"}
 			var sq := tm_squeezed(70)
 			var tl := V(-rel.x - 35, rel.y - 2 - 42)   # 2 px acima do chão final, centro no pivô da esteira
-			f1["_props"] = [["under", flipped(sq), tl, 0]]
+			# _right: não é espelhada, então x direto e a esteira sem flip (painel à esquerda da tela, como o adereço)
+			f1["_props"] = [["under", sq, V(rel.x - 35, rel.y - 2 - 42), 0]] if direita else [["under", flipped(sq), tl, 0]]
 			f1["_keep_screen"] = true
 			var f2 := stand_base()
 			f2.merge({"toel": V(-2, 0), "toer": V(10, 0), "hl": V(-7, -29), "pl": ELB, "stl": "open", "hr": V(12, -30), "pr": ELB, "str": "open"}, true)
@@ -1648,7 +1656,7 @@ func gen_helper() -> void:
 		if (id as String).begins_with("treadmill"):
 			extra["carried"] = "treadmill_l0 (a esteira enferrujada da garagem), na orientação da treadmill_l0_side: painel à esquerda da tela"
 		var e2 := e.duplicate()
-		e2["scene"] = id.trim_suffix("_left")
+		e2["scene"] = id.trim_suffix("_left").trim_suffix("_right")
 		save_plain(sid, frames, hands, anchors, fr, Vector2.ZERO, e2, "characters/", extra, "esquerda" if e.left else "direita")
 
 # ================================================================ conferências

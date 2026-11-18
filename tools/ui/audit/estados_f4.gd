@@ -321,11 +321,11 @@ func _rodar_fase4b() -> void:
 		var loja: Node = au._cena.get_node("PainelLoja")
 		loja._tab["loja"].botao.pressed.emit()
 		await au._esperar(0.1)
-		au._mouse(Vector2(445, 262), true)  # plaquinha da esteira no chão
-		au._mouse(Vector2(445, 262), false)
+		au._mouse(Vector2(466, 324), true)  # 6d2: onde ficava a marca da esteira agora é só chão
+		au._mouse(Vector2(466, 324), false)
 		await au._esperar(0.2)
-		au._exigir(loja._aba == "treino", au._estado, "clique na marca da esteira deveria abrir a aba TREINO")
-		au._exigir(au.gs.foco == "punching_bag" and cliques[0] == 0, au._estado, "clique na marca não pode treinar nem trocar o foco")
+		au._exigir(loja._aba == "loja", au._estado, "6d2: o chão vazio não abre aba nenhuma")
+		au._exigir(au.gs.foco == "punching_bag" and cliques[0] == 0, au._estado, "clique no chão vazio não pode treinar nem trocar o foco")
 		loja._tab["loja"].botao.pressed.emit()
 		await au._esperar(0.1)
 		var barra: Control = au._cena.get_node("BarraBaixo")
@@ -447,7 +447,7 @@ func _rodar_fase4b() -> void:
 		await au._abrir()
 		au._estado = "b4_assist_metronomo"
 		var faixa: Node = au._cena.get_node("FaixaAssistido")
-		au._exigir(au.gs.assistido_estado() == "metronome" and faixa._chip_texto.text == au._txt("assist_metronome"), au._estado, "chip METRÔNOMO TOCANDO esperado")
+		au._exigir(au.gs.assistido_estado() == "metronome" and not faixa._chip.visible, au._estado, "6d2: com o Metrônomo não há texto (o chip \"METRÔNOMO TOCANDO\" saiu)")
 		au._exigir(not faixa._botao.visible, au._estado, "com o Metrônomo o botão SEGURAR some")
 		await au._ver("b4_assist_metronomo")
 

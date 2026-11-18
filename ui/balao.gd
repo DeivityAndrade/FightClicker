@@ -9,7 +9,10 @@ signal fechou(id: String, speaker: String)  # saiu da tela (leitura acabou ou ca
 signal falando(speaker: String, sim: bool)  # escrevendo (sim) / parou de escrever (não)
 
 const NO_COVER := Rect2(310, 180, 52, 94)
-const UTIL := Rect2(132, 22, 375, 263)  # sala (132..507, 22..285)
+const UTIL_ESQ := 4.0  # 6d2: a sala é a tela toda (menos o HUD e a faixa de baixo)
+const UTIL_TOPO := 22.0
+const UTIL_BASE := 326.0
+static var limite_direito := 636.0  # a garagem baixa para 502 com o painel fixado (o balão não passa por baixo dele)
 const AVANCO := 6
 const MARGEM_H := 8
 const TAIL_MAX_DESVIO := 6
@@ -92,18 +95,18 @@ static func calcular(cabeca: Vector2, w: float, h: float, evitar: Array = []) ->
 			modo = "sobe"
 			# 6c2: o mentor do caixote tem a cabeça do Osmar ao lado: se ainda toca alguém, sobe mais (até 40 px) até liberar.
 			var extra := 0
-			while _toca(r, evitar) and extra < 40 and r.position.y - 7.0 >= UTIL.position.y:
+			while _toca(r, evitar) and extra < 40 and r.position.y - 7.0 >= UTIL_TOPO:
 				r.position.y -= 1.0
 				extra += 1
-			if _toca(r, evitar) or r.position.y - 6.0 < UTIL.position.y:
+			if _toca(r, evitar) or r.position.y - 6.0 < UTIL_TOPO:
 				return {"ok": false}
 	var ponta_x := clampf(cabeca.x, r.position.x + 8.0, r.end.x - 8.0)
 	return {"ok": true, "corpo": r, "ponta_x": ponta_x, "ponta_y": r.position.y + h + 3.0, "modo": modo}
 
 
 static func _dentro(r: Rect2) -> Rect2:
-	var x := clampf(r.position.x, UTIL.position.x, UTIL.end.x - r.size.x)
-	var y := maxf(r.position.y, UTIL.position.y + 6.0)  # a plaquinha sai 6 px por cima
+	var x := clampf(r.position.x, UTIL_ESQ, limite_direito - r.size.x)
+	var y := maxf(r.position.y, UTIL_TOPO + 6.0)  # a plaquinha sai 6 px por cima
 	return Rect2(floorf(x), floorf(y), r.size.x, r.size.y)
 
 

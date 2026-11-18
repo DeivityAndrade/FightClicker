@@ -9,6 +9,10 @@ extends SceneTree
 ## Lê (só leitura): assets/sprites/manifest.json (quadros, fps, pivô, hit_point, MÃOS por quadro, pos na sala).
 ## Escreve: <saida>/... e docs/arte/mockups/elenco_completo_x3.png. O manifest NÃO é alterado.
 ##
+## MODO LUZ 6d2: acrescente "luz6d2" depois de <antigos>. Grava só as 6 folhas da equipe (vizinhos, tios, Prof. Nelson)
+## com a luz pintada para os pontos novos do manifest (sala larga) em <saida>/characters/, e as antigas regeneradas em
+## <saida>/antes/ (conferência pixel a pixel). Mockup: tools/art/make_mockup_fase6d2_luz_pessoas.gd.
+##
 ## MODO ACADEMIA (Fase 5): acrescente "gym" depois de <antigos>. Gera só Tonhão do Tatame (opp_gym_1, escala 1,04)
 ## e Kid Navalha (opp_gym_2, 1,08), os retratos, docs/arte/mockups/academia_adversarios_x3.png (contato 3x e 1x),
 ## academia_adversarios_arena_x2.png (na arena real) e <saida>/seq/ (quadros do ciclo para GIF). As entradas
@@ -772,13 +776,15 @@ func coach_hooks(p: Dictionary, frame: int) -> void:
 			lib.put(int(hd.x) + 3, int(hd.y) + 4, "st3", 73)
 			lib.put(int(hd.x) + 4, int(hd.y) + 4, "st2", 73)
 
-func gen_helper(hid: String) -> Array:
+## luz = "antiga" (só a lâmpada, passo mínimo -1, como até a 6d2), "6d2" (sala larga: lâmpada + janela + luminária
+## da garagem misturadas com os 4 tubos da academia, ver luz_6d2_passo) ou "nenhuma" (só para conferência).
+func gen_helper(hid: String, luz := "antiga", pos_force := Vector2(-1, -1)) -> Array:
 	var e := spr(hid)
 	var piv := v2(e.pivot)
 	var fs := Vector2i(int(e.frame_size[0]), int(e.frame_size[1]))
 	var left: bool = e.get("facing", "direita") == "esquerda"
 	var gpiv := Vector2(fs.x - 1 - piv.x, piv.y) if left else piv
-	var pos := v2(e.pos)
+	var pos := v2(e.pos) if pos_force.x < 0 else pos_force
 	var b := helper_build(hid)
 	var poses := helper_poses(hid)
 	if poses.size() != int(e.frames):
@@ -794,9 +800,92 @@ func gen_helper(hid: String) -> Array:
 			im.flip_x()
 		# luz da lâmpada já aplicada para o ponto fixo da sala (igual aos ajudantes antigos)
 		var tl := pos - piv
-		L.light(im, Rect2i(0, 0, im.get_width(), im.get_height()), LIGHT_C - tl, 300.0, 1.1, 3.6, -1, 1, 0.9)
+		if luz == "antiga":
+			L.light(im, Rect2i(0, 0, im.get_width(), im.get_height()), LIGHT_C - tl, 300.0, 1.1, 3.6, -1, 1, 0.9)
+		elif luz == "6d2":
+			luz_6d2(im, tl, piv, p)
 		frames.append(im)
 	return frames
+
+# ================================================================ Fase 6d2: luz dos pontos novos (sala larga)
+## A mesma folha aparece na garagem e na academia, então a luz é uma mistura das duas salas (tela 640x360), com peso maior
+## na garagem (LUZ_6D2_PESO_GARAGEM; antes a folha usava só a lâmpada da garagem e a academia já aceitava isso):
+## garagem = a conta do fundo largo (make_mockup_fase6d2_layout.gd: lâmpada (305,90) + janela (34,176) + luminária (540,70));
+## academia = os 4 tubos (218, 422 e os novos 104, 536).
+## Em vez de dither por pixel (que no corpo vira xadrez no rosto e na camiseta), o passo é decidido por FAIXA DO CORPO:
+## cabeça (acima do ombro), tronco (ombro até um pouco abaixo do quadril) e pernas, cada uma com a luz do seu centro
+## (+LUZ_6D2_ERGUE), arredondada. Cabeça e tronco nunca passam de -1 (ninguém some no breu, o rosto lê); as pernas podem
+## ir a -2 (a luz vem de cima). As emendas caem na base do pescoço (seca: xadrez ali sujava o peito) e no fim do calção
+## (2 linhas em xadrez).
+const TUBOS_6D2 := [Vector2(218, 34), Vector2(422, 34), Vector2(104, 34), Vector2(536, 34)]
+const LUZES_GARAGEM_6D2 := [[Vector2(305, 90), 300.0, 1.1, 3.6, 0.9, 1.0], [Vector2(34, 176), 150.0, 0.9, 1.9, 0.35, 0.0],
+	[Vector2(540, 70), 170.0, 1.0, 2.0, 0.25, 0.0]]
+const LUZ_6D2_ERGUE := 0.25
+const LUZ_6D2_PESO_GARAGEM := 0.7
+
+func luz_6d2_valor(x: float, y: float) -> float:
+	var g := -99.0
+	for lt in LUZES_GARAGEM_6D2:
+		var c: Vector2 = lt[0]
+		var d := Vector2(x - c.x, (y - c.y) * float(lt[2])).length() / float(lt[1])
+		g = maxf(g, minf(float(lt[4]) - d * float(lt[3]), float(lt[5])))
+	var a := -9.0
+	for t: Vector2 in TUBOS_6D2:
+		a = maxf(a, 0.95 - Vector2(x - t.x, (y - t.y - 30.0) * 0.8).length() / 260.0 * 1.9)
+	a -= clampf((y - 250.0) / 120.0, 0.0, 0.35)
+	return g * LUZ_6D2_PESO_GARAGEM + a * (1.0 - LUZ_6D2_PESO_GARAGEM) + LUZ_6D2_ERGUE
+
+## Passos [cabeça, tronco, pernas] de uma pessoa com os pés em pos (só depende do ponto: igual em todos os quadros).
+func luz_6d2_passos(pos: Vector2) -> Array:
+	var out := []
+	var mins := [-1, -1, -2]
+	var alturas := [-60.0, -43.0, -15.0]
+	for i in 3:
+		out.append(clampi(int(floorf(luz_6d2_valor(pos.x, pos.y + alturas[i]) + 0.5)), mins[i], 0))
+	return out
+
+## gpiv/p: pivô e pose do quadro (antes do espelho; o espelho não muda as linhas). tl = canto do quadro na tela.
+func luz_6d2(im: Image, tl: Vector2, piv: Vector2, p: Dictionary) -> void:
+	var st: Array = luz_6d2_passos(tl + piv)
+	var y_ombro := int(round(piv.y + (p.top as Vector2).y)) - 1
+	var y_perna := int(round(piv.y + (p.hip as Vector2).y)) + 7
+	for y in im.get_height():
+		for x in im.get_width():
+			var c := im.get_pixel(x, y)
+			if c.a == 0.0:
+				continue
+			var k := 0 if y < y_ombro else (1 if y < y_perna else 2)
+			var s: int = st[k]
+			# emenda das pernas: 2 linhas em xadrez (metade fica com o passo do tronco); a do pescoço é seca
+			if k == 2 and y < y_perna + 2 and (x + y) % 2 == 0:
+				s = st[k - 1]
+			if s != 0:
+				im.set_pixel(x, y, L.shade(c, s))
+
+## Pontos de antes da 6d2 (só para conferir que o gerador ainda reproduz as folhas antigas pixel a pixel).
+const POS_ANTES_6D2 := {"neighbor_1": Vector2(176, 284), "neighbor_2": Vector2(220, 258), "neighbor_3": Vector2(488, 286),
+	"uncle_1": Vector2(455, 236), "uncle_2": Vector2(398, 230), "coach_1": Vector2(394, 280)}
+
+## Modo "luz6d2": grava em <saida>/characters/ só as 6 folhas da equipe com a luz nova (pos do manifest) e
+## <saida>/antes/ as folhas antigas regeneradas (conferência: têm de bater pixel a pixel com o projeto).
+func run_luz_6d2() -> void:
+	for hid in HELPERS:
+		var antes := gen_helper(hid, "antiga", POS_ANTES_6D2[hid])
+		var proj := Image.load_from_file(ROOT + res_to_rel(spr(hid).file).insert(0, "assets/sprites/"))
+		proj.convert(Image.FORMAT_RGBA8)
+		var s: Image = P.strip(antes)
+		s.convert(Image.FORMAT_RGBA8)
+		var dif := 0
+		for y in s.get_height():
+			for x in s.get_width():
+				if s.get_pixel(x, y) != proj.get_pixel(x, y):
+					dif += 1
+		report.append("%s: folha antiga regenerada difere do projeto em %d px" % [hid, dif])
+		DirAccess.make_dir_recursive_absolute(out_dir + "antes")
+		s.save_png(out_dir + "antes/" + res_to_rel(spr(hid).file).get_file())
+		var novo := gen_helper(hid, "6d2")
+		save_sheet(out_dir + res_to_rel(spr(hid).file), hid, novo)
+		report.append("%s: luz nova em %s, passos cabeça/tronco/pernas %s" % [hid, str(v2(spr(hid).pos)), str(luz_6d2_passos(v2(spr(hid).pos)))])
 
 # ================================================================ saída
 func save_sheet(path: String, id: String, frames: Array) -> void:
@@ -1165,6 +1254,11 @@ func _init() -> void:
 	M = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
 	if args.size() > 3 and args[2] == "reacoes":
 		run_reacoes(args[3])
+		_write_report()
+		quit()
+		return
+	if args.size() > 2 and args[2] == "luz6d2":
+		run_luz_6d2()
 		_write_report()
 		quit()
 		return

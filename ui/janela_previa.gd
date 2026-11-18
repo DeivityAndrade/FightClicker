@@ -97,8 +97,7 @@ func _montar() -> void:
 	y += 42.0
 	if dia_da_luta:
 		# No dia, a linha de baixo dos retratos diz o que fazer ("{nome} chegou. Lutar ou passar o posto?"); a descrição fica na LUTAR.
-		UiTema.rotulo_centro(painel, UiTema.txt("fight_day_line", "{nome} chegou. Lutar ou passar o posto?",
-			{"nome": str(opp.name)}), UiTema.Y1, 320.0, y)
+		pass  # 6d2: a linha "NOME chegou. Lutar ou passar o posto?" saiu (título + nome + os dois botões já perguntam)
 	else:
 		UiTema.rotulo_centro(painel, str(opp.description).to_upper(), UiTema.CREAM, 320.0, y)
 
@@ -114,10 +113,9 @@ func _montar() -> void:
 	y += 12.0 + g2 + 2.0 * ar  # respiro antes do risco
 
 	# --- Risco ---
-	UiTema.rotulo(painel, UiTema.txt("risk_label", "RISCO"), UiTema.G3, X0, y + 3)
 	_selo_area = Control.new()
 	_selo_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_selo_area.position = Vector2(X0 + UiTema.largura(UiTema.txt("risk_label")) + 8, y)
+	_selo_area.position = Vector2(X0, y)  # 6d2: sem a palavra RISCO na frente (o selo já diz FÁCIL / EQUILIBRADO / PERIGOSO)
 	painel.add_child(_selo_area)
 	_aviso = UiTema.rotulo(painel, "", UiTema.Y1, X0 + 130, y + 3, X1 - X0 - 130, HORIZONTAL_ALIGNMENT_RIGHT)
 	# Porcentagem de vitória (só com o nó "Olho clínico"): ao lado do selo, na cor do risco.

@@ -34,7 +34,7 @@
 		"win_location": "gym",
 		"reserve_campaign_offset": 3,
 		"locked_seconds": 0.0,
-		"max_seconds": 14.0,
+		"max_seconds": 20.0,
 		"settle_seconds": 2.0,
 		"counts_as_comment": true,
 		"interrupt_on": ["window", "fight", "location_change", "end_screen", "handover"]

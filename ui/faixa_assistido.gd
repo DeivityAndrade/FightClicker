@@ -16,7 +16,7 @@ const DICA_OCIOSO := 5.0  # segundos sem clicar
 const DICA_DURACAO := 4.0
 const ALTURA_BOTAO := 15
 const FOLGA := 4.0  # entre o chip e o botão
-const MARGEM_CANTO := 4.0
+const MARGEM_CANTO := 18.0  # 6d2: x 146, à direita do vizinho 2 (126,322) da sala larga
 const PULSO := 0.15
 const CORES := {"g2": UiTema.G2, "y1": UiTema.Y1, "gr3": UiTema.GR3, "white": UiTema.WHITE}
 
@@ -85,7 +85,7 @@ func _montar_botao() -> void:
 	b.add_theme_stylebox_override("hover", UiTema.estilo(normal))
 	_botao_texto = UiTema.botao_conteudo(b, "", UiTema.WHITE, 1, str(botao_info.get("icon", "icon_key_shift")), 0.0)
 	_botao_texto.visible = false
-	b.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_assist")))
+	b.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_assist"), b))
 	b.mouse_exited.connect(func() -> void: Dica.limpar())
 	_botao_icone = b.get_meta("icone")
 	UiTema.alinhar(b, "center")
@@ -197,7 +197,7 @@ func _atualizar() -> void:
 	var chaves: Dictionary = _info.get("text_keys", {})
 	var estilo := str(_info.get("pulse", "ui_assist_chip_active_pulse")) if pulso else str(estilos.get(estado, "ui_assist_chip_hint"))
 	var cor_nome := str(UiTema.sprite(estilo).get("text_color", "g2"))
-	var texto := UiTema.txt(str(chaves.get(estado, "assist_hint")))
+	var texto := UiTema.txt("assist_active") if estado == "active" else ""  # 6d2: só 2 estados com texto (ASSISTIDO e a dica da 1ª vez)
 	if estado == "off":
 		texto = UiTema.txt("hint_assist_first")  # Fase 5.1: o chip fixo saiu; só a dica curta, nas primeiras vezes
 
@@ -215,7 +215,7 @@ func _atualizar() -> void:
 	_botao.visible = com_botao
 	_afundar_botao(afundado)
 	# Fase 5.1: sem texto fixo na sala. O chip só existe enquanto o assistido trabalha (esperando/socando) ou na dica de primeira vez.
-	var com_chip := estado == "waiting" or estado == "active" or (estado == "off" and _dica_t > 0.0)
+	var com_chip := estado == "active" or (estado == "off" and _dica_t > 0.0)
 	_chip.visible = com_chip
 	if not com_chip:
 		w_chip = 0.0

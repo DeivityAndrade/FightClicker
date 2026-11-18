@@ -171,8 +171,7 @@ func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: f
 	var sp: AnimSprite = a.sp
 	sp.definir(nome)
 	if a.char == "current_player":
-		var lk: Dictionary = a.get("look", {})
-		sp.texture = DiscVisual.textura(nome, lk if not lk.is_empty() else _look(), lk.is_empty() and GameState.simbolo_no_lutador())
+		_visual_do_discipulo(a, nome)
 	elif str(_personagens.get(a.char, {}).get("palette", "")) != "":
 		sp.texture = _textura_paleta(nome, str(_personagens[a.char].palette))  # o 2º vizinho: regata vermelha
 	a.nome = nome
@@ -200,6 +199,16 @@ func _pose(a: Dictionary, anim: String, em_laco: bool, faixa: Array, fps_mult: f
 		sp.parar(int(seq[0]))
 	else:
 		sp.tocar(seq, fps, em_laco)
+
+
+## Textura do discípulo (current_player) com o visual de AGORA: o elenco é resolvido no começo da cena, antes do CONFIRMAR.
+func _visual_do_discipulo(a: Dictionary, nome: String) -> void:
+	if nome == "":
+		return
+	var lk: Dictionary = a.get("look", {})
+	var vivo: Dictionary = GameState.visual_lutador()
+	var usar: Dictionary = vivo if not vivo.is_empty() else (lk if not lk.is_empty() else _look())
+	(a.sp as AnimSprite).texture = DiscVisual.textura(nome, usar, lk.is_empty() and GameState.simbolo_no_lutador())
 
 
 ## Troca exata de cor por pixel (manifest.by_data_id.personagens_6c1.palette_variants.<paleta>.swap), em cache.
@@ -342,6 +351,8 @@ func _evento_ator(tipo: String, ev: Dictionary) -> void:
 		return  # ator que não existe nesta cena (ex.: sem esteira, sem último que passou o posto): passos pulados
 	if str(ev.get("facing", "")) != "":
 		a.facing = str(ev.facing)
+	if a.char == "current_player":
+		_visual_do_discipulo(a, str(a.get("nome", "")))  # show/face/pose: nunca mostra a textura velha
 	match tipo:
 		"show", "hide":
 			a.visivel = tipo == "show"

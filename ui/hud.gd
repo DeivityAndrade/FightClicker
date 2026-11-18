@@ -17,6 +17,8 @@ var _emblema_rotulo: Label
 var _emblema_fundo: NinePatchRect
 var _dica_nos: Control
 var _area_local: Control
+var _so_sala := false  # 6d2: modo "só a sala": fica só o grupo do Treino
+var _fundo: Panel
 
 
 func _ready() -> void:
@@ -24,7 +26,7 @@ func _ready() -> void:
 	size = Vector2(640, 18)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var ui: Dictionary = GameState.dados.ui
-	UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, 18))
+	_fundo = UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, 18))
 
 	# Fase 5.1: Treino é o número-herói (txt_hero, verde); Dinheiro em dourado; Fama e Legado descem para o nível 3
 	# (só ícone + número pequeno à direita; o texto aparece na dica ao passar o mouse).
@@ -58,6 +60,13 @@ func _ready() -> void:
 	GameState.dinheiro_mudou.connect(_ao_dinheiro)
 	GameState.permanente_mudou.connect(atualizar)
 	GameState.local_mudou.connect(func(_l: String) -> void: atualizar())
+	atualizar()
+
+
+## Modo "só a sala": o HUD mostra só o Treino (ícone, número e +/s).
+func modo_so_sala(ativo: bool) -> void:
+	_so_sala = ativo
+	_ultimo = ""
 	atualizar()
 
 
@@ -153,6 +162,31 @@ func _reposicionar() -> void:
 	_area_local.visible = _local.visible
 	_area_local.position = Vector2(_local_icone.position.x if na_academia else _local.position.x - 2.0, 0)
 	_area_local.size = Vector2(xr + 4.0 - _area_local.position.x + 2.0, 18)
+	_aplicar_so_sala()
+
+
+func _aplicar_so_sala() -> void:
+	_fundo.visible = not _so_sala
+	if not _so_sala:
+		for i in range(1, _grupos.size()):
+			var g0: Dictionary = _grupos[i]
+			g0.icone.visible = true
+			g0.valor.visible = true
+			if g0.has("area"):
+				(g0.area as Control).visible = true
+		_carreira.visible = true
+		return
+	for i in range(1, _grupos.size()):
+		var g: Dictionary = _grupos[i]
+		g.icone.visible = false
+		g.valor.visible = false
+		if g.has("area"):
+			(g.area as Control).visible = false
+	_carreira.visible = false
+	_local.visible = false
+	_local_icone.visible = false
+	_area_local.visible = false
+	_emblema.visible = false
 
 
 ## Áreas de hover do nível 3: Fama, Legado em jogo e o nome do local (descrição do local + arte da carreira).
@@ -165,14 +199,14 @@ func _areas_dica() -> void:
 		add_child(a)
 		var chave: String = textos[i]
 		var idx: int = i
-		a.mouse_entered.connect(func() -> void: Dica.pedir(_texto_dica(chave, idx)))
+		a.mouse_entered.connect(func() -> void: Dica.pedir(_texto_dica(chave, idx), a))
 		a.mouse_exited.connect(func() -> void: Dica.limpar())
 		_grupos[i]["area"] = a
 	_area_local = Control.new()
 	_area_local.mouse_filter = Control.MOUSE_FILTER_PASS
 	UiTema.alinhar(_area_local, "ignore")
 	add_child(_area_local)
-	_area_local.mouse_entered.connect(func() -> void: Dica.pedir(texto_dica_local()))
+	_area_local.mouse_entered.connect(func() -> void: Dica.pedir(texto_dica_local(), _area_local))
 	_area_local.mouse_exited.connect(func() -> void: Dica.limpar())
 
 

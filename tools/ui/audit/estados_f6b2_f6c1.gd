@@ -124,12 +124,12 @@ func _rodar_fase6b2() -> void:
 		var sala_m: Node = au._cena.get_node("Sala")
 		au._estado = "f6b2_mentor2"
 		au._exigir(sala_m.mentor2_visivel(), au._estado, "o 2º mentor está na garagem")
-		au._exigir(sala_m._mentor2.position == Vector2(150, 262), au._estado, "pés em mentor_2_spot: %s" % str(sala_m._mentor2.position))
+		au._exigir(sala_m._mentor2.position == sala_m.ponto_mentor2(), au._estado, "pés em mentor_2_spot: %s" % str(sala_m._mentor2.position))
 		au._exigir(sala_m._mentor2.nome_sprite == "disciple_stand_bare" and sala_m._mentor2.texture != null, au._estado, "pose stand_bare virada para o saco: %s" % sala_m._mentor2.nome_sprite)
 		au._exigir(sala_m._mentor2.texture != _tema().textura("disciple_stand_bare"), au._estado, "ele usa o visual guardado no roster (camadas e cores)")
 		await au._ver("f6b2_mentor2")
 		if au._quer("f6b2_mentor2_dica"):
-			sala_m._hover_em(Vector2(150, 240))
+			sala_m._hover_em(Vector2(62, 240))  # 6d2: o 2º mentor ficou em (62,256)
 			await au._esperar(0.1)
 			var di: Control = au._dica_inst()
 			var rd := Rect2(di.position, di.size)

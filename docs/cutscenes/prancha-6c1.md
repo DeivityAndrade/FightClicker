@@ -87,12 +87,12 @@ Regras da cena inteira: interface ligada, o soco vale do primeiro ao último qua
 | # | Tempo | Câmera | Quem e como | Fala | Passa para o próximo |
 |---|---|---|---|---|---|
 | **J1** Levanta e pega a bolsa | 0,0–1,6 s | Sala 1x, interface ligada | O John levanta do caixote e pega uma bolsa de lona que estava atrás dele. A bolsa só existe a partir daqui | — | Ele começa a andar |
-| **J2** Atravessa a sala | 1,6–4,3 s | igual | Anda a 48 px/s de (254,252) até (380,246), **por trás do saco e do lutador**. O soco do jogador passa na frente dele | — | Ele para perto da porta |
-| **J3** Olha a sala | 4,3–5,6 s | igual | Vira para a esquerda e olha a sala por 1,3 s, com a bolsa no ombro | — | O balão entra |
-| **J4** "vou procurar meu rumo." | 5,6–10,0 s | igual | Parado. Dois balões passivos seguidos, empurrados para a direita do alvo | **John:** "vou procurar meu rumo." (`saida_rumo_1`) e "cuidem bem disso aqui." (`saida_rumo_2`) | O Osmar responde |
-| **J5** "vê se manda notícia." | 10,0–12,4 s | igual | O Osmar responde do lugar dele, sem andar. O John acena com a cabeça, uma vez | **Osmar:** "vê se manda notícia." (`saida_resposta`) | O John vira para a porta |
-| **J6** Sai pela porta da rua | 12,4–13,9 s | igual | Abre a porta, sai, a porta fecha. Ninguém se despede de novo | — | A sala segue |
-| **J7** O caixote tem outro dono | 13,9–16,5 s | igual | O último que passou o posto anda do ponto de pé (150,262) até o caixote e senta. Na Carreira 2 não há ninguém: o caixote fica vazio | — | Fim. O treino nunca parou |
+| **J2** Atravessa a sala | 1,6–4,8 s | igual | Anda a 48 px/s em 3 trechos: do caixote sobe até o fundo do piso (274,224), segue rente à parede até (364,224), **48 px atrás do lutador e atrás do saco**, e só desce até (380,246) depois do saco. Na faixa do lutador só as canelas dele passam atrás da cabeça do lutador (correção do C2 da 6d) | — | Ele para perto da porta |
+| **J3** Olha a sala | 4,8–6,1 s | igual | Vira para a esquerda e olha a sala por 1,3 s, com a bolsa no ombro | — | O balão entra |
+| **J4** "vou procurar meu rumo." | 6,1–10,5 s | igual | Parado. Dois balões passivos seguidos, empurrados para a direita do alvo | **John:** "vou procurar meu rumo." (`saida_rumo_1`) e "cuidem bem disso aqui." (`saida_rumo_2`) | O Osmar responde |
+| **J5** "vê se manda notícia." | 10,5–12,9 s | igual | O Osmar responde do lugar dele, sem andar. O John acena com a cabeça, uma vez | **Osmar:** "vê se manda notícia." (`saida_resposta`) | O John vira para a porta |
+| **J6** Sai pela porta da rua | 12,9–14,4 s | igual | Abre a porta, sai, a porta fecha. Ninguém se despede de novo | — | A sala segue |
+| **J7** O caixote tem outro dono | 14,4–17,0 s | igual | O último que passou o posto anda do ponto de pé (150,262) até o caixote e senta. Na Carreira 2 não há ninguém: o caixote fica vazio | — | Fim. O treino nunca parou |
 | **J8** Na garagem (reserva) | mesmos tempos | igual | Tudo igual até o J5. No J6 a porta de enrolar sobe, emperra, e ele passa por baixo, como sempre fez. A porta desce sozinha | as mesmas | Fim |
 
 ### Se o jogador interromper
@@ -154,3 +154,10 @@ Pendências de outros papéis:
 - **Artista de Personagens** (`coach_nudge_photo`): hoje o quadro 2 empurra o canto de baixo à direita **1 px para baixo** (gesto de entortar). Na foto torta esse canto está 1 px mais baixo que na reta; para desentortar, o dedo precisa **erguer** o canto: quadro 1 encosta 1 px abaixo de onde encosta hoje (ponta perto de 229,178) e o quadro 2 sobe 1 px (de volta a ~229,177), com a foto trocando para reta nesse quadro. Basta trocar a altura do dedo dos quadros 1 e 2. Atualizar o `frames_note` ("a foto entorta NESTE quadro" → "a foto endireita NESTE quadro", `straight`). Sem a correção a cena funciona, mas o dedo desce enquanto a foto sobe (1 px, quase invisível no 2x). O `hang_photo` serve: a moldura nas mãos (quadros 1-4) é a reta e na soltura ela aparece torta, o que lê como escorregar no prego.
 - **Diretor de Arte** (manifest): nota do `wall_photo_old_gym` ("No jogo, sempre o quadro 1" → quadro 0 na academia) e `by_data_id.gym_arrival_scene.props.photo.frames` ("0 reta (A4-A5)", "1 torta (no jogo, sempre)" → "1 torta (A4-A5)", "0 reta (A6 em diante, no jogo)").
 - **Roteirista** (`data/dialogos.json`): `cl_ac_chegada_2` ("torta, como manda.") e o hover `objects.old_photo_gym`.
+
+## Ajuste da sala larga (6d2, 2026-11-18)
+Pontos novos de `docs/arte/fase6d2-layout.md` §4 e §7. Os passos de andar leem os pontos pelo nome (`mentor_spot`, `gym_mentor_spot`, `seat_spot`) com `speed`, sem segundos fixos.
+- **Primeira sucessão:** o John recua até o caixote novo (~172 px, `step_back` a 48 px/s, ~3,6 s). Ele começa a recuar já no S7, enquanto o discípulo passa por baixo da porta; a fala `suc_guarda` segura 0,9 s (era 1,2) e a espera final do S4 caiu de 1,73 s para 1,03 s. Tempo preso 15,83 s (teto 16).
+- **Chegada à academia:** quem traz o caixote entra em 1,1 s e anda ~264 px a 48 px/s, passando na frente do Osmar; o corte 2x passa para 7,7 s. O ajudante vira a esteira durante o "agora sim." (fora do quadro 2x) e no A7 só a leva até (470,300) e pousa em (466,324). O respiro final caiu de 0,65 s para 0,3 s. Tempo preso 14,73 s (teto 15).
+- **Saída do John:** sai do caixote novo, passa 22 px na frente do Osmar (em linha reta cruzaria o corpo dele) e corre o fundo em y 220, 4 px mais alto que antes (pedido R2 do QA). A bolsa fica em (146,244). Quadros: J2 1,6–7,4 s, J3 7,4–8,7, J4 8,7–13,1, J5 13,1–15,5, J6 15,5–17,0, J7 17,0–18,9. Continua com 0 s presos.
+- **Chegada curta:** nada muda.

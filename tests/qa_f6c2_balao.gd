@@ -2,7 +2,7 @@ extends SceneTree
 ## QA 6c2: balao do mentor em cada sala e mentor, mural x pessoas/alvo. Janela real (--position 1950,40).
 const CONFIG := "res://data/config.json"
 const NO_COVER := Rect2(310, 180, 52, 94)
-const UTIL := Rect2(132, 22, 375, 263)
+const UTIL := Rect2(4, 22, 632, 304)  # 6d2
 const LOOK := {"skin": "skin_5", "hair_color": "black", "hair_style": "volume", "shorts_color": "yellow", "top": "tank", "top_color": "blue", "headband": "band", "headband_color": "red", "socks": "on"}
 const LOOK_J := {"skin": "skin_3", "hair_color": "brown", "hair_style": "bun", "shorts_color": "green", "top": "none", "top_color": "white", "headband": "band", "headband_color": "red", "socks": "none"}
 var gs: Node

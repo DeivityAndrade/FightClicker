@@ -5,7 +5,7 @@ extends Button
 ## Passar o mouse mostra a dica "ÁRVORE" + quantos nós dá para comprar. Fica apagado quando o mapa não abre agora
 ## (luta, dia da luta, escolha da arte, caixa na metade): `GameState.pode_abrir_arvore()`. Nenhuma regra aqui.
 
-const POSICAO := Vector2(132, 22)
+const POSICAO := Vector2(118, 22)  # 6d2: ao lado dos atributos em miniatura
 const TAMANHO := Vector2(22, 22)
 
 var _img: TextureRect
@@ -32,7 +32,7 @@ func _ready() -> void:
 	_atlas = AtlasTexture.new()
 	_img.texture = _atlas
 	add_child(_img)
-	mouse_entered.connect(func() -> void: Dica.pedir(texto_dica()))
+	mouse_entered.connect(func() -> void: Dica.pedir(texto_dica(), self))
 	mouse_exited.connect(Dica.limpar)
 	pressed.connect(Dica.limpar)
 	GameState.arvore_mudou.connect(_ler)
@@ -44,12 +44,13 @@ func _ready() -> void:
 
 func texto_dica() -> String:
 	var n := GameState.nos_compraveis()
-	var linha2 := UiTema.txt("map_button_tip_none", "NADA PARA COMPRAR AGORA")
+	var titulo := UiTema.txt("tree_button", "ÁRVORE")
+	# 6d2: a segunda linha só existe quando há o que comprar.
 	if n == 1:
-		linha2 = UiTema.txt("map_button_tip_one", "1 NÓ PARA COMPRAR")
-	elif n > 1:
-		linha2 = UiTema.txt("map_button_tip_many", "{n} NÓS PARA COMPRAR", {"n": n})
-	return UiTema.txt("tree_button", "ÁRVORE") + "\n" + linha2
+		return titulo + "\n" + UiTema.txt("map_button_tip_one", "1 NÓ")
+	if n > 1:
+		return titulo + "\n" + UiTema.txt("map_button_tip_many", "{n} NÓS", {"n": n})
+	return titulo
 
 
 func brilhando() -> bool:

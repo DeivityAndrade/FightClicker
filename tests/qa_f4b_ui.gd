@@ -173,8 +173,8 @@ func _testes() -> void:
 	print("   socos do assistido em 7,5 s reais: ", s1)
 	ok(s1 >= 2 and s1 <= 3, "assistido pela UI: 2-3 socos em 7,5 s (obtido %d)" % s1)
 	# --- clique na marca do chão: não treina, não troca foco, abre aba TREINO ---
-	var marcas: Dictionary = sala._marcas
-	var r: Rect2 = marcas["treadmill"].rect
+	# 6d2: não há mais marca de fita; o mesmo ponto do chão (onde ela ficava) agora é só chão: clique ali não faz nada.
+	var r := Rect2(Vector2(445, 262) - Vector2(10, 5), Vector2(20, 10))
 	var t2: float = gs.treino
 	var cnt: int = gs.auto_socos_total
 	var cliques := [0]
@@ -185,7 +185,7 @@ func _testes() -> void:
 	mouse(r.get_center(), false)
 	await frames(3)
 	print("   cliques gerados pela marca: ", cliques[0], " foco=", gs.foco, " rect=", r)
-	ok(cliques[0] == 0 and gs.foco == "punching_bag", "clique na marca da esteira: sem treino, foco igual")
+	ok(cliques[0] == 0 and gs.foco == "punching_bag", "clique no chão onde ficava a marca da esteira: sem treino, foco igual")
 	# --- compra pelo jogo e verifica UI/foco ---
 	gs.treino = 600.0
 	await frames(3)

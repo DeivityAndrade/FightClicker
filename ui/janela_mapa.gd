@@ -123,9 +123,6 @@ func _montar_fixo() -> void:
 	UiTema.textura_rect(painel, "icon_skill_map", 9, 7)
 	var titulo := UiTema.rotulo(painel, UiTema.txt("tree_title", "O QUE O VELHO TE ENSINOU"), UiTema.COL_TEXT_1, 29, 11)
 	UiTema.alinhar(titulo, "left")
-	var x_dica := roundf(29.0 + UiTema.largura_visivel(titulo.text) + 12.0)
-	var dica := UiTema.rotulo(painel, UiTema.txt("map_hint", "ARRASTE OU USE A RODA"), UiTema.COL_TEXT_2, x_dica, 11)
-	UiTema.alinhar(dica, "left")
 	_legado_icone = UiTema.textura_rect(painel, "icon_legacy_16", 0, 7)
 	_legado_rotulo = UiTema.rotulo(painel, "", UiTema.COL_LEGACY, 0, 8)
 	_legado_rotulo.scale = Vector2(2, 2)
@@ -873,12 +870,14 @@ func mostrar_cartao(id: String) -> void:
 	c.size = Vector2(CARTAO_L, altura)
 	var d: Dictionary = _vis[id]
 	var centro_tela: Vector2 = d.centro - Vector2(_cam) + VP.position
-	var x := centro_tela.x + float(d.raio) + 6.0
-	if x + CARTAO_L > VP.end.x - 2.0:
-		x = centro_tela.x - float(d.raio) - 6.0 - CARTAO_L
-	x = clampf(x, VP.position.x + 2.0, VP.end.x - 2.0 - CARTAO_L)
-	var y := clampf(centro_tela.y - altura / 2.0, VP.position.y + 2.0, VP.end.y - 2.0 - altura)
-	c.position = Vector2(roundf(x), roundf(y))
+	# Fase 6d: a mesma regra do balão do jogo todo (Dica.posicionar): ao lado do cursor, dentro da janela do mapa e
+	# sem cobrir o nó apontado. Sem mouse sobre o nó (verificador, teclado), usa o centro do nó.
+	var r_no := float(d.raio)
+	var alvo_no := Rect2(centro_tela - Vector2(r_no, r_no), Vector2(r_no, r_no) * 2.0)
+	var mouse := painel.get_local_mouse_position()
+	if not alvo_no.grow(10.0).has_point(mouse):
+		mouse = centro_tela
+	c.position = Dica.posicionar(Vector2(CARTAO_L, altura), mouse, alvo_no, VP.grow(-2.0))
 	painel.add_child(c)
 	_cartao = c
 	_cartao_id = id

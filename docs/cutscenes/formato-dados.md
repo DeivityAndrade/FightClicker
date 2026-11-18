@@ -240,3 +240,7 @@ Usados por `primeira_academia.json` e `saida_primeiro_mentor.json`. Nenhum tipo 
 | 24 | **Passo `fx` executado** | Já existia no formato (§4), hoje só validado. A chegada usa um (`fx_arrive_dust_small` no saco). A cena funciona sem ele | Poeira do saco no gancho |
 
 Estado do validador hoje: `primeira_academia` passa com 0 erros (os campos novos são ignorados e a arte que falta vira pendência). `saida_primeiro_mentor` acusa 3 erros esperados até os itens 22 e 23 entrarem: evento desconhecido e duas condições `if`.
+
+| # | Acréscimo (6d2, proposta) | Como é | Por quê |
+|---|---|---|---|
+| 25 | **Adereço pelo ponto do manifest** | `stage.props.<id>.pos` aceita também um caminho do manifest (ex.: `"gym_arrival_scene.crate"`, `"gym_arrival_scene.duffel"`, `"treadmill_l0_side_gym.positions.lado_direito"`), resolvido como os pontos de `move.to`. Hoje o validador só aceita `[x, y]` | Na sala larga o caixote, a bolsa e a esteira mudaram de lugar e as cenas tiveram de copiar as coordenadas; com o caminho, a próxima mudança de layout não toca as cenas |

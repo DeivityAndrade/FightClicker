@@ -138,7 +138,7 @@ func _montar_cinturao(r: Dictionary) -> void:
 	fundo_cor(Rect2(166, 232 + ds, 308, 42), Color(UiTema.P0, 0.55))
 	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 238 + ds)
 	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 188, 238 + ds, 280)
-	UiTema.rotulo(painel, UiTema.txt("belt_hint", "A MUDANÇA SAI DO PRÊMIO E SOBRA DINHEIRO PARA GASTAR."), UiTema.G3, 174, 252 + ds, 292)
+	# 6d2: a linha "A MUDANÇA SAI DO PRÊMIO..." saiu (o aviso da reserva já diz isso depois).
 	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 

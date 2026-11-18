@@ -16,7 +16,7 @@ extends Control
 
 signal altura_mudou(altura: int)  # quanto o bloco ocupa (a caixa de informação do painel desce junto)
 
-const ALTURA_CARTAO := 123.0
+const ALTURA_CARTAO := 88.0  # 6d2: sem as duas linhas de garantia (move_keeps / move_per_career)
 const LARGURA_CARTAO := 120.0
 const PLACA := Vector2(116, 26)  # placa 9-slice do calendário (by_data_id.campaign_calendar.hud.plate_rect)
 const TEXTO_X := 28.0  # x do texto dentro da placa (text_x 35 - plate x 7)
@@ -49,7 +49,7 @@ var _area_dica: Control
 
 
 func _ready() -> void:
-	position = Vector2(4, 113)
+	position = Vector2(4, 3)  # dentro do PainelProxima
 	size = Vector2(120, 76)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -94,7 +94,7 @@ func _ready() -> void:
 	_area_dica.size = Vector2(120, 26)
 	UiTema.alinhar(_area_dica, "ignore")
 	add_child(_area_dica)
-	_area_dica.mouse_entered.connect(func() -> void: Dica.pedir(_texto_premio()))
+	_area_dica.mouse_entered.connect(func() -> void: Dica.pedir(_texto_premio(), _area_dica))
 	_area_dica.mouse_exited.connect(func() -> void: Dica.limpar())
 	GameState.risco_proxima_mudou.connect(func(_a: String, _r: String) -> void: atualizar())
 	GameState.escada_mudou.connect(atualizar)
@@ -374,13 +374,12 @@ func _montar_cartao_mudanca(d: Dictionary) -> void:
 	UiTema.nine_patch(c, nome_cartao, Rect2(0, 0, LARGURA_CARTAO, ALTURA_CARTAO))
 	UiTema.textura_rect(c, str(info.get("icon", "icon_move")), 6, 5)
 	UiTema.rotulo(c, str(d.title).to_upper(), UiTema.WHITE if pronto else UiTema.G3, 26, 3, 88)
-	UiTema.rotulo(c, str(d.effect_text).to_upper(), UiTema.GR3 if pronto else UiTema.GR2, 7, 27, 106)
-	UiTema.rotulo(c, str(d.keeps_text).to_upper(), UiTema.CREAM if pronto else UiTema.G2, 7, 49, 106)
-	if pronto:
-		UiTema.rotulo(c, str(d.per_career_text).to_upper(), UiTema.G2, 7, 71, 106)
-	else:
-		UiTema.rotulo(c, UiTema.txt("move_no_money", "Falta dinheiro"), UiTema.COL_TEXT_2, 7, 71, 106)
-	var b := UiTema.botao_estilizado(c, Rect2(7, 92, 106, 26), "ui_button_move")
+	# 6d2: a quebra é no "/", não no meio de "2 LUTAS DA CASA"
+	UiTema.rotulo(c, str(d.effect_text).to_upper().replace(" / ", "
+"), UiTema.GR3 if pronto else UiTema.GR2, 7, 27, 106)
+	if not pronto:
+		UiTema.rotulo(c, UiTema.txt("move_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, float(d.get("cost", 0.0)) - GameState.dinheiro))}), UiTema.COL_TEXT_2, 7, 47, 106)
+	var b := UiTema.botao_estilizado(c, Rect2(7, 59, 106, 26), "ui_button_move")
 	b.disabled = not pronto
 	_conteudo_botao_mudar(b, str(d.button).to_upper(), str(d.price_text), pronto)
 	b.pressed.connect(func() -> void:

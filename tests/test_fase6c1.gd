@@ -378,7 +378,7 @@ func _teste_saida_por_vitoria() -> void:
 	while p.ativa and t < 40.0:
 		p.avancar(0.05)
 		t += 0.05
-	checar(not p.ativa and t <= 14.5, "a saida acaba sozinha em %.2f s (<= 14 s)" % t)
+	checar(not p.ativa and t <= 17.0, "a saida acaba sozinha em %.2f s (<= 14 s)" % t)  # 6d2: sala larga, o John sai do caixote novo (132,254): a saída mede 15,95 s
 	checar(not g.saida_tocando(), "o jogo sabe que ela terminou")
 	_tickar(g, 200.0, 0.5)
 	checar_igual(v.pedidos, 1, "a saida nunca toca duas vezes")
