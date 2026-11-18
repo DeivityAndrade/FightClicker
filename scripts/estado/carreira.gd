@@ -166,7 +166,7 @@ func nova_carreira() -> bool:
 		gs.discipulo = gs._sucessao._discipulo_padrao()
 	gs.salvar()
 	gs._tempo_autosave = 0.0
-	gs._emitir_tudo(false)
+	gs._save._emitir_tudo(false)
 	gs.permanente_mudou.emit()
 	_emitir_inicio_da_campanha()
 	return true

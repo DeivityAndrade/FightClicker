@@ -251,6 +251,7 @@ const _AcademiaArtes := preload("res://scripts/estado/academia_artes.gd")
 const _LojaGeradores := preload("res://scripts/estado/loja_geradores.gd")
 const _Carreira := preload("res://scripts/estado/carreira.gd")
 const _LutaEstado := preload("res://scripts/estado/luta.gd")
+const _SaveValidacao := preload("res://scripts/estado/save_validacao.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -264,11 +265,12 @@ var _academia := _AcademiaArtes.new(self)
 var _loja := _LojaGeradores.new(self)
 var _carreira := _Carreira.new(self)
 var _luta := _LutaEstado.new(self)
+var _save := _SaveValidacao.new(self)
 
 
 func _ready() -> void:
 	rng.randomize()
-	inicializar(_pasta_save_inicial(), CAMINHO_CONFIG)
+	inicializar(_save._pasta_save_inicial(), CAMINHO_CONFIG)
 	# Fechar pelo X passa por _notification, que salva antes de sair.
 	get_tree().set_auto_accept_quit(false)
 
@@ -371,283 +373,6 @@ static func preencher(modelo: String, vars: Dictionary = {}) -> String:
 	return s
 
 
-func salvar() -> bool:
-	if store.bloqueado:
-		_avisar("Save não gravado: o arquivo no disco é de uma versão mais nova do jogo.")
-		return false
-	var unix := store.salvar(para_save())
-	if unix < 0:
-		_avisar("Falha ao gravar o save.")
-		return false
-	ultimo_save_unix = unix
-	ultimo_save_texto = Time.get_time_string_from_system()
-	_tempo_autosave = 0.0
-	salvo.emit(ultimo_save_texto)
-	return true
-
-
-func carregar_save() -> void:
-	var r := store.carregar()
-	aplicar_save(r.estado)
-	ultimo_save_unix = r.saved_at_unix
-	ultimo_save_texto = _horario_local(ultimo_save_unix) if ultimo_save_unix > 0 else "nenhum"
-	_tempo_autosave = 0.0
-	avisos.clear()
-	if r.mensagem != "":
-		avisos.append(r.mensagem)
-	avisos_mudaram.emit(avisos)
-	carregado.emit(r.status)
-
-
-func apagar_save() -> void:
-	store.apagar()
-	aplicar_save({})
-	ultimo_save_unix = 0
-	ultimo_save_texto = "nenhum"
-	_tempo_autosave = 0.0
-	avisos.clear()
-	avisos_mudaram.emit(avisos)
-
-
-## Campos do estado que vão para o save (v7). Produção e custos não são salvos (vêm de data/).
-func para_save() -> Dictionary:
-	return {
-		"career": {
-			"metronome_level": nivel_metronomo,
-			"location": local_id,
-			"art": arte_id,
-			"art_seconds": arte_segundos,
-			"apparatus_owned": aparelhos_montados_ids.duplicate(),
-			"boxes": caixas_lista.duplicate(true),
-			"training": treino,
-			"attributes": atributos.duplicate(),
-			"focus": foco,
-			"generators": geradores.duplicate(),
-			"upgrades": niveis_melhoria.duplicate(),
-			"paid_generators": geradores_pagos.duplicate(),
-			"glove_level": nivel_luva,
-			"crew_click": crew_click_comprado,
-			"money": dinheiro,
-			"fame": fama,
-			"ladder_index": indice_escada,
-			"belt": cinturao,
-			"tactic": tatica,
-			"play_seconds": tempo_jogo,
-			"campaign_seconds": segundos_campanha,
-			"fight_day": fight_day,
-			"active_nodes": nos_ativos_ids.duplicate(),
-			"gestured_gloves": gestos_calcados.duplicate(),
-			"disciple": discipulo.duplicate(true) if not discipulo.is_empty() else null,
-			"mentor_greeted": mentor_cumprimentou,
-			"money_earned": dinheiro_ganho,
-			"fight": luta.duplicate(true) if not luta.is_empty() else null,
-		},
-		"permanent": permanente.duplicate(),
-		"ending": fim.duplicate(true) if not fim.is_empty() else null,
-		"school": escola.duplicate(true),
-	}
-
-
-## Aplica um estado lido do save (formato v7). Campo faltando ou inválido recebe o padrão.
-func aplicar_save(estado: Dictionary) -> void:
-	var c = estado.get("career", {})
-	if not (c is Dictionary):
-		c = {}
-	treino = _numero_valido(c.get("training", 0.0))
-
-	atributos = {}
-	var a = c.get("attributes", {})
-	for id in dados.atributos:
-		atributos[id] = _numero_valido(a.get(id, 0.0)) if a is Dictionary else 0.0
-
-	# Fase 5: permanent primeiro (as artes liberadas validam a arte da carreira), depois local e arte
-	permanente = _validar_permanente(estado.get("permanent", null))
-	_validar_local_e_arte(c)
-	aparelhos_montados_ids = _aparelhos._validar_aparelhos(c.get("apparatus_owned", null), not c.is_empty())
-	var f := str(c.get("focus", ""))
-	foco = f if aparelho_montado(f) else dados.default_focus
-	if f != "" and not aparelho_montado(f):
-		_avisar("Foco em aparelho não montado: voltou para o padrão.")
-
-	geradores = {}
-	var gs = c.get("generators", {})
-	for g in dados.geradores:
-		var q = gs.get(g.id, 0) if gs is Dictionary else 0
-		geradores[g.id] = _inteiro_valido(q, 1.0e9)
-
-	niveis_melhoria = {}
-	var us = c.get("upgrades", {})
-	for ap in dados.todos_aparelhos():
-		var n = us.get(ap.id, 0) if us is Dictionary else 0
-		niveis_melhoria[ap.id] = _inteiro_valido(n, float(ap.upgrades.size()))
-		if niveis_melhoria[ap.id] > 0 and not aparelho_montado(ap.id):
-			niveis_melhoria[ap.id] = 0
-			_avisar("Melhoria em aparelho não montado: zerada.")
-
-	# Fase 3
-	geradores_pagos = {}
-	var gp = c.get("paid_generators", {})
-	for g in lutas.geradores_pagos:
-		var q = gp.get(g.id, 0) if gp is Dictionary else 0
-		geradores_pagos[g.id] = _inteiro_valido(q, 1.0e9)
-	nivel_luva = _inteiro_valido(c.get("glove_level", 0), float(lutas.luvas.size()))
-	crew_click_comprado = typeof(c.get("crew_click", false)) == TYPE_BOOL and c.get("crew_click", false) and not lutas.crew_click.is_empty()
-	caixas_lista = _aparelhos._validar_caixas(c.get("boxes", null))
-	dinheiro = _numero_valido(c.get("money", 0.0))
-	fama = _inteiro_valido(c.get("fame", 0), 1.0e15)
-	indice_escada = _inteiro_valido(c.get("ladder_index", 0), float(lutas.adversarios.size()))
-	# O cinturão é consequência de a escada ter passado do adversário que o dá (Fase 5: o Muralha, não o fim da escada).
-	var i_cint := lutas.indice_cinturao()
-	cinturao = i_cint >= 0 and indice_escada > i_cint
-	_corrigir_local_pela_escada()
-	var t := str(c.get("tactic", ""))
-	tatica = t if not lutas.tatica(t).is_empty() else lutas.tatica_padrao
-	tempo_jogo = _numero_valido(c.get("play_seconds", 0.0))
-	dinheiro_ganho = _numero_valido(c.get("money_earned", 0.0))
-	luta = _validar_luta(c.get("fight", null))
-	# Fase 5.3: relógio e data. Data ausente ou inválida = folga cheia a partir do dia de hoje.
-	segundos_campanha = _numero_valido(c.get("campaign_seconds", 0.0))
-	var fd := -1
-	if not escada_completa():
-		var bruto = c.get("fight_day", null)
-		fd = _inteiro_valido(bruto, 1.0e9) if (typeof(bruto) == TYPE_FLOAT or typeof(bruto) == TYPE_INT) else 0
-		if fd <= 0 or fd > dia_campanha() + 999:
-			fd = _calendario._data_da_proxima_luta()
-	fight_day = fd
-	_dia_anterior = dia_campanha()
-	_aviso_data_chave = -2
-	_dia_chegou_emitido = false
-	nos_ativos_ids = _validar_ativos(c.get("active_nodes", null))
-	_arvore._recalcular_bonus()
-	_academia._atualizar_traco()
-	nivel_metronomo = _inteiro_valido(c.get("metronome_level", 0), float(metronomo_niveis()))
-	_acc_metronomo = 0.0
-	_acc_assist = _aparelhos._assist_primeiro()
-	_chave_melhor = ""
-	fim = _validar_fim(estado.get("ending", null))
-	# Fase 6a: escola (depois de permanente e fim: o padrão depende deles) e estado volátil das falas
-	gestos_calcados = _escola._validar_gestos(c.get("gestured_gloves", []))
-	escola = _escola._validar_escola(estado.get("school", null), not estado.is_empty())
-	for b in caixas_lista:  # 6c2: o hall pode ter baixado os cliques da caixa
-		b["hits"] = mini(int(b.hits), maxi(0, cliques_para_abrir() - 1))
-	# Fase 6b1: passar o posto. O estado da sucessão vem do save (school.handover); o discípulo depois dele.
-	_sucessao._aplicar_handover_da_carga()
-	discipulo = _sucessao._validar_discipulo(c.get("disciple", null), not c.is_empty())
-	var greeted = c.get("mentor_greeted", true)  # ausente = true: save sem o campo não dispara toques no meio da campanha
-	mentor_cumprimentou = typeof(greeted) != TYPE_BOOL or greeted
-	_escola._reiniciar_falas()
-	_luta._finalizar_motivo(false)
-	_motivo_cache = {}
-
-	_emitir_tudo()
-
-
-# Luta salva: adversário inexistente (ou fora da vez) ou formato ruim é descartada, sem vitória nem derrota.
-func _validar_luta(v: Variant) -> Dictionary:
-	if v == null:
-		return {}
-	if not (v is Dictionary):
-		_avisar("Luta salva inválida: descartada.")
-		return {}
-	var opp := lutas.adversario(str(v.get("opponent", "")))
-	var r = v.get("result", null)
-	var p = v.get("player", null)
-	if opp.is_empty() or lutas.indice_adversario(opp.id) != indice_escada or not (r is Dictionary) or not (p is Dictionary) 			or not r.has("win") or not _carreira._local_permite(opp):
-		_avisar("Luta salva com adversário inexistente ou dados inválidos: descartada.")
-		return {}
-	var tt := str(v.get("tactic", ""))
-	var motivo_salvo = v.get("reason", null)
-	var luta_ok := {
-		"opponent": opp.id, "tactic": tt if not lutas.tatica(tt).is_empty() else lutas.tatica_padrao,
-		"seed": _inteiro_valido(v.get("seed", 0), 4294967295.0),
-		"player": {"strength": _numero_valido(p.get("strength", 0.0)), "agility": _numero_valido(p.get("agility", 0.0)),
-			"endurance": _numero_valido(p.get("endurance", 0.0))},
-		"result": {"win": r.win == true, "ko": r.get("ko", false) == true, "t_ko": _numero_ou(r.get("t_ko", -1.0), -1.0),
-			"t_end": _numero_valido(r.get("t_end", 0.0)), "round": _inteiro_valido(r.get("round", 0), 1000.0),
-			"pct_player": _numero_valido(r.get("pct_player", 0.0)), "pct_opponent": _numero_valido(r.get("pct_opponent", 0.0))},
-	}
-	# Motivo calculado em lutar(); ausente (save antigo) = calculado sob demanda.
-	if motivo_salvo is Dictionary and not motivo_salvo.is_empty():
-		luta_ok["reason"] = motivo_salvo.duplicate(true)
-	return luta_ok
-
-
-func _validar_permanente(v: Variant) -> Dictionary:
-	var p: Dictionary = v if v is Dictionary else {}
-	var r := {
-		"legacy_total": _inteiro_valido(p.get("legacy_total", 0), 1.0e15),
-		"career_number": maxi(1, _inteiro_valido(p.get("career_number", 1), 1.0e9)),
-		"careers_finished": _inteiro_valido(p.get("careers_finished", 0), 1.0e9),
-		"best_wins": _inteiro_valido(p.get("best_wins", 0), 1.0e9),
-		"belts_won": _inteiro_valido(p.get("belts_won", 0), 1.0e9),
-		"skill_nodes": _validar_nos(p.get("skill_nodes", [])),
-		"revenge_opponent": _validar_algoz(p.get("revenge_opponent", "")),
-		"arts_unlocked": _validar_artes_liberadas(p.get("arts_unlocked", [])),
-		"last_art": _validar_arte_id(p.get("last_art", "")),
-	}
-	r["tree_last_node"] = _validar_ultimo_no(p.get("tree_last_node", ""), r.skill_nodes)  # Fase 5.4
-	return r
-
-
-# Nós salvos: ignora id inexistente ou repetido e nó cujo `requires` não está na lista (com aviso).
-func _validar_nos(v: Variant) -> Array:
-	var saida: Array = []
-	if not (v is Array):
-		return saida
-	for x in v:
-		var id := str(x)
-		if lutas.no_da_arvore(id).is_empty() or id in saida:
-			_avisar("Nó da árvore salvo inválido ou repetido (%s): ignorado." % id)
-			continue
-		saida.append(id)
-	var mudou := true
-	while mudou:
-		mudou = false
-		for id in saida.duplicate():
-			var pai: String = lutas.no_da_arvore(id).requires
-			if pai != "" and not (pai in saida):
-				_avisar("Nó da árvore salvo sem o anterior (%s): ignorado." % id)
-				saida.erase(id)
-				mudou = true
-	return saida
-
-
-func _validar_algoz(v: Variant) -> String:
-	var id := str(v) if v is String else ""
-	return id if not lutas.adversario(id).is_empty() else ""
-
-
-# Tela de fim pendente: tipo desconhecido ou formato ruim vira "nenhuma".
-func _validar_fim(v: Variant) -> Dictionary:
-	if v == null:
-		return {}
-	if not (v is Dictionary) or not (str(v.get("kind", "")) in ["defeat", "retire"]):
-		_avisar("Tela de fim salva inválida: descartada.")
-		return {}
-	var s = v.get("summary", {})
-	if not (s is Dictionary):
-		s = {}
-	var r = v.get("result", {})
-	var rs = v.get("reason", {})
-	var pl = v.get("player", {})
-	return {
-		"kind": str(v.kind), "career_number": maxi(1, _inteiro_valido(v.get("career_number", 1), 1.0e9)),
-		"legacy_gained": _inteiro_valido(v.get("legacy_gained", 0), 1.0e15),
-		"legacy_notebook": _inteiro_valido(v.get("legacy_notebook", 0), 1.0e15),
-		"legacy_total": _inteiro_valido(v.get("legacy_total", 0), 1.0e15),
-		"honor_gained": _inteiro_valido(v.get("honor_gained", 0), 1.0e15),
-		"opponent": str(v.get("opponent", "")), "tactic": str(v.get("tactic", "")),
-		"seed": _inteiro_valido(v.get("seed", 0), 4294967295.0),
-		"player": pl.duplicate(true) if pl is Dictionary else {},
-		"result": r.duplicate(true) if r is Dictionary else {},
-		"reason": rs.duplicate(true) if rs is Dictionary else {},
-		"summary": {"wins": _inteiro_valido(s.get("wins", 0), 1.0e9), "belts": _inteiro_valido(s.get("belts", 0), 1.0e9),
-			"fame": _inteiro_valido(s.get("fame", 0), 1.0e15), "money_earned": _numero_valido(s.get("money_earned", 0.0)),
-			"play_seconds": _numero_valido(s.get("play_seconds", 0.0)), "art": _validar_arte_id(s.get("art", "")),
-			"location": str(s.get("location", ""))},
-	}
-
-
 # Soma ganho ao saldo e ao atributo do foco.
 func _ganhar(valor: float) -> void:
 	if is_nan(valor) or valor <= 0.0:
@@ -711,126 +436,12 @@ func _inteiro_valido(v: Variant, maximo: float) -> int:
 	return int(clampf(floorf(x), 0.0, maximo))
 
 
-func _emitir_tudo(pedir_arte: bool = true) -> void:
-	_metro_prev = nivel_metronomo  # Fase 6a: carga e NOVA CAMPANHA não contam como compra
-	_crew_prev = crew_click_comprado
-	treino_mudou.emit(treino)
-	for id in atributos:
-		atributo_mudou.emit(id, atributos[id])
-	foco_mudou.emit(foco)
-	dinheiro_mudou.emit(dinheiro)
-	fama_mudou.emit(fama)
-	tatica_mudou.emit(tatica)
-	luva_mudou.emit(luvas_abertas(), sufixo_luva())
-	caixas_mudaram.emit()
-	metronomo_mudou.emit(nivel_metronomo)
-	crew_click_mudou.emit(crew_click_comprado)
-	local_mudou.emit(local_id)
-	arte_mudou.emit(arte_id)
-	_aparelhos._atualizar_estado_assist()
-	escada_mudou.emit()
-	economia_mudou.emit()
-	carreira_mudou.emit()
-	honra_mudou.emit(honra())
-	hall_mudou.emit()
-	campanha_completa_mudou.emit()
-	if risco_hud_ativo:
-		atualizar_risco_hud()
-	_calendario._verificar_calendario()  # reabrir com Faltam <= 3 mostra a faixa uma vez; no dia, abre a prévia do dia
-	_calendario._checar_sala()
-	if pedir_arte and escolha_arte_pendente():
-		escolha_arte_pedida.emit(escolha_arte_primeira())
-
-
 func _avisar(mensagem: String) -> void:
 	if mensagem in avisos:
 		return
 	push_warning("GameState: " + mensagem)
 	avisos.append(mensagem)
 	avisos_mudaram.emit(avisos)
-
-
-# Pasta do save: "--save-dir=..." na linha de comando, pasta de testes em --script, ou a real.
-func _pasta_save_inicial() -> String:
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--save-dir="):
-			return arg.trim_prefix("--save-dir=")
-	var args := OS.get_cmdline_args()
-	if "--script" in args or "-s" in args:
-		return PASTA_SAVE_TESTES
-	return SaveStore.PASTA_REAL
-
-
-func _horario_local(unix: int) -> String:
-	var bias_s: int = Time.get_time_zone_from_system().get("bias", 0) * 60
-	return Time.get_time_string_from_unix_time(unix + bias_s)
-
-
-# career.location e career.art: inexistente volta ao padrão (arte fora das liberadas vira ""), tudo com aviso.
-func _validar_local_e_arte(c: Dictionary) -> void:
-	var l := str(c.get("location", ""))
-	if academia.local(l).is_empty():
-		if c.has("location"):
-			_avisar("Local salvo inexistente ('%s'): voltou para o padrão." % l)
-		l = academia.local_padrao
-	local_id = l
-	var a := str(c.get("art", ""))
-	if a != "" and (academia.arte(a).is_empty() or not (a in permanente.arts_unlocked)):
-		_avisar("Arte salva inexistente ou não liberada ('%s'): ignorada." % a)
-		a = ""
-	arte_id = a
-	arte_segundos = _numero_valido(c.get("art_seconds", 0.0)) if a != "" else 0.0
-	_academia._atualizar_traco()
-
-
-# Escada além do 1º adversário de outro local com a carreira na garagem (save editado): vai para esse local.
-func _corrigir_local_pela_escada() -> void:
-	for i in lutas.adversarios.size():
-		var loc := str(lutas.adversarios[i].location)
-		if loc != academia.local_padrao:
-			if indice_escada > i and local_id == academia.local_padrao and not academia.local(loc).is_empty():
-				_avisar("Escada passou do 1º adversário de '%s' na garagem: carreira movida para lá." % loc)
-				local_id = loc
-			return
-
-
-func _validar_artes_liberadas(v: Variant) -> Array:
-	var r: Array = []
-	if not (v is Array):
-		return r
-	for x in v:
-		var id := str(x)
-		if academia.arte(id).is_empty() or id in r:
-			_avisar("Arte liberada inválida ou repetida ('%s'): ignorada." % id)
-			continue
-		r.append(id)
-	return r
-
-
-func _validar_arte_id(v: Variant) -> String:
-	var id := str(v) if v is String else ""
-	return id if not academia.arte(id).is_empty() else ""
-
-
-# Fase 5.4: último nó comprado (centro do mapa). Id desconhecido ou não comprado volta para o último de skill_nodes ("" se não há).
-func _validar_ultimo_no(v: Variant, nos: Array) -> String:
-	var id := str(v) if v is String else ""
-	if id != "" and id in nos:
-		return id
-	return str(nos[-1]) if not nos.is_empty() else ""
-
-
-# Fase 5.4: career.active_nodes. Ausente (save antigo) = cópia de skill_nodes; senão só ids conhecidos, comprados e sem repetição.
-func _validar_ativos(v: Variant) -> Array:
-	var nos: Array = permanente.get("skill_nodes", [])
-	if not (v is Array):
-		return nos.duplicate()
-	var r: Array = []
-	for x in v:
-		var id := str(x)
-		if id in nos and not (id in r) and not lutas.no_da_arvore(id).is_empty():
-			r.append(id)
-	return r
 
 
 # ===== Repasses para scripts/estado/depuracao.gd =====
@@ -1390,3 +1001,17 @@ func luta_atual() -> Dictionary: return _luta.luta_atual()
 func concluir_luta() -> Dictionary: return _luta.concluir_luta()
 ## Motivo da derrota (design §7): {attribute, faltaram, who, round, model, tip, stat, better_tactic}.
 func motivo_da_luta(snap: Dictionary = {}) -> Dictionary: return _luta.motivo_da_luta(snap)
+
+# ===== Repasses para scripts/estado/save_validacao.gd =====
+## Veja save_validacao.gd.
+func salvar() -> bool: return _save.salvar()
+## Veja save_validacao.gd.
+func carregar_save() -> void: _save.carregar_save()
+## Veja save_validacao.gd.
+func apagar_save() -> void: _save.apagar_save()
+## Campos do estado que vão para o save (v7). Produção e custos não são salvos (vêm de data/).
+func para_save() -> Dictionary: return _save.para_save()
+## Aplica um estado lido do save (formato v7). Campo faltando ou inválido recebe o padrão.
+func aplicar_save(estado: Dictionary) -> void: _save.aplicar_save(estado)
+## Veja save_validacao.gd.
+func _emitir_tudo(pedir_arte: bool = true) -> void: _save._emitir_tudo(pedir_arte)

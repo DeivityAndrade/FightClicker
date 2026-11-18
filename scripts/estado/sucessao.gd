@@ -193,7 +193,7 @@ func receber_discipulo() -> bool:
 		_aplicar_grants(cena.get("grants", []))
 	gs.salvar()
 	gs._tempo_autosave = 0.0
-	gs._emitir_tudo(false)
+	gs._save._emitir_tudo(false)
 	gs.permanente_mudou.emit()
 	gs.sucessao_mudou.emit(gs.sucessao)
 	gs.rascunho_mudou.emit()
