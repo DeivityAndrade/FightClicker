@@ -284,7 +284,7 @@ func sucessao_terminou() -> bool:
 	gs.salvar()
 	gs._tempo_autosave = 0.0
 	gs.sucessao_mudou.emit("none")
-	gs._checar_sala()
+	gs._calendario._checar_sala()
 	gs._emitir_inicio_da_campanha()
 	return true
 

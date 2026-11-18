@@ -38,7 +38,7 @@ func cena_sala_terminou() -> void:
 		return
 	gs.cena_sala = ""
 	gs._cena_sala_t = 0.0
-	gs._checar_sala()
+	gs._calendario._checar_sala()
 	if gs.escolha_arte_pendente():
 		gs.escolha_arte_pedida.emit(gs.escolha_arte_primeira())
 
