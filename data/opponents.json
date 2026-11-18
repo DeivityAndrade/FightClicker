@@ -17,15 +17,6 @@
 		  "strength": 975000, "agility": 375000, "endurance": 4125000, "prize_money": 2500, "prize_fame": 120, "prep_days": 24, "belt": false, "profile": "RESISTENTE" },
 		{ "id": "opp_gym_2", "location": "gym", "name": "Kid Navalha", "description": "Campeão da casa. Corta o ar e a conversa.",
 		  "entry": "Eu vi você chegar de chinelo.", "wins_line": "Volta quando a garagem te soltar.", "loses_line": "Amanhã cedo. Você e eu. De novo.",
-		  "strength": 6900000, "agility": 12075000, "endurance": 31050000, "prize_money": 6000, "prize_fame": 200, "prep_days": 16, "belt": false, "profile": "RÁPIDO" },
-		{ "id": "opp_bileco", "location": "gym", "name": "Bileco Poroso", "description": "A camisa rubro-negra chama atenção. O jab também.",
-		  "entry": "Respeita o manto e vem pra luta.", "wins_line": "Hoje o manto pesou mais.", "loses_line": "Foi por pouco. O próximo é meu.",
-		  "strength": 55000000, "agility": 52000000, "endurance": 70000000, "prize_money": 12000, "prize_fame": 350, "prep_days": 18, "belt": false, "profile": "EQUILIBRADO" },
-		{ "id": "opp_leslie", "location": "gym", "name": "Leslie Chow", "description": "Baixo, compacto e sempre com um sorriso antes do golpe.",
-		  "entry": "Sorria pra foto. Agora guarda alta.", "wins_line": "Esse sorriso foi de nervoso.", "loses_line": "Boa luta. Ainda tô sorrindo.",
-		  "strength": 130000000, "agility": 200000000, "endurance": 125000000, "prize_money": 30000, "prize_fame": 600, "prep_days": 20, "belt": false, "profile": "RÁPIDO" },
-		{ "id": "opp_sapao", "location": "gym", "name": "Sapão Cretino", "description": "Dreads roxos, corrente grossa e uma guarda que não abre.",
-		  "entry": "A corrente fica. Você pode tentar passar.", "wins_line": "Nem a corrente segurou você.", "loses_line": "Na próxima eu tiro o casaco.",
-		  "strength": 350000000, "agility": 130000000, "endurance": 700000000, "prize_money": 80000, "prize_fame": 1000, "prep_days": 25, "belt": false, "profile": "RESISTENTE" }
+		  "strength": 6900000, "agility": 12075000, "endurance": 31050000, "prize_money": 6000, "prize_fame": 200, "prep_days": 16, "belt": false, "profile": "RÁPIDO" }
 	]
 }

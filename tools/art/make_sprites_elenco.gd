@@ -26,14 +26,13 @@ const FW := 112
 const FH := 104
 const ACTIONS := ["idle", "jab", "heavy", "hit", "dodge", "block", "tired", "victory", "ko"]
 const OPPS := ["opp_warmup", "opp_strong", "opp_fast", "opp_tank"]
-const OPPS_GYM := ["opp_gym_1", "opp_gym_2", "opp_bileco", "opp_leslie", "opp_sapao"]   # academia (modo "gym")
+const OPPS_GYM := ["opp_gym_1", "opp_gym_2"]   # Fase 5: academia (modo "gym")
 var MOCK_GYM := ROOT + "docs/arte/mockups/academia_adversarios_x3.png"
 var MOCK_GYM_ARENA := ROOT + "docs/arte/mockups/academia_adversarios_arena_x2.png"
 const HELPERS := ["neighbor_1", "neighbor_2", "neighbor_3", "uncle_1", "uncle_2", "coach_1"]
 const LIGHT_C := Vector2(305, 90)   # lâmpada da garagem (mesma do fundo)
 const PORTRAIT_BG := {"opp_warmup": ["gr0", "gr1"], "opp_strong": ["r0", "r1"], "opp_fast": ["b0", "b2"], "opp_tank": ["br1", "y0"],
-	"opp_gym_1": ["p0", "p1"], "opp_gym_2": ["st0", "st2"],
-	"opp_bileco": ["r0", "r1"], "opp_leslie": ["st0", "st2"], "opp_sapao": ["p0", "p1"]}
+	"opp_gym_1": ["p0", "p1"], "opp_gym_2": ["st0", "st2"]}
 
 var L
 var P
@@ -144,22 +143,6 @@ const HEAD_KID := [   # degradê baixo com risco de navalha (R) no lado, topo cu
 	"....SSsssss...",
 	".....SSSs.....",
 ]
-## Cabeças dos três adversários novos, com a mesma grade 14x14 do elenco.
-const HEAD_BILECO := [
-	"....HHHHH.....", "..HHHHhhhHH...", ".HHHHHHHHHHH..", "HHHHHHHHssss..",
-	"HHHHHHssbbbl..", "HHHHHHssbbbl..", "HHHEEssssesl..", "HHEsEsssssssl.",
-	".HHEEssssssll.", ".HHSsssssssss.", "..SSsssoooSs..", "..uSSssssss...",
-	"...uSSsssS....", ".....SSSs....."]
-const HEAD_LESLIE := [
-	"....HHHHHH....", "..HHHHhhhHHH..", ".HHHHHHHHHHHH.", "HHHHHHHHHsss..",
-	"HHHHHHHssslll.", "HHHHHHssbbbll.", "HHHEEssssesl..", "HHEsEsssssssl.",
-	".HHEEssssssll.", ".HHSsssssssss.", "..SSsssmmmSs..", "...SSsssssss...",
-	"....SSssss....", ".....SSSs....."]
-const HEAD_SAPAO := [
-	"..QQQQQQQQQ...", ".QQQQCCCCQQQ..", "QQQCCCCccCQQQ.", "QQCCCCCCCCCCQ.",
-	"QHHHHHHHHHHHHQ", "DDPPHHssXXXXl..", "DDPPHHssXXXXl..", "DDPPHEEsssssssl.",
-	"DddPHEEssssssll.", "DddHSsssssssss.", "DddSSsssmmmSs..", "d..SSsssssss...",
-	"....SSssss....", ".....SSSs....."]
 ## Pé descalço (Tonhão, tatame): mesma legenda do tênis (D/M/L/w/c), cores de pele no build. Mesmo deslocamento
 ## ponta->tornozelo do tênis, para a perna ter o mesmo alcance.
 const PE_FLAT := ["..DMM......", "..DMMM.....", ".DMMMMLL...", "DMMMMMMMMLw", ".DDD..DDDDD"]
@@ -346,30 +329,6 @@ func opp_def(oid: String) -> Dictionary:
 					"up": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": -90.0}},
 				"glove": "plain", "glove_ramp": ["g2", "g3", "white"],
 				"shoulder": 0.8, "hip_w": 0.78, "arm_r": [2.4, 1.8, 2.0, 1.4], "leg_r": [3.3, 2.4, 2.2, 1.3]}}
-		"opp_bileco":   # Bileco Poroso: médio-esguio, barba curta, camisa rubro-negra inspirada nas fotos
-			return {"s": 1.0, "am": 1.0, "lean": 0.5, "head_d": V(0, 0), "neck_k": 1.0, "shk": 1.0, "stance": [0, -1], "toes": false,
-				"build": {"head_side": HEAD_BILECO, "stubble": "br0", "mustache": "br0",
-				"hair": ["br0", "br1"], "brow": "br0", "skin": ["sk1", "sk2", "y2"],
-				"top": "tshirt", "shirt": ["r0", "r1", "r2"], "shirt_detail": "rubro", "trim": "white",
-				"shorts": ["d1", "d2", "g0"], "band": "r1", "shorts_t": 0.45,
-				"shoes": ["d1", "d2", "g1", "white", "g3"], "glove": "plain", "glove_ramp": ["r0", "r1", "r2"],
-				"shoulder": 1.0, "hip_w": 0.96, "arm_r": [3.2, 2.4, 2.5, 1.7], "leg_r": [4.1, 3.0, 2.7, 1.6]}}
-		"opp_leslie":   # Leslie Chow: compacto, cabelo repartido, sorriso maroto, sem camisa e detalhe dourado
-			return {"s": 0.96, "am": 0.98, "lean": 1.2, "head_d": V(1, 0), "neck_k": 0.9, "shk": 1.1, "stance": [1, -1], "toes": false,
-				"crouch": 1.0,
-				"build": {"head_side": HEAD_LESLIE, "mustache": "br0", "hair": ["br0", "br1"], "brow": "br0", "skin": ["sk1", "sk2", "y2"],
-				"top": "none", "shorts": ["d1", "d2", "g0"], "band": "y1", "shorts_t": 0.52, "belt": ["d1", "d2", "y1", "y2"],
-				"shoes": ["d1", "d2", "g1", "y1", "g2"], "glove": "plain", "glove_ramp": ["d1", "d2", "g1"],
-				"shoulder": 1.0, "hip_w": 1.08, "belly": 2.4, "arm_r": [3.4, 2.5, 2.7, 1.8], "leg_r": [4.0, 2.9, 2.6, 1.6]}}
-		"opp_sapao":    # Sapão Cretino: muito pesado, moletom escuro, óculos, dreads roxos e corrente com cruz
-			return {"s": 1.10, "am": 1.0, "lean": 1.0, "head_d": V(0, 1), "neck_k": 0.78, "shk": 1.35, "stance": [3, -3], "toes": false,
-				"build": {"head_side": HEAD_SAPAO, "cap": ["d1", "d2", "g0"],
-				"head_legend_extra": {"X": "ink", "D": "p0", "d": "p1", "P": "p2"},
-				"hair": ["ink", "d1"], "brow": "ink", "skin": ["br0", "sk0", "sk1"], "stubble": "ink",
-				"top": "tshirt", "shirt": ["d1", "g0", "g1"], "shirt_detail": "zip", "sleeve_long": true,
-				"bottom": "pants", "shorts": ["d1", "d2", "g0"], "band": "g0", "pants_add": 0.9,
-				"shoes": ["d1", "d2", "g0", "g1", "g2"], "glove": "plain", "glove_ramp": ["d1", "d2", "g0"],
-				"shoulder": 1.65, "hip_w": 1.85, "belly": 16.0, "arm_r": [4.5, 3.4, 3.6, 2.4], "leg_r": [5.3, 4.0, 3.5, 2.1]}}
 	return {}
 
 func make_opp_build(oid: String) -> Dictionary:
@@ -550,42 +509,6 @@ func hook_belt(lib, O: Vector2, ctx: Dictionary) -> void:
 	lib.joint(56, 58, knot, 2.6)
 	lib.joint(57, 58, knot, 2.6)
 
-## Sapão: corrente de ouro e pingente desenhados na camada do tronco para acompanharem a pose.
-func hook_chain(lib, O: Vector2, ctx: Dictionary) -> void:
-	var top: Vector2 = ctx.top
-	var dn: Vector2 = ctx.dn
-	var fr: Vector2 = ctx.fr
-	var hd: Vector2 = ctx.hd
-	var hrot := float(ctx.hrot)
-	# Três locks de dread roxo passam para fora da touca; a origem e o ângulo vêm da cabeça em cada pose.
-	for i in range(3):
-		var off := Vector2(-7.0 + i * 2.5, -1.0)
-		var start_lock: Vector2 = hd + lib.rotv(off, hrot)
-		var end_lock: Vector2 = hd + lib.rotv(off + Vector2(-0.2, 5.0 + float(i * 1.3)), hrot)
-		lib.limb(56, start_lock, end_lock, 0.72, 0.72, ["p0", "p1", "p2"])
-	var start := top - fr * 2.6 - dn * 2.6
-	var end := top + fr * 3.5 - dn * 8.0
-	var prev := start
-	for i in range(1, 8):
-		var t := float(i) / 8.0
-		var bend := Vector2(0, sin(t * PI) * 2.0)
-		var next: Vector2 = start.lerp(end, t) + bend
-		lib.limb(56, prev, next, 1.45, 1.45, ["y0", "y1", "y2"])
-		prev = next
-	var pendant := end - dn * 1.0
-	lib.limb(56, pendant, pendant - dn * 3.0, 1.45, 1.1, ["y0", "y1", "y2"])
-	lib.limb(56, pendant - dn * 1.0 - fr * 1.3, pendant - dn * 1.0 + fr * 1.3, 1.2, 1.2, ["y0", "y1", "y2"])
-	var px := int(round(pendant.x))
-	var py := int(round(pendant.y - dn.y))
-	for d in [-1, 0, 1]:
-		lib.put(px, py + d, "y2" if d == 0 else "y1", 56)
-	lib.put(px - 1, py, "y1", 56)
-	lib.put(px + 1, py, "y1", 56)
-
-func apply_opp_accessories(oid: String, p: Dictionary) -> void:
-	if oid == "opp_sapao":
-		p["after_torso"] = hook_chain
-
 # ================================================================ geração da LUTA
 func spr(id: String) -> Dictionary:
 	return M.sprites[id]
@@ -611,16 +534,12 @@ func gen_fight(oid: String, b: Dictionary, action: String) -> Array:
 		var p := opp_pose(oid, action, i, poses[i])
 		p["hf"] = mir(v2(hands[i].hand_front))
 		p["hb"] = mir(v2(hands[i].hand_back))
-		if oid == "opp_sapao" and action == "victory":
-			p["hf"] += V(0, 3)
-			p["hb"] += V(0, 3)
 		if oid == "opp_strong":
 			p["after_near_leg"] = hook_sleeves
 		elif oid == "opp_gym_1":
 			p["after_near_leg"] = func(lib, O: Vector2, ctx: Dictionary) -> void:
 				ctx["b"] = b
 				hook_belt(lib, O, ctx)
-		apply_opp_accessories(oid, p)
 		var im: Image = P.fight_frame(b, p, "%s[%d]" % [id, i], fs, gpiv)
 		var hfp: Vector2 = gpiv + p.hf
 		var idf: int = P.ids[int(hfp.y) * fs.x + int(hfp.x)]
@@ -651,7 +570,6 @@ func make_portrait(oid: String, b: Dictionary) -> Image:
 	var p := opp_pose(oid, "idle", 0, player_poses("idle")[0])
 	p["hf"] = V(16, -55) * s
 	p["hb"] = V(12, -53) * s
-	apply_opp_accessories(oid, p)
 	var fr: Image = P.fight_frame(b, p, "retrato " + oid)
 	var hc := V(56, 98) + (p.head as Vector2)
 	var crop: Image = fr.get_region(Rect2i(int(hc.x) - 15, int(hc.y) - 13, 32, 32))
@@ -1002,22 +920,21 @@ func contact_sheet(newf: Dictionary, portraits: Dictionary, player_idle: Image) 
 	out.save_png(MOCK)
 
 # ================================================================ academia (Fase 5): folha de contato e ciclo na arena
-const GYM_NAMES := {"opp_gym_1": "TONHAO DO TATAME - resistente, escala 1,04", "opp_gym_2": "KID NAVALHA - rapido, escala 1,08",
-	"opp_bileco": "BILECO POROSO - equilibrado, escala 1,00", "opp_leslie": "LESLIE CHOW - compacto, escala 0,96", "opp_sapao": "SAPAO CRETINO - pesado, escala 1,10"}
+const GYM_NAMES := {"opp_gym_1": "TONHAO DO TATAME (opp_gym_1) - resistente, escala 1,04", "opp_gym_2": "KID NAVALHA (opp_gym_2) - rapido, escala 1,08"}
 
 func gym_contact_sheet(newf: Dictionary, portraits: Dictionary, player_idle: Image) -> void:
 	var S := 3
 	var crf := Rect2i(4, 0, 104, 104)
 	var cell := crf.size.x * S + 6
 	var W := 120 + 5 * cell + 20
-	var H := 16000
+	var H := 9000
 	var out: Image = L.blank(W, H)
 	L.R(out, 0, 0, W, H, "d1")
 	L.text(out, "ACADEMIA - ADVERSARIOS NOVOS (3x e 1x). Mesmo quadro 112x104, pivo (56,98), hit_frame/hit_point e maos do manifest.", 14, 12, "y1", 1, "ink")
 	L.text(out, "Gerado por tools/art/make_sprites_elenco.gd (modo gym) + personagem_lib.gd.", 14, 26, "g3", 1, "ink")
 	var y := 46
 	# escalação no quadro 0 da guarda, 3x: jogador, os 4 da garagem e os 2 da academia (silhuetas lado a lado)
-	L.text(out, "ESCALACAO (guarda, escala do jogo): jogador - elenco principal - adversarios da academia", 14, y, "cream", 1, "ink")
+	L.text(out, "ESCALACAO (quadro 0 da guarda, 3x, mesma escala do jogo): jogador - Dinho - Dudu - Bruto - Muralha | TONHAO - KID", 14, y, "cream", 1, "ink")
 	y += 14
 	var lineup := [player_idle]
 	for oid in ["opp_fast", "opp_warmup", "opp_strong", "opp_tank"]:
@@ -1189,7 +1106,6 @@ func gen_reacao(oid: String, b: Dictionary, nome: String, rea: Dictionary, base:
 			p["after_near_leg"] = func(lib, O: Vector2, ctx: Dictionary) -> void:
 				ctx["b"] = b
 				hook_belt(lib, O, ctx)
-		apply_opp_accessories(oid, p)
 		var im: Image = P.fight_frame(b, p, "%s_%s[%d]" % [oid, nome, i], fs, gpiv)
 		_check_bounds(im, oid + "_" + nome, i)
 		im.flip_x()
