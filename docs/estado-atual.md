@@ -2,16 +2,12 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora
-- **Pasta de trabalho:** `E:\Fightclicker` (pasta principal), branch **`fase-6c2`**, enviada ao GitHub. O worktree antigo `.claude/worktrees/agents-subagents-setup-7a8cc6` e as pastas temporárias `%TEMP%c_pr14` / `fc_main` sobraram (limpas; podem ser removidas com `git worktree remove --force`). A branch local `backup/6c-copia-antiga` guarda a cópia velha da 6c1 — não usar.
-- **Na main:** fases 1 a 6c1, correção da 6c1 (PR #13) e o **PR #14 do Matheus** (K.O. no quadro certo, simuladores, testes de queda e soak).
-- **6c2 "Mais longe que eu": pronta e testada, falta só a revisão do Diretor e integrar.**
-  - Feito: design (Designer em raciocínio alto), textos, arte (mural, retratos, símbolo, ícones), lógica (Honra, hall, retrato, mural, falas de mentor, símbolo, save v13), telas.
-  - QA (`docs/fases/fase6c2-qa.md`): aprovou com ressalvas; **B1–B6 corrigidos** (PAROU NUMA LUTA, símbolo nas costas na luta, mural vazio, seta apagada, plaquinha "beto", linha FALTA pelo atributo destacado).
-  - Verificado no fim: `tools/run_tests.ps1` **TODOS OS TESTES PASSARAM** (APPDATA temporário); `ui_audit` 358 estados, 0 problemas (2 rodadas).
-  - **Falta:** (1) Diretor escrever `docs/fases/fase6c2-revisao.md` (parou no limite de uso; pedido: decidir se fecha a 6c, perguntas aos testadores, o que vai para o pixel artist, o que vem na 7a); (2) abrir PR de `fase-6c2` para a main e integrar (o dono deixa integrar sempre).
-- **Atenção:** 15 PNGs e 2 mockups de `assets/sprites/opponents/opp_leslie/` aparecem modificados e **não foram commitados** (origem desconhecida, provavelmente um gerador rodado por agente). Conferir com `git diff --stat` antes de commitar ou descartar.
-- **Próxima fase:** 7a — Lutas por arte (Boxe e Jiu-jitsu lutam diferente, habilidades passivas, arena da academia).
+## Situação agora (2026-11-18)
+- **Fase 6c fechada.** A 6c2 está na main (PR #16), aprovada pelo QA (B1–B6 corrigidos) e pelo Diretor (`docs/fases/fase6c2-revisao.md`). Testes verdes e ui_audit com 358 estados e 0 problemas.
+- O **PR #15** (6c2 feita por outra IA) foi **fechado sem integrar**, por decisão do dono. Tudo daquela IA é ignorado.
+- Um **trio de adversários** (Bileco, Leslie Chow, Sapão), que veio dessa IA, foi tirado da 6c2. As mudanças soltas dela ficaram só na branch local `backup/outra-ia-2026-11-17` (não usar).
+- **Pasta de trabalho:** `E:\Fightclicker`, branch `pos-6c` (igual à main). Os worktrees antigos em `.claude/worktrees/` e em `%TEMP%` sobraram e podem ser removidos.
+- **Próximo passo:** o dono tem um comando antes de qualquer fase nova. **Não começar a 7a sem ordem dele.**
 
 ## Decisões do dono desta rodada
 - Rival **James Blindado**: entra na 8a, menospreza a escola, termina em respeito; o **campeão mundial é outro** (fase 9).
