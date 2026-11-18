@@ -48,6 +48,15 @@ Toda mudança em tela/UI (ui/, scenes/, temas, fontes, textos que mudam largura)
 Texto de botão centralizado, botões centralizados no seu espaço, janelas no meio, fileiras iguais,
 nada cortado. O QA reprova a fase se o verificador acusar problema.
 
+## Código grande: consulte o mapa antes (regra do dono, para gastar menos tokens)
+- O estado do jogo é `scripts/game_state.gd` (núcleo, ~1.000 linhas) + módulos em `scripts/estado/`.
+  **Leia primeiro `docs/codigo/mapa.md`** e abra só o módulo do assunto. Nunca leia o `game_state.gd` inteiro
+  para achar uma regra: use grep pelo nome da função.
+- A API pública não muda de lugar: telas e testes chamam `GameState.x()`. Função nova vai no módulo do assunto,
+  com um repasse de uma linha no `game_state.gd`, e o mapa é atualizado.
+- O verificador de telas segue o mesmo padrão: núcleo em `tools/ui/ui_audit.gd` e estados por fase em `tools/ui/audit/`.
+- Refatoração que só move código prova que não mudou nada com `tools/refatoracao/foto.gd` (foto idêntica antes e depois).
+
 ## Testes
 Toda janela de teste (ui_audit, cenas, scripts de QA com janela) abre **no segundo monitor** ou em
 segundo plano, nunca na frente do dono: acrescente `--position 1950,40` ao comando do Godot
