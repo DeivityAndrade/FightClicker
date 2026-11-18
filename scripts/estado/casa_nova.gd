@@ -237,7 +237,7 @@ func _iniciar_saida() -> void:
 	gs._saida_elenco = {"mentores": gs.mentores_na_sala()}  # o que a sala desenhava, antes de o John sair da lista
 	# O marco e o que a cena dá são gravados no COMEÇO: fechar o jogo no meio dá o mesmo save.
 	gs._gravar_marco(_marco_da_saida(), {}, false)
-	gs._aplicar_grants(cena.get("grants", [{"type": "mentor_leaves", "character": "first_fighter"}]))
+	gs._sucessao._aplicar_grants(cena.get("grants", [{"type": "mentor_leaves", "character": "first_fighter"}]))
 	gs._saida_tocando = true
 	gs._saida_inicio = gs._t_real
 	gs.salvar()
