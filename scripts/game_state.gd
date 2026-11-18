@@ -249,6 +249,7 @@ const _Calendario := preload("res://scripts/estado/calendario.gd")
 const _Arvore := preload("res://scripts/estado/arvore.gd")
 const _AcademiaArtes := preload("res://scripts/estado/academia_artes.gd")
 const _LojaGeradores := preload("res://scripts/estado/loja_geradores.gd")
+const _Carreira := preload("res://scripts/estado/carreira.gd")
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -260,6 +261,7 @@ var _calendario := _Calendario.new(self)
 var _arvore := _Arvore.new(self)
 var _academia := _AcademiaArtes.new(self)
 var _loja := _LojaGeradores.new(self)
+var _carreira := _Carreira.new(self)
 
 
 func _ready() -> void:
@@ -348,106 +350,6 @@ func tick(delta: float) -> void:
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
 			_tempo_autosave = 0.0
 			salvar()
-
-
-## true durante a luta (resultado decidido, ainda não aplicado) e com a tela de fim pendente:
-## a garagem não aceita clique nem compra.
-## Fase 5: a janela de escolha da arte aberta também bloqueia (sem clique, Metrônomo, assistido, compra ou luta).
-func acoes_bloqueadas() -> bool:
-	return _bloqueio_base() or no_dia_da_luta()  # Fase 5.3: no dia só LUTAR e PASSAR O POSTO funcionam
-
-
-func _bloqueio_base() -> bool:
-	return not luta.is_empty() or not fim.is_empty() or sucessao != "none" or cena_sala != "" or escolha_arte_pendente()
-
-
-func tem_luta_pendente() -> bool:
-	return not luta.is_empty()
-
-
-func tem_fim_pendente() -> bool:
-	return not fim.is_empty()
-
-
-func numero_carreira() -> int:
-	return int(permanente.get("career_number", 1))
-
-
-## true quando o jogador venceu todos os adversários da escada (inclusive os da academia).
-func escada_completa() -> bool:
-	return indice_escada >= lutas.adversarios.size()
-
-
-## Próximo adversário que dá para enfrentar AGORA ({} se a escada acabou ou se ele só luta em outro local:
-## na garagem, depois do cinturão, o Tonhão pede a mudança). Formato: ver FightData (_montar_adversario).
-func proximo_adversario() -> Dictionary:
-	if escada_completa():
-		return {}
-	var opp: Dictionary = lutas.adversarios[indice_escada]
-	return opp if _local_permite(opp) else {}
-
-
-# Adversário sem `location` (garagem) luta em qualquer local; os de outro local só nele.
-func _local_permite(opp: Dictionary) -> bool:
-	return str(opp.location) == academia.local_padrao or str(opp.location) == local_id
-
-
-## true se o próximo adversário só luta em outro local (a UI mostra o MUDAR / "PRÓXIMA: MUDE PARA A ACADEMIA").
-func precisa_mudar() -> bool:
-	return not escada_completa() and not _local_permite(lutas.adversarios[indice_escada])
-
-
-## "fight" (tem adversário), "move" (precisa mudar de local) ou "end" (escada completa).
-func estado_escada() -> String:
-	if escada_completa():
-		return "end"
-	return "move" if precisa_mudar() else "fight"
-
-
-func pode_lutar() -> bool:
-	return not proximo_adversario().is_empty() and not _bloqueio_base()
-
-
-func pode_aposentar() -> bool:
-	return not _bloqueio_base()
-
-
-## Legado em jogo (o "pote"): derivado da fama e do cinturão, não é salvo.
-func legado_em_jogo() -> int:
-	var c: Dictionary = lutas.carreira
-	return int(floor(fama * c.legacy_per_fame + 1.0e-9)) + (int(c.belt_legacy_bonus) if cinturao else 0)
-
-
-## Legado que a derrota daria agora.
-func legado_se_perder() -> int:
-	return _com_bonus_legado(int(floor(legado_em_jogo() * parte_derrota() + 1.0e-9)))
-
-
-## Fase 5.4: Legado ganho = floor(base x (1 + nó "Caderno do velho")). Vale em qualquer fim de campanha.
-func _com_bonus_legado(base: int) -> int:
-	return int(floor(base * (1.0 + _arvore._b("legacy_bonus")) + 1.0e-9))
-
-
-## Fração do pote que a derrota leva: `defeat_share` + bônus da árvore, sempre abaixo de `retire_share`.
-func parte_derrota() -> float:
-	var c: Dictionary = lutas.carreira
-	var s := float(c.defeat_share) + _arvore._b("defeat_share_bonus")
-	var teto := float(c.retire_share) - 0.05
-	if s > teto:
-		s = maxf(float(c.defeat_share), teto)
-	return s
-
-
-## Aposentar agora: {pote, base, bonus, total, cinturao, zero}. `bonus` só com cinturão.
-func previa_aposentar() -> Dictionary:
-	var c: Dictionary = lutas.carreira
-	var pote := legado_em_jogo()
-	var base := int(floor(pote * c.retire_share + 1.0e-9))
-	var bonus := int(floor(pote * c.retire_belt_bonus_share + 1.0e-9)) if cinturao else 0
-	var total := _com_bonus_legado(base + bonus)
-	return {"pote": pote, "base": base, "bonus": bonus, "total": total, "cinturao": cinturao,
-		"notebook": total - (base + bonus), "zero": base + bonus == 0,
-		"honor": honra_da_saida(indice_escada, cinturao), "wins": indice_escada}
 
 
 func _atributos_array() -> Array:
@@ -792,7 +694,7 @@ func concluir_luta() -> Dictionary:
 	else:
 		var motivo := motivo_da_luta(snap)
 		luta = {}
-		_encerrar_carreira("defeat", snap, motivo)
+		_carreira._encerrar_carreira("defeat", snap, motivo)
 		resumo = {"win": false, "fim": fim.duplicate(true)}
 	_motivo_cache = {}
 	luta_resolvida.emit(resumo)
@@ -845,171 +747,6 @@ func _calcular_motivo(snap: Dictionary) -> Dictionary:
 		"stat": m.stat,
 		"better_tactic": melhor,
 	}
-
-
-## APOSENTAR (só entre lutas): soma o Legado e cria a tela de fim "saiu por cima". Devolve o `fim`.
-func aposentar() -> Dictionary:
-	if not pode_aposentar():
-		return {}
-	_encerrar_carreira("retire", {}, {})
-	luta_resolvida.emit({"win": true, "retire": true, "fim": fim.duplicate(true)})
-	return fim.duplicate(true)
-
-
-# Soma o Legado e os recordes, cria `fim` e salva, tudo num único save.
-func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> void:
-	var ganho := legado_se_perder() if tipo == "defeat" else int(previa_aposentar().total)
-	var caderno := ganho - (int(floor(legado_em_jogo() * parte_derrota() + 1.0e-9)) if tipo == "defeat" else int(previa_aposentar().total) - int(previa_aposentar().notebook))
-	permanente["legacy_total"] = int(permanente.legacy_total) + ganho
-	# Revanche: a derrota marca quem venceu; a aposentadoria limpa a marca (mesmo save do Legado).
-	permanente["revenge_opponent"] = str(snap.get("opponent", "")) if tipo == "defeat" else ""
-	permanente["careers_finished"] = int(permanente.careers_finished) + 1
-	permanente["best_wins"] = maxi(int(permanente.best_wins), indice_escada)
-	if cinturao:
-		permanente["belts_won"] = int(permanente.belts_won) + 1
-	var motivo_fim := motivo.duplicate()
-	# 6c2: Honra só por saída voluntária com vitórias; nunca multiplicada; no mesmo salvar() do Legado.
-	var honra_ganha := honra_da_saida(indice_escada, cinturao) if tipo == "retire" else 0
-	escola["honor"] = honra() + honra_ganha
-	escola["honor_total"] = honra_total() + honra_ganha
-	_casa._interromper_saida()  # 6c1: o fim da campanha termina a saída do John na hora
-	escola["last_end"] = {"kind": tipo, "campaign": numero_carreira()}  # Fase 6a: o comentário da derrota usa isto
-	if tipo == "defeat":
-		motivo_fim["unlock_tip"] = _aparelhos._aparelho_da_dica(motivo)
-	fim = {
-		"kind": tipo, "career_number": numero_carreira(), "legacy_gained": ganho, "legacy_notebook": caderno,
-		"legacy_total": int(permanente.legacy_total), "honor_gained": honra_ganha,
-		"opponent": str(snap.get("opponent", "")), "tactic": str(snap.get("tactic", tatica)),
-		"seed": int(snap.get("seed", 0)), "player": snap.get("player", {}).duplicate(),
-		"result": snap.get("result", {}).duplicate(), "reason": motivo_fim,
-		"summary": {"wins": indice_escada, "belts": 1 if cinturao else 0, "fame": fama,
-			"money_earned": dinheiro_ganho, "play_seconds": tempo_jogo, "art": arte_id, "location": local_id},
-	}
-	_sucessao._registrar_na_lista_da_escola(tipo, snap, ganho, honra_ganha)
-	salvar()
-	if honra_ganha > 0:
-		honra_mudou.emit(honra())
-	permanente_mudou.emit()
-	fim_de_carreira.emit(fim.duplicate(true))
-
-
-## NOVA CARREIRA (só com a tela de fim pendente): zera `career`, mantém `permanent`, soma 1 em
-## "Carreira N". Volta direto para a garagem.
-func nova_carreira() -> bool:
-	if fim.is_empty():
-		return false
-	_reiniciar_campanha()
-	# Caminho direto (sem a tela de criação): o discípulo, se houver, é o padrão. A interface usa receber_discipulo().
-	if lutador_atual() == "disciple" and discipulo.is_empty():
-		discipulo = _sucessao._discipulo_padrao()
-	salvar()
-	_tempo_autosave = 0.0
-	_emitir_tudo(false)
-	permanente_mudou.emit()
-	_emitir_inicio_da_campanha()
-	return true
-
-
-# Zera a carreira e soma 1 em "Carreira N" (sem salvar nem emitir). Fase 6b1: usado por nova_carreira() e receber_discipulo().
-func _reiniciar_campanha() -> void:
-	# Fase 5.4: a foto dos nós (o que vale nesta campanha) é tirada aqui, ANTES de zerar (a data usa "+1 dia").
-	nos_ativos_ids = permanente.get("skill_nodes", []).duplicate()
-	arte_id = ""
-	_arvore._recalcular_bonus()
-	_zerar_carreira()
-	permanente["career_number"] = int(permanente.career_number) + 1
-	fim = {}
-	discipulo = {}
-	mentor_cumprimentou = false
-	_arvore._aplicar_inicio_da_arvore()
-	_honra._aplicar_inicio_do_hall()
-	nivel_metronomo = mini(int(_arvore._b("metronome_start")), metronomo_niveis())
-
-
-# O começo da campanha, na ordem da 6a: cartão, escolha da arte (a UI trata "arte antes do cartão") e a fala da derrota.
-func _emitir_inicio_da_campanha() -> void:
-	nova_carreira_iniciada.emit(cartao_inicio())
-	# Com as artes liberadas, a escolha vem ANTES do cartão (a UI abre a janela e depois mostra `cartao_inicio()`).
-	if escolha_arte_pendente():
-		escolha_arte_pedida.emit(escolha_arte_primeira())
-	# Fase 6a: depois de uma derrota o treinador comenta no 1º momento calmo da campanha nova.
-	var fim_anterior = escola.get("last_end", null)
-	if fim_anterior is Dictionary and str(fim_anterior.get("kind", "")) == "defeat" \
-			and int(fim_anterior.get("campaign", 0)) == numero_carreira() - 1:
-		disparar_gatilho("after_defeat")
-		_derrota_rearmada = true
-
-
-func _zerar_carreira() -> void:
-	gestos_calcados = []
-	frenesi_restante = 0.0
-	evento_dourado_restante = 0.0
-	_evento_espera = -1.0
-	treino = 0.0
-	atributos = {}
-	for id in dados.atributos:
-		atributos[id] = 0.0
-	aparelhos_montados_ids = _aparelhos._aparelhos_iniciais()
-	caixas_lista = []  # Fase 5.1: caixa fechada some com a carreira, sem reembolso
-	foco = dados.default_focus
-	geradores = {}
-	for g in dados.geradores:
-		geradores[g.id] = 0
-	niveis_melhoria = {}
-	for ap in dados.todos_aparelhos():
-		niveis_melhoria[ap.id] = 0
-	geradores_pagos = {}
-	for g in lutas.geradores_pagos:
-		geradores_pagos[g.id] = 0
-	# Fase 5: toda carreira começa na garagem e sem arte (a janela de arte vem logo depois, se já liberou)
-	local_id = academia.local_padrao
-	arte_id = ""
-	arte_segundos = 0.0
-	_academia._atualizar_traco()
-	segundos_campanha = 0.0
-	_arte_comentada = true  # sem arte ainda: o comentário volta a valer quando ela for escolhida
-	nivel_luva = 0
-	crew_click_comprado = false
-	dinheiro = 0.0
-	fama = 0
-	indice_escada = 0
-	fight_day = _calendario._data_da_proxima_luta()  # Dia 1 + folga do primeiro adversário
-	cinturao = false
-	tatica = lutas.tatica_padrao
-	tempo_jogo = 0.0
-	dinheiro_ganho = 0.0
-	luta = {}
-	nivel_metronomo = 0
-	_acc_metronomo = 0.0
-	_acc_assist = _aparelhos._assist_primeiro()
-	_morto_atual = 0.0
-	_morto_max = 0.0
-	_morto_total = 0.0
-	_chave_melhor = ""
-	_finalizar_motivo(false)
-	_motivo_cache = {}
-
-
-## Lista dos nós ativos (ordem da compra): [{id, name, effect_text, icon}]. Cartão de início e resumo da garagem.
-func resumo_legado() -> Dictionary:
-	var itens: Array = []
-	for id in nos_ativos_ids:
-		var n: Dictionary = lutas.no_da_arvore(str(id))
-		if not n.is_empty():
-			itens.append({"id": n.id, "name": n.name, "effect_text": texto_efeito_no(n), "icon": n.icon})
-	return {"count": itens.size(), "nodes": itens,
-		"label": preencher(texto_ui("legacy_nodes_label", "LEGADO: {n} NÓS"), {"n": itens.size()})}
-
-
-## Cartão "o que você trouxe" ({} sem nós): {title, career, nodes}. A UI mostra por até 1,8 s.
-func cartao_inicio() -> Dictionary:
-	var r := resumo_legado()
-	if r.count == 0 and arte_id == "":
-		return {}
-	# Fase 5: `art` / `art_text` ("ARTE: BOXE") só depois da escolha (a UI chama de novo ao fechar a janela de arte)
-	return {"title": preencher(texto_ui("career_card_title_named", "{nome}: O QUE VOCÊ TROUXE"), {"nome": nome_lutador().to_upper()}),
-		"career": numero_carreira(), "name": nome_lutador(), "nodes": r.nodes, "art": arte_id,
-		"art_text": preencher(texto_ui("career_card_art", "ARTE: {nome}"), {"nome": nome_arte(arte_id).to_upper()}) if arte_id != "" else ""}
 
 
 ## Troca {chave} por valores. Valor em Array: troca uma ocorrência por item, na ordem (ex.: "{n}" duas vezes).
@@ -1210,7 +947,7 @@ func _validar_luta(v: Variant) -> Dictionary:
 	var opp := lutas.adversario(str(v.get("opponent", "")))
 	var r = v.get("result", null)
 	var p = v.get("player", null)
-	if opp.is_empty() or lutas.indice_adversario(opp.id) != indice_escada or not (r is Dictionary) or not (p is Dictionary) 			or not r.has("win") or not _local_permite(opp):
+	if opp.is_empty() or lutas.indice_adversario(opp.id) != indice_escada or not (r is Dictionary) or not (p is Dictionary) 			or not r.has("win") or not _carreira._local_permite(opp):
 		_avisar("Luta salva com adversário inexistente ou dados inválidos: descartada.")
 		return {}
 	var tt := str(v.get("tactic", ""))
@@ -1964,3 +1701,45 @@ func comprar_metronomo() -> bool: return _loja.comprar_metronomo()
 func metronomo_ativo() -> bool: return _loja.metronomo_ativo()
 ## API da UI (Fase 5.3): chamar com true quando QUALQUER janela abre (prévia, confirmação, vitória, cartão,
 func definir_modal(aberto: bool) -> void: _loja.definir_modal(aberto)
+
+# ===== Repasses para scripts/estado/carreira.gd =====
+## true durante a luta (resultado decidido, ainda não aplicado) e com a tela de fim pendente:
+func acoes_bloqueadas() -> bool: return _carreira.acoes_bloqueadas()
+## Veja carreira.gd.
+func tem_luta_pendente() -> bool: return _carreira.tem_luta_pendente()
+## Veja carreira.gd.
+func tem_fim_pendente() -> bool: return _carreira.tem_fim_pendente()
+## Veja carreira.gd.
+func numero_carreira() -> int: return _carreira.numero_carreira()
+## true quando o jogador venceu todos os adversários da escada (inclusive os da academia).
+func escada_completa() -> bool: return _carreira.escada_completa()
+## Próximo adversário que dá para enfrentar AGORA ({} se a escada acabou ou se ele só luta em outro local:
+func proximo_adversario() -> Dictionary: return _carreira.proximo_adversario()
+## true se o próximo adversário só luta em outro local (a UI mostra o MUDAR / "PRÓXIMA: MUDE PARA A ACADEMIA").
+func precisa_mudar() -> bool: return _carreira.precisa_mudar()
+## "fight" (tem adversário), "move" (precisa mudar de local) ou "end" (escada completa).
+func estado_escada() -> String: return _carreira.estado_escada()
+## Veja carreira.gd.
+func pode_lutar() -> bool: return _carreira.pode_lutar()
+## Veja carreira.gd.
+func pode_aposentar() -> bool: return _carreira.pode_aposentar()
+## Legado em jogo (o "pote"): derivado da fama e do cinturão, não é salvo.
+func legado_em_jogo() -> int: return _carreira.legado_em_jogo()
+## Legado que a derrota daria agora.
+func legado_se_perder() -> int: return _carreira.legado_se_perder()
+## Fração do pote que a derrota leva: `defeat_share` + bônus da árvore, sempre abaixo de `retire_share`.
+func parte_derrota() -> float: return _carreira.parte_derrota()
+## Aposentar agora: {pote, base, bonus, total, cinturao, zero}. `bonus` só com cinturão.
+func previa_aposentar() -> Dictionary: return _carreira.previa_aposentar()
+## APOSENTAR (só entre lutas): soma o Legado e cria a tela de fim "saiu por cima". Devolve o `fim`.
+func aposentar() -> Dictionary: return _carreira.aposentar()
+## Soma o Legado e os recordes, cria `fim` e salva, tudo num único save.
+func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> void: _carreira._encerrar_carreira(tipo, snap, motivo)
+## NOVA CARREIRA (só com a tela de fim pendente): zera `career`, mantém `permanent`, soma 1 em
+func nova_carreira() -> bool: return _carreira.nova_carreira()
+## Veja carreira.gd.
+func _zerar_carreira() -> void: _carreira._zerar_carreira()
+## Lista dos nós ativos (ordem da compra): [{id, name, effect_text, icon}]. Cartão de início e resumo da garagem.
+func resumo_legado() -> Dictionary: return _carreira.resumo_legado()
+## Cartão "o que você trouxe" ({} sem nós): {title, career, nodes}. A UI mostra por até 1,8 s.
+func cartao_inicio() -> Dictionary: return _carreira.cartao_inicio()

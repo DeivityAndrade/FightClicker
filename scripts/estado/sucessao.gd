@@ -174,7 +174,7 @@ func receber_discipulo() -> bool:
 	var nova = gs.numero_carreira() + 1
 	if nova <= int(gs.escola.get("first_fighter_campaign", 1)):
 		return gs.nova_carreira()
-	gs._reiniciar_campanha()
+	gs._carreira._reiniciar_campanha()
 	var ctx = {"milestones": gs.escola.milestones, "campaign": nova, "campaigns_finished": int(gs.permanente.get("careers_finished", 0)),
 		"location": gs.local_id, "calm": true}
 	var cena_id := CenaDados.escolher_cena("handover_started", ctx)
@@ -285,7 +285,7 @@ func sucessao_terminou() -> bool:
 	gs._tempo_autosave = 0.0
 	gs.sucessao_mudou.emit("none")
 	gs._calendario._checar_sala()
-	gs._emitir_inicio_da_campanha()
+	gs._carreira._emitir_inicio_da_campanha()
 	return true
 
 
