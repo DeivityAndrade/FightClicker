@@ -1769,11 +1769,6 @@ func _shirt_detail(b: Dictionary, view: String, t: float, s: float, back: float,
 		if view == "34" and t > 0.9 and t < 0.96 and absf(s - mid) < 3.4:
 			return b.trim
 	match b.shirt_detail:
-		"rubro":   # camisa de futebol rubro-negra: faixas horizontais no tronco sem separar a roupa do corpo
-			if t > 0.30 and t < 0.80 and view == "side":
-				var faixa := int(floor((t - 0.30) * 40.0)) % 8
-				if faixa < 2:
-					return "ink" if absf(s - mid) < 2.0 else "d1"
 		"social":   # carcela com botões + colarinho
 			if view == "34":
 				if absf(s - (mid - 0.5)) < 0.55 and t > 0.3 and t < 0.92:
