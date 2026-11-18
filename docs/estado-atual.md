@@ -1,8 +1,18 @@
-# Onde paramos (atualizado em 2026-11-16, fim do dia)
+# Onde paramos (atualizado em 2026-11-18, noite)
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-18)
+## Situação agora (2026-11-18, noite)
+- **Refatoração do GameState** na main (PR #19): núcleo + `scripts/estado/`; mapa em `docs/codigo/mapa.md`.
+- **Fase 6d + 6d2 fechada** na main (PR #20): balão perto do cursor, números por atributo, cenas com o lutador criado,
+  tela C (painel pela direita, FIXAR, atalhos L/E/H), sala larga repensada, aparelho invisível até a caixa, menos texto.
+  QA em `docs/fases/fase6d-qa.md`; Diretor: aprovada com ressalvas (`docs/fases/fase6d-revisao.md`). Testes verdes, ui_audit 384/0.
+- Pendências pequenas da 6d (não travam): 2 dicas sem item apontado (`painel_loja.gd:534`, `sala.gd:1172`); luz do vizinho
+  da frente e do Nelson; painel fixado esconde Nelson/vizinho 3/ponta da esteira (ouvir o dono); "/CLIQUE" ao lado do +N; conferir o balão com o mouse real.
+- **Próxima fase: 7a** (lutas por arte + minigame opcional em tela própria). **Não começar sem ordem do dono.**
+- Os `.import` modificados na pasta só mudaram fim de linha (não commitar).
+
+## Situação anterior (2026-11-18, manhã)
 - **Fase 6c fechada.** A 6c2 está na main (PR #16), aprovada pelo QA (B1–B6 corrigidos) e pelo Diretor (`docs/fases/fase6c2-revisao.md`). Testes verdes e ui_audit com 358 estados e 0 problemas.
 - O **PR #15** (6c2 feita por outra IA) foi **fechado sem integrar**, por decisão do dono. Tudo daquela IA é ignorado.
 - Um **trio de adversários** (Bileco, Leslie Chow, Sapão), que veio dessa IA, foi tirado da 6c2. As mudanças soltas dela ficaram só na branch local `backup/outra-ia-2026-11-17` (não usar).
