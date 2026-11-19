@@ -22,6 +22,7 @@ import types
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 import fase3_sim as f3  # noqa: E402
+import fase7a1_sim as f7  # noqa: E402  (7a1: passivas de Boxe e Jiu-jitsu; escreve tests/data/fase7a1_casos.json)
 
 R, _treino, _gens, _shop, _career = f3.carregar()
 
@@ -43,6 +44,7 @@ class Gravador(random.Random):
 
 
 f3.random = types.SimpleNamespace(Random=Gravador, randrange=random.randrange)
+f7.random = f3.random
 
 
 def estados(n, semente):
@@ -136,5 +138,56 @@ def main():
         destino, len(saida["exatos"]), len(saida["estatisticas"]), len(saida["motivos"]), len(saida["explicacoes"])))
 
 
+FINISH = {"dano": "damage", "dano_dele": "damage", "nocaute": "knockout", "finalizacao": "submission", "pontos": "points"}
+
+
+def caso_arte(jog, adv, tat, semente, arte, extra):
+    """Luta com a passiva da arte (4 sorteios por ataque: esquiva, critico, variacao, arte)."""
+    RA = f7.regras_arte7(R, {"fight": {}}, extra, arte)
+    r = RA.lutar(jog, adv, tat, semente, registro=True)
+    sorteios = list(Gravador.ultimo.sorteados)
+    ev = [[e["t"], e["who"], e["type"], bool(e.get("counter", False)), e.get("damage", 0.0), e.get("life_after", 0.0),
+           e.get("streak", 0), e.get("finish", "")] for e in r["ev"]]
+    est = RA.estado_passiva(jog, adv, tat)
+    return {
+        "player": list(jog), "opponent": list(adv), "tactic": tat, "art": arte, "extra": extra, "draws": sorteios,
+        "win": r["win"], "ko": r["ko"], "t_ko": r["t_ko"] if r["t_ko"] is not None else -1.0,
+        "t_end": r["t"], "pct_player": r["pct"][0], "pct_opponent": r["pct"][1], "vmax": list(r["vmax"]),
+        "events": ev, "counts": r["cont"], "finish": FINISH[r["metodo"]], "streak_peak": r["embalo_pico"],
+        "attempts": r["tentativas"], "opp_counter_damage": r["cont"]["dano_contra"][1],
+        "est": {k: v for k, v in est.items() if isinstance(v, (int, float, bool, str))},
+    }
+
+
+def exportar_7a1():
+    casos = []
+    n = 0
+    for arte in ("boxing", "bjj"):
+        for extra in (0.0, 0.5):
+            for i, (jog, adv, tat) in enumerate(estados(90, 41 + n)):
+                casos.append(caso_arte(jog, adv, tat, 5000 + n * 1000 + i, arte, extra))
+            n += 1
+    # estados fortes (jogador na frente e com vida dele baixa): garantem K.O. e finalizacao pela passiva
+    rng = random.Random(99)
+    for arte in ("boxing", "bjj"):
+        for tat in R.tac_ids:
+            for k in range(14):
+                o = R.opp[rng.randrange(len(R.opp))]
+                adv = (o["strength"], o["agility"], o["endurance"])
+                m = rng.uniform(0.7, 1.4)
+                w = [rng.random() + 0.3 for _ in range(3)]
+                s = sum(w)
+                jog = tuple(sum(adv) * m * x / s for x in w)
+                casos.append(caso_arte(jog, adv, tat, 9000 + k, arte, 0.5 if k % 2 else 0.0))
+    destino = os.path.join(f3.RAIZ, "tests", "data", "fase7a1_casos.json")
+    with open(destino, "w", encoding="utf-8") as f:
+        json.dump({"exatos": casos}, f, ensure_ascii=False)
+    fins = {}
+    for c in casos:
+        fins[(c["art"], c["finish"])] = fins.get((c["art"], c["finish"]), 0) + 1
+    print("gravado %s: %d casos com arte; fins: %s" % (destino, len(casos), sorted(fins.items())))
+
+
 if __name__ == "__main__":
     main()
+    exportar_7a1()

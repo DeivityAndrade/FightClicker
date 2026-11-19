@@ -387,7 +387,11 @@ func _init() -> void:
 	L = load(base + "/pixel_lib.gd").new()
 	P = load(base + "/personagem_lib.gd").new(L)
 	DirAccess.make_dir_recursive_absolute(out_dir + "fight")
-	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(base + "/golpes.json"))
+	# Fase 7a1: FC_GOLPES=<arquivo .json> lê outro arquivo de poses (ex.: tools/art/golpes_7a1.json, Jiu-jitsu); sem a variável, golpes.json.
+	var arq_golpes := OS.get_environment("FC_GOLPES")
+	if arq_golpes == "":
+		arq_golpes = base + "/golpes.json"
+	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(arq_golpes))
 	var todos: Dictionary = dados.moves
 	for nm in todos:
 		expandir(todos[nm])
@@ -436,6 +440,8 @@ func _init() -> void:
 			er["action"] = nome
 			if gr.has("ground_frame"):
 				er["ground_frame"] = gr.ground_frame
+			if gr.has("loop"):
+				er["loop"] = gr.loop   # 7a1: poses paradas no chão (ground_top_idle) repetem
 			entradas["fight_player_%s%s" % [nome, suffix]] = er
 		for nome in garagem:
 			if not so_estes.is_empty() and not (nome in so_estes):
@@ -465,6 +471,12 @@ func _init() -> void:
 	var expandidas := {}
 	for nome in reacoes:
 		expandidas[nome] = {"fps": reacoes[nome].fps, "frames": reacoes[nome].frames, "ground_frame": reacoes[nome].get("ground_frame", -1)}
+		if bool(reacoes[nome].get("attack", false)):   # 7a1: golpe de adversário descrito como reação (ground_punch): leva o contato
+			expandidas[nome]["attack"] = true
+			expandidas[nome]["hit_frame"] = reacoes[nome].hit_frame
+			expandidas[nome]["hit_point"] = reacoes[nome].get("hit_point", [0, 0])
+		if reacoes[nome].has("loop"):
+			expandidas[nome]["loop"] = reacoes[nome].loop
 	var fx := FileAccess.open(out_dir + "reacoes_expandidas.json", FileAccess.WRITE)
 	fx.store_string(JSON.stringify(expandidas))
 	fx.close()

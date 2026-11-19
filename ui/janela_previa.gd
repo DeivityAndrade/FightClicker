@@ -24,6 +24,7 @@ var _dica: Label
 var _aviso: Label
 var _falta: Label  # linha "FALTA ~N DE ATRIBUTO" (só com o nó hall_notes)
 var _percent: Label
+var _cartao: CartaoPassiva  # 7a1: a passiva da arte (só com arte), ao lado da janela
 var _t := 0.0
 var dia_da_luta := false  # Fase 5.3: prévia do dia (sem VOLTAR A TREINAR, sem X, sem Esc; com LUTAR e PASSAR O POSTO)
 
@@ -44,13 +45,12 @@ func _montar() -> void:
 	var info_opp: Dictionary = ids.get(str(opp.id), {})
 
 	# Revanche (Fase 4): a fita "VOCÊ PERDEU PRA ELE" ganha 17 px de altura; a janela cresce junto (8 px para cima, 9 para baixo).
-	# Fase 5: com arte, a linha do traço de luta ("BOXE: +10% DE DANO") ganha 11 px; a janela cresce metade para cada lado.
+	# Fase 7a1: a passiva da arte mora num cartão AO LADO da janela (CartaoPassiva): a altura da janela não muda com a arte.
 	var revanche := bool(_dados.get("revenge", false))
-	var traco := str(_dados.get("art_fight_text", ""))
 	var nota := GameState.tem_no_hall("hall_notes")  # 6c2: reserva a linha "FALTA ~N DE ATRIBUTO" (11 px) enquanto o nó existir
 	var regra := GameState.indice_escada == 0
-	var ex := (17.0 if revanche else 0.0) + (11.0 if traco != "" else 0.0) + (11.0 if nota else 0.0)
-	# Revanche + arte + nota juntas não cabem nos 360 px: os respiros de 1 px entre as seções (ar) somem e a janela encolhe 14 px.
+	var ex := (17.0 if revanche else 0.0) + (11.0 if nota else 0.0)
+	# Revanche + nota juntas não cabem nos 360 px: os respiros de 1 px entre as seções (ar) somem e a janela encolhe 14 px.
 	var compacto := ex > 28.0 and not regra
 	if compacto:
 		ex -= 14.0
@@ -133,9 +133,6 @@ func _montar() -> void:
 	y += 22.0 + 2.0 + 13.0 + 4.0  # 4 px de respiro entre a linha de risco e a dica
 	_dica = UiTema.rotulo(painel, "", UiTema.G3, X0, y, X1 - X0, HORIZONTAL_ALIGNMENT_CENTER)
 	y += 14.0 + g4 + 2.0 * ar  # respiro antes do que está em jogo
-	if traco != "":
-		_linha_traco(str(_dados.get("art", "")), traco, y)
-		y += 11.0
 	if nota:
 		# 6c2: "FALTA ~N DE ATRIBUTO" (nó Caderninho). Vem pronta de um cálculo em segundo plano: a linha fica vazia até o sinal.
 		_falta = UiTema.rotulo(painel, "", UiTema.R3, X0, y, X1 - X0, HORIZONTAL_ALIGNMENT_CENTER)
@@ -161,6 +158,8 @@ func _montar() -> void:
 		y += 9.0
 		UiTema.rotulo_centro(painel, UiTema.txt("time_rule_tie", "EMPATE EXATO: FICA COM ELE"), UiTema.G2, 320.0, y)
 
+	_montar_cartao_passiva()
+
 	# --- Botões ---
 	# Dois botões do mesmo tamanho, com 4 px entre eles, ocupando a largura útil da janela.
 	var yb := 310.0 + ex + oy + float(folga) - topo
@@ -181,6 +180,26 @@ func _montar() -> void:
 	var lutar := botao_texto(Rect2(X0 + larg_botao + 4.0, yb, larg_botao, 26), UiTema.txt("fight_button", "LUTAR!"),
 		UiTema.Y2, "", 2, "ui_button_fight")
 	lutar.pressed.connect(func() -> void: lutar_pedido.emit())
+
+
+## 7a1: cartão da passiva à direita da janela (x 496..632). Só com arte; o bloco muda junto com a tática (`_escolher`).
+func _montar_cartao_passiva() -> void:
+	var blocos: Dictionary = _dados.get("passive_tactics", {})
+	if blocos.is_empty():
+		return
+	_cartao = CartaoPassiva.new()
+	_cartao.name = "CartaoPassiva"
+	_cartao.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cartao.position = Vector2(X1 + 20.0, 64.0)
+	painel.add_child(_cartao)
+
+
+func _atualizar_cartao(id: String, animar: bool) -> void:
+	if _cartao == null:
+		return
+	var bloco: Dictionary = _dados.get("passive_tactics", {}).get(id, {})
+	if not bloco.is_empty():
+		_cartao.montar(bloco, str(_dados.get("art", "")), animar)
 
 
 ## Folhinha grande do dia ("HOJE" + número do dia em 2x), presa no canto de cima à esquerda da janela por cima da borda
@@ -216,23 +235,6 @@ func _fita_revanche(y: float) -> void:
 func _rotulo_dir(texto: String, cor: Color, x_fim: float, y: float) -> void:
 	var l := UiTema.rotulo(painel, texto, cor, 0, y)
 	l.position.x = roundf(x_fim - UiTema.largura(texto))
-
-
-func _linha_traco(arte: String, texto: String, y: float) -> void:
-	# Traço de luta da arte (Fase 5): ícone da arte + texto como um grupo centralizado na largura útil da janela.
-	var faixa := Control.new()
-	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	faixa.position = Vector2(X0, y)
-	faixa.size = Vector2(X1 - X0, 10)
-	faixa.set_meta("ui_margens", "h")
-	painel.add_child(faixa)
-	var icone := "art_%s_9" % arte
-	var tem_icone := not UiTema.sprite(icone).is_empty()
-	var grupo := UiTema.largura_visivel(texto.to_upper()) + (13.0 if tem_icone else 0.0)
-	var gx := roundf((faixa.size.x - grupo) / 2.0)
-	if tem_icone:
-		UiTema.textura_rect(faixa, icone, gx, 0)
-	UiTema.rotulo(faixa, texto.to_upper(), UiTema.P2, gx + (13.0 if tem_icone else 0.0), 0)
 
 
 # Uma linha: [número dele] [ícone + atributo] [número seu]. Destaque quando ele está muito à frente.
@@ -300,6 +302,7 @@ func _escolher(id: String, tocou: bool) -> void:
 	_dica.text = str(t.get("hint", "")).to_upper()
 	var rot := str(_dados.risks.get(id, {}).get("label", ""))
 	_mostrar_risco(rot, tocou)
+	_atualizar_cartao(id, tocou)
 	if tocou and _falta != null:
 		_mostrar_falta(str(GameState.previa().get("missing_line", "")))  # a tática mudou: pede o cálculo de novo (vem pelo sinal)
 

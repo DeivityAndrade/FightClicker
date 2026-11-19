@@ -2,7 +2,16 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-19)
+## Situação agora (2026-11-19, fim do dia)
+- **Fase 7a1 fechada** (cada arte luta do seu jeito): Boxe "Mão rápida" (embalo, K.O. cedo, cansa no 3º round), Jiu-jitsu
+  "Finalização" (barra de pegada, queda, chão, FINALIZOU!, especial "SUPER PEGADA!"), arena da liga **GINÁSIO ALVORADA** (opção A),
+  prévia honesta (±2 pontos), sem arte idêntico. Docs: `fase7a-escopo.md` (§8 decisões do dono), `fase7a1-design.md`,
+  `fase7a1-textos.md`, `fase7a1-qa.md`, `fase7a1-revisao.md` (aprovada). Save continua v13.
+- **Próximo: 7a2** — minigames Choque (Boxe/JJ) e Panfletagem, bônus AQUECIDO, semente do Gato Preto. O dono autorizou seguir sem
+  esperar teste dele ("pode tocar ficha"); ele testa tudo depois.
+- Agentes: comandos longos (>180 s) vão para segundo plano sozinhos; mandar gravar saída em arquivo e esperar lendo o arquivo.
+
+## Situação anterior (2026-11-19)
 - **Rodada 6d3 fechada** (pedidos do dono depois de jogar a 6d): números com o nome inteiro do atributo; painel da direita
   só fecha quando o jogador manda (FIXAR removido); lutador piscando na luta corrigido (`ui/anim_sprite.gd`); garagem nova
   (carro azul com lona, pneus, geladeira, sem escada/ralo); varredura de arte (`docs/arte/fase6d3-varredura.md`);

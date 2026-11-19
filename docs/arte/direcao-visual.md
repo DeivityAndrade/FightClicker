@@ -1138,3 +1138,41 @@ O carro maior ficava atrás do Osmar e do John sentado. Correção (garagem só;
 - A luz pintada nas folhas do Osmar e do John sentado ainda é a dos pontos antigos (diferença pequena): pedir folhas novas ao
   Artista de Personagens quando houver rodada de personagens.
 - Também trocados para o R: `icon_garage_saved` (linha de prêmio GARAGEM SALVA) e `icon_honor_16` (roseta da Honra).
+
+## 30. Fase 7a1 (arena da liga, FINALIZOU! e HUD da passiva)
+Gerador: `tools/art/make_arte_fase7a1.gd` (rodar como no §29, de uma pasta com `project.godot` vazio; `-- --assets <pasta>`
+grava fora do projeto, `-- --debug <pasta>` grava as cenas montadas em 2x). Manifest: `python tools/art/manifest_7a1.py`
+(só acrescenta as chaves da 7a1; lê o arquivo na hora de gravar).
+
+**Arena da liga da academia** (`arena_league_bg` / `_crowd_back` / `_crowd_front`, mesmo contrato e mesmas posições da borracharia;
+**sem `_lamp`**, é de dia). Duas opções em `mockups/fase7a1_arena_A.png` e `_B.png` (em pé com K.O. / deitados com FINALIZOU!):
+- **A (recomendada, aplicada): quadra coberta do bairro, sábado de manhã.** Treliça do telhado em contraluz, janelões basculantes
+  com sol entrando em faixas de dither pela esquerda, placar "LIGA", faixa da liga, arquibancada de concreto com gente sentada
+  (menos gente no meio, onde passa o letreiro), mureta com placas de patrocinador da vizinhança (inclui a BOA ESQUINA), quadra de
+  madeira com linhas de outros esportes e o **tatame oficial azul com borda vermelha** no meio. Mesa dos juízes com sino à esquerda,
+  banco do corner à direita, fora do centro. Lê como degrau acima: lugar público, organizado, com plateia sentada e regra.
+- **B: salão do clube do bairro, sábado à tarde.** Lambri, bandeirinhas, ventiladores, palco com cortina vinho e mesa de troféus,
+  janelas com grade, cadeiras de plástico empilhadas, chão de taco em cesto e tatame de EVA azul e verde. Mais aconchegante, lê
+  menos como "competição".
+- Regras que as duas cumprem: y 0..45 em `ink` liso (o gerador confere: 0 px fora); pés em y 318 sobre o tatame (topo y 272,
+  base x 112..528 em y 350, lados no ponto de fuga 320,-28); x ~200..440 sem objeto na frente dos pés (cabem os dois deitados);
+  o público da frente só nos cantos (x 0..137 e 503..640). Mais clara que a borracharia, mas o miolo atrás do letreiro é escuro
+  (placar) ou de meio-tom; o contorno `ink` dos letreiros resolve o resto (prancha `mockups/fase7a1_hud_icones_x4.png`).
+- **Aprovada pelo dono: opção A.** Faixa com o nome do Roteirista, **GINÁSIO ALVORADA** (`const FAIXA` no gerador; faixa de 24 px
+  para o acento do Á não encostar na barra, pendurada na frente do corrimão).
+- Público de dia: roupa colorida, luz da janela na borda esquerda, crianças na frente, bandeirinhas azuis no "cheer".
+
+**Letreiro FINALIZOU!** (`ui_banner_submission`, 161x40, pivô 80,20): mesma receita do `ui_banner_ko` (amarelo y1 em cima / y0
+embaixo, contorno `ink`, sombra de 1 px de fonte), com a **sombra azul b1** (cor do Jiu-jitsu) em vez da vermelha. Fonte 3x
+(o K.O.! é 4x) para caber: ampliado 2x no jogo dá 322 px. Lê nas três arenas.
+
+**HUD da passiva** (posição final é do UI/UX):
+- Embalo (Boxe): `ui_streak_pip` 7x7, 3 quadros (apagada `d2` / acesa vermelho do Boxe / acendendo clarão). 5 com passo 9 px.
+- CANSADO: `icon_tired` 9x9 (gota de suor azul) ao lado do texto.
+- Pegada (Jiu-jitsu, azul): `ui_grip_bar` (moldura 9-slice 8x6), `ui_grip_fill` (4x4 repetido, 2 quadros: enchendo / cheia para
+  piscar com "PEGADA!"), `ui_grip_tick` (1x4, marcas de round em 1/3 e 2/3), `ui_grip_mark` (setinha 7x5 "enche aqui" na prévia),
+  `icon_grip` 9x9 (mão fechando na gola).
+
+**Placeholder / precisa de pixel artist:** a plateia é feita de blocos (rosto, braço e roupa à mão dariam vida), a arquibancada e
+a treliça são repetição pura, as placas de patrocinador pediriam logotipos desenhados, e o tatame pediria textura e desgaste.
+O letreiro e os ícones podem ficar com retoque.

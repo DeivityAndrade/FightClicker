@@ -109,6 +109,12 @@ const ESTADOS_TODOS := [
 	"f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_so_sala", "f6d2_foco_trancado", "f6d2_aparelho_invisivel",
 	"f6d2_aparelho_caixa", "f6d2_aparelho_aberto", "f6d2_garagem_cheia", "f6d2_garagem_pequena", "f6d2_academia_cheia", "f6d2_academia_pequena",
 	"f6d2_clique_fecha", "f6d2_cena_fecha",
+	# Fase 7a1: passiva de cada arte (prévia, luta, fim) e arena da liga
+	"f7a1_previa_boxing_aggressive", "f7a1_previa_boxing_defensive", "f7a1_previa_boxing_counter", "f7a1_previa_bjj_aggressive",
+	"f7a1_previa_bjj_defensive", "f7a1_previa_bjj_counter", "f7a1_previa_bjj_kid", "f7a1_luta_boxe_embalo", "f7a1_luta_boxe_cansado",
+	"f7a1_luta_boxe_defensivo", "f7a1_luta_boxe_ko", "f7a1_luta_jj_pegada", "f7a1_luta_jj_chao", "f7a1_luta_jj_finalizou",
+	"f7a1_luta_jj_finalizou_letreiro", "f7a1_arena_borracharia", "f7a1_arena_liga", "f7a1_fim_derrota_arena", "f7a1_fim_nota_boxe",
+	"f7a1_fim_nota_jj",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -132,6 +138,7 @@ var _f6b2_f6c1 = preload("res://tools/ui/audit/estados_f6b2_f6c1.gd").new(self)
 var _f6c2 = preload("res://tools/ui/audit/estados_f6c2.gd").new(self)
 var _f6d = preload("res://tools/ui/audit/estados_f6d.gd").new(self)
 var _f6d2 = preload("res://tools/ui/audit/estados_f6d2.gd").new(self)
+var _f7a1 = preload("res://tools/ui/audit/estados_f7a1.gd").new(self)
 
 
 func _initialize() -> void:
@@ -358,6 +365,7 @@ func _rodar() -> void:
 	await _f6c2._rodar_fase6c2()
 	await _f6d._rodar_fase6d()
 	await _f6d2._rodar_fase6d2()
+	await _f7a1._rodar_fase7a1()
 	_fechar_cena()
 
 

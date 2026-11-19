@@ -111,6 +111,7 @@ func _montar_local(item: Dictionary, id: String) -> Dictionary:
 	return {
 		"id": id, "training_mult": mult,
 		"apparatus_suffix": str(item.get("apparatus_suffix", "")),
+		"fight_arena": str(item.get("fight_arena", "arena")),  # 7a1: prefixo do cenário da luta (arena / arena_league)
 		"move": mv,
 		"name": TrainingData._txt(item, "name", id),
 		"ambience": TrainingData._txt(item, "ambience", ""),
@@ -153,18 +154,67 @@ func _montar_arte(item: Dictionary, id: String) -> Dictionary:
 				regra["start"] = regra.cap
 	else:
 		push_warning("GymData: arte '%s' sem regra válida (rule.type): arte sem regra." % id)
-	var luta := {"damage_mult": 1.0, "taken_mult": 1.0}
-	var f = item.get("fight", null)
-	if f is Dictionary:
-		for chave in ["damage_mult", "taken_mult"]:
-			if f.has(chave):
-				luta[chave] = _recortar(f, chave, 1.0, 0.5, 2.0, id + ".fight.")
+	var passiva := _montar_passiva(item.get("passive", null), id)
 	return {
-		"id": id, "apparatus": str(item.get("apparatus", "")), "rule": regra, "fight": luta,
+		"id": id, "apparatus": str(item.get("apparatus", "")), "rule": regra, "passive": passiva,
 		"name": TrainingData._txt(item, "name", id), "tagline": TrainingData._txt(item, "tagline", ""),
 		"rule_text": TrainingData._txt(item, "rule_text", ""), "fight_text": TrainingData._txt(item, "fight_text", ""),
 		"icon": TrainingData._txt(item, "icon", ""),
 	}
+
+
+## Fase 7a1: passiva de luta da arte (`passive` em data/arts.json). {} = arte sem passiva.
+## Campo ausente = neutro (mult 1, extra 0); fora da faixa é recortado, com aviso.
+const PASSIVAS_TIPOS: Array[String] = ["fast_hands", "submission"]
+
+
+func _montar_passiva(bruto: Variant, id: String) -> Dictionary:
+	if not (bruto is Dictionary) or str(bruto.get("type", "")) not in PASSIVAS_TIPOS:
+		return {}
+	var pf := id + ".passive."
+	var p := {"type": str(bruto.type)}
+	p["damage_mult"] = _recortar(bruto, "damage_mult", 1.0, 0.1, 5.0, pf)
+	p["taken_mult"] = _recortar(bruto, "taken_mult", 1.0, 0.1, 5.0, pf)
+	p["interval_mult"] = _recortar(bruto, "interval_mult", 1.0, 0.5, 2.0, pf)
+	p["need_ahead"] = _recortar(bruto, "need_ahead", 0.0, 0.0, 1.0, pf)
+	if p.type == "fast_hands":
+		p["speed_agility_min"] = _recortar(bruto, "speed_agility_min", 1.0, 0.1, 1.0, pf)
+		p["speed_agility_max"] = _recortar(bruto, "speed_agility_max", 1.0, 1.0, 3.0, pf)
+		p["tired_from_round"] = _recortar(bruto, "tired_from_round", 3.0, 1.0, 10.0, pf)
+		p["tired_interval_mult"] = _recortar(bruto, "tired_interval_mult", 1.0, 0.5, 3.0, pf)
+		p["streak_max"] = _recortar(bruto, "streak_max", 5.0, 1.0, 20.0, pf)
+		p["streak_per_hit"] = _recortar(bruto, "streak_per_hit", 1.0, 0.0, 20.0, pf)
+		p["ko_life_max"] = _recortar(bruto, "ko_life_max", 0.5, 0.0, 1.0, pf)
+		p["ko_per_streak"] = _recortar(bruto, "ko_per_streak", 0.02, 0.0, 1.0, pf)
+		p["ko_agility_min"] = _recortar(bruto, "ko_agility_min", 0.4, 0.0, 1.0, pf)
+		p["ko_agility_max"] = _recortar(bruto, "ko_agility_max", 1.6, 1.0, 5.0, pf)
+		p["ko_cap"] = _recortar(bruto, "ko_cap", 0.5, 0.0, 1.0, pf)
+	else:
+		p["grip_per_round"] = _recortar(bruto, "grip_per_round", 0.5, 0.01, 10.0, pf)
+		p["grip_endurance_min"] = _recortar(bruto, "grip_endurance_min", 0.5, 0.01, 1.0, pf)
+		p["grip_endurance_max"] = _recortar(bruto, "grip_endurance_max", 2.0, 1.0, 10.0, pf)
+		p["grip_rate_max"] = _recortar(bruto, "grip_rate_max", 1.0, 0.01, 10.0, pf)
+		p["ground_at_grip"] = _recortar(bruto, "ground_at_grip", 0.5, 0.0, 1.0, pf)
+		p["sub_life_max"] = _recortar(bruto, "sub_life_max", 0.6, 0.0, 1.0, pf)
+		p["sub_base"] = _recortar(bruto, "sub_base", 0.3, 0.0, 1.0, pf)
+		p["sub_strength_min"] = _recortar(bruto, "sub_strength_min", 0.25, 0.0, 1.0, pf)
+		p["sub_strength_max"] = _recortar(bruto, "sub_strength_max", 2.0, 1.0, 10.0, pf)
+		p["sub_cap"] = _recortar(bruto, "sub_cap", 0.6, 0.0, 1.0, pf)
+	var taticas := {}
+	var tb = bruto.get("tactics", null)
+	if tb is Dictionary:
+		for tid in tb:
+			var t = tb[tid]
+			if not (t is Dictionary):
+				continue
+			var tt := {}
+			for chave in t:
+				var v = t[chave]
+				if (typeof(v) == TYPE_FLOAT or typeof(v) == TYPE_INT) and is_finite(float(v)):
+					tt[str(chave)] = clampf(float(v), 0.0, 10.0)
+			taticas[str(tid)] = tt
+	p["tactics"] = taticas
+	return p
 
 
 # Número finito recortado para [minimo, maximo]; ausente ou inválido usa o padrão (com aviso).

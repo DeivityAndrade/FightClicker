@@ -72,6 +72,22 @@ func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
 	# Fase 5: dica extra (derrota na academia / com arte): mais uma linha na caixa, só se o rodapé ainda couber nos botões.
 	if str(t.get("tip_extra", "")) != "":
 		linhas.append({"texto": str(t.tip_extra).to_upper(), "cor": UiTema.Y1})
+	# 7a1: nota da passiva da arte (só com arte e quando a passiva pesou) + a dica dela, logo depois da estatística.
+	# A caixa só tem espaço para ~6 linhas sem encostar nos botões: com a nota, a dica genérica de atributo e a dica extra da
+	# arte (que dizem o mesmo por outro caminho) cedem o lugar; a nota e a dica dela são mais específicas.
+	if str(t.get("passive_note", "")) != "":
+		var nova: Array = []
+		for l in linhas:
+			if l.texto == UiTema.singular(str(t.reason).to_upper()) or l.texto == UiTema.singular(str(t.stat).to_upper()):
+				nova.append(l)
+		var nota := {"texto": str(t.passive_note).to_upper(), "cor": UiTema.CREAM, "sep": 3}
+		nova.append(nota)
+		if str(t.get("passive_note_tip", "")) != "":
+			nova.append({"texto": str(t.passive_note_tip).to_upper(), "cor": UiTema.Y1})
+		for l in linhas:
+			if not (l in nova) and str(l.texto) != str(t.tip).to_upper() and str(l.texto) != str(t.get("tip_extra", "")).to_upper():
+				nova.append(l)
+		linhas = nova
 	var altura := 10.0
 	for l in linhas:
 		altura += 11.0 + float(l.get("sep", 0))
@@ -86,7 +102,8 @@ func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
 		y += float(l.get("sep", 0))
 		UiTema.rotulo(painel, l.texto, l.cor, 149, y, 360)
 		y += 11.0
-	var topo := 76.0 + altura + 8.0
+	# Com 6 linhas ou mais (arte + nota da passiva) o respiro abaixo da caixa encolhe para o rodapé não encostar nos botões.
+	var topo := 76.0 + altura + (3.0 if linhas.size() >= 6 else 8.0)
 
 	var mais := _resumo(f, topo, true)
 	_rodape(f, topo + 78.0 + mais, false, "")

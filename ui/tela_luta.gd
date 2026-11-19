@@ -71,6 +71,18 @@ var _eventos_vistos := 0
 var _ordem_numeros := 0
 var _gesto: Gesto  # Fase 6a: gesto do John na entrada e na vitória
 var _gesto_nome := ""
+# Fase 7a1: passiva da arte (só visual). Boxe: embalo (5 bolinhas) e cansaço; Jiu-jitsu: barra de pegada e fase no chão.
+var _passiva := ""  # "" | "fast_hands" | "submission"
+var _pips: Array = []
+var _embalo_atual := 0
+var _cansado := false
+var _rot_cansado: Control
+var _grip_fill: TextureRect
+var _grip_larg := 0.0
+var _grip_cheia := false
+var _fase_visual := "standing"  # "standing" | "ground" (as animações de chão só entram se as folhas existirem)
+var _banner_sub_img: Sprite2D
+var _bloqueio_ate := -10.0  # fim da queda (takedown + fall) em andamento: o próximo golpe espera
 
 
 func _ready() -> void:
@@ -98,6 +110,15 @@ func _montar(opp_id: String) -> void:
 	_fx_i.clear()
 	_numeros.clear()
 	_barras.clear()
+	_pips.clear()
+	_embalo_atual = 0
+	_cansado = false
+	_rot_cansado = null
+	_grip_fill = null
+	_grip_cheia = false
+	_fase_visual = "standing"
+	_bloqueio_ate = -10.0
+	_passiva = str(luta.get("passive", ""))
 	_opp_id = opp_id
 	var by: Dictionary = UiTema.manifest().get("by_data_id", {})
 	var lay: Dictionary = UiTema.manifest().get("fight_layout", {})
@@ -114,15 +135,24 @@ func _montar(opp_id: String) -> void:
 	UiTema.alinhar(_mundo, "ignore")  # arena, lutadores, efeitos e números flutuantes: posição livre de propósito
 	add_child(_mundo)
 
+	# Cenário (7a1): prefixo da arena da luta ("arena" = borracharia, "arena_league" = ginásio da liga). Camada que não existe
+	# no manifest cai na borracharia; a liga não tem lâmpada (de dia): o nó existe, mas invisível.
+	var pre := str(luta.get("arena", "arena"))
+	if UiTema.sprite(pre + "_bg").is_empty():
+		pre = "arena"
 	var bg := Sprite2D.new()
 	bg.centered = false
-	bg.texture = UiTema.textura("arena_bg")
+	bg.texture = UiTema.textura(pre + "_bg")
 	bg.z_index = -100
 	_mundo.add_child(bg)
-	_lampada = _anim("arena_lamp", UiTema.pos("arena_lamp"), -50)
-	_publico_tras = _anim("arena_crowd_back", UiTema.pos("arena_crowd_back"), -60)
+	var nome_lamp := pre + "_lamp" if not UiTema.sprite(pre + "_lamp").is_empty() else "arena_lamp"
+	_lampada = _anim(nome_lamp, UiTema.pos(nome_lamp), -50)
+	_lampada.visible = pre == "arena" or nome_lamp == pre + "_lamp"
+	var nome_tras := _camada(pre, "crowd_back")
+	var nome_frente := _camada(pre, "crowd_front")
+	_publico_tras = _anim(nome_tras, UiTema.pos(nome_tras), -60)
 	_publico_tras.tocar([0, 1], 2.0, true)
-	_publico_frente = _anim("arena_crowd_front", UiTema.pos("arena_crowd_front"), 50)
+	_publico_frente = _anim(nome_frente, UiTema.pos(nome_frente), 50)
 	_publico_frente.tocar([0, 1], 2.0, true)
 
 	var pos_j := _vetor(lay.get("player_pos", [296, 318]))
@@ -158,6 +188,14 @@ func _montar(opp_id: String) -> void:
 	_banner_ko.visible = false
 	_mundo.add_child(_banner_ko)
 
+	_banner_sub_img = Sprite2D.new()
+	_banner_sub_img.texture = UiTema.textura("ui_banner_submission")
+	_banner_sub_img.position = Vector2(320, 118)
+	_banner_sub_img.scale = Vector2(2, 2)
+	_banner_sub_img.z_index = 950
+	_banner_sub_img.visible = false
+	_mundo.add_child(_banner_sub_img)
+
 	_flash = ColorRect.new()
 	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_flash.color = Color(1, 1, 1, 0)
@@ -181,6 +219,12 @@ func _montar(opp_id: String) -> void:
 	_banner_sub.size = Vector2(TELA.x, 12.0)
 	_banner_sub.visible = false
 	UiTema.alinhar(_banner_sub, "center_h")
+
+
+## Camada do cenário com o prefixo da arena; se faltar no manifest, a da borracharia.
+func _camada(pre: String, camada: String) -> String:
+	var nome := "%s_%s" % [pre, camada]
+	return nome if not UiTema.sprite(nome).is_empty() else "arena_" + camada
 
 
 func _vetor(a: Array) -> Vector2:
@@ -266,6 +310,7 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	_esp_fundo.add_child(_esp_cheio)
 	_esp_rotulo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]) + 114.0, float(pt[1]) + 10.0)
 	_rotulo_combo.modulate.a = 0.0
+	_montar_hud_passiva(hud, float(pt[1]))
 
 	# Adversário (direita, espelhado)
 	var info_o: Dictionary = by.get(opp_id, {})
@@ -295,6 +340,35 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	_rotulo_round = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0, col.size.x, 7.0), "", UiTema.G3, 1, false, "center_h")
 	_rotulo_tempo = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0 + 10.0, col.size.x, 14.0), "0:16", UiTema.Y1, 2, false,
 		"center_h")
+
+
+## HUD da passiva (7a1), na fileira da tática, à direita do nome dela (x 140..282). Boxe: CANSADO (ícone + texto, só no 3º round)
+## e as 5 bolinhas de embalo coladas na ponta da barra de vida. Jiu-jitsu: ícone da pegada + barra fina que enche com o tempo.
+func _montar_hud_passiva(hud: Control, y_tatica: float) -> void:
+	if _passiva == "fast_hands":
+		var n := 5
+		var x0 := 282.0 - (9.0 * float(n) - 2.0)
+		for i in n:
+			_pips.append(CartaoPassiva.bolinha(hud, x0 + 9.0 * float(i), y_tatica + 1.0, 0))
+		var texto := UiTema.txt("fight_tired", "CANSADO")
+		var tem_icone := not UiTema.sprite("icon_tired").is_empty()
+		var grupo := UiTema.largura_visivel(texto) + (12.0 if tem_icone else 0.0)
+		_rot_cansado = Control.new()
+		_rot_cansado.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_rot_cansado.position = Vector2(roundf(x0 - 8.0 - grupo), y_tatica)
+		_rot_cansado.size = Vector2(grupo, 9)
+		_rot_cansado.visible = false
+		hud.add_child(_rot_cansado)
+		if tem_icone:
+			UiTema.textura_rect(_rot_cansado, "icon_tired", 0, 0)
+		UiTema.rotulo(_rot_cansado, texto, UiTema.Y1, 12.0 if tem_icone else 0.0, 1)
+	elif _passiva == "submission":
+		_grip_larg = 128.0
+		if not UiTema.sprite("icon_grip").is_empty():
+			UiTema.textura_rect(hud, "icon_grip", 140, y_tatica - 1.0)
+		CartaoPassiva.barra(hud, 151.0, y_tatica + 1.0, _grip_larg + 2.0)
+		_grip_fill = CartaoPassiva.enchimento(hud, 152.0, y_tatica + 2.0, 0.0, 0)
+		_grip_fill.visible = false
 
 
 func _cor_tatica(nome_cor: String) -> Color:
@@ -361,6 +435,14 @@ func _agendar_tudo() -> void:
 				_texto_banner(UiTema.txt("fight_round", "{n}º ROUND", {"n": r}), UiTema.WHITE, 2))
 			_cue(t_round + 0.9, func() -> void: _esconder_banner())
 
+	# 7a1: cansaço do Boxe (só se a tática cansa: o Defensivo guarda o fôlego) e pegada cheia do Jiu-jitsu.
+	var tired_at := float(luta.get("tired_at", -1.0))
+	if _passiva == "fast_hands" and tired_at >= 0.0 and tired_at < fim_real - 0.4 and bool(luta.get("tires", false)):
+		_cue(tired_at, func() -> void: _ficar_cansado())
+	var grip_at := float(luta.get("grip_full_at", -1.0))
+	if _passiva == "submission" and grip_at > 0.0 and grip_at < fim_real - 0.2:
+		_cue(grip_at, func() -> void: _pegada_cheia())
+
 	var eventos: Array = luta.events
 	var cont := 0  # barra de especial, na ordem em que os golpes acontecem
 	for e in eventos:
@@ -369,7 +451,7 @@ func _agendar_tudo() -> void:
 			continue
 		if int(e.who) == 0:
 			cont += 1
-			if cont >= GameState.lutas.golpes_especial and _existe_anim(0, "uppercut") and not bool(e.ko):
+			if cont >= GameState.lutas.golpes_especial and _golpe_especial(e)[0] != "" and not bool(e.ko):
 				e["especial"] = true
 				cont = 0
 		else:
@@ -390,12 +472,17 @@ func _agendar_tudo() -> void:
 	if bool(res.ko) and perdedor >= 0:
 		var vencedor := 1 - perdedor
 		var t_ko := float(res.t_ko)
+		if str(res.get("finish", "")) == "submission":
+			_agendar_finalizacao(perdedor, vencedor, t_ko)
+			_t_parada = t_ko
+			return
 		if not grogue.is_empty():
 			_cue(float(grogue.from) + 0.3, func() -> void: _estado(perdedor, "tired"))
 			_cue(float(grogue.from) + 0.25, func() -> void: _estado(vencedor, "guard"))
 			_cue(float(grogue.to), func() -> void: _cair(perdedor))
 		else:
 			_cue(t_ko + 0.06, func() -> void: _cair(perdedor))
+		_cue(t_ko + 0.05, func() -> void: _sair_do_chao(perdedor))
 		var t_queda := (float(grogue.to) if not grogue.is_empty() else t_ko + 0.06)
 		var spr_ko := UiTema.sprite(_nome(perdedor, _ko_nome))
 		var fps_ko := float(spr_ko.get("fps", 10.0))
@@ -413,6 +500,7 @@ func _agendar_tudo() -> void:
 		# Fim por pontos: "TEMPO!", sino, o vencedor comemora e o outro cansa.
 		var vencedor := 0 if bool(res.win) else 1
 		_cue(t_end, func() -> void:
+			_sair_do_chao(-1)
 			sfx.sino_fim()
 			_texto_banner(UiTema.txt("fight_time", "TEMPO!"), UiTema.Y2, 2))
 		_cue(t_end + 0.35, func() -> void:
@@ -426,6 +514,97 @@ func _agendar_tudo() -> void:
 			else:
 				sfx.derrota())
 		_t_parada = t_end
+
+
+## Fim por finalização (Jiu-jitsu): o golpe submission já foi agendado como evento; o adversário bate no chão (tap_out, que
+## segura o último quadro), o letreiro FINALIZOU! entra e a torcida vibra. Sem as folhas, ele só cansa e o jogador comemora.
+func _agendar_finalizacao(perdedor: int, vencedor: int, t_ko: float) -> void:
+	_cue(t_ko + 0.5, func() -> void:
+		if str(_l[perdedor].estado) != "preso":
+			_estado(perdedor, "tired")
+			_estado(vencedor, "victory")
+		_banner_finalizou())
+	_cue(t_ko + 0.65, func() -> void: sfx.sino_fim())
+	_cue(t_ko + 1.0, func() -> void: _comemorar_finalizacao())
+
+
+func _comemorar_finalizacao() -> void:
+	sfx.publico()
+	_publico_cheer(false)
+	if bool(luta.result.win):
+		sfx.vitoria()
+	else:
+		sfx.derrota()
+
+
+func _banner_finalizou() -> void:
+	_tremer(2, 0.3)
+	_flash_tela(0.4)
+	_lampada.tocar([1, 0, 1, 0], 8.0)
+	_publico_cheer(true)
+	sfx.queda()
+	if not UiTema.sprite("ui_banner_submission").is_empty():
+		_banner_sub_img.visible = true
+		_banner_sub_img.scale = Vector2(3, 3)
+		_banner_sub_img.modulate.a = 0.0
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(_banner_sub_img, "modulate:a", 1.0, 0.08)
+		tw.tween_callback(func() -> void: _banner_sub_img.scale = Vector2(2, 2)).set_delay(0.09)
+	else:
+		_texto_banner(UiTema.txt("fight_submission", "FINALIZOU!"), UiTema.Y2, 3)
+
+
+## Fim em pé: se a luta estava no chão, os dois voltam ao idle em pé (não há folha de "levantar": corte seco combinado).
+## exceto = lutador que não deve ser tocado (o que vai cair); -1 = nenhum.
+func _sair_do_chao(exceto: int) -> void:
+	if _fase_visual != "ground":
+		return
+	_fase_visual = "standing"
+	for i in 2:
+		if i != exceto and str(_l[i].estado) == "idle":
+			_repouso(i)
+
+
+func _ficar_cansado() -> void:
+	_cansado = true
+	if _rot_cansado != null:
+		_rot_cansado.visible = true
+		_rot_cansado.modulate = Color(2, 2, 2)
+		_rot_cansado.create_tween().tween_property(_rot_cansado, "modulate", Color.WHITE, 0.3)
+	_repouso(0)
+
+
+## Pegada cheia: o número PEGADA! sobe da cabeça do jogador e a barra pisca (o quadro 1 é a barra cheia).
+func _pegada_cheia() -> void:
+	_grip_cheia = true
+	var n := _pegar_numero()
+	_ordem_numeros += 1
+	n.definir_z(940 + _ordem_numeros % 40)
+	n.iniciar(UiTema.txt("fight_grip_full", "PEGADA!"), UiTema.Y2, true, "", _ponto_cabeca(0) + Vector2(0, -14), 0.9, 18.0)
+	Sala.afastar(_numeros, n, true)
+	sfx.publico(-12.0)
+
+
+## Embalo do Boxe: acende as bolinhas até n (a nova pisca) e apaga todas quando ele esquiva (n = 0).
+func _hud_embalo(n: int) -> void:
+	if _pips.is_empty() or n == _embalo_atual:
+		return
+	var subiu := n > _embalo_atual
+	_embalo_atual = n
+	for i in _pips.size():
+		var b: Control = _pips[i]
+		if i < n:
+			if subiu and i == n - 1:
+				CartaoPassiva.definir_bolinha(b, 2)
+				var tw := create_tween()
+				tw.tween_interval(0.08)
+				tw.tween_callback(func() -> void:
+					if is_instance_valid(b):
+						CartaoPassiva.definir_bolinha(b, 1))
+			else:
+				CartaoPassiva.definir_bolinha(b, 1)
+		else:
+			CartaoPassiva.definir_bolinha(b, 0)
 
 
 ## Vitória: se o jogador é o John, entra o gesto curto (0,15-0,59 s) e a pose de braços erguidos vem logo depois.
@@ -487,30 +666,74 @@ func _cue(t: float, fn: Callable) -> void:
 func _agendar_evento(e: Dictionary) -> void:
 	var quem := int(e.who)
 	var alvo := int(e.target)
-	var t := float(e.t)
+	var t_real := float(e.t)
+	var chao := str(e.get("phase", "standing")) == "ground" and _pose_chao_ok()
+	var eh_esquiva := str(e.kind) == "dodge" or str(e.type) == "dodge"
+	# No chão (Jiu-jitsu) a esquiva não tem golpe novo: os dois ficam nas poses paradas de chão e só aparece o aviso.
+	if chao and eh_esquiva:
+		var t_e := t_real + _espera_da_queda(t_real - 0.1)
+		_cue(t_e, func() -> void: _esquivou(e))
+		return
 	# Golpe da luta (data/moves.json): usa o sprite do golpe se ele existir; senão, o jab/heavy de sempre.
 	var anim := _anim_do_golpe(quem, e)
 	var especial := bool(e.get("especial", false))
 	if especial:
-		anim = "uppercut"
-		e["move_anim"] = "uppercut"
-		e["defender_move_anim"] = "hit_up"
+		var esp := _golpe_especial(e)
+		anim = esp[0]
+		e["move_anim"] = esp[0]
+		e["defender_move_anim"] = esp[1]
 	e["anim_usada"] = anim
-	e["reacao_usada"] = _reacao_do_golpe(alvo, e, anim)
+	var reacao := _reacao_do_golpe(alvo, e, anim)
+	if chao and not _existe_anim(alvo, reacao) or (chao and reacao in ["block", "hit", "dodge"]):
+		# No chão a defesa nunca é uma pose em pé: usa a reação de chão (ou a pose parada de chão).
+		var cand: Array = ["ground_top_hit", "ground_top_idle"] if alvo == 0 else ["ground_hit", "ground_bottom_idle"]
+		for c in cand:
+			if _existe_anim(alvo, c):
+				reacao = c
+				break
+	e["reacao_usada"] = reacao
 	var s := UiTema.sprite(_nome(quem, anim))
 	var antes := float(int(s.get("hit_frame", 1))) / maxf(float(s.get("fps", 12.0)), 1.0)
+	# A queda (takedown + fall) não é cortada: o golpe seguinte só começa quando ela termina. O tempo total da luta não muda;
+	# só a apresentação espera.
+	var d := _espera_da_queda(t_real - antes)
+	var t := t_real + d
+	if d > 0.0:
+		_bloqueio_ate = t - antes + 0.45
 	# O golpe sai `hit_frame / fps` antes: o contato cai exatamente em `t`.
 	_cue(t - antes, func() -> void: _tocar(quem, anim))
+	if str(e.kind) == "takedown":
+		var fall_len := 0.0
+		var sf := UiTema.sprite(_nome(alvo, reacao))
+		if not sf.is_empty():
+			fall_len = float(int(sf.get("frames", 1))) / maxf(float(sf.get("fps", 12.0)), 1.0)
+		var tk_len := float(int(s.get("frames", 1))) / maxf(float(s.get("fps", 12.0)), 1.0)
+		_bloqueio_ate = (t - antes) + maxf(tk_len, antes + fall_len)
 	if especial:
 		_cue(t - antes - 0.35, func() -> void: _preparar_especial())
 		_cue(t + 0.9, func() -> void: _esconder_banner())
-	if str(e.kind) == "dodge" or str(e.type) == "dodge":
+	if eh_esquiva:
 		var sd := UiTema.sprite(_nome(alvo, "dodge"))
 		var um_quadro := 1.0 / maxf(float(sd.get("fps", 14.0)), 1.0)
 		_cue(t - um_quadro, func() -> void: _tocar(alvo, "dodge"))
 		_cue(t, func() -> void: _esquivou(e))
 	else:
 		_cue(t, func() -> void: _acertou(e))
+
+
+## Golpe do especial dos cliques: [animação, reação]. Boxe e sem arte: uppercut / hit_up. Jiu-jitsu nunca usa animação de boxe:
+## em pé é o clinch_push (reação hit_clinch) e no chão é o ground_pressure (reação ground_hit). ["", ""] se a folha não existe.
+func _golpe_especial(e: Dictionary) -> Array:
+	if _passiva != "submission":
+		return ["uppercut", "hit_up"] if _existe_anim(0, "uppercut") else ["", ""]
+	if str(e.get("phase", "standing")) == "ground" and _pose_chao_ok() and _existe_anim(0, "ground_pressure"):
+		return ["ground_pressure", "ground_hit"]
+	return ["clinch_push", "hit_clinch"] if _existe_anim(0, "clinch_push") else ["", ""]
+
+
+## Segundos que um golpe que começaria em `inicio` precisa esperar para não cortar a queda em andamento (0 se não há queda).
+func _espera_da_queda(inicio: float) -> float:
+	return maxf(0.0, _bloqueio_ate - inicio)
 
 
 # --- Golpes: sprite do golpe escolhido, com volta ao jab/heavy (e ao `hit`) quando a arte ainda não existe ---
@@ -558,7 +781,7 @@ func _tocar(i: int, acao: String) -> void:
 		return
 	var spr: AnimSprite = l.spr
 	spr.definir(_nome(i, acao))
-	spr.z_index = Z_ATACANTE if (acao in GameState.golpes.anims_de_ataque()) else Z_LUTADOR
+	spr.z_index = Z_ATACANTE if (acao in GameState.golpes.anims_de_ataque()) else _z_repouso(i)
 	_ajustar_sombra(i)
 	var frames := spr.hframes
 	var seq: Array = []
@@ -566,6 +789,9 @@ func _tocar(i: int, acao: String) -> void:
 		seq.append(q)
 	var fps := float(UiTema.sprite(spr.nome_sprite).get("fps", 12.0))
 	if acao == "ko":
+		spr.tocar(seq, fps, false)
+	elif acao in ["submission", "tap_out"] and _existe_anim(i, acao):
+		l.estado = "preso"  # finalização: segura o último quadro, como o ko
 		spr.tocar(seq, fps, false)
 	else:
 		spr.tocar(seq, fps, false, func() -> void: _repouso(i))
@@ -576,9 +802,9 @@ func _tocar(i: int, acao: String) -> void:
 func _repouso(i: int) -> void:
 	var l: Dictionary = _l[i]
 	var spr: AnimSprite = l.spr
-	spr.z_index = Z_LUTADOR
+	spr.z_index = _z_repouso(i)
 	match str(l.estado):
-		"ko":
+		"ko", "preso":
 			return
 		"victory":
 			spr.definir(_nome(i, "victory"))
@@ -590,10 +816,26 @@ func _repouso(i: int) -> void:
 			spr.definir(_nome(i, "block"))
 			spr.parar(2)
 		_:
-			spr.definir(_nome(i, "idle"))
+			var pose := "idle"
+			if _fase_visual == "ground" and _pose_chao_ok():
+				pose = "ground_top_idle" if i == 0 else "ground_bottom_idle"  # no chão o repouso é a pose de chão
+			elif i == 0 and _cansado and _existe_anim(0, "tired"):
+				pose = "tired"  # Boxe cansado no 3º round: a pose cansada entre os golpes
+			spr.definir(_nome(i, pose))
 			spr.tocar([0, 1, 2, 3], float(UiTema.sprite(spr.nome_sprite).get("fps", 6.0)), true)
 	_ajustar_sombra(i)
 	_atualizar_suor(i)
+
+
+## As folhas de chão existem para os dois lutadores? Sem elas a luta continua em pé (jab, esquiva e idle de sempre).
+func _pose_chao_ok() -> bool:
+	return _existe_anim(0, "ground_top_idle") and _existe_anim(1, "ground_bottom_idle")
+
+
+## Ordem de desenho parado: em pé como sempre (z 318); no chão o jogador (montado) fica acima do adversário (z 319).
+## Quem ataca continua por cima (z 320), inclusive o ground_punch do adversário.
+func _z_repouso(i: int) -> int:
+	return Z_LUTADOR + (1 if i == 0 and _fase_visual == "ground" and _pose_chao_ok() else 0)
 
 
 func _estado(i: int, novo: String) -> void:
@@ -613,7 +855,7 @@ func _ajustar_sombra(i: int) -> void:
 func _atualizar_suor(i: int) -> void:
 	var l: Dictionary = _l[i]
 	var suor: AnimSprite = l["suor"]
-	var cansado := str(l.estado) == "tired"
+	var cansado := str(l.estado) == "tired" or (i == 0 and _cansado and str(l.estado) == "idle" and _fase_visual == "standing")
 	suor.visible = cansado
 	if cansado:
 		var cab := _ponto_cabeca(i)
@@ -640,12 +882,13 @@ func _acertou(e: Dictionary) -> void:
 	var base_a: Vector2 = _l[quem].base
 	var contato := base_a + hp
 
-	# Reação de quem apanha (no K.O. sem grogue a queda assume).
+	# Reação de quem apanha (no K.O. sem grogue a queda assume; na finalização o tap_out é a reação).
 	var ko := bool(e.ko)
-	if not ko or not luta.grogue.is_empty():
+	var finalizou := str(e.get("finish", "")) == "submission"
+	if not ko or not luta.grogue.is_empty() or finalizou:
 		_tocar(alvo, str(e.get("reacao_usada", e.defender_anim)))
 		_flash_lutador(alvo)
-	if bloqueado:
+	if bloqueado and not (str(e.get("phase", "standing")) == "ground" and _pose_chao_ok()):
 		var sb := UiTema.sprite(_nome(alvo, "block"))
 		var mao := _vetor((sb.get("hands", [{"hand_front": [10, -67]}]) as Array)[1].get("hand_front", [10, -67]))
 		_tocar_fx("fx_block", (_l[alvo].base as Vector2) + mao, alvo == 1)
@@ -653,6 +896,9 @@ func _acertou(e: Dictionary) -> void:
 		_tocar_fx("fx_fight_hit", contato, quem == 1)
 		if tipo == "crit":
 			_tocar_fx("fx_fight_crit", contato, quem == 1)
+
+	_hud_embalo(int(e.get("streak", 0)))
+	_fase_visual = str(e.get("phase_after", _fase_visual))  # a queda leva os dois ao chão (as poses de repouso mudam)
 
 	# Número flutuante: sai do ponto de contato e sobe.
 	_numero_de_dano(float(e.damage), tipo, bloqueado, Vector2(contato.x, contato.y - 6.0))
@@ -691,9 +937,9 @@ func _acertou(e: Dictionary) -> void:
 		_lampada.tocar([1, 0, 1, 0], 10.0)
 		_publico_cheer(true)
 		_congelar(0.06, 0.05)
-	elif ko:
+	elif ko and not finalizou:
 		_tremer(2, 0.2)
-	if ko:
+	if ko and not finalizou:
 		_congelar(1.1, 0.3)  # K.O. em câmera lenta
 
 
@@ -739,7 +985,10 @@ func _preparar_especial() -> void:
 	var spr: AnimSprite = _l[0].spr
 	spr.modulate = Color(1.7, 1.45, 0.6)
 	spr.create_tween().tween_property(spr, "modulate", Color.WHITE, 0.6)
-	_texto_banner(UiTema.txt("fight_special_banner", "SUPER UPPERCUT!"), UiTema.Y2, 2)
+	if _passiva == "submission":
+		_texto_banner(UiTema.txt("fight_special_banner_bjj", "SUPER PEGADA!"), UiTema.Y2, 2)
+	else:
+		_texto_banner(UiTema.txt("fight_special_banner", "SUPER UPPERCUT!"), UiTema.Y2, 2)
 	sfx.publico()
 	_publico_cheer(false)
 
@@ -787,6 +1036,16 @@ func _esquivou(e: Dictionary) -> void:
 	var alvo := int(e.target)
 	if int(e.who) == 0:
 		_combo = 0  # o soco do jogador foi esquivado: acaba o combo
+	_hud_embalo(int(e.get("streak", 0)))
+	if str(e.get("phase", "standing")) == "ground" and _pose_chao_ok():
+		var baixo := (_l[alvo].base as Vector2) + Vector2(0, -26)
+		var ng := _pegar_numero()
+		_ordem_numeros += 1
+		ng.definir_z(930 + _ordem_numeros % 40)
+		ng.iniciar(UiTema.txt("fight_dodge", "ESQUIVOU"), UiTema.CREAM, false, "", baixo, 0.7, 14.0)
+		Sala.afastar(_numeros, ng, true)
+		sfx.esquiva()
+		return
 	var cab := _ponto_cabeca(alvo)
 	# Vento do soco que passou (desenhado para o soco do adversário; espelha quando é o adversário que esquiva).
 	_tocar_fx("fx_whoosh", cab + Vector2(-8.0 * float(_l[alvo].dir), 6.0), alvo == 1)
@@ -969,6 +1228,7 @@ func _process(delta: float) -> void:
 		_idx += 1
 		fn.call()
 	_atualizar_relogio(maxf(_clock, 0.0))
+	_atualizar_pegada()
 
 	if _shake_t > 0.0:
 		_shake_t -= delta
@@ -993,6 +1253,22 @@ func _process(delta: float) -> void:
 
 	if _clock >= _fim_total and not finalizada:
 		_finalizar()
+
+
+## Barra de pegada (Jiu-jitsu): enche com o tempo da luta até grip_full_at; cheia, pisca entre os dois quadros.
+func _atualizar_pegada() -> void:
+	if _grip_fill == null:
+		return
+	var tt := maxf(_clock, 0.0)
+	if _t_parada >= 0.0:
+		tt = minf(tt, _t_parada)
+	var cheia := float(luta.get("grip_full_at", -1.0))
+	var f := clampf(tt / cheia, 0.0, 1.0) if cheia > 0.0 else 0.0
+	var w := roundf(_grip_larg * f)
+	_grip_fill.visible = w >= 1.0
+	_grip_fill.size.x = maxf(w, 1.0)
+	if f >= 1.0 and _grip_cheia:
+		CartaoPassiva.definir_enchimento(_grip_fill, int(_t * 6.0) % 2)
 
 
 func _finalizar() -> void:

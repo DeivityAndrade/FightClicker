@@ -89,8 +89,8 @@ func _teste_dados() -> void:
 	checar_igual(a.arte("boxing").rule, {"type": "manual_click_bonus", "value": 0.5}, "Boxe: +50% no clique manual")
 	var rjj: Dictionary = a.arte("bjj").rule
 	checar(rjj.type == "crew_time_bonus" and float(rjj.start) > 0.0 and float(rjj.cap) > float(rjj.start), "Jiu-jitsu: regra de tempo (valores vêm do JSON)")
-	checar_igual([a.arte("boxing").fight, a.arte("bjj").fight], [{"damage_mult": 1.10, "taken_mult": 1.0}, {"damage_mult": 1.0, "taken_mult": 0.90}],
-		"traços de luta: +10% dano / -10% dano recebido")
+	# 7a1: o traço (+10% / -10%) saiu; quem vale é a passiva (detalhes em test_fase7a1.gd)
+	checar_igual([a.arte("boxing").passive.damage_mult, a.arte("bjj").passive.damage_mult], [0.88, 1.20], "passivas: dano x0,88 / x1,20")
 	var d := TrainingData.carregar()
 	checar_igual(d.aparelhos.size(), 3, "3 aparelhos de toda carreira")
 	checar_igual(d.aparelhos_arte.size(), 2, "2 aparelhos de arte")
@@ -272,8 +272,8 @@ func _teste_primeira_chegada_e_reabrir() -> void:
 	checar_igual(cartoes[0].rule_text, "+50% TREINO NO CLIQUE DA SUA MÃO", "texto da regra do Boxe")
 	var rj0: Dictionary = gs.academia.arte("bjj").rule
 	checar_igual(cartoes[1].rule_text, "EQUIPE +%d%% (SOBE %d%% POR MINUTO ATÉ %d%%)" % [roundi(100.0 * rj0.start), roundi(100.0 * rj0.per_minute), roundi(100.0 * rj0.cap)], "texto da regra do Jiu-jitsu")
-	checar_igual(cartoes[0].fight_text, "BOXE: +10% DE DANO", "traço do Boxe")
-	checar_igual(cartoes[1].fight_text, "JIU-JITSU: -10% DE DANO RECEBIDO", "traço do Jiu-jitsu")
+	checar_igual(cartoes[0].fight_text, gs.texto_ui("art_card_boxing_fight"), "texto da passiva do Boxe (art_card_boxing_fight)")
+	checar_igual(cartoes[1].fight_text, gs.texto_ui("art_card_bjj_fight"), "texto da passiva do Jiu-jitsu (art_card_bjj_fight)")
 	checar_igual([cartoes[0].apparatus, cartoes[0].apparatus_name], ["speed_bag", "PERA"], "aparelho assinatura do Boxe")
 	checar_igual(gs.subtitulo_escolha_arte(), "AS DUAS ARTES FICAM LIBERADAS PARA SEMPRE", "subtítulo da 1ª vez")
 	checar(not gs.escolher_arte("muay_thai"), "arte inexistente é recusada")
@@ -521,11 +521,11 @@ func _teste_traco_de_luta() -> void:
 		var n_sem: Array = sem.motor.preparar(jog, adv, t).num
 		var n_bx: Array = bx.motor.preparar(jog, adv, t).num
 		var n_bj: Array = bj.motor.preparar(jog, adv, t).num
-		checar(absf(n_bx[0][0] / n_sem[0][0] - 1.10) < 1e-9 and absf(n_bx[1][0] - n_sem[1][0]) < 1e-9, "%s: Boxe +10%% no dano que causa" % t)
-		checar(absf(n_bj[1][0] / n_sem[1][0] - 0.90) < 1e-9 and absf(n_bj[0][0] - n_sem[0][0]) < 1e-9, "%s: Jiu-jitsu -10%% no dano recebido" % t)
+		checar(absf(n_bx[0][0] / n_sem[0][0] - 0.88) < 1e-9 and absf(n_bx[1][0] - n_sem[1][0]) < 1e-9, "%s: Boxe x0,88 no dano que causa" % t)
+		checar(absf(n_bj[0][0] / n_sem[0][0] - 1.20) < 1e-9 and absf(n_bj[1][0] - n_sem[1][0]) < 1e-9, "%s: Jiu-jitsu x1,20 no dano que causa" % t)
 	checar_igual(sem.tatica_efetiva("aggressive").damage_mult, 1.35, "sem arte a tática não muda")
-	checar(absf(bx.tatica_efetiva("aggressive").damage_mult - 1.35 * 1.10) < 1e-9, "tatica_efetiva do Boxe")
-	checar(absf(bj.tatica_efetiva("aggressive").taken_mult - 1.25 * 0.90) < 1e-9, "tatica_efetiva do Jiu-jitsu")
+	checar(absf(bx.tatica_efetiva("aggressive").damage_mult - 1.35 * 0.88) < 1e-9, "tatica_efetiva do Boxe")
+	checar(absf(bj.tatica_efetiva("aggressive").damage_mult - 1.35 * 1.20) < 1e-9, "tatica_efetiva do Jiu-jitsu")
 	checar_igual(bx.lutas.tatica("aggressive").damage_mult, 1.35, "a tática dos dados não é alterada")
 	# Prévia e luta usam a mesma tática: a chance da prévia é a do motor da luta.
 	for g in [sem, bx, bj]:
@@ -537,11 +537,11 @@ func _teste_traco_de_luta() -> void:
 	var p_sem: float = sem.risco_tatica("defensive").chance
 	var p_bx: float = bx.risco_tatica("defensive").chance
 	var p_bj: float = bj.risco_tatica("defensive").chance
-	checar(p_bx >= p_sem and p_bj >= p_sem, "o traço nunca piora a chance (%s / %s / %s)" % [p_sem, p_bx, p_bj])
+	checar(p_bx >= 0.0 and p_bj >= 0.0, "a passiva calcula chance (%s / %s / %s)" % [p_sem, p_bx, p_bj])
 	# Texto na prévia.
 	checar_igual(sem.previa().art_fight_text, "", "sem arte: sem linha de traço")
-	checar_igual(bx.previa().art_fight_text, "BOXE: +10% DE DANO", "prévia do Boxe")
-	checar_igual(bj.previa().art_fight_text, "JIU-JITSU: -10% DE DANO RECEBIDO", "prévia do Jiu-jitsu")
+	checar_igual(bx.previa().art_fight_text, bx.texto_ui("art_card_boxing_fight"), "prévia do Boxe")
+	checar_igual(bj.previa().art_fight_text, bj.texto_ui("art_card_bjj_fight"), "prévia do Jiu-jitsu")
 	# A luta decidida usa o traço: recalcular da semente dá o mesmo resultado.
 	bx.atributos = {"strength": 90000.0, "agility": 60000.0, "endurance": 500000.0}
 	bx.lutar()
@@ -678,9 +678,9 @@ func _teste_dados_mudam_o_jogo() -> void:
 	escrever(pasta + "locations.json", '{"default_location":"garage","locations":[{"id":"garage","training_mult":1.0,"name":"G"},'
 		+ '{"id":"gym","training_mult":3.0,"apparatus_suffix":"_gym","move":{"id":"move_gym","cost":400,"currency":"money","requires":"belt"},"name":"A"}]}')
 	escrever(pasta + "arts.json", '{"arts":[{"id":"boxing","name":"Boxe","apparatus":"speed_bag","rule":{"type":"manual_click_bonus","value":1.0},'
-		+ '"fight":{"damage_mult":1.3,"taken_mult":1.0},"rule_text":"+{pct}%","fight_text":"B +{pct}%"},'
+		+ '"passive":{"type":"fast_hands","damage_mult":1.3,"taken_mult":1.0},"rule_text":"+{pct}%","fight_text":"B"},'
 		+ '{"id":"bjj","name":"J","apparatus":"grappling_dummy","rule":{"type":"crew_time_bonus","start":0.5,"per_minute":0.1,"cap":0.8},'
-		+ '"fight":{"damage_mult":1.0,"taken_mult":0.8},"rule_text":"x","fight_text":"y"}]}')
+		+ '"passive":{"type":"submission","damage_mult":1.0,"taken_mult":0.8},"rule_text":"x","fight_text":"y"}]}')
 	var ac := GymData.carregar(pasta + "locations.json", pasta + "arts.json")
 	var gs := _novo("f5_dados_jogo", TrainingData.CAMINHO_TREINO, null, ac)
 	gs.indice_escada = 4
@@ -693,7 +693,7 @@ func _teste_dados_mudam_o_jogo() -> void:
 	checar_igual(gs.por_clique(), 3.0, "multiplicador do JSON: x3")
 	gs.escolher_arte("boxing")
 	checar_igual(gs.por_clique(), 3.0 * 2.0, "regra do Boxe do JSON: +100%")
-	checar(absf(gs.tatica_efetiva("aggressive").damage_mult - 1.35 * 1.3) < 1e-9, "traço do JSON: +30% de dano")
+	checar(absf(gs.tatica_efetiva("aggressive").damage_mult - 1.35 * 1.3) < 1e-9, "passiva do JSON: dano x1,3")
 	_liberar(gs)
 	var gj := _novo("f5_dados_jj", TrainingData.CAMINHO_TREINO, null, ac)
 	gj.permanente["arts_unlocked"] = ["boxing", "bjj"]
