@@ -61,11 +61,14 @@ func _rodar_fase6b1() -> void:
 		await au._ver("f6b1_s6")
 		await _ate(t1, 1.9)
 		await au._ver("f6b1_s7")
-		await _ate(t1, 6.4)  # 6d2: o John anda ~172 px até o caixote novo: a fala sai em 5,48 s (era 3,4)
+		# 6d3: o recuo do John até o caixote depende do mentor_spot do manifest (6d2: ~172 px, fala em 5,48 s); a 48 px/s
+		var seat_6d3: Array = au.gs.ponto_do_local("seat")
+		var adiant := (172.0 - (Vector2(float(seat_6d3[0]), float(seat_6d3[1])) - Vector2(303, 272)).length()) / 48.0 if seat_6d3.size() == 2 else 0.0
+		await _ate(t1, 6.4 - adiant)
 		au._exigir(au._balao().ativo(), "f6b1_s8", "o balão 'vamos ver sua guarda.' deveria estar na tela")
 		au._checar_balao_6b1("f6b1_s8", "first")
 		await au._ver("f6b1_s8")
-		await _ate(t1, 6.9)
+		await _ate(t1, 6.9 - adiant)
 		await au._ver("f6b1_s9")
 		for i in 60:
 			if au.gs.sucessao_estado() == "none":

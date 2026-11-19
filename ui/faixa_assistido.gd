@@ -14,8 +14,9 @@ const LARG_BOTAO := 20  # Fase 5.1: só o ícone do Shift (sem a palavra SEGURAR
 const DICA_VEZES := 3  # a dica de primeira vez aparece nas 3 primeiras vezes que o jogador fica parado
 const DICA_OCIOSO := 5.0  # segundos sem clicar
 const DICA_DURACAO := 4.0
-const ALTURA_BOTAO := 15
+const ALTURA_BOTAO := 16  # igual ao "?" (mesma base na faixa de baixo)
 const FOLGA := 4.0  # entre o chip e o botão
+const BOTAO_NA_BARRA := Vector2(464, 337)  # 6d3: o botão SEGURAR mora na faixa de baixo (moldura de UI), não solto no chão da sala
 const MARGEM_CANTO := 18.0  # 6d2: x 146, à direita do vizinho 2 (126,322) da sala larga
 const PULSO := 0.15
 const CORES := {"g2": UiTema.G2, "y1": UiTema.Y1, "gr3": UiTema.GR3, "white": UiTema.WHITE}
@@ -44,7 +45,7 @@ var _ja_dica_neste_ocio := false
 func _ready() -> void:
 	position = FAIXA.position
 	size = FAIXA.size
-	z_index = 950  # acima da sala (z 100 + números) e abaixo das janelas do Fluxo (3000)
+	z_index = 1250  # 6d3: acima da faixa de baixo (1200, onde mora o botão) e abaixo das janelas do Fluxo (3000)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_meta("ui_align", "ignore")  # Fase 5.1: o grupo chip + botão fica no canto esquerdo da faixa, de propósito
 	_info = UiTema.manifest().get("by_data_id", {}).get("assist", {})
@@ -222,7 +223,7 @@ func _atualizar() -> void:
 	var grupo: float = (w_chip + (FOLGA if com_chip else 0.0)) + (LARG_BOTAO if com_botao else 0.0)
 	var x0 := MARGEM_CANTO  # Fase 5.1 (B4): no canto esquerdo da faixa, longe do alvo e do aparelho em foco
 	_chip.position = Vector2(x0, floorf((FAIXA.size.y - ALTURA_CHIP) / 2.0))
-	_botao.position = Vector2(x0 + w_chip + (FOLGA if com_chip else 0.0), floorf((FAIXA.size.y - ALTURA_BOTAO) / 2.0))
+	_botao.position = BOTAO_NA_BARRA - FAIXA.position
 
 
 ## Botão pressionado (mouse ou Shift): afunda 1 px e fica verde = assistindo. O conteúdo desce junto.

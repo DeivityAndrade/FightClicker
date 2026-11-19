@@ -577,19 +577,25 @@ func _mostrar_numero(p: Vector2, ganho: float, critico: bool, atributo: String, 
 	var nome := str(GameState.dados.atributo_info(atributo).get("name", atributo)).to_upper()
 	var dx := float(DESVIOS_X[_desvio_i % DESVIOS_X.size()])
 	_desvio_i += 1
-	var x := clampf(p.x + dx, _area.position.x + 60.0, _area.end.x - 60.0)
+	var larg := UiTema.largura("+%s %s!" % [NumberFormat.fmt(ganho), nome]) * (2.0 if critico else 1.0)
+	var x := _x_do_numero(p.x + dx, larg)
 	var y := clampf(p.y - 6.0, _area.position.y + 40.0, _area.end.y - 8.0)
 	_ordem += 1
 	# Mais recente por cima; crítico sempre acima dos normais (z fica abaixo do cursor, 4000).
 	n.definir_z(Z_NUMEROS + (1000 if critico else 0) + _ordem % 900)
 	if critico:
-		# Fase 5.2: o crítico grande (2x) leva só as 3 primeiras letras do atributo ("+3 RES!"): metade da largura,
-		# sem cobrir a sala. O nome inteiro continua no número normal e a frase de sabor na linha de baixo.
-		n.iniciar("+%s %s!" % [NumberFormat.fmt(ganho), nome.left(3)], UiTema.R3, true, texto, Vector2(x, y - 4.0), 0.85, 34.0)
+		# 6d3: o crítico grande (2x) leva o nome inteiro do atributo ("+3 RESISTÊNCIA!"); o x é limitado pela largura real.
+		n.iniciar("+%s %s!" % [NumberFormat.fmt(ganho), nome], UiTema.R3, true, texto, Vector2(x, y - 4.0), 0.85, 34.0)
 	else:
 		n.iniciar("+%s %s" % [NumberFormat.fmt(ganho), nome], UiTema.cor_atributo(atributo).lerp(UiTema.WHITE, 0.55 if atributo == "strength" else 0.25),
 			false, "", Vector2(x, y), 0.55, 30.0)
 	_afastar_antigos(n, critico)
+
+
+## 6d3: x do número sem passar da borda da sala: o mínimo de antes (60) ou metade da largura real do texto + 4.
+func _x_do_numero(x: float, largura: float) -> float:
+	var m := maxf(60.0, largura / 2.0 + 4.0)
+	return clampf(x, _area.position.x + m, _area.end.x - m)
 
 
 ## Fase 6d: quanto cada atributo subiu neste clique: [{atributo, ganho}] do maior para o menor (empate: ordem do jogo),
@@ -628,15 +634,19 @@ func _mostrar_numeros_divididos(p: Vector2, partes: Array, critico: bool, texto:
 		altura_total += 7.0 * e + (NUMEROS_FOLGA if i > 0 else 0.0)
 	var dx := float(DESVIOS_X[_desvio_i % DESVIOS_X.size()])
 	_desvio_i += 1
-	var x := clampf(p.x + dx, _area.position.x + 60.0, _area.end.x - 60.0)
+	var larg_max := 0.0
+	for i in partes.size():
+		var nm := str(GameState.dados.atributo_info(partes[i].atributo).get("name", partes[i].atributo)).to_upper()
+		larg_max = maxf(larg_max, UiTema.largura("+%s %s!" % [NumberFormat.fmt(float(partes[i].ganho)), nm]) * escalas[i] + (36.0 if i > 0 else 0.0))
+	var x := _x_do_numero(p.x + dx, larg_max)
 	var y := clampf(p.y - 6.0, _area.position.y + 40.0 + altura_total, _area.end.y - 8.0)
 	var y_i := y - (4.0 if critico else 0.0)
 	_ordem += 1
 	for i in partes.size():
 		var n := _pegar_numero()
 		var a: String = partes[i].atributo
-		var sigla := str(GameState.dados.atributo_info(a).get("name", a)).to_upper().left(3)
-		var rotulo := "+%s %s" % [NumberFormat.fmt(float(partes[i].ganho)), sigla]
+		var nome_a := str(GameState.dados.atributo_info(a).get("name", a)).to_upper()  # 6d3: nome inteiro, não a sigla
+		var rotulo := "+%s %s" % [NumberFormat.fmt(float(partes[i].ganho)), nome_a]
 		n.definir_z(Z_NUMEROS + (1000 if critico else 0) + (_ordem * 3 + (partes.size() - i)) % 900)
 		var xi := x + (0.0 if i == 0 else (-18.0 if i % 2 == 1 else 18.0))
 		if i > 0:

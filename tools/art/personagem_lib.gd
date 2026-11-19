@@ -233,14 +233,16 @@ const BAND_LEGEND := {"F": "k_bd1", "G": "k_bd0"}
 const SOCK_FROM := 0.38
 
 ## Fase 6c2 (Diretor de Arte): símbolo da escola Raízes Fight Club na roupa do discípulo (docs/arte/direcao-visual.md §26).
-## É o school_symbol_5 da 6a (a lâmpada de pé com raízes): 3/4 = o 5x5 igual; perfil e coxa = a mesma leitura em 3x5.
+## 6d3 (aprovado pelo dono): o "R de raiz" (proposta D, docs/arte/fase6d3-simbolo.md): 3/4 = o school_symbol_5 (5x5);
+## perfil e coxa = o R em 3x5. O R NÃO é simétrico: nas folhas viradas (_left, capture_flip_last) o carimbo sai espelhado e o
+## tools/art/make_arte_fase6d3_simbolo.gd desvira o carimbo no lugar (depois de copiar as camadas).
 ## Uma cor só (estampa), em cor-chave k_sy1 (k_sy0 = a sombra de contato que o finish() faz quando o braço encosta):
 ## o jogo troca pela cor da parte de cima (peito) ou do calção (coxa): by_data_id.disciple_palette.school_symbol_source.
-## Simétrico na horizontal (as folhas _left são capturas viradas). center = pixel do mapa que cai no ponto do corpo.
+## center = pixel do mapa que cai no ponto do corpo.
 const SYMBOL := {
-	"34": {"rows": [".AAA.", ".AAA.", "..A..", "AAAAA", "A.A.A"], "center": Vector2i(2, 2)},
-	"side": {"rows": ["AAA", "AAA", ".A.", "AAA", "A.A"], "center": Vector2i(1, 2)},
-	"leg": {"rows": ["AAA", "AAA", ".A.", "AAA", "A.A"], "center": Vector2i(1, 2)},
+	"34": {"rows": ["AAAA.", "A..A.", "AAA..", "A.AA.", "AA.AA"], "center": Vector2i(2, 2)},
+	"side": {"rows": ["AA.", "A.A", "AA.", "A.A", "A.A"], "center": Vector2i(1, 2)},
+	"leg": {"rows": ["AA.", "A.A", "AA.", "A.A", "A.A"], "center": Vector2i(1, 2)},
 }
 const SYMBOL_LEGEND := {"A": "k_sy1"}
 ## Peito: t (0 = quadril, 1 = ombro) do centro; s = mid_34 + 1 (3/4) ou back + 2,5 (perfil: nas costas, porque o braço da guarda tapa o peito). Fica abaixo do decote

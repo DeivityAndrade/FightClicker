@@ -31,6 +31,9 @@ func definir(nome: String) -> void:
 	frame = 0
 	_tocando = false
 	set_process(false)
+	# Folha "_disc" do jogador: já nasce com o visual do discípulo. Sem isto a folha padrão (outro boneco) aparecia
+	# por um quadro a cada troca de pose, até a tela reaplicar o visual no quadro seguinte ("piscava").
+	UiTema.aplicar_visual_disc(self)
 
 
 func tocar(seq: Array, fps: float, em_loop: bool = false, ao_fim: Callable = Callable()) -> void:

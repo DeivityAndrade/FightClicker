@@ -36,7 +36,7 @@
 
   "actors": {
     "first":    { "character": "first_fighter", "glove": "glove_old", "pos": [303, 272], "facing": "right", "anim": "idle" },
-    "coach":    { "character": "coach", "pos": [196, 236], "facing": "right", "anim": "idle" },
+    "coach":    { "character": "coach", "from_room": "coach", "pos": [52, 258], "facing": "right", "anim": "idle" },
     "disciple": { "character": "current_player", "glove": "none", "pos": [423, 221], "facing": "left", "anim": "stand_bare", "visible": false }
   },
 

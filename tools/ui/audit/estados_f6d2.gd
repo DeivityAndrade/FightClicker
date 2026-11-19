@@ -3,7 +3,7 @@ extends RefCounted
 ## aparelho não comprado invisível). Roda com o auditor `au` (núcleo em tools/ui/ui_audit.gd).
 
 const ZONA_ALVO := Rect2(273, 150, 98, 142)  # alvo + 8 px de folga (docs/arte/fase6d2-layout.md)
-const NOMES := ["f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_painel_fixado", "f6d2_so_sala", "f6d2_foco_trancado",
+const NOMES := ["f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_so_sala", "f6d2_foco_trancado",
 	"f6d2_aparelho_invisivel", "f6d2_aparelho_caixa", "f6d2_aparelho_aberto", "f6d2_garagem_cheia", "f6d2_garagem_pequena",
 	"f6d2_academia_cheia", "f6d2_academia_pequena", "f6d2_clique_fecha", "f6d2_cena_fecha"]
 
@@ -79,34 +79,26 @@ func _rodar_fase6d2() -> void:
 		var loja2: Control = _no("PainelLoja")
 		loja2.alternar()  # o mesmo que o clique na aba
 		await au._esperar(0.4)
-		au._exigir(loja2.esta_aberto() and not loja2.esta_fixado() and loja2.get_node("Corpo").position.x == 508.0, "f6d2_painel_solto", "a aba abre o painel solto em x 508")
+		au._exigir(loja2.esta_aberto() and loja2.get_node("Corpo").position.x == 508.0, "f6d2_painel_solto", "a aba abre o painel em x 508")
 		au._exigir(not loja2.get_node("Corpo").get_global_rect().intersects(ZONA_ALVO), "f6d2_painel_solto", "painel aberto não cobre o alvo")
 		await au._ver("f6d2_painel_solto")
-	# --- Clique na sala fecha o painel solto; o fixado fica ---
+	# --- 6d3: clique na sala NÃO fecha o painel; só a aba/seta (ou L/E na mesma aba) fecha ---
 	if au._quer("f6d2_clique_fecha"):
 		au._novo_jogo()
+		au.gs.dinheiro = 5000.0
 		au.painel_modo = "solto"
 		await au._abrir()
 		var loja3: Control = _no("PainelLoja")
 		au._exigir(loja3.esta_aberto(), "f6d2_clique_fecha", "começa aberto")
 		await _clicar_na_sala(Vector2(150, 200))
-		au._exigir(not loja3.esta_aberto() and not loja3.get_node("Corpo").visible, "f6d2_clique_fecha", "o clique na sala fecha o painel solto")
-		loja3.fixar(true, false)
-		await au._esperar(0.2)
+		await au._esperar(0.3)
+		au._exigir(loja3.esta_aberto() and loja3.get_node("Corpo").position.x == 508.0, "f6d2_clique_fecha", "o clique na sala não fecha o painel")
 		await _clicar_na_sala(Vector2(150, 200))
-		au._exigir(loja3.esta_aberto() and loja3.esta_fixado(), "f6d2_clique_fecha", "o clique na sala não fecha o painel fixado")
+		au._exigir(loja3.esta_aberto(), "f6d2_clique_fecha", "clicar de novo no saco continua aberto")
 		await au._ver("f6d2_clique_fecha")
-	# --- Painel fixado: o botão diz FIXADO ---
-	if au._quer("f6d2_painel_fixado"):
-		au._novo_jogo()
-		au.gs.dinheiro = 5000.0
-		au.painel_modo = "solto"
-		await au._abrir()
-		var loja4: Control = _no("PainelLoja")
-		loja4._btn_fixar.pressed.emit()
+		loja3.get_node("Alca").get_child(loja3.get_node("Alca").get_child_count() - 1).pressed.emit()  # o botão invisível da aba
 		await au._esperar(0.4)
-		au._exigir(loja4.esta_fixado() and loja4._txt_fixado.visible and not loja4._txt_fixar.visible, "f6d2_painel_fixado", "o botão FIXAR ABERTO vira FIXADO")
-		await au._ver("f6d2_painel_fixado")
+		au._exigir(not loja3.esta_aberto() and not loja3.get_node("Corpo").visible, "f6d2_clique_fecha", "o clique na aba/seta fecha")
 	# --- Só a sala (tecla H) ---
 	if au._quer("f6d2_so_sala"):
 		au._novo_jogo()
@@ -120,16 +112,15 @@ func _rodar_fase6d2() -> void:
 		await au._ver("f6d2_so_sala")
 		await _teclar(KEY_H)
 		au._exigir(not au._cena.esta_so_sala() and _no("PainelAtributos").visible and _no("PainelLoja").visible, "f6d2_so_sala", "H de novo traz tudo de volta")
-		# O1: com o só-sala ligado, L sai dele e abre a loja; O2: com o painel fixado, a mesma aba fecha e solta, a outra só troca
+		# O1: com o só-sala ligado, L sai dele e abre a loja; 6d3: a mesma aba fecha, a outra só troca e continua aberto
 		var loja_h: Control = _no("PainelLoja")
 		await _teclar(KEY_H)
 		await _teclar(KEY_L)
 		au._exigir(not au._cena.esta_so_sala() and loja_h.esta_aberto() and loja_h._aba == "loja", "f6d2_so_sala", "O1: L tira do só-sala e abre a loja")
-		loja_h.fixar(true, false)
 		await _teclar(KEY_E)
-		au._exigir(loja_h.esta_aberto() and loja_h.esta_fixado() and loja_h._aba == "treino", "f6d2_so_sala", "O2: E com a loja fixada só troca a aba e continua fixado")
+		au._exigir(loja_h.esta_aberto() and loja_h._aba == "treino", "f6d2_so_sala", "O2: E com a loja aberta só troca a aba e continua aberta")
 		await _teclar(KEY_E)
-		au._exigir(not loja_h.esta_aberto() and not loja_h.esta_fixado(), "f6d2_so_sala", "O2: E na aba aberta fecha e solta o FIXAR")
+		au._exigir(not loja_h.esta_aberto(), "f6d2_so_sala", "O2: E na aba aberta fecha")
 	# --- Foco trancado: o clique abre o painel no cartão do aparelho; atalhos L e E ---
 	if au._quer("f6d2_foco_trancado"):
 		au._novo_jogo()
@@ -194,11 +185,11 @@ func _rodar_fase6d2() -> void:
 		au.painel_modo = "fixo"
 		await au._abrir()
 		var loja6: Control = _no("PainelLoja")
-		au._exigir(loja6.esta_aberto(), "f6d2_cena_fecha", "começa fixado e aberto")
+		au._exigir(loja6.esta_aberto(), "f6d2_cena_fecha", "começa aberto")
 		au._cena.cena_forcada = true
 		await au._esperar(0.4)
-		au._exigir(not loja6.esta_aberto() and not loja6.get_node("Corpo").visible and loja6.esta_fixado(), "f6d2_cena_fecha", "na cena o painel fecha (e lembra que estava fixado)")
+		au._exigir(not loja6.esta_aberto() and not loja6.get_node("Corpo").visible, "f6d2_cena_fecha", "na cena o painel fecha (e lembra que estava aberto)")
 		au._cena.cena_forcada = false
 		await au._esperar(0.4)
-		au._exigir(loja6.esta_aberto() and loja6.esta_fixado() and loja6.get_node("Corpo").position.x == 508.0, "f6d2_cena_fecha", "no fim da cena volta como estava")
+		au._exigir(loja6.esta_aberto() and loja6.get_node("Corpo").position.x == 508.0, "f6d2_cena_fecha", "no fim da cena volta como estava")
 		await au._ver("f6d2_cena_fecha")

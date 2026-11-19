@@ -99,7 +99,7 @@ func _initialize() -> void:
 	ok(not cena.esta_so_sala(), "H desliga so a sala")
 	print("apos H off: painel aberto=", dir.esta_aberto(), " visivel=", dir.visible, " corpo=", dir._corpo.visible)
 	await foto("tela_H_volta")
-	dir.definir_estado(false, false)
+	dir.definir_estado(false)
 	await esperar(0.3)
 	# so a sala sem painel
 	await tecla(KEY_H)
@@ -110,31 +110,24 @@ func _initialize() -> void:
 			sala_nome.append(n.name)
 	print("visiveis em so_sala: ", sala_nome)
 	await tecla(KEY_H)
-	# clique na sala fecha o painel solto
+	# 6d3: clique na sala NAO fecha o painel; so a aba/seta ou L/E na mesma aba
 	await tecla(KEY_L)
 	ok(dir.esta_aberto(), "aberto antes do clique na sala")
 	await clicar_em(Vector2(200, 200))
-	ok(not dir.esta_aberto(), "clique na sala fecha o painel solto")
-	# fixado: clique na sala nao fecha
-	await tecla(KEY_L)
-	dir.fixar(true)
-	await esperar(0.4)
-	await foto("tela_fixado")
 	await clicar_em(Vector2(200, 200))
-	ok(dir.esta_aberto() and dir.esta_fixado(), "fixado fica aberto apos clique na sala")
+	await esperar(0.4)
+	ok(dir.esta_aberto(), "clique na sala (duas vezes) nao fecha o painel")
+	await foto("tela_aberto_apos_clique")
+	var ab: Rect2 = dir._alca.get_global_rect()
+	await clicar_em(ab.get_center())
+	await esperar(0.4)
+	ok(not dir.esta_aberto(), "clique na aba/seta fecha (centro %s)" % ab.get_center())
 	await tecla(KEY_L)
-	print("L com fixado e aba loja: aberto=", dir.esta_aberto(), " fixado=", dir.esta_fixado(), " aba=", dir._aba)
 	await tecla(KEY_E)
-	print("E com fixado: aberto=", dir.esta_aberto(), " fixado=", dir.esta_fixado(), " aba=", dir._aba)
-	# clique no botao FIXAR
-	dir.definir_estado(true, false)
-	await esperar(0.3)
-	var br: Rect2 = dir._btn_fixar.get_global_rect()
-	await clicar_em(br.get_center())
-	ok(dir.esta_fixado(), "clique no botao FIXAR fixa (centro %s)" % br.get_center())
-	await clicar_em(br.get_center())
-	ok(not dir.esta_fixado() and dir.esta_aberto(), "segundo clique solta e mantem aberto")
-	dir.definir_estado(true, true)
+	ok(dir.esta_aberto() and dir._aba == "treino", "E com a loja aberta so troca a aba")
+	await tecla(KEY_E)
+	ok(not dir.esta_aberto(), "E na mesma aba fecha")
+	dir.definir_estado(true)
 	await esperar(0.3)
 	# cena: o painel fecha e volta
 	gs.atributos = {"strength": 50.0, "agility": 50.0, "endurance": 50.0}
@@ -159,10 +152,10 @@ func _initialize() -> void:
 		t += 0.2
 	ok(visto_fechado, "painel fechado durante a cena")
 	await esperar(1.2)
-	ok(dir.esta_aberto() and dir.esta_fixado(), "painel volta fixado depois da cena (%s %s)" % [dir.esta_aberto(), dir.esta_fixado()])
+	ok(dir.esta_aberto(), "painel volta aberto depois da cena (%s)" % dir.esta_aberto())
 	await foto("tela_pos_cena")
 	# atalhos durante cena
-	dir.definir_estado(false, false)
+	dir.definir_estado(false)
 	gs.cinturao = true
 	gs.dinheiro = 1.0e9
 	gs.mudar()

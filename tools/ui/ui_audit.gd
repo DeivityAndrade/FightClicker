@@ -106,7 +106,7 @@ const ESTADOS_TODOS := [
 	"f6d_balao_cantos", "f6d_balao_mapa", "f6d_balao_hall",
 	"f6d_numeros_bjj", "f6d_numeros_bjj_critico", "f6d_numeros_pera", "f6d_numeros_um_atributo",
 	# Fase 6d2: tela C (sala larga, faixa de 30 px, painel pela direita, atalhos L/E/H, aparelho invisível até a caixa)
-	"f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_painel_fixado", "f6d2_so_sala", "f6d2_foco_trancado", "f6d2_aparelho_invisivel",
+	"f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_so_sala", "f6d2_foco_trancado", "f6d2_aparelho_invisivel",
 	"f6d2_aparelho_caixa", "f6d2_aparelho_aberto", "f6d2_garagem_cheia", "f6d2_garagem_pequena", "f6d2_academia_cheia", "f6d2_academia_pequena",
 	"f6d2_clique_fecha", "f6d2_cena_fecha",
 ]
@@ -465,8 +465,8 @@ func _novo_jogo() -> void:
 		gs.geradores[g.id] = 3
 
 
-## Como o painel da direita (loja e equipe) fica ao abrir a tela: "fixo" (como a tela de antes da 6d2: os estados antigos mostram o
-## painel), "solto" (aberto, fecha com clique na sala) ou "fechado" (só a aba de borda). Os estados f6d2_ trocam.
+## Como o painel da direita (loja e equipe) fica ao abrir a tela: "fixo" e "solto" = aberto (desde a 6d3 não há mais diferença:
+## só fecha quando o jogador manda) ou "fechado" (só a aba de borda). Os estados f6d2_ trocam.
 var painel_modo := "fixo"
 
 
@@ -482,7 +482,7 @@ func _abrir() -> void:
 func _aplicar_painel_modo() -> void:
 	var p: Node = _cena.get_node_or_null("PainelLoja")
 	if p != null:
-		p.definir_estado(painel_modo != "fechado", painel_modo == "fixo", false)
+		p.definir_estado(painel_modo != "fechado", false)
 
 
 func _fechar_cena() -> void:

@@ -8,12 +8,13 @@ extends Control
 signal info_mudou(info: Dictionary)  # {} = limpar; senão {titulo, texto, extra}
 signal estado_mudou  # abriu, fechou ou fixou (a garagem ajusta o balão e o resto)
 
-## Fechado, o painel fica fora da tela e só a aba de borda aparece (com o selo do que dá para comprar). Aberto solto, fecha com um
-## clique na sala; fixado (botão FIXAR ABERTO) fica igual ao de antes da 6d2. Durante as cenas ele fecha sozinho e volta como estava.
+## Fechado, o painel fica fora da tela e só a aba de borda aparece (com o selo do que dá para comprar). Aberto, fica aberto até o
+## jogador mandar fechar (clicar na aba/seta, ou L/E de novo na mesma aba): clicar na sala não fecha (6d3). Durante as cenas ele
+## fecha sozinho e volta como estava.
 const X_ABERTO := 508.0
 const X_FECHADO := 640.0
 const Y_PAINEL := 18.0
-const ALTURA_PAINEL := 296.0
+const ALTURA_PAINEL := 312.0  # 6d3: vai até a faixa de baixo (y 330): nada espia por baixo do painel
 const TEMPO_DESLIZE := 0.15
 const LARG_ALCA := 24.0
 const ALTURA_ALCA := 58.0
@@ -65,12 +66,8 @@ var _corpo: Control  # o painel em si (desliza); a aba de borda (_alca) fica ao 
 var _alca: Control
 var _alca_selo: Dictionary = {}  # {treino, dinheiro, seta, contorno}
 var _aberto := false
-var _fixo := false
 var _forcado_fechado := false  # cena em andamento: o painel fecha sozinho
 var _tween_x: Tween
-var _btn_fixar: Button
-var _txt_fixar: Label
-var _txt_fixado: Label
 
 
 func _ready() -> void:
@@ -174,7 +171,6 @@ func _ready() -> void:
 	_cartoes_loja.size.y = _altura_loja
 	_aba_loja.size.y = _altura_loja
 
-	_montar_fixar()
 	_montar_alca()
 
 	GameState.crew_click_mudou.connect(func(_c: bool) -> void: atualizar())
@@ -250,15 +246,7 @@ func _trocar_aba(nome: String) -> void:
 	atualizar()
 
 
-# --- 6d2: abrir, fechar, fixar, aba de borda ---
-
-func _montar_fixar() -> void:
-	_btn_fixar = UiTema.botao(_corpo, Rect2(4, 275, 120, 16))
-	_txt_fixar = UiTema.botao_conteudo(_btn_fixar, UiTema.txt("pin_panel", "FIXAR ABERTO"), UiTema.COL_TEXT_2, 1)
-	_txt_fixado = UiTema.botao_conteudo(_btn_fixar, UiTema.txt("pin_panel_on", "FIXADO"), UiTema.P2, 1)
-	_txt_fixado.visible = false
-	_btn_fixar.pressed.connect(func() -> void: fixar(not _fixo))
-
+# --- 6d2: abrir, fechar, aba de borda ---
 
 ## A aba de borda: ícone de Treino e de Dinheiro com o número do que dá para comprar (verde / ouro), seta e contorno quando há compra.
 func _montar_alca() -> void:
@@ -302,10 +290,6 @@ func esta_aberto() -> bool:
 	return _aberto and not _forcado_fechado
 
 
-func esta_fixado() -> bool:
-	return _fixo
-
-
 ## Borda esquerda do painel agora (a garagem usa para o balão não passar por baixo dele).
 func borda_esquerda() -> float:
 	return _corpo.position.x if _corpo.visible else X_FECHADO
@@ -321,7 +305,6 @@ func abrir(aba: String = "", animar: bool = true) -> void:
 
 func fechar(animar: bool = true) -> void:
 	_aberto = false
-	_fixo = false
 	_aplicar_estado(animar)
 
 
@@ -332,25 +315,10 @@ func alternar(aba: String = "") -> void:
 		abrir(aba)
 
 
-## Fixa (ou solta) o painel aberto. Fixar abre.
-func fixar(sim: bool, animar: bool = true) -> void:
-	_fixo = sim
-	if sim:
-		_aberto = true
-	_aplicar_estado(animar)
-
-
 ## Atalho para quem monta o estado de uma vez (a garagem, os testes).
-func definir_estado(aberto: bool, fixo: bool, animar: bool = false) -> void:
-	_aberto = aberto or fixo
-	_fixo = fixo
+func definir_estado(aberto: bool, animar: bool = false) -> void:
+	_aberto = aberto
 	_aplicar_estado(animar)
-
-
-## Clique na sala: o painel solto fecha; o fixado fica.
-func fechar_se_solto() -> void:
-	if _aberto and not _fixo:
-		fechar()
 
 
 ## Cena em andamento: fecha sozinho (mesmo fixado) e volta como estava no fim.
@@ -363,10 +331,6 @@ func forcar_fechado(sim: bool) -> void:
 
 func _aplicar_estado(animar: bool) -> void:
 	var alvo := X_ABERTO if esta_aberto() else X_FECHADO
-	_btn_fixar.visible = true
-	_txt_fixar.visible = not _fixo
-	_txt_fixado.visible = _fixo
-	UiTema.aplicar_estilo_botao(_btn_fixar, "ui_button_pressed" if _fixo else "ui_button_normal")
 	(_alca_selo.seta as Label).text = ">" if esta_aberto() else "<"
 	if _tween_x != null and _tween_x.is_valid():
 		_tween_x.kill()
@@ -544,7 +508,7 @@ func _atributos_da_arte(ap: Dictionary) -> String:
 	var split: Dictionary = ap.get("split", {})
 	for id in GameState.dados.atributos:
 		if float(split.get(id, 0.0)) > 0.0:
-			partes.append(str(GameState.dados.atributo_info(id).get("name", id)).to_upper().left(3))
+			partes.append(str(GameState.dados.atributo_info(id).get("name", id)).to_upper().left(3))  # sigla do cartão (não é número flutuante)
 	return " ".join(partes)
 
 
