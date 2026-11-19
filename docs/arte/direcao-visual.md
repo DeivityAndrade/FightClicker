@@ -1064,3 +1064,77 @@ comprar" mora só na faixa de focos e no painel. **Isto substitui o §16 (marca 
 ### 28.5 Placeholder / precisa de pixel artist
 - Os fundos são montagem por código; os pilares existem para esconder a emenda com a sala antiga. À mão, cada fundo seria pintado inteiro.
 - As pessoas (vizinhos, tios, Prof. Nelson) ainda têm a luz pintada dos pontos antigos: pedido de folhas novas ao Artista de Personagens.
+
+## 29. Fase 6d3 (garagem: carro, pneus, geladeira; sem escada e sem ralo)
+Pedido do dono depois de testar a garagem da 6d2. Prancha: `mockups/fase6d3_garagem_antes_depois.png`; sala montada:
+`mockups/fase6d3_garagem_cheia.png` e `_pequena.png`. Quem desenha é o mesmo gerador da 6d2
+(`tools/art/make_mockup_fase6d2_layout.gd -- --final`: funções `garage_car`, `car_wheel`, `tire_stack`, `tire_standing`, `fridge`);
+a prancha sai de `tools/art/make_mockup_fase6d3_garagem.gd` (ordem dos passos no topo do arquivo); nota do manifest:
+`python tools/art/manifest_6d3.py`. A luz do dia e a sombra da porta saíram iguais (conferido).
+
+- **Carro:** era um carrinho de 96x50 colado do fundo antigo, sem roda nem janela legível. Agora é um **sedã velho de lado**,
+  frente para a esquerda, x 69..194, y 167..229 (126x58: altura do ombro de um adulto, ~2 pessoas de comprimento). Lê como carro
+  pela silhueta de 3 volumes, rodas com calota e caixa de roda escura, vidros escuros com reflexo em diagonal, farol, pisca,
+  lanterna na traseira (a face virada para o centro, que a perspectiva mostra), para-choques cromados, friso, portas e maçanetas,
+  retrovisor e antena. Personalidade: azul desbotado, ferrugem no estribo, pneu de trás meio murcho. **Lona** cinza-azulada (rampa
+  `st`, a cor e o caimento da lona da 6d2, pedido do dono) cobrindo a metade de trás: teto de trás, vidro de trás e porta-malas,
+  caindo até o alto da roda de trás; borda da frente em diagonal com rolo claro, dobras verticais, barra ondulada, corda amarrada.
+  A frente (farol, roda, para-choque, porta) fica à mostra. Lona marrom ou verde não funciona (lê como madeira/lixeira).
+  Prancha: `mockups/fase6d3_carro_lona.png`. Pintado no fundo: fica atrás de todo mundo; o Osmar continua "encostado no carro" e o John no caixote na frente dele. Longe da zona do alvo (x 273..370).
+  A **bancada** saiu (ficava inteira atrás do carro e virava ruído); a chapa de ferramentas fica na parede, acima do capô.
+- **Pneus:** cilindros vistos um pouco de cima (ponto de fuga em y −28): banda com ranhuras em zigue-zague (mais juntas nas bordas),
+  brilho `g0/g1` em cima vindo da luminária, linha `ink` de contato entre um e outro, pneus desencontrados 1 px, o de cima com a
+  face e o furo à mostra; mais um **em pé com roda de aço** encostado na pilha.
+- **Geladeira:** lado esquerdo e tampo à mostra (está à direita do ponto de fuga), cantos de cima arredondados, porta do congelador
+  separada, puxadores de alavanca cromados, plaquinha da marca, bilhete com ímã, foto com ímã, 2 ímãs soltos, ferrugem embaixo, grade
+  do rodapé, pés, e um **rádio de madeira** com antena torta em cima. Continua em x 483..517, y 136..221.
+- **Escada:** tirada; a parede direita fica limpa (atrás do painel fixado, de qualquer jeito).
+- **"Retângulo preto solto":** era o **ralo** do chão (14x5 em 388,290, grade `ink` sobre `d2`). Em 1x e no chão escuro não lia
+  como ralo; foi tirado.
+- **Pontos:** nenhum ponto do manifest mudou (pessoas, aparelhos, caixas, parede). O verificador de pontos do gerador: 0 problemas.
+
+### 29.1 Varredura de arte (todas as telas)
+Lista priorizada e o que ficou para o UI/UX e para depois: `docs/arte/fase6d3-varredura.md`. Pranchas:
+`mockups/fase6d3_varredura_antes_depois.png` e `_detalhes.png` (`tools/art/make_mockup_fase6d3_varredura.gd`).
+Peças refeitas por `tools/art/make_arte_fase6d3.gd` (parte dos originais em `tools/art/fonte_6d3/`):
+- `wall_school_symbol`: o símbolo da escola pintado deixa de ser a lâmpada amarela viva com raízes marrons (lia como borrão
+  aceso) e vira **emblema a estêncil na tinta azul da escola** (`b1/b2`), lâmpada creme dentro do disco, raízes para fora.
+  **Regra:** símbolo pintado em parede = uma cor de tinta + o creme, nunca amarelo de luz (amarelo vivo na sala = coisa acesa).
+- `lamp`: sem o anel de pontinhos; brilho de lâmpada pequena é **dither de 1 passo no fundo**, nunca anel tracejado solto.
+- `arena_bg`: manchas redondas viraram ferrugem escorrendo pela chapa; "07" limpo; lâmpadas pequenas com brilho em dither.
+- `gym_bg` (`gym_fix_6d3` no gerador da 6d2): nome inteiro (BOA lia BOR); espelho limpo com uma trinca curta no canto.
+- `garage_bg`: além do §29, sem círculo de giz, mancha de óleo sem miolo chapado.
+**Regra geral da varredura:** mancha/borrão só se tiver forma que se explique (escorrido, rastro, sombra de objeto); textura
+aleatória redonda não entra. Nada chapado em `ink`/`d1` solto no chão (lê como buraco).
+
+Placeholder / precisa de pixel artist: o carro é montado por linhas e elipses; à mão ele ganharia volume de
+verdade nos para-lamas, reflexo da lâmpada na lataria e uma lona com peso. Os pneus pediriam ranhura desenhada à mão.
+
+### 29.2 Símbolo da escola: R de raiz (aprovado)
+O dono recusou a lâmpada com raízes e, das 5 propostas (`mockups/fase6d3_simbolo_opcoes.png`, `docs/arte/fase6d3-simbolo.md`),
+**aprovou a D: um R de traço grosso cujas pernas viram raízes.** Aplicado em tudo por `tools/art/make_arte_fase6d3_simbolo.gd`
+(originais em `tools/art/fonte_6d3/simbolo/`; ordem dos geradores no topo do arquivo). Prancha: `mockups/fase6d3_simbolo_aplicado.png`.
+- `ui/school_symbol_5/9/16/32`: desenhados à mão em cada tamanho (o 32 é o 16 em 2x), azul de carimbo `b1` + realce `b2`.
+- Parede da garagem salva (`wall_school_symbol` 32x40 em 344,38): o 16 em 2x, tinta `b1` com realce creme, 2 escorridos.
+- Peito/coxa do discípulo (camada `school_symbol`, 76 folhas + `fighter_rope` + busto do mural): 3/4 = o 5x5; perfil e coxa = R 3x5
+  (`personagem_lib.gd`, `SYMBOL`). **O R não é simétrico:** nas folhas viradas (`_left`, `capture_flip_last`) o carimbo é desvirado
+  no lugar depois da captura (50 carimbos). Regra: símbolo de escola que não for simétrico precisa desse passo.
+- Selo do mural (`ui_mural_seal`), plaquinha do mural (`wall_mural`, `wall_mural_gym`), etiqueta das caixas (`box_big` 9x9,
+  `box_small` 5x5) e o carimbo redondo do selo GARAGEM SALVA (`seal_garage_saved`, `_text`, R 16 com falhas de tinta).
+- Cuidado: o R dentro do carimbo redondo lembra o símbolo de marca registrada (®). Pequeno e com as raízes, passa; à mão,
+  dá para deixar as raízes saírem do anel para afastar essa leitura.
+
+### 29.3 Ninguém na frente do carro (bug B1 do QA)
+O carro maior ficava atrás do Osmar e do John sentado. Correção (garagem só; a academia não muda):
+- O carro encolheu 36 px no miolo das portas (`car_squeeze`: frente, rodas, traseira e lona inteiras) e foi 11 px para a esquerda:
+  **x 69..194** (126x58).
+- Pontos da garagem que mudaram (manifest; o verificador do gerador agora acusa qualquer um na frente do carro):
+  Osmar `coach_point`/`original_trainer` **196,236 -> 52,258** (encostado na frente do carro); mentor sentado `mentor_spot`
+  **132,254 -> 210,254**, caixote **116,234 -> 194,234** (logo atrás do carro, perto do saco, como era antes da 6d2);
+  2º mentor `mentor_2_spot` **62,256 -> 26,304** (canto da frente à esquerda). `primeira_sucessao.json`: o Osmar da cena lê o
+  ponto da sala (`from_room: coach`). `validar_cenas`: 0 erros (a 1ª tentativa, com o caixote à esquerda, deixava o recuo do
+  John longo demais e a cena passava de 16 s; a 2ª, com ele logo atrás do carro em 221, deixava a cabeça dele onde o balão
+  do lutador precisa ficar).
+- A luz pintada nas folhas do Osmar e do John sentado ainda é a dos pontos antigos (diferença pequena): pedir folhas novas ao
+  Artista de Personagens quando houver rodada de personagens.
+- Também trocados para o R: `icon_garage_saved` (linha de prêmio GARAGEM SALVA) e `icon_honor_16` (roseta da Honra).

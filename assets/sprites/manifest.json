@@ -92,12 +92,12 @@
 			166
 		],
 		"mentor_spot": [
-			132,
+			210,
 			254
 		],
 		"mentor_2_spot": [
-			62,
-			256
+			26,
+			304
 		],
 		"mentor_2_spot_info": {
 			"pose": "stand_bare",
@@ -108,14 +108,14 @@
 				-65
 			],
 			"head_anchor_abs": [
-				63,
-				191
+				27,
+				239
 			],
-			"sort_y": 262,
+			"sort_y": 310,
 			"location": "garage",
 			"occupies": [
-				50,
-				191,
+				14,
+				239,
 				25,
 				67
 			],
@@ -379,13 +379,14 @@
 			"talk": "coach_talk",
 			"point": "coach_point",
 			"pos": [
-				196,
-				236
+				52,
+				258
 			],
 			"head_anchor": [
 				1,
 				-63
-			]
+			],
+			"note_6d3": "6d3 (bug B1): mudou para não ficar na frente do carro (sedã em x 69..194). Osmar 196,236 -> 52,258 (encostado na frente do carro); sentado 132,254 -> 210,254 (caixote 194,234, logo atrás do carro, perto do saco); 2º mentor 62,256 -> 26,304. A luz pintada das folhas ainda é a do ponto antigo."
 		},
 		"_nota": "Ponte entre os ids de data/ (docs/fases/fase2-api.md) e os sprites. N = GameState.nivel_visual(aparelho).",
 		"punching_bag": {
@@ -1930,7 +1931,7 @@
 			},
 			"symbol": {
 				"provisional": false,
-				"design": "Raízes Fight Club: a lâmpada da garagem, de pé, com o soquete virando raiz",
+				"design": "Raízes Fight Club: o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D)",
 				"files": [
 					"school_symbol_5",
 					"school_symbol_9",
@@ -2740,7 +2741,7 @@
 				7
 			],
 			"band_text_color": "d1",
-			"_nota": "Fase 6a. O selo é o próprio aviso de cobrança, despregado da parede, com o carimbo azul da escola (a lâmpada com raízes). A versão com fita (96x64, texto embutido GARAGEM SALVA) é para espaços maiores (fim de carreira, cartão da campanha)."
+			"_nota": "Fase 6a. O selo é o próprio aviso de cobrança, despregado da parede, com o carimbo azul da escola (o R de raiz, 6d3). A versão com fita (96x64, texto embutido GARAGEM SALVA) é para espaços maiores (fim de carreira, cartão da campanha)."
 		},
 		"garage_story_wall": {
 			"objects": {
@@ -2879,15 +2880,16 @@
 		},
 		"coach_point": {
 			"pos": [
-				196,
-				236
+				52,
+				258
 			],
 			"facing": "direita",
-			"note": "Ponto do Osmar na garagem: (196,236), encostado no carro, longe do saco (decisão do Produtor; o DC tinha proposto 236,238). Conferido no mockup com a equipe cheia: longe do alvo e da no_cover; o balão dele fica em cima, sem ajuste, e não cobre a parede da memória. Os vizinhos 1 (176,284) e 2 (220,258) passam na frente das pernas dele (ordem por y): aceito."
+			"note": "Ponto do Osmar na garagem: (196,236), encostado no carro, longe do saco (decisão do Produtor; o DC tinha proposto 236,238). Conferido no mockup com a equipe cheia: longe do alvo e da no_cover; o balão dele fica em cima, sem ajuste, e não cobre a parede da memória. Os vizinhos 1 (176,284) e 2 (220,258) passam na frente das pernas dele (ordem por y): aceito.",
+			"note_6d3": "6d3 (bug B1): mudou para não ficar na frente do carro (sedã em x 69..194). Osmar 196,236 -> 52,258 (encostado na frente do carro); sentado 132,254 -> 210,254 (caixote 194,234, logo atrás do carro, perto do saco); 2º mentor 62,256 -> 26,304. A luz pintada das folhas ainda é a do ponto antigo."
 		},
 		"school_symbol": {
 			"provisional": false,
-			"design": "Raízes Fight Club: a lâmpada da garagem, de pé, com o soquete virando raiz",
+			"design": "Raízes Fight Club: o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D)",
 			"files": [
 				"school_symbol_5",
 				"school_symbol_9",
@@ -2900,7 +2902,7 @@
 		"_nota_fase6a_arte": "Fase 6a (Diretor de Arte): speech_bubble, skip_hold, garage_saved_seal, garage_story_wall, school_symbol. Fonte 5x7 regravada (acentos das minúsculas, — e …).",
 		"mentor_spot": {
 			"pos": [
-				132,
+				210,
 				254
 			],
 			"facing": "direita",
@@ -2908,7 +2910,7 @@
 			"crate": {
 				"sprite": "garage_crate",
 				"pos": [
-					116,
+					194,
 					234
 				],
 				"layer": "sorted",
@@ -2920,13 +2922,14 @@
 				-51
 			],
 			"occupies": [
-				116,
+				194,
 				198,
 				33,
-				57
+				58
 			],
 			"note": "Ponto dos pés do mentor sentado (6b1: John). Era (268,268) na prancha; mudou para (254,252) porque em 268 o John sentado entrava na faixa do alvo (x 281..362 com 8 px de folga = 273..370) e tapava a caixa da corda. Aqui ele fica encostado no fim do carro, olhando o saco, com a caixa ocupando x 238..270, y 200..252. A caixa da corda foi para (424,287), na frente à direita (6 px da caixa da luva; cobre 5 px da base da esteira encostada, que fica atrás pela ordem por y). Com foco na corda/esteira o saco de lado (lado_esquerdo 258,160) fica atrás da cabeça dele (ordem por y): aceito, como já era na prancha.",
-			"note_6d2": "Fase 6d2: (132,254), em frente à bancada, à esquerda do Osmar (era 254,252, colado na folga do alvo)."
+			"note_6d2": "Fase 6d2: (132,254), em frente à bancada, à esquerda do Osmar (era 254,252, colado na folga do alvo).",
+			"note_6d3": "6d3 (bug B1): mudou para não ficar na frente do carro (sedã em x 69..194). Osmar 196,236 -> 52,258 (encostado na frente do carro); sentado 132,254 -> 210,254 (caixote 194,234, logo atrás do carro, perto do saco); 2º mentor 62,256 -> 26,304. A luz pintada das folhas ainda é a do ponto antigo."
 		},
 		"garage_door_scene": {
 			"door": {
@@ -3052,7 +3055,7 @@
 				"tank",
 				"tee"
 			],
-			"school_symbol_note": "Fase 6c2 (Diretor de Arte): <base>_disc_symbol_chest.png e _symbol_leg.png em todas as poses, folhas _left e retrato 32x32; não dependem da luva, exceto onde a luva da frente passa no peito (fighter_run: <base>_glove_lN_disc_symbol_chest.png). layers.school_symbol de cada entrada já aponta o arquivo certo. É o school_symbol_5 da 6a (3/4) e a mesma lâmpada com raiz em 3x5 (perfil e coxa). Gerado por personagem_lib.gd (_capture_call_6b2)."
+			"school_symbol_note": "Fase 6c2/6d3: <base>_disc_symbol_chest.png e _symbol_leg.png em todas as poses, folhas _left e retrato 32x32. 6d3: o desenho é o R de raiz (3/4 = school_symbol_5; perfil e coxa = R em 3x5), desenhado por personagem_lib.gd e aplicado por tools/art/make_arte_fase6d3_simbolo.gd, que desvira o carimbo nas folhas viradas (o R não é simétrico)."
 		},
 		"disciple_palette": {
 			"compose": "Por quadro (mesmo tamanho e pivô), na ordem de layers.order: 1) body; 2) top.<tank|tee> se look.top != 'none'; 3) socks se look.socks == 'on'; 3b) school_symbol (Fase 6c2) se o lutador mostra o símbolo (simbolo_no_lutador / simbolo_na_entrada; nunca o John): school_symbol.chest se look.top != 'none', senão school_symbol.leg; 4) head.<look.hair_style>; 5) band se look.headband != 'none'; 6) front_mask: nos pixels brancos da máscara, desenhar de novo o resultado de 1+2+3+3b (body com parte de cima, meião e símbolo), só onde ele tem cor (alfa > 0). Trocar as cores-chave em todas as camadas (antes ou depois de montar: as chaves não se repetem; as do símbolo seguem school_symbol_source). Com a máscara vazia o passo 6 não faz nada.",
@@ -3483,8 +3486,8 @@
 		},
 		"mentor_2_spot": {
 			"pos": [
-				62,
-				256
+				26,
+				304
 			],
 			"location": "garage",
 			"from_campaign": 3,
@@ -3497,11 +3500,11 @@
 				-65
 			],
 			"head_anchor_abs": [
-				63,
-				191
+				27,
+				239
 			],
 			"layer": "sorted",
-			"sort_y": 262,
+			"sort_y": 310,
 			"floor_shadow": true,
 			"light": "nenhuma (igual às folhas do discípulo)",
 			"look": "visual gravado do lutador (palette_swap disciple_palette, corte da cabeça dele); sem luvas, sem faixa na mão",
@@ -3525,7 +3528,8 @@
 				"baloes": "balão do Osmar (132,132,154,36), do John sentado/de pé e do discípulo no saco não chegam na cabeça dele (y 196..210)"
 			},
 			"note": "Fase 6b2 (Diretor de Arte): o último que passou o posto, da Carreira 3 em diante, enquanto o John está no caixote. De pé, encostado na parede esquerda, atrás do vizinho 1 e à esquerda do Osmar, olhando o saco. Usa a folha que o discípulo em camadas já tem (disciple_stand_bare, virado à direita): nenhuma arte nova. Escolhido em vez de (490,250): lá ficaria atrás do vizinho 3 e do tio 1 e colado na caixa da esteira. Mockup: docs/arte/mockups/fase6b2_mentor2_*.png; texto: direcao-visual.md §24.",
-			"note_6d2": "Fase 6d2: (62,256), junto da parede esquerda, embaixo da janela (era 150,262)."
+			"note_6d2": "Fase 6d2: (62,256), junto da parede esquerda, embaixo da janela (era 150,262).",
+			"note_6d3": "6d3 (bug B1): mudou para não ficar na frente do carro (sedã em x 69..194). Osmar 196,236 -> 52,258 (encostado na frente do carro); sentado 132,254 -> 210,254 (caixote 194,234, logo atrás do carro, perto do saco); 2º mentor 62,256 -> 26,304. A luz pintada das folhas ainda é a do ponto antigo."
 		},
 		"gym_arrival_scene": {
 			"half_dark": {
@@ -3736,8 +3740,8 @@
 				67
 			],
 			"pos": [
-				196,
-				236
+				52,
+				258
 			],
 			"who": "treinador"
 		},
@@ -3761,8 +3765,8 @@
 				67
 			],
 			"pos": [
-				196,
-				236
+				52,
+				258
 			],
 			"who": "treinador"
 		},
@@ -3786,8 +3790,8 @@
 				67
 			],
 			"pos": [
-				196,
-				236
+				52,
+				258
 			],
 			"who": "treinador"
 		},
@@ -3811,8 +3815,8 @@
 				67
 			],
 			"pos": [
-				196,
-				236
+				52,
+				258
 			],
 			"who": "treinador"
 		},
@@ -13633,7 +13637,7 @@
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Fase 6d2: garagem larga (tela inteira, 640x360 em 0,0). Parede do fundo x 70..569, chão até y 329 (a faixa de baixo da tela começa em 330), mesmo ponto de fuga (320,-28). O miolo x 171..469 é a garagem de antes (porta, carro, prateleira, pôster, gancho da corda em 296,166); pilares em x 164..174 e 468..478. Novos: janela basculante e cano (parede esquerda), chapa de ferramentas e bancada (ala esquerda), geladeira, pneus, relógio de luz e mangueira (ala direita), escada (parede direita). Luz: a lâmpada de sempre + janela à esquerda + luminária de obra à direita. Gerador: tools/art/make_mockup_fase6d2_layout.gd -- --final."
+			"note": "Fase 6d2/6d3: garagem larga (tela inteira, 640x360 em 0,0). Parede do fundo x 70..569, chão até y 329 (a faixa de baixo da tela começa em 330), mesmo ponto de fuga (320,-28). O miolo x 171..469 é a garagem de antes (porta, prateleira, pôster, gancho da corda em 296,166); pilares em x 164..174 e 468..478. Peças: janela basculante e cano (parede esquerda), chapa de ferramentas (ala esquerda), CARRO VELHO (6d3: sedã azul de lado, x 69..194, y 167..229, lona cinza-azulada (cor da 6d2) cobrindo a metade de trás até o alto da roda de trás, pintado no fundo, atrás de todo mundo), geladeira com rádio em cima, pilha de pneus + pneu em pé, relógio de luz e mangueira (ala direita). Saíram na 6d3: escada, bancada, ralo, círculo de giz e o miolo chapado da mancha de óleo. Luz: a lâmpada de sempre + janela à esquerda + luminária de obra à direita. Gerador: tools/art/make_mockup_fase6d2_layout.gd -- --final."
 		},
 		"floor_shadow": {
 			"file": "res://assets/sprites/garage/floor_shadow.png",
@@ -13683,7 +13687,8 @@
 					0
 				]
 			},
-			"note": "Pivô = ponto onde o fio sai da viga. Piscar 1 quadro (2) a cada ~8 s. Balançar (1, flip, 1, 0) a 10 fps quando o saco leva golpe forte (crítico)."
+			"note": "Pivô = ponto onde o fio sai da viga. Piscar 1 quadro (2) a cada ~8 s. Balançar (1, flip, 1, 0) a 10 fps quando o saco leva golpe forte (crítico).",
+			"note_6d3": "6d3: saiu o anel de pontinhos laranja em volta da lâmpada (lia como faísca/borrão); o brilho fica só na luz do garage_bg. Mesmos quadros, tamanho e pivô. Gerador: tools/art/make_arte_fase6d3.gd."
 		},
 		"bag_chain_tile": {
 			"file": "res://assets/sprites/equipment/bag_chain_tile.png",
@@ -14930,7 +14935,8 @@
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Arena única da Fase 3: estacionamento de uma borracharia à noite (galpão de chapa, placa pintada, porta de enrolar, pneus, carro com farol aceso, alambrado, poste de sódio). Chão com o 'ringue' riscado a giz. Luz já aplicada. y 0..45 é céu escuro: o HUD de luta fica por cima. Público e refletor são sprites à parte."
+			"note": "Arena única da Fase 3: estacionamento de uma borracharia à noite (galpão de chapa, placa pintada, porta de enrolar, pneus, carro com farol aceso, alambrado, poste de sódio). Chão com o 'ringue' riscado a giz. Luz já aplicada. y 0..45 é céu escuro: o HUD de luta fica por cima. Público e refletor são sprites à parte.",
+			"note_6d3": "6d3: as 18 manchas redondas marrons da chapa viraram ferrugem escorrendo pelos vales; o 07 da porta sem o dither por cima (lia 0T); os anéis tracejados das lâmpadas viraram brilho em dither. Gerador: tools/art/make_arte_fase6d3.gd (cópia fiel do make_arena da Fase 3)."
 		},
 		"arena_lamp": {
 			"file": "res://assets/sprites/fight/arena_lamp.png",
@@ -25304,7 +25310,8 @@
 			],
 			"layer": "fundo",
 			"z": -100,
-			"note": "Fase 6d2: academia larga (tela inteira, 640x360 em 0,0). Parede do fundo x 70..569, chão até y 329, mesmo ponto de fuga. O miolo x 171..469 é a academia de antes (nome, espelho, pôsteres, prateleira com o Metrônomo em 240,118, quadro, banco, relógio de round, luvas, extintor, porta); pilares em x 164..174 e 468..478. Novos: 2 janelas altas (parede esquerda), quadro branco, suporte de halteres, kettlebell e medicine ball (ala esquerda), armários, bebedouro e árvore de anilhas (ala direita), espaldar (parede direita), tatame na frente à esquerda (embaixo do boneco). 4 tubos: os 2 de sempre (sprite gym_tube) e 2 novos pintados no fundo (x 104 e 536)."
+			"note": "Fase 6d2: academia larga (tela inteira, 640x360 em 0,0). Parede do fundo x 70..569, chão até y 329, mesmo ponto de fuga. O miolo x 171..469 é a academia de antes (nome, espelho, pôsteres, prateleira com o Metrônomo em 240,118, quadro, banco, relógio de round, luvas, extintor, porta); pilares em x 164..174 e 468..478. Novos: 2 janelas altas (parede esquerda), quadro branco, suporte de halteres, kettlebell e medicine ball (ala esquerda), armários, bebedouro e árvore de anilhas (ala direita), espaldar (parede direita), tatame na frente à esquerda (embaixo do boneco). 4 tubos: os 2 de sempre (sprite gym_tube) e 2 novos pintados no fundo (x 104 e 536).",
+			"note_6d3": "6d3: nome pintado inteiro (BOA lia BOR) e espelho limpo com uma trinca curta no canto de cima (a estrela de trincas lia como teia). Gerador: make_mockup_fase6d2_layout.gd, gym_fix_6d3."
 		},
 		"gym_tube": {
 			"file": "res://assets/sprites/gym/gym_tube.png",
@@ -34432,7 +34439,8 @@
 				56,
 				45
 			],
-			"note": "Caixa de papelão da escola, tamanho GRANDE (esteira e boneco de tatame). Quadros: 0 = fechada, 1 = racha 1 (depois do 1º clique), 2 = racha 2 (depois do 2º), 3 = aberta e vazia (só durante o efeito de abrir). Pivô = meio da base, no chão. Sombra de contato já no quadro. SEM luz da sala aplicada, de propósito: é o objeto novo da cena e precisa saltar ao olho; a mesma arte vale na garagem e na academia. click_rect = área clicável sugerida, relativa ao pivô. Fase 6a: a etiqueta mostra o símbolo da escola (lâmpada com raízes, school_symbol_9/5)."
+			"note": "Caixa de papelão da escola, tamanho GRANDE (esteira e boneco de tatame). Quadros: 0 = fechada, 1 = racha 1 (depois do 1º clique), 2 = racha 2 (depois do 2º), 3 = aberta e vazia (só durante o efeito de abrir). Pivô = meio da base, no chão. Sombra de contato já no quadro. SEM luz da sala aplicada, de propósito: é o objeto novo da cena e precisa saltar ao olho; a mesma arte vale na garagem e na academia. click_rect = área clicável sugerida, relativa ao pivô. Fase 6a: a etiqueta mostra o símbolo da escola (lâmpada com raízes, school_symbol_9/5).",
+			"note_6d3": "6d3: a etiqueta mostra o R de raiz (school_symbol_9)."
 		},
 		"box_small": {
 			"file": "res://assets/sprites/box/box_small.png",
@@ -34475,7 +34483,8 @@
 				32,
 				29
 			],
-			"note": "Caixa de papelão da escola, tamanho PEQUENA (corda, pera e luvas). Quadros: 0 = fechada, 1 = racha 1 (depois do 1º clique), 2 = racha 2 (depois do 2º), 3 = aberta e vazia (só durante o efeito de abrir). Pivô = meio da base, no chão. Sombra de contato já no quadro. SEM luz da sala aplicada, de propósito: é o objeto novo da cena e precisa saltar ao olho; a mesma arte vale na garagem e na academia. click_rect = área clicável sugerida, relativa ao pivô. Fase 6a: a etiqueta mostra o símbolo da escola (lâmpada com raízes, school_symbol_9/5)."
+			"note": "Caixa de papelão da escola, tamanho PEQUENA (corda, pera e luvas). Quadros: 0 = fechada, 1 = racha 1 (depois do 1º clique), 2 = racha 2 (depois do 2º), 3 = aberta e vazia (só durante o efeito de abrir). Pivô = meio da base, no chão. Sombra de contato já no quadro. SEM luz da sala aplicada, de propósito: é o objeto novo da cena e precisa saltar ao olho; a mesma arte vale na garagem e na academia. click_rect = área clicável sugerida, relativa ao pivô. Fase 6a: a etiqueta mostra o símbolo da escola (lâmpada com raízes, school_symbol_9/5).",
+			"note_6d3": "6d3: a etiqueta mostra o R de raiz (school_symbol_5)."
 		},
 		"fx_box_chips_1": {
 			"file": "res://assets/sprites/box/fx_box_chips_1.png",
@@ -34551,7 +34560,7 @@
 				0
 			],
 			"provisional": false,
-			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (9x9): a lâmpada da garagem de pé, com o soquete virando raiz, em tinta de carimbo azul b1 + b2. Fase 6a: substitui o frontão provisório. Pintado na parede: wall_school_symbol."
+			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (9x9): o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D), em tinta de carimbo azul b1 + b2. Gerador: tools/art/make_arte_fase6d3_simbolo.gd. Pintado na parede: wall_school_symbol."
 		},
 		"school_symbol_16": {
 			"file": "res://assets/sprites/ui/school_symbol_16.png",
@@ -34566,7 +34575,7 @@
 				0
 			],
 			"provisional": false,
-			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (16x16): a lâmpada da garagem de pé, com o soquete virando raiz, em tinta de carimbo azul b1 + b2. Fase 6a: substitui o frontão provisório. Pintado na parede: wall_school_symbol."
+			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (16x16): o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D), em tinta de carimbo azul b1 + b2. Gerador: tools/art/make_arte_fase6d3_simbolo.gd. Pintado na parede: wall_school_symbol."
 		},
 		"school_symbol_32": {
 			"file": "res://assets/sprites/ui/school_symbol_32.png",
@@ -34581,7 +34590,7 @@
 				0
 			],
 			"provisional": false,
-			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (32x32): a lâmpada da garagem de pé, com o soquete virando raiz, em tinta de carimbo azul b1 + b2. Fase 6a: substitui o frontão provisório. Pintado na parede: wall_school_symbol."
+			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (32x32): o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D), em tinta de carimbo azul b1 + b2. Gerador: tools/art/make_arte_fase6d3_simbolo.gd. Pintado na parede: wall_school_symbol."
 		},
 		"ui_box_tag": {
 			"file": "res://assets/sprites/ui/ui_box_tag.png",
@@ -36726,7 +36735,7 @@
 				0,
 				0
 			],
-			"note": "Selo GARAGEM SALVA sem texto (52x54): o aviso de cobrança despregado, com o carimbo azul da escola (a lâmpada). Tela de vitória do cinturão em (418,146). O texto vai na linha de prêmio (icon_garage_saved + Label)."
+			"note": "Selo GARAGEM SALVA sem texto (52x54): o aviso de cobrança despregado, com o carimbo azul da escola (o R de raiz, 6d3). Tela de vitória do cinturão em (418,146). O texto vai na linha de prêmio (icon_garage_saved + Label)."
 		},
 		"seal_garage_saved_text": {
 			"file": "res://assets/sprites/ui/seal_garage_saved_text.png",
@@ -36790,7 +36799,7 @@
 				0
 			],
 			"provisional": false,
-			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (5x5): a lâmpada da garagem de pé, com o soquete virando raiz, em tinta de carimbo azul b1 + b2. Fase 6a: substitui o frontão provisório. Pintado na parede: wall_school_symbol."
+			"note": "SÍMBOLO DA ESCOLA Raízes Fight Club (5x5): o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D), em tinta de carimbo azul b1 + b2. Gerador: tools/art/make_arte_fase6d3_simbolo.gd. Pintado na parede: wall_school_symbol."
 		},
 		"wall_notice_debt": {
 			"file": "res://assets/sprites/garage/wall_notice_debt.png",
@@ -36930,7 +36939,7 @@
 			],
 			"layer": "frente_do_fundo",
 			"z": -46,
-			"note": "Arco 1: SÍMBOLO DA ESCOLA pintado na parede (school_symbol_16 em 2x, tinta amarela que afunda no rejunte, 3 escorridos). Aparece quando a garagem é salva. Recortado sobre o garage_bg deste ponto (não mover)."
+			"note": "Arco 1: SÍMBOLO DA ESCOLA pintado na parede: o R de raiz (um R de traço grosso com as pernas virando raízes; aprovado pelo dono na 6d3, proposta D), o school_symbol_16 em 2x na tinta azul b1 com realce creme, tinta que afunda no rejunte, 2 escorridos. Aparece quando a garagem é salva. Recortado sobre o garage_bg deste ponto (não mover). Gerador: tools/art/make_arte_fase6d3_simbolo.gd."
 		},
 		"garage_door": {
 			"file": "res://assets/sprites/garage/garage_door.png",
@@ -37106,7 +37115,7 @@
 				20
 			],
 			"pos": [
-				116,
+				194,
 				234
 			],
 			"layer": "sorted",
@@ -77807,7 +77816,8 @@
 			"layer": "wall",
 			"z": -45,
 			"loop": false,
-			"note": "Fase 6c2: MURAL DA ESCOLA na garagem (moldura de madeira, cortiça escura, papel com o carimbo da escola e polaroides presas com alfinete; a 1ª é o John, em sépia; as de quem saiu por cima têm 1 px de prata no pé). Quadro por quantidade de entradas no roster: ver layout.mural_spot_info.frame_by_roster. Recortado sobre o garage_bg com a luz da lâmpada (não mover). Clique/hover: object_text 'mural'."
+			"note": "Fase 6c2: MURAL DA ESCOLA na garagem (moldura de madeira, cortiça escura, papel com o carimbo da escola e polaroides presas com alfinete; a 1ª é o John, em sépia; as de quem saiu por cima têm 1 px de prata no pé). Quadro por quantidade de entradas no roster: ver layout.mural_spot_info.frame_by_roster. Recortado sobre o garage_bg com a luz da lâmpada (não mover). Clique/hover: object_text 'mural'.",
+			"note_6d3": "6d3: a plaquinha da escola mostra o R de raiz (school_symbol_9). Igual no wall_mural_gym."
 		},
 		"wall_mural_gym": {
 			"file": "res://assets/sprites/gym/wall_mural_gym.png",
@@ -77901,7 +77911,8 @@
 				48,
 				48
 			],
-			"note": "SELO 'saiu por cima' (honor > 0): roseta prateada com o símbolo da escola e duas fitas azuis. Canto de cima à esquerda em (48,48) da moldura 62x66 (sai 6 px para fora embaixo, à direita). A linha '+{honor} HONRA' vai em col_honor."
+			"note": "SELO 'saiu por cima' (honor > 0): roseta prateada com o símbolo da escola e duas fitas azuis. Canto de cima à esquerda em (48,48) da moldura 62x66 (sai 6 px para fora embaixo, à direita). A linha '+{honor} HONRA' vai em col_honor.",
+			"note_6d3": "6d3: o miolo da roseta é o R de raiz (school_symbol_9)."
 		},
 		"icon_honor": {
 			"file": "res://assets/sprites/ui/icon_honor.png",

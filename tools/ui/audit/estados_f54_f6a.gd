@@ -324,7 +324,10 @@ func _rodar_fase6a() -> void:
 			var rt: Rect2 = au._balao().retangulo_total()
 			au._estado = "f6a_john_esteira"
 			# o balão sobe até y<=178 (regra da zona do alvo); na horizontal ele tem de ficar sobre a cabeça do John
-			au._exigir(absf(rt.get_center().x - cab.x) < 6.0,
+			# 6d3: com o Osmar no ponto novo (52,258) o balão pode DESLIZAR para o lado (modo 2 do balao.gd) em vez de subir;
+			# o que importa é a ponta do rabicho em cima da cabeça (a ponta fica a 8 px da borda do balão, presa na cabeça).
+			var ponta_x := clampf(cab.x, rt.position.x + 8.0, rt.end.x - 8.0)
+			au._exigir(absf(ponta_x - cab.x) < 6.0,
 				"f6a_john_esteira", "o rabicho não aponta para a cabeça (%s): balão %s, cabeça %s" % [foco_t, au._fmt(rt), str(cab)])
 			if foco_t == "treadmill":
 				await au._ver("f6a_john_esteira")
@@ -352,7 +355,7 @@ func _rodar_fase6a() -> void:
 		au._estado = "f6a_parede_antes"
 		au._exigir(sala._parede.notice_debt.sprite.visible and not sala._parede.photo_team.sprite.visible, au._estado, "antes: aviso na parede, sem foto da equipe")
 		au._exigir(sala._parede.form.sprite.nome_sprite == "wall_form_blank" and not sala._parede.clipping.sprite.visible, au._estado, "antes: ficha em branco, sem recorte")
-		au._exigir(sala._osmar.visible and sala._osmar.position == Vector2(196, 236), au._estado, "Osmar no ponto dele na garagem")
+		au._exigir(sala._osmar.visible and sala._osmar.position == Vector2(float(au.gs.ponto_do_coach()[0]), float(au.gs.ponto_do_coach()[1])), au._estado, "Osmar no ponto dele na garagem (6d3: lido do manifest)")
 		await au._ver("f6a_parede_antes")
 		if au._quer("f6a_hover_ficha"):
 			au._dica_inst().ancora_fixa = Vector2(240, 96)

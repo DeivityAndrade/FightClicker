@@ -18,8 +18,8 @@ const Y_BOTAO := 5.0
 const REGIAO_CLIQUE := 84.0  # largura de "+N /CLIQUE" (x 4..88)
 const LUTAR := Rect2(507, 3, 102, 24)
 const POSTO := Rect2(613, 4, 22, 22)
-const X_SALVO := 456.0
-const X_AJUDA := 492.0
+const X_SALVO := 430.0  # 6d3: o rótulo SALVO termina em 460, antes do botão SEGURAR (464); com 4 focos não há espaço e ele não aparece
+const X_AJUDA := 488.0
 
 var _por_clique: Label
 var _sufixo: Label
@@ -85,6 +85,8 @@ func _ready() -> void:
 
 ## Texto "SALVO" discreto: acende ao salvar e some em ~2 s (o texto fixo com a hora saiu da tela).
 func _ao_salvo(_hora: String) -> void:
+	if X_SALVO < X_BOTOES + float(GameState.aparelhos_da_carreira().size()) * PASSO_BOTAO:
+		return  # 4 focos: o rótulo bateria no último botão
 	_salvo.text = UiTema.txt("saved_footer", "SALVO").replace("{HORA}", "").strip_edges()
 	if _tween_salvo != null and _tween_salvo.is_valid():
 		_tween_salvo.kill()
@@ -113,14 +115,14 @@ func _reconstruir_botoes() -> void:
 	_posicionar_dica()
 
 
-## B3: a dica da primeira vez fica depois do último botão e só até a "?" (x 488); sem 70 px livres (4 focos), ela não aparece.
+## B3: a dica da primeira vez fica depois do último botão e só até a "?" (x 460, antes do botão SEGURAR); sem 70 px livres (4 focos), ela não aparece.
 func _posicionar_dica() -> void:
 	if _dica == null:
 		return
 	var x_dica := X_BOTOES + float(GameState.aparelhos_da_carreira().size()) * PASSO_BOTAO + 2.0
 	_dica.position.x = x_dica
-	_dica_livre = 488.0 - x_dica >= 70.0
-	_dica.custom_minimum_size.x = maxf(0.0, minf(88.0, 488.0 - x_dica))
+	_dica_livre = 460.0 - x_dica >= 70.0
+	_dica.custom_minimum_size.x = maxf(0.0, minf(88.0, 460.0 - x_dica))
 	_dica.size.x = _dica.custom_minimum_size.x
 
 
@@ -179,8 +181,8 @@ func _texto_foco(id: String) -> String:
 
 ## "?" pequeno da faixa: as teclas (Espaço, Shift, 1 a 4, L, E, H, F11) aparecem no balão.
 func _montar_ajuda() -> void:
-	_ajuda = UiTema.botao(self, Rect2(X_AJUDA, 9, 12, 12))
-	UiTema.botao_conteudo(_ajuda, "?", UiTema.COL_TEXT_2, 1)
+	_ajuda = UiTema.botao(self, Rect2(X_AJUDA, 7, 16, 16))
+	UiTema.botao_conteudo(_ajuda, "?", UiTema.COL_TEXT_1, 1)
 	_ajuda.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_keys"), _ajuda))
 	_ajuda.mouse_exited.connect(func() -> void: Dica.limpar())
 

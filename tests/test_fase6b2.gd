@@ -211,7 +211,7 @@ func _teste_segundo_mentor() -> void:
 	gs.escola.roster = [{"campaign": 1, "kind": "first", "name": "John Bullet", "look": null, "end": "retire"}, _entrada(2, "retire")]
 	var m: Dictionary = gs.segundo_mentor()
 	checar_igual([m.get("nome", ""), m.get("pose", ""), m.get("glove", ""), m.get("facing", ""), m.get("ponto", [])],
-		["Disc2", "stand_bare", "none", "right", [62, 256]], "John + 1: 2º mentor parado, sem luvas, virado ao saco, no mentor_2_spot")  # 6d2: mentor_2_spot novo (manifest)
+		["Disc2", "stand_bare", "none", "right", [26, 304]], "John + 1: 2º mentor parado, sem luvas, virado ao saco, no mentor_2_spot")  # 6d3 (bug B1): mentor_2_spot fora da frente do carro
 	checar_igual(m.look, _entrada(2, "retire").look, "visual gravado no roster, os 9 campos")
 	var na_sala: Array = gs.mentores_na_sala()
 	checar_igual([na_sala.size(), na_sala[0].id, na_sala[1].id, na_sala[1].spot], [2, "first", "last", "mentor_2_spot"], "mentores_na_sala devolve os 2")

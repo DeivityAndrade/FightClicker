@@ -129,7 +129,7 @@ func _rodar_fase6b2() -> void:
 		au._exigir(sala_m._mentor2.texture != _tema().textura("disciple_stand_bare"), au._estado, "ele usa o visual guardado no roster (camadas e cores)")
 		await au._ver("f6b2_mentor2")
 		if au._quer("f6b2_mentor2_dica"):
-			sala_m._hover_em(Vector2(62, 240))  # 6d2: o 2º mentor ficou em (62,256)
+			sala_m._hover_em(sala_m.ponto_mentor2() + Vector2(0, -16))  # 6d3: o ponto vem do manifest (mentor_2_spot)
 			await au._esperar(0.1)
 			var di: Control = au._dica_inst()
 			var rd := Rect2(di.position, di.size)

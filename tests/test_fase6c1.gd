@@ -301,7 +301,7 @@ func _teste_elenco() -> void:
 
 func _teste_osmar_e_foto() -> void:
 	var g := _novo("f6c1_osmar")
-	checar(g.coach_presente() and g.ponto_do_coach() == [196, 236], "garagem: Osmar no ponto de sempre")
+	checar(g.coach_presente() and g.ponto_do_coach() == [52, 258], "garagem: Osmar no ponto de sempre")  # 6d3 (bug B1): encostado na frente do carro
 	checar_igual(g.foto_antiga().get("object_text", ""), "old_photo", "garagem: foto antiga com o texto de sempre")
 	checar(not g.foto_antiga().get("tilted", true), "garagem: foto reta")
 	_chegar(g)

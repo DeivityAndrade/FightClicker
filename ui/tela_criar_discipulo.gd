@@ -42,7 +42,7 @@ func abrir_com() -> void:
 	var linhas_col := mini(linhas, LINHAS_POR_COLUNA)
 	var larg := LARG_COLUNA + float(colunas - 1) * PASSO_COLUNA
 	var fim_linhas := 32.0 + float(linhas_col) * PASSO_LINHA
-	var rodape := maxf(fim_linhas, 162.0) + 4.0
+	var rodape := maxf(fim_linhas, 202.0) + 4.0  # 6d3: a prévia 2x pede o SORTEAR mais embaixo
 	var alt := rodape + 24.0 + 22.0 + 12.0
 	# Janela no meio da sala (centro em x 320, y 154), tamanho inteiro e posição inteira.
 	_origem = Vector2(roundf(320.0 - larg / 2.0), roundf(154.0 - alt / 2.0))
@@ -65,19 +65,21 @@ func abrir_com() -> void:
 
 func _montar_previa() -> void:
 	# Cartão do preview à esquerda; SORTEAR embaixo dele.
-	var cartao := UiTema.nine_patch(painel, "ui_card_dim", Rect2(_origem + Vector2(12, 30), Vector2(90, 100)))
+	var cartao := UiTema.nine_patch(painel, "ui_card_dim", Rect2(_origem + Vector2(12, 30), Vector2(90, 150)))  # 6d3: cartão mais alto: a prévia agora é 2x
 	cartao.set_meta("ui_align", "ignore")
 	_previa = AnimSprite.new()
 	_previa.definir("fighter_idle_disc_layered")
-	_previa.position = _origem + Vector2(12 + 45, 30 + 100 - 12)
+	_previa.scale = Vector2(2, 2)  # 6d3: 2x (pixel inteiro), como o retrato do mural
+	_previa.position = _origem + Vector2(12 + 45, 30 + 150 - 10)
 	painel.add_child(_previa)
 	var sombra := Sprite2D.new()
 	sombra.texture = UiTema.textura("floor_shadow")
 	sombra.position = _previa.position + Vector2(0, -1)
+	sombra.scale = Vector2(2, 2)
 	painel.add_child(sombra)
 	painel.move_child(sombra, _previa.get_index())
 	_previa.tocar([0, 1, 2, 3], 4.0, true)
-	var s := botao_texto(Rect2(_origem + Vector2(12, 136), Vector2(90, 18)), UiTema.txt("disc_roll", "SORTEAR"), UiTema.Y1)
+	var s := botao_texto(Rect2(_origem + Vector2(12, 184), Vector2(90, 18)), UiTema.txt("disc_roll", "SORTEAR"), UiTema.Y1)
 	s.pressed.connect(func() -> void:
 		sfx.foco()
 		GameState.sortear_rascunho())

@@ -56,7 +56,7 @@ func _numeros_vivos(sala: Node) -> Array:
 	var r: Array = []
 	for n in sala._numeros:
 		if n.ativo:
-			r.append({"texto": str(n._principal.text), "escala": float(n._principal.scale.x), "y": float(n._raiz.position.y),
+			r.append({"texto": str(n._principal.text), "escala": float(n._principal.scale.x), "y": float(n._raiz.position.y), "x": float(n._raiz.position.x), "ret": n.retangulo(),
 				"cor": n._principal.get_theme_color("font_color")})
 	return r
 
@@ -163,6 +163,16 @@ func _rodar_fase6d() -> void:
 			var vivos := _numeros_vivos(sala)
 			au._exigir(vivos.size() == esperado.size(), q[0], "um número por atributo que subiu: %d números para %d atributos" % [vivos.size(), esperado.size()])
 			au._exigir(vivos.size() <= 3, q[0], "no máximo 3 números por clique")
+			# 6d3: nome completo do atributo (nada de FOR/AGI/RES), e o número cabe na sala sem passar da borda
+			var nomes: Array = []
+			for a in esperado:
+				nomes.append(str(au.gs.dados.atributo_info(a.atributo).get("name", a.atributo)).to_upper())
+			for v in vivos:
+				var achou := false
+				for nm in nomes:
+					achou = achou or str(v.texto).contains(" " + str(nm))
+				au._exigir(achou, q[0], "o número leva o nome completo do atributo: '%s'" % v.texto)
+				au._exigir((v.ret as Rect2).position.x >= 0.0 and (v.ret as Rect2).end.x <= 640.0, q[0], "o número cabe na sala: %s" % str((v.ret as Rect2)))
 			var cores := {}
 			for v in vivos:
 				cores[str(v.cor)] = true
@@ -188,4 +198,18 @@ func _rodar_fase6d() -> void:
 		await au._esperar(0.12)
 		var v1 := _numeros_vivos(sala1)
 		au._exigir(v1.size() == 1 and float(v1[0].escala) == 1.0, "f6d_numeros_um_atributo", "aparelho de um atributo: 1 número normal (%d)" % v1.size())
+		au._exigir(str(v1[0].texto).ends_with("FORÇA"), "f6d_numeros_um_atributo", "nome completo: '%s'" % v1[0].texto)
 		await au._ver("f6d_numeros_um_atributo")
+		# 6d3: o crítico também leva o nome inteiro e cabe na sala
+		au.gs.dados.crit_chance = 1.0
+		await au._esperar(1.0)
+		au.gs.clicar()
+		await au._esperar(0.12)
+		var vc := _numeros_vivos(sala1)
+		var tem_crit := false
+		for v in vc:
+			if str(v.texto).ends_with("FORÇA!"):
+				tem_crit = true
+				au._exigir((v.ret as Rect2).position.x >= 0.0 and (v.ret as Rect2).end.x <= 640.0, "f6d_numeros_um_atributo", "o crítico cabe na sala: %s" % str((v.ret as Rect2)))
+		au._exigir(tem_crit, "f6d_numeros_um_atributo", "crítico com o nome completo (+N FORÇA!)")
+		au.gs.dados.crit_chance = 0.0

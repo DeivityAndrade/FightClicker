@@ -201,7 +201,7 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 	_botao_mural = UiTema.botao(painel, Rect2(228, 290, 94, 32))
 	_botao_mural.name = "BotaoMural"
 	UiTema.botao_conteudo(_botao_mural, UiTema.txt("mural_button", "MURAL"), UiTema.COL_HONOR if _mural_chamando else UiTema.WHITE, 1,
-		"icon_honor", 5.0)
+		"icon_honor_16", 5.0)
 	_botao_mural.pressed.connect(func() -> void: mural_pedido.emit())
 	# Fase 6b1: RECEBER NOVO DISCÍPULO (22 letras). Em escala 2 não cabe nos 184 px do botão: usa NOVO DISCÍPULO (plano B do Roteirista).
 	var texto_botao := UiTema.txt("new_disciple_button", "RECEBER NOVO DISCÍPULO")

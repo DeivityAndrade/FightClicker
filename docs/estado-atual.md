@@ -2,7 +2,18 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-18, noite)
+## Situação agora (2026-11-19)
+- **Rodada 6d3 fechada** (pedidos do dono depois de jogar a 6d): números com o nome inteiro do atributo; painel da direita
+  só fecha quando o jogador manda (FIXAR removido); lutador piscando na luta corrigido (`ui/anim_sprite.gd`); garagem nova
+  (carro azul com lona, pneus, geladeira, sem escada/ralo); varredura de arte (`docs/arte/fase6d3-varredura.md`);
+  **símbolo da escola = "R de raiz"** (opção D) em todo lugar; botão SEGURAR na faixa de baixo; pontos da garagem mudaram
+  (Osmar 52,258; mentor sentado 210,254; 2º mentor 26,304). QA `fase6d3-qa.md`, Diretor `fase6d3-revisao.md` (aprovada).
+- Cor do R no peito: azul em roupa clara, amarelo em roupa escura (o dono aceitou manter assim para não sumir).
+- Pendências pequenas: luz pintada do Osmar/John sentado é dos pontos antigos; público da luta, textura do mapa; o "SALVO"
+  some com 4 focos; testes de QA regravam PNGs em `docs/arte/mockups/`.
+- **Próximo: Fase 7a** (lutas por arte + minigame opcional em tela própria). O dono disse que, com tudo certo, pode seguir.
+
+## Situação anterior (2026-11-18, noite)
 - **Refatoração do GameState** na main (PR #19): núcleo + `scripts/estado/`; mapa em `docs/codigo/mapa.md`.
 - **Fase 6d + 6d2 fechada** na main (PR #20): balão perto do cursor, números por atributo, cenas com o lutador criado,
   tela C (painel pela direita, FIXAR, atalhos L/E/H), sala larga repensada, aparelho invisível até a caixa, menos texto.

@@ -68,6 +68,18 @@ var P := {
 	"box_rope": Vector2i(348, 327),           # na frente do lutador, à direita
 }
 const CRATE_OFF := Vector2i(-16, -20)
+## 6d3 (bug B1 do QA): na GARAGEM o carro novo fica no fundo à esquerda (x 82..241); quem ficava na frente dele mudou de ponto.
+## Na academia continua tudo como na 6d2. pt(local, chave) devolve o ponto certo.
+var G6D3 := {
+	"coach": Vector2i(52, 258),       # Osmar: encostado na frente do carro (era 196,236)
+	"mentor": Vector2i(210, 254),     # John / último sentado: atrás do carro, perto do saco (era 132,254); caixote = +(-16,-20)
+	"mentor_2": Vector2i(26, 304),    # 2º mentor de pé: canto da frente à esquerda (era 62,256)
+}
+func pt(local: String, k: String) -> Vector2i:
+	if local == "garagem" and G6D3.has(k):
+		return G6D3[k]
+	return P_COACH if k == "coach" else P[k]
+var CAR_PX := {}
 const GPIV := Vector2i(22, 67)
 const OLD_P := {
 	"mentor": Vector2i(254, 252), "mentor_2": Vector2i(150, 262), "neighbor_1": Vector2i(176, 284),
@@ -303,16 +315,383 @@ func build_garage() -> Image:
 	garage_beam(img)
 	garage_props(img, rng)
 	light_area(img, Rect2i(0, 0, 640, 360), GARAGE_LIGHTS, -3)
+	var pre: Image = img.duplicate()
 	var old := _load(FONTE + "garage_bg.png")
 	var full_old: Image = L.blank(640, 360)
 	full_old.blit_rect(old, Rect2i(Vector2i.ZERO, old.get_size()), OLD.position)
 	paste_old(img, full_old, COPY)
-	# o carro e a sombra dele passam da linha do chão: cola também esse pedaço do chão de hoje
-	paste_old(img, full_old, Rect2i(176, 220, 104, 11))
+	# 6d3: o carrinho de 384 px (que não lia como carro) sai; ali volta a parede nova, e o carro grande entra por cima
+	img.blit_rect(pre, OLD_CAR, OLD_CAR.position)
 	garage_after_light(img)
 	for pr: Rect2i in [PIL_L, PIL_R]:
 		garage_pillar(img, pr)
+	garage_car(img)
 	return img
+
+# ================================================================== 6d3: carro velho grande, pneus, geladeira
+## Pedido do dono (6d3): carro maior e legível (rodas, janelas, faróis, carroceria), pneus com cara de pneu, geladeira com
+## personalidade, sem a escada e sem o ralo (o "retângulo preto"). O carro é sedã antigo de lado, frente para a esquerda,
+## com a lona cinza-azulada (a cor da 6d2) cobrindo a metade de trás; a frente fica à mostra.
+## Fica ATRÁS de todo mundo (é fundo): x 82..239, y 167..229, longe da zona do alvo (x 273..370).
+const OLD_CAR := Rect2i(176, 170, 104, 50)    # onde estava o carro de antes (só parede: y 170..219)
+const CAR_X0 := 84
+const CAR_X1 := 232
+const CAR_G := 227                             # pneus tocam o chão aqui
+const CAR_WF := Vector2(112, 216)              # roda da frente
+const CAR_WR := Vector2(204, 216)              # roda de trás
+
+func car_top(x: int) -> int:
+	if x < 128:
+		return 191
+	if x < 146:
+		return int(round(lerpf(190, 171, float(x - 128) / 18.0)))
+	if x <= 192:
+		return 171
+	if x <= 208:
+		return int(round(lerpf(171, 190, float(x - 192) / 16.0)))
+	return 191
+
+func garage_car(img: Image) -> void:
+	# sombra no chão (passos de rampa, sem alpha): miolo 2 passos, borda 1 passo em dither
+	for y in range(219, 232):
+		for x in range(70, 252):
+			var d := Vector2((x + 0.5 - 132.0) / 66.0, (y + 0.5 - 226.0) / 5.0).length()
+			if d > 1.0 or not on_floor(x, y):
+				continue
+			var n := -2 if d < 0.7 else (-1 if bayer(x, y) > (d - 0.7) / 0.3 * 0.8 else 0)
+			if n != 0:
+				img.set_pixel(x, y, L.shade(img.get_pixel(x, y), n))
+	var c: Image = L.blank(640, 360)
+	# ---- lataria (lado), azul desbotado
+	for y in range(191, 220):
+		var xa := CAR_X0 + 1
+		var xb := CAR_X1
+		if y <= 192:
+			xa += 2
+			xb -= 1
+		if y >= 218:
+			xa += 1
+			xb -= 1
+		var tone := "b2"
+		if y <= 192:
+			tone = "b3"
+		elif y >= 211:
+			tone = "b1"
+		L.R(c, xa, y, xb - xa + 1, 1, tone)
+	L.R(c, CAR_X0 + 1, 219, CAR_X1 - CAR_X0 - 1, 1, "b0")
+	# cabine
+	for y in range(171, 191):
+		var xa := 999
+		var xb := -1
+		for x in range(126, 212):
+			if car_top(x) <= y:
+				xa = mini(xa, x)
+				xb = maxi(xb, x)
+		L.R(c, xa, y, xb - xa + 1, 1, "b3" if y <= 172 else "b2")
+	# vidros escuros com reflexo em diagonal; coluna do meio
+	for y in range(175, 189):
+		var xa := 999
+		var xb := -1
+		for x in range(126, 212):
+			if car_top(x) <= y - 4:
+				xa = mini(xa, x)
+				xb = maxi(xb, x)
+		for x in range(xa + 1, xb):
+			if x >= 165 and x <= 169:
+				continue
+			var t := (x + (y - 175)) % 22
+			L.P(c, x, y, "st3" if t < 2 else ("st1" if t < 4 else "b0"))
+	L.R(c, 130, 189, 78, 1, "b1")
+	# frisos e portas
+	L.R(c, CAR_X0 + 2, 199, CAR_X1 - CAR_X0 - 3, 1, "st3")
+	L.R(c, CAR_X0 + 2, 200, CAR_X1 - CAR_X0 - 3, 1, "st1")
+	for sx: int in [129, 167]:
+		L.R(c, sx, 191 if sx == 129 else 175, 1, (215 - 191) if sx == 129 else (215 - 175), "b0")
+	L.R(c, 154, 195, 4, 1, "st3"); L.P(c, 154, 196, "st1")
+	L.R(c, 192, 195, 4, 1, "st3"); L.P(c, 192, 196, "st1")
+	L.R(c, 130, 185, 3, 3, "b1"); L.P(c, 130, 185, "b3")                       # retrovisor
+	L.line(c, 100, 190, 96, 172, "st2")                                       # antena
+	L.R(c, 86, 191, 30, 1, "b3")                                              # brilho do capô
+	# farol, pisca, para-choques cromados
+	L.R(c, CAR_X0, 194, 3, 4, "y1"); L.R(c, CAR_X0, 195, 2, 2, "y2"); L.R(c, CAR_X0, 198, 2, 2, "y0")
+	L.R(c, CAR_X0 - 3, 204, 8, 5, "st2"); L.R(c, CAR_X0 - 3, 204, 8, 1, "st3"); L.R(c, CAR_X0 - 3, 208, 8, 1, "st0")
+	# traseira (a face virada para o centro, que a perspectiva mostra): lanterna e para-choque
+	L.R(c, CAR_X1 + 1, 192, 5, 27, "b1"); L.R(c, CAR_X1 + 1, 219, 5, 1, "b0")
+	L.R(c, CAR_X1 + 1, 196, 4, 5, "r2"); L.R(c, CAR_X1 + 1, 196, 4, 1, "r3"); L.R(c, CAR_X1 + 1, 200, 4, 1, "r1")
+	L.R(c, CAR_X1 - 3, 204, 10, 5, "st2"); L.R(c, CAR_X1 - 3, 204, 10, 1, "st3"); L.R(c, CAR_X1 - 3, 208, 10, 1, "st0")
+	# ferrugem no estribo
+	for p: Vector2i in [Vector2i(96, 216), Vector2i(98, 217), Vector2i(97, 218), Vector2i(132, 217), Vector2i(134, 216),
+			Vector2i(176, 218), Vector2i(179, 217), Vector2i(222, 216), Vector2i(224, 217)]:
+		L.P(c, p.x, p.y, "br1")
+	L.P(c, 133, 218, "br2"); L.P(c, 223, 218, "br2")
+	# caixas de roda (escuras) e rodas
+	for w: Vector2 in [CAR_WF, CAR_WR]:
+		for y in range(int(w.y) - 15, 220):
+			for x in range(int(w.x) - 15, int(w.x) + 16):
+				var d := Vector2(x + 0.5 - w.x, y + 0.5 - w.y).length()
+				if d <= 14.0:
+					L.P(c, x, y, "d1")
+				elif d <= 15.0 and c.get_pixel(x, y).a > 0.0:
+					L.P(c, x, y, "b1")
+		car_wheel(c, w, w == CAR_WR)
+	# fundo escuro do carro entre as rodas (esconde a sapata do pilar e "assenta" o carro no chão)
+	for x in range(CAR_X0 + 4, CAR_X1 + 2):
+		for y in range(220, 224):
+			if c.get_pixel(x, y).a == 0.0:
+				L.P(c, x, y, "d1" if y < 222 else "ink")
+	# 6d3 (pedido do dono): a lona volta, na cor e no caimento da garagem da 6d2 (pano cinza-azulado, rampa st), cobrindo a
+	# metade de trás: teto de trás, vidro de trás e porta-malas, caindo pelo lado até cobrir o alto da roda de trás. A frente
+	# (farol, roda, para-choque, porta da frente) fica à mostra. Borda da frente em diagonal com rolo claro, dobras verticais
+	# irregulares, barra ondulada e uma corda amarrada.
+	car_tarp(c)
+	c = car_squeeze(c)
+	light_area(c, Rect2i(60, 160, 190, 75), GARAGE_LIGHTS, -1)
+	var o: Image = L.outlined(c.get_region(Rect2i(60, 160, 190, 75)))
+	blend(img, o, 59, 159)
+	CAR_PX.clear()
+	for yy in o.get_height():
+		for xx in o.get_width():
+			if o.get_pixel(xx, yy).a > 0.0:
+				CAR_PX[Vector2i(59 + xx, 159 + yy)] = true
+
+## 6d3 (bug B1): o carro encolhe 25 px no miolo das portas (tira 12 colunas da porta da frente e 13 da de trás; frente, rodas,
+## traseira e lona ficam inteiras) e anda 5 px para a esquerda: fica em x 75..211, entre o John sentado (agora à esquerda do
+## nariz) e o Osmar. Valores finais: tira 36 colunas e anda 11 px (x 69..194). Os pontos estão em G6D3.
+const CAR_CUTS := [[172, 19], [136, 17]]     # [x inicial, largura], da direita para a esquerda
+const CAR_SHIFT := -11
+
+func car_squeeze(c: Image) -> Image:
+	var src: Image = c
+	for cut: Array in CAR_CUTS:
+		var x0: int = cut[0]
+		var w: int = cut[1]
+		var out: Image = L.blank(640, 360)
+		out.blit_rect(src, Rect2i(0, 0, x0, 360), Vector2i.ZERO)
+		out.blit_rect(src, Rect2i(x0 + w, 0, 640 - x0 - w, 360), Vector2i(x0, 0))
+		src = out
+	var moved: Image = L.blank(640, 360)
+	moved.blit_rect(src, Rect2i(0, 0, 640, 360), Vector2i(CAR_SHIFT, 0))
+	return moved
+
+const TARP_X0 := 150
+const TARP_FOLDS := [171, 186, 199, 213, 226]
+
+func tarp_hem(x: int) -> int:
+	var h := 212 if x >= 176 else int(round(lerpf(203, 212, float(x - TARP_X0) / 26.0)))
+	if x > CAR_X1:
+		h = 214
+	return h + (1 if sin(float(x) * 0.55) > 0.35 else 0)
+
+func car_tarp(c: Image) -> void:
+	for x in range(TARP_X0, 242):
+		var top := (car_top(x) if x <= CAR_X1 else 191) - 1
+		if x > 196 and x < 214:
+			top += 1                                  # o pano afunda no vidro de trás
+		var hem := tarp_hem(x)
+		for y in range(top, hem + 1):
+			var xl := float(TARP_X0) + float(y - 170) * 0.5
+			var dx := float(x) - xl
+			if dx < 0.0:
+				# sombra do pano na lataria, logo à frente da borda
+				if dx >= -2.0 and c.get_pixel(x, y).a > 0.0:
+					c.set_pixel(x, y, L.shade(c.get_pixel(x, y), -1))
+				continue
+			var tone := "st2"
+			if y > 201 and bayer(x, y) < float(y - 201) / 9.0:
+				tone = "st1"                           # o pano pende: embaixo mais escuro (volume)
+			if dx < 1.0:
+				tone = "st1"
+			elif dx < 2.5:
+				tone = "st3"                           # rolo da borda da frente
+			elif y <= top + 1:
+				tone = "st3"
+			elif y >= hem:
+				tone = "st0"
+			elif y >= hem - 3:
+				tone = "st1"
+			else:
+				for fx: int in TARP_FOLDS:
+					var fxx := fx + (y - top) / 8
+					if x == fxx:
+						tone = "st1"
+					elif x == fxx - 1 and y < hem - 4:
+						tone = "st3"
+			c.set_pixel(x, y, L.col(tone))
+	# corda amarrada em volta, com o nó
+	for x in range(158, 242):
+		var yy := 199 + (1 if x > 200 else 0)
+		if c.get_pixel(x, yy).a > 0.0 and x >= int(TARP_X0 + (yy - 170) * 0.5) + 3:
+			L.P(c, x, yy, "br3" if x % 3 else "br2")
+	L.R(c, 216, 198, 3, 3, "br2"); L.P(c, 217, 198, "br3"); L.P(c, 215, 201, "br2"); L.P(c, 219, 202, "br2")
+
+## pneu com calota: banda escura, ranhuras, lateral com brilho em cima, calota cromada (a de trás meio murcha)
+func car_wheel(c: Image, w: Vector2, flat: bool) -> void:
+	var r := 11.0
+	for y in range(int(w.y) - 12, CAR_G + 1):
+		for x in range(int(w.x) - 13, int(w.x) + 14):
+			var v := Vector2(x + 0.5 - w.x, y + 0.5 - w.y)
+			if flat and v.y > 7.0:
+				v.y = 7.0 + (v.y - 7.0) * 1.6
+				v.x *= 0.92
+			var d := v.length()
+			if d > r or y > CAR_G:
+				continue
+			var tone := "d1"
+			if d > r - 1.5:
+				tone = "ink" if (x + y) % 3 == 0 else "d1"      # banda com ranhura
+			elif d > r - 3.5:
+				tone = "d2" if v.y < -2.0 and v.x > -6.0 else "d1"
+				if v.y < -6.0 and v.x > 0.0:
+					tone = "g0"
+			elif d > 6.5:
+				tone = "d2"
+			elif d > 5.0:
+				tone = "st1"
+			elif d > 1.6:
+				tone = "st2" if v.x + v.y > 0.0 else "st3"
+			else:
+				tone = "st0"
+			L.P(c, x, y, tone)
+	for a in 4:
+		var p := w + Vector2.from_angle(a * PI / 2.0 + PI / 4.0) * 3.4
+		L.P(c, int(p.x), int(p.y), "st1")
+
+## pilha de pneus deitados, vista um pouco de cima (ponto de fuga em y -28): banda com ranhuras, brilho da luminária
+func tire_stack(img: Image, cx: int, base: int, n: int) -> void:
+	var rx := 18.0
+	var ry := 4.0
+	for i in n:
+		var t := float(base - 4 - 8 - i * 9)          # centro da elipse de cima deste pneu
+		var sx := (i % 2) * 2 - 1                      # pneus um pouco desencontrados
+		for x in range(-18, 19):
+			var nx := (x + 0.5) / rx
+			if absf(nx) > 1.0:
+				continue
+			var e := sqrt(1.0 - nx * nx) * ry
+			var ya := int(round(t + e))
+			var yb := int(round(t + 8.0 + e))
+			for y in range(ya, yb + 1):
+				var k := y - ya
+				var tone := "d2"
+				if k == 0:
+					tone = "d2"
+				elif k <= 2:
+					tone = ("g1" if k == 1 and nx > 0.05 and nx < 0.45 else "g0") if nx > -0.35 and nx < 0.7 else "d2"
+				elif k >= 7:
+					tone = "ink"
+				elif k == 6:
+					tone = "d1"
+				if absf(nx) > 0.82 and tone != "ink":
+					tone = "d1"
+				# ranhuras da banda: traços em zigue-zague, mais juntos nas bordas (é um cilindro)
+				var u := asin(clampf(nx, -1.0, 1.0)) * 7.0
+				if k >= 3 and k <= 5 and int(floor(u + (0.5 if k == 4 else 0.0))) % 2 == 0 and absf(nx) < 0.9:
+					tone = "ink" if tone == "d1" else "d1"
+				L.P(img, cx + sx + x, y, tone)
+	# face de cima do pneu do topo: lateral, furo, letras
+	var tt := float(base - 4 - 8 - (n - 1) * 9)
+	var sx2 := ((n - 1) % 2) * 2 - 1
+	L.ellipse(img, cx + sx2, tt, rx, ry, "d2")
+	L.ring(img, cx + sx2, tt, rx, ry, 1.0, "d1")
+	for x in range(-16, 17):
+		var nx := (x + 0.5) / rx
+		var e := sqrt(maxf(1.0 - nx * nx, 0.0)) * ry
+		if nx > -0.5 and nx < 0.8:
+			L.P(img, cx + sx2 + x, int(round(tt - e)) + 1, "g0")
+	L.ellipse(img, cx + sx2, tt + 0.5, 10.0, 2.4, "ink")
+	L.ring(img, cx + sx2, tt + 0.5, 11.0, 3.0, 1.0, "d1")
+	for x in range(-6, 7, 3):
+		L.R(img, cx + sx2 + x, int(tt) + 3, 2, 1, "g1")
+
+## pneu em pé (com a roda de aço), encostado na pilha
+func tire_standing(img: Image, cx: float, cy: float) -> void:
+	for y in range(int(cy) - 12, int(cy) + 12):
+		for x in range(int(cx) - 11, int(cx) + 12):
+			var v := Vector2((x + 0.5 - cx) / 10.0, (y + 0.5 - cy) / 11.0)
+			var d := v.length()
+			if d > 1.0:
+				continue
+			var tone := "d1"
+			if d > 0.88:
+				tone = "ink" if (x + y) % 2 == 0 else "d1"
+			elif d > 0.62:
+				tone = "g0" if v.y < -0.35 and v.x > -0.2 else "d2"
+			elif d > 0.55:
+				tone = "d1"
+			elif d > 0.22:
+				tone = "st2" if v.x - v.y > 0.1 else "st1"
+			else:
+				tone = "st0"
+			L.P(img, x, y, tone)
+	for a in 5:
+		var p := Vector2(cx, cy) + Vector2.from_angle(a * TAU / 5.0) * Vector2(4.0, 4.4)
+		L.P(img, int(p.x), int(p.y), "ink")
+
+## geladeira velha: lado e tampo à mostra (perspectiva), cromado, ímãs, bilhete, foto, rádio de madeira em cima
+func fridge(img: Image) -> void:
+	var fx := 488
+	var fw := 30
+	var top := 148
+	var bot := 221
+	# lado esquerdo (vai para a parede, encolhe)
+	for i in 5:
+		var x := fx - 5 + i
+		var ya := top - 3 + int(round(i * 0.6))
+		var yb := bot - 5 + i
+		L.R(img, x, ya, 1, yb - ya + 1, "g3" if i >= 3 else "g2")
+	# tampo
+	for k in 3:
+		L.R(img, fx - 4 + k * 2, top - 3 + k, fw - 1, 1, "white")
+	# frente
+	L.R(img, fx, top, fw, bot - top + 1, "cream")
+	L.R(img, fx, top, fw, 1, "white"); L.R(img, fx, top, 1, bot - top - 9, "white")
+	L.R(img, fx + fw - 2, top + 1, 2, bot - top - 9, "g3")
+	# contorno e cantos arredondados de cima
+	L.R(img, fx - 6, top - 4, 1, bot - top - 1, "ink")
+	L.line(img, fx - 6, top - 4, fx - 5 + fw, top - 4, "ink")
+	L.line(img, fx + fw - 1 + 1, top - 3, fx + fw, bot, "ink")
+	L.R(img, fx - 5, bot + 1, fw + 5, 1, "ink")
+	L.P(img, fx + fw - 1, top, "g3"); L.P(img, fx, top, "g3")
+	# portas: congelador / geladeira
+	L.R(img, fx, 171, fw, 1, "g2"); L.R(img, fx, 172, fw, 1, "white")
+	L.R(img, fx + 27, 152, 2, 3, "g2"); L.R(img, fx + 27, 174, 2, 3, "g2")         # dobradiças
+	# puxadores cromados (alavanca antiga)
+	for hy: Array in [[156, 12], [176, 22]]:
+		L.R(img, fx + 3, hy[0], 3, hy[1], "st2")
+		L.R(img, fx + 3, hy[0], 1, hy[1], "st3")
+		L.R(img, fx + 5, hy[0], 1, hy[1], "st1")
+		L.P(img, fx + 3, hy[0], "white")
+	# plaquinha da marca
+	L.R(img, fx + 11, 155, 12, 3, "st2"); L.R(img, fx + 11, 155, 12, 1, "st3"); L.P(img, fx + 12, 156, "r2")
+	# bilhete (lista) com ímã vermelho
+	L.R(img, fx + 11, 180, 10, 13, "white")
+	for ly: Array in [[183, 7], [186, 5], [189, 7], [191, 4]]:
+		L.R(img, fx + 12, ly[0], ly[1], 1, "g2")
+	L.R(img, fx + 15, 179, 3, 2, "r2"); L.P(img, fx + 15, 179, "r3")
+	# foto com ímã amarelo
+	L.R(img, fx + 17, 196, 9, 10, "white")
+	L.R(img, fx + 18, 197, 7, 6, "b1"); L.R(img, fx + 18, 201, 7, 2, "gr1"); L.P(img, fx + 21, 199, "sk1"); L.P(img, fx + 21, 200, "r1")
+	L.R(img, fx + 21, 195, 2, 2, "y1")
+	# ímãs soltos
+	L.R(img, fx + 9, 199, 2, 2, "gr2"); L.R(img, fx + 12, 203, 2, 2, "b2"); L.P(img, fx + 9, 199, "gr3")
+	# ferrugem e amassado embaixo, à esquerda
+	for p: Vector2i in [Vector2i(1, 205), Vector2i(2, 206), Vector2i(1, 207), Vector2i(3, 208), Vector2i(2, 209)]:
+		L.P(img, fx + p.x, p.y, "br2")
+	L.P(img, fx + 2, 207, "br1")
+	# grade do rodapé e pés
+	L.R(img, fx, 212, fw, 7, "d2")
+	for x in range(fx + 2, fx + fw - 2, 2):
+		L.R(img, x, 213, 1, 5, "st1")
+	L.R(img, fx + 1, 219, 4, 2, "d1"); L.R(img, fx + fw - 5, 219, 4, 2, "d1")
+	# rádio de madeira em cima (antena torta)
+	var rr: Image = L.blank(15, 9)
+	L.R(rr, 0, 1, 15, 8, "br2"); L.R(rr, 0, 1, 15, 1, "br3")
+	for x in range(2, 8, 2):
+		for y in range(3, 8, 2):
+			L.P(rr, x, y, "br0")
+	L.R(rr, 10, 3, 3, 3, "y1"); L.P(rr, 11, 4, "br0"); L.R(rr, 3, 0, 9, 1, "st1")
+	L.stamp(img, rr, 485, top - 12)
+	L.line(img, 498, top - 13, 505, top - 26, "st2")
 
 func garage_back_wall(img: Image, rng: RandomNumberGenerator) -> void:
 	L.R(img, BW0, 18, BW1 - BW0, FLOOR_Y - 18, "g1")
@@ -397,21 +776,18 @@ func garage_floor(img: Image, rng: RandomNumberGenerator) -> void:
 	var hw0 := floor_hw(FLOOR_Y)
 	L.R(img, int(VPX - hw0), FLOOR_Y, int(2 * hw0), 1, "d2")
 	# manchas de óleo (longe dos pontos de gente) e um ralo
-	L.ellipse_dither(img, 530, 300, 26, 6, "g0")
-	L.ellipse(img, 536, 301, 10, 2.5, "g0")
+	# 6d3: a mancha de óleo da direita tinha um miolo chapado g0 que lia como buraco; agora é só o dither, mais claro
+	L.ellipse_dither(img, 530, 300, 26, 6, "g1")
+	L.ellipse_dither(img, 536, 301, 12, 3, "g0", 1)
 	L.ellipse_dither(img, 120, 236, 22, 4, "g1", 1)
 	L.ellipse_dither(img, 268, 318, 10, 2, "g1")
-	L.R(img, 388, 290, 14, 5, "d2")
-	for i in 4:
-		L.R(img, 389 + i * 3, 291, 2, 3, "ink")
-	L.R(img, 388, 290, 14, 1, "g0")
+	# 6d3: o ralo (14x5 em 388,290) saiu: no jogo lia como um "retângulo preto solto"
 	# giz: as marcas da corda (do lado esquerdo do alvo, onde o lutador pula) e um círculo de treino
 	for i in 2:
 		var cx := 236 + i * 20
 		L.line(img, cx, 286, cx + 7, 291, "cream")
 		L.line(img, cx + 7, 286, cx, 291, "cream")
-	L.ring(img, 120, 292, 13, 4, 1, "cream")
-	L.dither(img, 20, 312, 18, 2, "g3")
+	# 6d3: o círculo de giz (120,292) e o risco claro (20,312) saíram: soltos no chão, não diziam nada
 
 func garage_beam(img: Image) -> void:
 	L.R(img, BW0, 25, BW1 - BW0, 7, "br1")
@@ -444,25 +820,7 @@ func garage_props(img: Image, rng: RandomNumberGenerator) -> void:
 	L.trap(img, 122, 146, 114, 130, 114, 124, "st2"); L.R(img, 114, 122, 6, 6, "br1"); L.line(img, 115, 146, 124, 146, "st0")
 	L.line(img, 133, 122, 137, 140, "r1"); L.line(img, 141, 122, 137, 140, "r1"); L.R(img, 136, 140, 3, 4, "st1")
 	L.ellipse(img, 147, 130, 4, 4, "y0"); L.ellipse(img, 147, 130, 1.5, 1.5, "ink"); L.R(img, 146, 134, 2, 3, "y0")
-	# bancada
-	L.R(img, 74, 178, 88, 5, "ink")
-	L.R(img, 75, 179, 86, 3, "br2"); L.R(img, 75, 179, 86, 1, "br3")
-	L.R(img, 78, 183, 4, 39, "br1"); L.R(img, 154, 183, 4, 39, "br1")
-	L.R(img, 78, 204, 80, 3, "br1"); L.R(img, 78, 204, 80, 1, "br2")
-	L.R(img, 77, 183, 1, 39, "ink"); L.R(img, 158, 183, 1, 39, "ink")
-	# morsa na ponta esquerda e coisas em cima
-	L.R(img, 78, 170, 14, 8, "st1"); L.R(img, 78, 170, 14, 1, "st3"); L.R(img, 76, 173, 3, 3, "st0"); L.R(img, 84, 166, 2, 4, "st0")
-	var tb: Image = L.blank(22, 11)
-	L.R(tb, 0, 2, 22, 9, "r1"); L.R(tb, 0, 2, 22, 1, "r2"); L.R(tb, 7, 0, 8, 2, "d1"); L.R(tb, 0, 6, 22, 1, "r0")
-	L.stamp(img, tb, 122, 167)
-	var lata: Image = L.blank(8, 9)
-	L.R(lata, 0, 0, 8, 9, "b1"); L.R(lata, 0, 0, 8, 1, "b2"); L.R(lata, 0, 3, 8, 3, "cream")
-	L.stamp(img, lata, 100, 169)
-	# embaixo da bancada: balde e pneu de bicicleta encostado
-	var balde: Image = L.blank(12, 12)
-	L.trap(balde, 0, 11, 0, 11, 1, 10, "st2"); L.R(balde, 0, 0, 12, 1, "st3"); L.R(balde, 2, 4, 8, 1, "st1")
-	L.stamp(img, balde, 86, 209)
-	L.ring(img, 132, 211, 9, 9, 2, "d1"); L.ring(img, 132, 211, 7, 7, 1, "g0"); L.P(img, 132, 211, "st2")
+	# 6d3: a bancada (com morsa, caixa de ferramentas, lata, balde e aro) saiu: o carro grande estaciona na frente desta parede
 	# ---- parede esquerda: janela basculante alta (vidro canelado, grade), luz do dia
 	for xx in range(14, 58):
 		var top := int(round(side_y(xx + 0.5, 124)))
@@ -484,35 +842,15 @@ func garage_props(img: Image, rng: RandomNumberGenerator) -> void:
 	for yy: int in [60, 120, 180]:
 		L.R(img, 61, yy, 4, 2, "st0")
 	# ---- ala direita: geladeira velha, pilha de pneus, mangueira, relógio de luz
-	var gx := 484
-	L.R(img, gx - 1, 147, 34, 76, "ink")
-	L.R(img, gx, 148, 32, 74, "cream"); L.R(img, gx, 148, 32, 2, "white"); L.R(img, gx + 28, 150, 4, 72, "g3")
-	L.R(img, gx, 176, 32, 1, "g2"); L.R(img, gx, 177, 32, 1, "g3")
-	L.R(img, gx + 25, 156, 2, 14, "st1"); L.R(img, gx + 25, 182, 2, 18, "st1")
-	L.R(img, gx + 5, 156, 4, 4, "r2"); L.R(img, gx + 12, 158, 3, 3, "gr2"); L.R(img, gx + 7, 186, 9, 11, "white"); L.R(img, gx + 8, 188, 7, 1, "g2"); L.R(img, gx + 8, 190, 6, 1, "g2")
-	L.P(img, gx + 11, 186, "r1")
-	L.R(img, gx + 2, 218, 4, 4, "d1"); L.R(img, gx + 26, 218, 4, 4, "d1")
-	for i in 4:
-		var ty := 208 - i * 9
-		L.ellipse(img, 543, ty + 4, 19, 5, "ink")
-		L.ellipse(img, 543, ty + 3, 18, 4, "d1")
-		L.ellipse(img, 543, ty + 2, 9, 2, "g0")
-		L.R(img, 525, ty + 3, 37, 1, "d2")
 	L.ring(img, 551, 112, 9, 8, 2, "gr1"); L.ring(img, 551, 112, 6, 5, 1, "gr2"); L.R(img, 550, 102, 2, 3, "st1")
 	L.R(img, 494, 96, 18, 22, "ink"); L.R(img, 495, 97, 16, 20, "st1"); L.R(img, 497, 99, 12, 7, "st3"); L.R(img, 498, 101, 10, 3, "d1")
-	L.R(img, 502, 117, 2, 30, "st0")
-	# ---- parede direita: escada de alumínio encostada
-	var ladder := [[598, 300, 588, 120], [628, 312, 616, 128]]
-	for rail in ladder:
-		L.line(img, rail[0], rail[1], rail[2], rail[3], "st3")
-		L.line(img, rail[0] + 1, rail[1], rail[2] + 1, rail[3], "st1")
-	for i in 9:
-		var t := float(i + 1) / 10.0
-		var ax := int(lerpf(598, 588, t))
-		var ay := int(lerpf(300, 120, t))
-		var bx := int(lerpf(628, 616, t))
-		var by := int(lerpf(312, 128, t))
-		L.line(img, ax, ay, bx, by, "st2")
+	L.R(img, 502, 117, 2, 26, "st0")
+	# 6d3: geladeira refeita, pneus de verdade (pilha + um em pé com roda), escada removida (parede direita fica limpa)
+	fridge(img)
+	# sombra de contato da pilha no chão
+	L.ellipse(img, 544, 221, 21, 3, "d1")
+	tire_stack(img, 544, 222, 4)
+	tire_standing(img, 531.0, 211.0)
 
 func garage_after_light(img: Image) -> void:
 	# luz do dia por baixo da porta (a mesma do garage_bg), agora no chão novo
@@ -565,11 +903,49 @@ func build_gym() -> Image:
 	paste_old(img, full_old, COPY)
 	# pés do banco e a sombra dele passam da linha do chão
 	paste_old(img, full_old, Rect2i(174, 220, 72, 3))
+	gym_fix_6d3(img)
 	for t: Vector2i in TUBES_NEW:
 		blend(img, tube_sprite(), t.x - 24, t.y)
 	for pr: Rect2i in [PIL_L, PIL_R]:
 		gym_pillar(img, pr)
 	return img
+
+## 6d3 (varredura): o nome pintado perdia pixels ao acaso e "BOA" lia "BOR"; o espelho tinha uma estrela de trincas com
+## anel e fita em X que, do tamanho dele, lia como teia/vidro estourado. Agora: nome inteiro (o descascado fica só na borda
+## de baixo das letras) e espelho limpo com reflexo em diagonal e UMA trinca curta no canto de cima, com um pedaço de fita.
+func gym_fix_6d3(img: Image) -> void:
+	var lay: Image = L.blank(640, 360)
+	var nm: Image = L.blank(80, 18)
+	L.text_center(nm, "ACADEMIA", 40, 0, "gr1")
+	L.text_center(nm, "BOA ESQUINA", 40, 9, "r1")
+	for y in 18:
+		for x in 80:
+			if nm.get_pixel(x, y).a > 0.0 and (y == 6 or y == 15) and (x * 7 + y) % 5 == 0:
+				nm.set_pixel(x, y, L.C["g3"])
+	L.blit(lay, nm, 257, 35)
+	var mx := 266
+	var my := 55
+	var mw := 62
+	var mh := 90
+	L.R(lay, mx, my, mw, mh, "g3")
+	L.R(lay, mx, my + mh - 30, mw, 30, "g2")
+	L.dither(lay, mx, my + mh - 34, mw, 4, "g2")
+	L.R(lay, mx, my + mh - 30, mw, 1, "cream")
+	for i in 3:
+		L.line(lay, mx + 8 + i * 6, my + mh - 32, mx + 34 + i * 6, my + 2, "white" if i != 1 else "cream")
+	L.line(lay, mx + 48, my + 40, mx + 60, my + 20, "white")
+	# uma trinca curta no canto de cima à direita, presa com um pedaço de fita
+	var h := Vector2i(mx + mw - 6, my + 5)
+	for r: Array in [[-14, 10], [-6, 16], [-16, 2]]:
+		L.line(lay, h.x, h.y, h.x + int(r[0]), h.y + int(r[1]), "g1")
+	L.R(lay, h.x - 3, h.y - 2, 7, 3, "cream"); L.R(lay, h.x - 3, h.y, 7, 1, "g3")
+	for y in range(30, 150):
+		for x in range(250, 345):
+			var c := lay.get_pixel(x, y)
+			if c.a == 0.0:
+				continue
+			var st := gym_step_old(x, y)
+			img.set_pixel(x, y, L.shade(c, st) if st != 0 else c)
 
 func gym_back_wall(img: Image, rng: RandomNumberGenerator) -> void:
 	L.R(img, BW0, 18, BW1 - BW0, WAIN_Y - 18, "cream")
@@ -848,13 +1224,13 @@ func cast(local: String, equipe: String) -> Array:
 	it.append(item_spr("saco", "bag_l0_idle" + s, P_BAG, 253.0, "alvo"))
 	it.append(item_img("lutador", layered("fighter_idle_disc_layered", 0, CUR_LOOK), P_FIGHTER, "alvo"))
 	var coach_id := "coach_idle_gym" if local == "academia" else "coach_idle"
-	it.append(item_img("osmar", frame_of(coach_id, 0), P_COACH, "gente"))
+	it.append(item_img("osmar", frame_of(coach_id, 0), pt(local, "coach"), "gente"))
 	if equipe == "cheia":
-		var m: Vector2i = P.mentor
+		var m: Vector2i = pt(local, "mentor")
 		it.append({"name": "caixote", "img": frame_of("garage_crate" + s), "at": m + CRATE_OFF - Vector2i(0, 0), "y": float(m.y - 2),
 			"shadow": null, "kind": "objeto", "id": "garage_crate" + s, "pos": m + CRATE_OFF})
 		it.append(item_img("john_sentado", frame_of("john_sit_rest", 0), m, "gente"))
-		it.append(item_img("mentor_2", layered("disciple_stand_bare", 0, M2_LOOK), P.mentor_2, "gente"))
+		it.append(item_img("mentor_2", layered("disciple_stand_bare", 0, M2_LOOK), pt(local, "mentor_2"), "gente"))
 		for id in CREW:
 			it.append(item_spr(id, id, P[id], float(P[id].y), "gente", 0, true))
 		it.append(item_spr("esteira", "treadmill_l1_side" + s if spr("treadmill_l1_side" + s).size() > 0 else "treadmill_l0_side" + s,
@@ -1071,8 +1447,8 @@ func build_occ(local: String) -> void:
 	add_occ(local, "saco_centro", frames_at("bag_l0_idle" + s, P_BAG), "alvo", 253.0)
 	add_occ(local, "saco_de_lado", frames_at("bag_l0_side" + s, P_BAG_SIDE), "aparelho", 236.0)
 	add_occ(local, "corda_gancho", frames_at("rope_l0_idle" + s, P_ROPE), "aparelho", 206.0)
-	add_occ(local, "osmar", frames_at(coach_id, P_COACH), "gente", float(P_COACH.y))
-	var m: Vector2i = P.mentor
+	add_occ(local, "osmar", frames_at(coach_id, pt(local, "coach")), "gente", float(pt(local, "coach").y))
+	var m: Vector2i = pt(local, "mentor")
 	add_occ(local, "john_sentado", frames_at("john_sit_rest", m), "gente", float(m.y))
 	var a2 := []
 	for q in 4:
@@ -1081,8 +1457,8 @@ func build_occ(local: String) -> void:
 	add_occ(local, "caixote", [[frame_of("garage_crate" + s), m + CRATE_OFF - Vector2i(16, 20) + Vector2i(16, 20)]], "objeto", float(m.y - 2))
 	var a3 := []
 	for q in 4:
-		a3.append([layered("disciple_stand_bare", q, M2_LOOK), P.mentor_2 - GPIV])
-	add_occ(local, "mentor_2", a3, "gente", float(P.mentor_2.y))
+		a3.append([layered("disciple_stand_bare", q, M2_LOOK), pt(local, "mentor_2") - GPIV])
+	add_occ(local, "mentor_2", a3, "gente", float(pt(local, "mentor_2").y))
 	for id in CREW:
 		add_occ(local, id, frames_at(id, P[id]), "gente", float(P[id].y))
 	add_occ(local, "esteira_encostada", frames_at("treadmill_l0_side" + s, P.treadmill_side), "aparelho", float(P.treadmill_side.y))
@@ -1113,7 +1489,7 @@ func head_box(name: String) -> Rect2i:
 		return Rect2i()
 	var r: Rect2i = o.rect
 	if name in ["john_sentado", "ultimo_sentado"]:
-		var mm: Vector2i = P.mentor
+		var mm: Vector2i = pt(CUR_LOCAL, "mentor")
 		return Rect2i(mm.x - 6, mm.y - 57, 14, 14)
 	return Rect2i(r.position.x + r.size.x / 2 - 7, r.position.y, 14, 14)
 
@@ -1224,7 +1600,19 @@ func check(local: String) -> int:
 	for k in keys:
 		if occ[k].kind == "gente" or k == "lutador":
 			hb[k] = head_box(k)
-	var ob := Rect2i(clampi(P_COACH.x + 1 - 77, 4, 640 - 158), P_COACH.y - 63 - 6 - 3 - 26 - 6, 154, 36)
+	var pc := pt(local, "coach")
+	var ob := Rect2i(clampi(pc.x + 1 - 77, 4, 640 - 158), pc.y - 63 - 6 - 3 - 26 - 6, 154, 36)
+	# 7) 6d3: ninguém (gente, caixote, caixas) na frente do carro da garagem
+	if local == "garagem":
+		for k in keys:
+			if occ[k].kind in ["parede", "alvo"] or k in ["saco_de_lado", "corda_gancho"]:
+				continue
+			var n := 0
+			for v in occ[k].px:
+				if CAR_PX.has(v):
+					n += 1
+			if n > 0:
+				probs.append("%s na frente do carro: %d px" % [k, n])
 	for k in hb:
 		if k == "osmar":
 			continue

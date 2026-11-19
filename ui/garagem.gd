@@ -27,6 +27,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = _tema()
+	move_child($FaixaAssistido, _barra.get_index() + 1)  # 6d3: o botão SEGURAR mora na faixa de baixo: tem de receber o clique antes dela
 
 	# Fase 6d: a descrição dos itens da loja/melhorias aparece no balão colado ao cursor (Dica, pelo próprio PainelLoja);
 	# a caixa de informação do painel de atributos fica só para a dica de cada atributo.
@@ -105,7 +106,7 @@ func _process(_delta: float) -> void:
 	# O painel fecha sozinho durante as cenas (a cena do posto, a chegada à academia, a saída do John) e volta como estava.
 	var em_cena := cena_forcada or GameState.cena_sala != "" or GameState.sucessao_estado() != "none" or (_cena_ui != null and _cena_ui.player != null and _cena_ui.player.ativa)
 	_dir.forcar_fechado(em_cena)
-	Balao.limite_direito = minf(_dir.borda_esquerda() - 6.0, 636.0) if _dir.esta_aberto() and _dir.esta_fixado() else 636.0
+	Balao.limite_direito = minf(_dir.borda_esquerda() - 6.0, 636.0) if _dir.esta_aberto() else 636.0
 	if _so_sala:
 		_aplicar_so_sala()
 	_sala.janela_aberta = _fluxo.ocupado()  # caixa não recebe clique com janela, prévia ou luta por cima
@@ -152,7 +153,7 @@ func _atalho_painel(tecla: int) -> bool:
 		definir_so_sala(false)  # O1: L ou E tira do "só a sala" e abre o painel na aba pedida
 		_dir.abrir(aba)
 	else:
-		_dir.alternar(aba)  # O2: mesma aba aberta fecha (e solta o FIXAR); outra aba só troca e continua fixado
+		_dir.alternar(aba)  # O2: mesma aba aberta fecha; outra aba só troca e continua aberto
 	return true
 
 
@@ -232,6 +233,4 @@ func _ao_fala_pedida(speaker: String, texto: String, id: String) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		GameState.registrar_clique()
-		# Clique na sala: o painel solto fecha (o fixado fica). Clique no próprio painel ou na aba não conta.
-		if _dir.esta_aberto() and not _dir.esta_fixado() and get_viewport().gui_get_hovered_control() == _sala:
-			_dir.fechar_se_solto()
+		# 6d3: clicar na sala não fecha o painel; só a aba/seta ou L/E na mesma aba.
