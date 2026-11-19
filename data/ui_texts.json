@@ -445,5 +445,65 @@
 	"preview_missing_line": "FALTA UNS {n} DE {atributo}",
 	"hall_cost": "{n} DE HONRA",
 	"mural_end_defeat_unknown": "PAROU NUMA LUTA",
-	"mural_empty": "AINDA NINGUÉM PASSOU O POSTO"
+	"mural_empty": "AINDA NINGUÉM PASSOU O POSTO",
+
+	"passive_boxing_name": "MÃO RÁPIDA",
+	"passive_bjj_name": "FINALIZAÇÃO",
+	"passive_boxing_line": "SOCO A CADA {s} S. K.O. ATÉ {ko}% POR GOLPE. CANSA NO 3º ROUND",
+	"passive_boxing_line_defensive": "SOCO A CADA {s} S. K.O. ATÉ {ko}% POR GOLPE. CANSA MENOS",
+	"passive_boxing_counter_warn": "ELE CONTRAGOLPEIA",
+	"passive_bjj_line": "PEGADA CHEIA NO {r}º ROUND ({t} S). {p}% POR GOLPE PARA FINALIZAR",
+	"passive_bjj_line_late": "A PEGADA NÃO ENCHE ANTES DO GONGO",
+	"passive_share_boxing": "{n} EM 10 VITÓRIAS POR K.O.",
+	"passive_share_bjj": "{n} EM 10 VITÓRIAS POR FINALIZAÇÃO",
+	"fight_streak": "EMBALO {n}",
+	"fight_tired": "CANSADO",
+	"fight_grip_full": "PEGADA!",
+	"fight_submission": "FINALIZOU!",
+	"fight_special_banner_bjj": "SUPER PEGADA!",
+	"reason_passive_boxing_counter": "OS CONTRAGOLPES DELE TIRARAM {n}% DA SUA VIDA",
+	"reason_passive_boxing_tired": "VOCÊ CANSOU NO 3º ROUND",
+	"reason_passive_boxing_streak": "ELE CORTOU SEU EMBALO (NO MÁXIMO {n})",
+	"reason_passive_bjj_grip_late": "A PEGADA ENCHERIA NO {r}º ROUND. VOCÊ CAIU ANTES",
+	"reason_passive_bjj_escaped": "A PEGADA ENCHEU, MAS ELE ESCAPOU {n} VEZES",
+	"reason_passive_bjj_never_hurt": "A PEGADA ENCHEU, MAS ELE NUNCA BAIXOU DE 60%",
+	"tip_passive_boxing_counter": [
+		"NO AGRESSIVO, CADA ERRO SEU VIRA SOCO DELE",
+		"ERROU DEMAIS? TROQUE O AGRESSIVO POR OUTRA TÁTICA"
+	],
+	"tip_passive_boxing_tired": [
+		"O DEFENSIVO GUARDA O FÔLEGO",
+		"BOXEADOR QUE GASTA TUDO NO 2º ROUND CHEGA MORTO NO 3º"
+	],
+	"tip_passive_boxing_streak": [
+		"AGILIDADE SEGURA O EMBALO",
+		"MAIS CORDA. ACERTO SEGUIDO VIRA K.O."
+	],
+	"tip_passive_bjj_grip_late": [
+		"RESISTÊNCIA (OU DEFENSIVO) ENCHE A PEGADA ANTES",
+		"MAIS ESTEIRA. A PEGADA PRECISA DE TEMPO EM PÉ"
+	],
+	"tip_passive_bjj_escaped": [
+		"FORÇA FECHA A FINALIZAÇÃO",
+		"PEGOU, MAS NÃO FECHOU. FORÇA NO SACO"
+	],
+	"tip_passive_bjj_never_hurt": [
+		"MAIS FORÇA PARA CANSAR ELE",
+		"SEM DANO, NÃO TEM FINALIZAÇÃO. TREINE FORÇA"
+	],
+	"art_card_boxing_fight": "SOCA MAIS RÁPIDO E ACABA CEDO COM K.O. CANSA NO 3º ROUND",
+	"art_card_bjj_fight": "FINALIZAÇÃO: SOCA DEVAGAR, MAS A PEGADA ENCHE E ELE BATE NO CHÃO",
+	"art_focus_boxing": "TREINE AGILIDADE: ELA ACELERA O SOCO E O K.O.",
+	"art_focus_bjj": "RESISTÊNCIA ENCHE A PEGADA. FORÇA FECHA",
+	"art_focus_none": "SEM ARTE: TREINE UM POUCO DE TUDO",
+	"mentor_style_boxing": [
+		"boxe é pé leve.\ntreina a corda.",
+		"acerto seguido\nvira nocaute."
+	],
+	"mentor_style_bjj": [
+		"no chão, quem aguenta\nmais, manda.",
+		"a pegada enche.\nsó não tenha pressa."
+	],
+	"arena_league_name": "GINÁSIO ALVORADA",
+	"bonus_warm_name": "AQUECIDO"
 }

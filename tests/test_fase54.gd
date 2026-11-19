@@ -184,21 +184,21 @@ func _teste_artes() -> void:
 	var arts := ["boxing", "bjj"]
 	var sem := _com_nos("f54_art0", [], arts)
 	sem.escolher_arte("boxing")
-	var dano0: float = sem.motor.traco.damage_mult
-	var rec0: float = sem.academia.arte("bjj").fight.taken_mult
+	var bonus0: float = sem.motor.extra_passiva
+	checar_igual(bonus0, 0.0, "sem nós: extra da passiva 0")
 	var bx := _com_nos("f54_art1", nos, arts)
 	bx.escolher_arte("boxing")
-	checar(absf(bx.motor.traco.damage_mult - dano0 * 1.1) < 1e-9, "Contragolpe: dano x1,10 (1,10 -> 1,21)")
-	checar_igual(bx.motor.traco.taken_mult, 1.0, "Boxe não mexe no dano recebido")
+	checar(absf(bx.motor.extra_passiva - 0.5) < 1e-9, "Contragolpe: chance de K.O. +50% (extra da passiva 0,5)")
+	checar_igual(bx.motor.passiva.taken_mult, 1.0, "Boxe não mexe no dano recebido")
 	checar(absf(bx._b("click_bonus") - 1.25) < 1e-9, "Jogo de pernas vale no Boxe")
 	checar_igual(bx._b("passive_bonus"), 0.0, "Respirar fundo (JJ) não vale no Boxe")
 	var jj := _com_nos("f54_art2", nos, arts)
 	jj.escolher_arte("bjj")
-	checar(absf(jj.motor.traco.taken_mult - rec0 * 0.9) < 1e-9, "Base firme: recebido x0,90 (0,90 -> 0,81)")
+	checar(absf(jj.motor.extra_passiva - 0.5) < 1e-9, "Base firme: pegada +50% (extra da passiva 0,5)")
 	checar_igual(jj._b("click_bonus"), 1.0, "Jogo de pernas não vale no JJ (só o Jab)")
 	checar(absf(jj._b("passive_bonus") - 0.25) < 1e-9, "Respirar fundo vale no JJ")
-	checar_igual(bx.texto_traco_luta("boxing"), bx.preencher(str(bx.academia.arte("boxing").fight_text), {"pct": 21}), "texto do traço: Boxe +21%")
-	checar_igual(jj.texto_traco_luta("bjj"), jj.preencher(str(jj.academia.arte("bjj").fight_text), {"pct": 19}), "texto do traço: JJ -19%")
+	checar_igual(bx.texto_passiva("boxing"), bx.texto_ui("art_card_boxing_fight"), "texto da passiva do Boxe")
+	checar_igual(jj.texto_passiva("bjj"), jj.texto_ui("art_card_bjj_fight"), "texto da passiva do Jiu-jitsu")
 	checar(jj.texto_efeito_no(jj.lutas.no_da_arvore("link_shout")).contains("0.5"), "Grito +0.5 vem do formatador")
 	for g in [sem, bx, jj]:
 		_liberar(g)

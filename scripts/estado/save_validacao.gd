@@ -157,7 +157,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	gs._dia_chegou_emitido = false
 	gs.nos_ativos_ids = _validar_ativos(c.get("active_nodes", null))
 	gs._arvore._recalcular_bonus()
-	gs._academia._atualizar_traco()
+	gs._academia._atualizar_passiva()
 	gs.nivel_metronomo = gs._inteiro_valido(c.get("metronome_level", 0), float(gs.metronomo_niveis()))
 	gs._acc_metronomo = 0.0
 	gs._acc_assist = gs._aparelhos._assist_primeiro()
@@ -204,6 +204,15 @@ func _validar_luta(v: Variant) -> Dictionary:
 			"t_end": gs._numero_valido(r.get("t_end", 0.0)), "round": gs._inteiro_valido(r.get("round", 0), 1000.0),
 			"pct_player": gs._numero_valido(r.get("pct_player", 0.0)), "pct_opponent": gs._numero_valido(r.get("pct_opponent", 0.0))},
 	}
+	# 7a1: `finish` é opcional (save antigo sem ele vale "damage" se ko, senão "points"; a UI usa luta_atual().result.finish).
+	# Incoerente (editado à mão) = campo descartado: precisa bater com `ko`/`win` e com a arte da carreira.
+	var fim := str(r.get("finish", ""))
+	var tipo_arte := str(gs.academia.arte(gs.arte_id).get("passive", {}).get("type", ""))
+	var ko_ok: bool = luta_ok.result.ko
+	var ganhou: bool = luta_ok.result.win
+	var coerente: bool = (fim == "damage" and ko_ok) or (fim == "points" and not ko_ok) 		or (fim == "knockout" and ko_ok and ganhou and tipo_arte == "fast_hands") 		or (fim == "submission" and ko_ok and ganhou and tipo_arte == "submission")
+	if coerente and tipo_arte != "":  # sem arte o jogo nunca grava `finish`
+		luta_ok.result["finish"] = fim
 	# Motivo calculado em lutar(); ausente (save antigo) = calculado sob demanda.
 	if motivo_salvo is Dictionary and not motivo_salvo.is_empty():
 		luta_ok["reason"] = motivo_salvo.duplicate(true)
@@ -347,7 +356,7 @@ func _validar_local_e_arte(c: Dictionary) -> void:
 		a = ""
 	gs.arte_id = a
 	gs.arte_segundos = gs._numero_valido(c.get("art_seconds", 0.0)) if a != "" else 0.0
-	gs._academia._atualizar_traco()
+	gs._academia._atualizar_passiva()
 
 
 # Escada além do 1º adversário de outro local com a carreira na garagem (save editado): vai para esse local.

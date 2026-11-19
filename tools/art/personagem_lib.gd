@@ -1210,6 +1210,9 @@ const SHOES := {
 	"flat": {"rows": SHOE_FLAT, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": 0.0},
 	"ball": {"rows": SHOE_BALL, "toe": Vector2i(10, 5), "ankle": Vector2i(2, 0), "ang": 0.0},
 	"up": {"rows": SHOE_FLAT, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": -90.0},   # deitado, ponta para cima
+	# 7a1: ajoelhado (montado no chão), peito do pé no chão e sola para cima, ponta para trás. O "toe" fica no canto de
+	# cima, atrás; o tornozelo cai 7 px à frente e 4 abaixo dele.
+	"kneel": {"rows": SHOE_FLAT, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": 180.0},
 	"34": {"rows": SHOE_34, "toe": Vector2i(8, 4), "ankle": Vector2i(3, 0), "ang": 0.0},
 	"34ball": {"rows": SHOE_34_BALL, "toe": Vector2i(8, 5), "ankle": Vector2i(2, 0), "ang": 0.0},
 }

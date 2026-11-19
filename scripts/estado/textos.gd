@@ -155,23 +155,71 @@ func texto_regra_arte(id: String) -> String:
 	return gs.preencher(str(a.rule_text), vars)
 
 
-## Texto do traço de luta da arte: "BOXE: +10% DE DANO", "JIU-JITSU: -10% DE DANO RECEBIDO". "" sem arte.
-func texto_traco_luta(id: String) -> String:
+## Texto da passiva de luta da arte para o cartão da janela de escolha ("MÃO RÁPIDA: ..."). "" sem arte.
+## Vem da chave art_card_<arte>_fight (ui_texts.json, do Roteirista); sem ela, `fight_text` do arts.json.
+func texto_passiva(id: String) -> String:
 	var a = gs.academia.arte(id)
 	if a.is_empty():
 		return ""
-	var f: Dictionary = a.fight
-	var extra := 0.0  # Fase 5.4: nós ativos da arte (Contragolpe / Base firme), valem também na janela de escolha
-	for nid in gs.nos_ativos_ids:
-		var n: Dictionary = gs.lutas.no_da_arvore(str(nid))
-		if not n.is_empty() and n.effect_type == "art_fight_bonus" and n.requires_art == id:
-			extra += float(n.effect_value)
-	var pct := 0
-	if absf(float(f.damage_mult) - 1.0) > 1.0e-9:
-		pct = int(round((float(f.damage_mult) * (1.0 + extra) - 1.0) * 100.0))
-	elif absf(float(f.taken_mult) - 1.0) > 1.0e-9:
-		pct = int(round((1.0 - float(f.taken_mult) * maxf(0.0, 1.0 - extra)) * 100.0))
-	return gs.preencher(str(a.fight_text), {"pct": pct})
+	var t := texto_ui("art_card_%s_fight" % id, str(a.fight_text))
+	return gs.preencher(t, {})
+
+
+## Nome antigo (o traço +10%/-10% saiu na 7a1): devolve o texto da passiva.
+func texto_traco_luta(id: String) -> String:
+	return texto_passiva(id)
+
+
+func _dec(x: float, casas: int) -> String:
+	return (("%." + str(casas) + "f") % x).replace(".", ",")  # o jogo usa vírgula decimal
+
+
+## Linha da passiva na prévia, para uma tática: {name, kind, line, share, share_n, state}. {} sem passiva.
+## `est` = Luta.estado_passiva da tática; `det` = Luta.chance_detalhada da mesma tática.
+## Textos de data/ui_texts.json (passive_*); a UI só mostra. Nada aqui muda a luta.
+func passiva_da_previa(est: Dictionary, det: Dictionary, tatica_id: String) -> Dictionary:
+	var P: Dictionary = gs.motor.passiva
+	if P.is_empty() or est.is_empty():
+		return {}
+	var vit := int(det.get("wins", 0))
+	var n10 := int(round(10.0 * float(det.get("wins_passive", 0)) / float(vit))) if vit > 0 else 0
+	if P.type == "fast_hands":
+		var tp: Dictionary = P.tactics.get(tatica_id, {})
+		var descansa := float(tp.get("tired_interval_mult", P.tired_interval_mult)) <= 1.0 + 1.0e-9
+		var chave := "passive_boxing_line_defensive" if descansa else "passive_boxing_line"
+		var linha := gs.preencher(texto_ui(chave, "SOCO A CADA {s} S. K.O. ATÉ {ko}% POR GOLPE. " + ("NÃO CANSA" if descansa else "CANSA NO 3º ROUND")),
+			{"s": _dec(est.interval, 2), "ko": int(round(100.0 * float(est.ko_max)))})
+		if float(est.opp_counter) > 0.0:
+			linha += ". " + texto_ui("passive_boxing_counter_warn", "ELE CONTRAGOLPEIA")
+		return {"name": texto_ui("passive_boxing_name", "MÃO RÁPIDA"), "kind": "fast_hands", "line": linha,
+			"share": gs.preencher(texto_ui("passive_share_boxing", "{n} EM 10 VITÓRIAS POR K.O."), {"n": n10}), "share_n": n10,
+			"state": {"streak_max": est.streak_max, "ko_max": est.ko_max, "interval": est.interval, "tired_at": est.tired_at,
+				"tired_round": est.tired_round, "tired": not descansa, "tires": not descansa, "opp_counter": est.opp_counter}}
+	var linha_j := ""
+	if est.grip_in_time:
+		linha_j = gs.preencher(texto_ui("passive_bjj_line", "PEGADA CHEIA NO {r}º ROUND ({t} S). {p}% POR GOLPE PARA FINALIZAR"),
+			{"r": est.grip_round, "t": _dec(est.grip_full_at, 1), "p": int(round(100.0 * float(est.sub_chance)))})
+	else:
+		linha_j = texto_ui("passive_bjj_line_late", "A PEGADA NÃO ENCHE ANTES DO GONGO")
+	return {"name": texto_ui("passive_bjj_name", "FINALIZAÇÃO"), "kind": "submission", "line": linha_j,
+		"share": gs.preencher(texto_ui("passive_share_bjj", "{n} EM 10 VITÓRIAS POR FINALIZAÇÃO"), {"n": n10}), "share_n": n10,
+		"state": {"grip_full_at": est.grip_full_at, "grip_round": est.grip_round, "grip_in_time": est.grip_in_time,
+			"sub_chance": est.sub_chance}}
+
+
+## Nota da passiva no fim da derrota: {id, n, r, text, tip} (text/tip "" se a chave faltar). {} sem nota.
+## `nota` vem de Luta.nota_passiva (guardada no motivo); `semente` escolhe a dica entre as da chave tip_passive_<id>.
+func passiva_nota_textos(nota: Dictionary, semente: int) -> Dictionary:
+	if nota.is_empty():
+		return {}
+	var id := str(nota.id)
+	var tips := lista_ui("tip_passive_" + id)
+	var modelo := texto_ui("reason_passive_" + id, "")
+	if int(nota.n) == 1:  # singular: "1 VEZ" (chave `_one` se existir; senão troca VEZES por VEZ)
+		modelo = texto_ui("reason_passive_" + id + "_one", modelo.replace("VEZES", "VEZ").replace("vezes", "vez"))
+	return {"id": id, "n": nota.n, "r": nota.r,
+		"text": gs.preencher(modelo, {"n": nota.n, "r": nota.r}),
+		"tip": str(tips[semente % tips.size()]) if not tips.is_empty() else ""}
 
 
 ## Texto "FOR 40% / AGI 45% / RES 15%" do aparelho de arte ("" para os de toda carreira).
@@ -262,11 +310,18 @@ func textos_fim(f: Dictionary = {}) -> Dictionary:
 		tt = ""
 	if tt != "" and not pool.is_empty():
 		dica_t = str(pool[int(r.get("tip", 0)) % pool.size()])
-	return {"title": texto_ui("end_defeat_title"), "who": quem, "reason": principal, "stat": texto_stat,
+	var saida := {"title": texto_ui("end_defeat_title"), "who": quem, "reason": principal, "stat": texto_stat,
 		"tip": dica, "tip_tactic": dica_t, "support": texto_ui("end_support_line_disc", texto_ui("end_support_line")),
 		"tactic_name": str(gs.lutas.tatica(tt).get("name", "")),
 		"wait_green": "" if kind == "luck" else texto_ui("tip_wait_green"),
 		"tip_extra": _dica_extra(f)}
+	# 7a1: nota da passiva (só com arte e quando pesou): passive_note (texto) e passive_note_tip (dica), abaixo da estatística.
+	var nota := passiva_nota_textos(r.get("passive_note", {}), semente)
+	if not nota.is_empty():
+		saida["passive_note"] = nota.text
+		saida["passive_note_tip"] = nota.tip
+		saida["passive_note_id"] = nota.id
+	return saida
 
 
 # Fase 5 (opcional para a UI): dica extra do fim de carreira. Derrota na academia -> `tip_gym_loss`; derrota jogando de

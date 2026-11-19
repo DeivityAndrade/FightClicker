@@ -2,10 +2,19 @@
 	"_sobre": "Golpes das lutas (Fase 6 proposta). Os MESMOS golpes valem para o jogador e para os adversários: cada lutador tem um estilo, e o estilo lista os golpes. A escolha do golpe é só visual: não usa o sorteio da simulação e não muda dano, esquiva nem resultado de luta. Campo `anim` = nome da ação no manifest (by_data_id.<lutador>.actions, ou fight_player_<anim> / <id>_<anim>); se o sprite não existir, a tela usa o golpe antigo (jab/heavy). Campo `defender_anim` = reação de quem apanha (também com fallback para `hit`).",
 	"_kinds": "Tipo do evento onde o golpe pode aparecer: jab (acerto normal), crit (crítico), counter (contra-ataque). Esquiva e bloqueio não usam golpe novo.",
 	"_unlock": "base = todo lutador do estilo já tem; ou o id de um nó da árvore de habilidades (reservado: a árvore vai liberar golpes por estilo).",
+	"_fase7a1": "Fase 7a1 (docs/fases/fase7a1-design.md §7): o jogador usa o estilo da arte (boxing / bjj; sem arte = boxing). Kinds novos: takedown (o 1º acerto do Jiu-jitsu com a pegada em ground_at_grip leva a luta para o chão) e submission (o acerto que finaliza). Campo `phase` (standing | ground): em pé só entram golpes standing; depois da queda, só ground. O adversário por baixo usa o estilo ground_bottom. Tudo só visual.",
 	"styles": {
 		"boxing": {
 			"name": "Boxe",
 			"moves": ["jab", "heavy", "hook", "uppercut", "body_shot"]
+		},
+		"bjj": {
+			"name": "Jiu-jitsu",
+			"moves": ["clinch_push", "takedown", "ground_pressure", "submission"]
+		},
+		"ground_bottom": {
+			"name": "Por baixo",
+			"moves": ["ground_punch"]
 		}
 	},
 	"moves": {
@@ -26,6 +35,26 @@
 		"body_shot": {
 			"style": "boxing", "name": "Soco no estômago", "anim": "body_shot", "kinds": ["jab"], "unlock": "base",
 			"defender_anim": "hit_body"
+		},
+		"clinch_push": {
+			"style": "bjj", "name": "Empurrão no clinch", "anim": "clinch_push", "kinds": ["jab", "crit", "counter"], "unlock": "base",
+			"phase": "standing", "defender_anim": "hit_clinch"
+		},
+		"takedown": {
+			"style": "bjj", "name": "Queda (pega a perna)", "anim": "takedown", "kinds": ["takedown"], "unlock": "base",
+			"phase": "standing", "defender_anim": "fall"
+		},
+		"ground_pressure": {
+			"style": "bjj", "name": "Pressão no chão", "anim": "ground_pressure", "kinds": ["jab", "crit", "counter"], "unlock": "base",
+			"phase": "ground", "defender_anim": "ground_hit"
+		},
+		"submission": {
+			"style": "bjj", "name": "Finalização", "anim": "submission", "kinds": ["submission"], "unlock": "base",
+			"phase": "ground", "defender_anim": "tap_out"
+		},
+		"ground_punch": {
+			"style": "ground_bottom", "name": "Soco de baixo", "anim": "ground_punch", "kinds": ["jab", "crit", "counter"], "unlock": "base",
+			"phase": "ground", "defender_anim": "ground_top_hit"
 		}
 	}
 }

@@ -1189,6 +1189,8 @@ func gen_reacao(oid: String, b: Dictionary, nome: String, rea: Dictionary, base:
 		# as luvas para o lado das costas em todas as reações dos adversários.)
 		p["hf"] = vet(q.get("hf", [14, -58])) * s
 		p["hb"] = vet(q.get("hb", [5, -61])) * s
+		_trava_x(p, q, s)
+		p.erase("lock_x")
 		if oid == "opp_strong":
 			p["after_near_leg"] = hook_sleeves
 		elif oid == "opp_gym_1":
@@ -1201,6 +1203,22 @@ func gen_reacao(oid: String, b: Dictionary, nome: String, rea: Dictionary, base:
 		frames.append(im)
 		i += 1
 	return frames
+
+
+## 7a1 (chão): "lock_x" no quadro = coordenada x (espaço do jogador, antes da escala) que fica no MESMO lugar para todos os
+## corpos. Sem ela, a escala (0,92 a 1,12) empurra o adversário deitado até 4 px para longe ou para perto de quem está por
+## cima; com ela, o ombro dele cai sempre onde as mãos do jogador apertam. 0 = sem trava (como antes).
+func _desvio_trava(q: Dictionary, s: float) -> float:
+	return float(q.get("lock_x", 0.0)) * (1.0 - s)
+
+
+func _trava_x(p: Dictionary, q: Dictionary, s: float) -> void:
+	var dx := _desvio_trava(q, s)
+	if absf(dx) < 0.001:
+		return
+	for k in ["hip", "top", "head", "sf", "sb", "toef", "toeb", "hf", "hb", "ef", "eb"]:
+		if p.has(k) and p[k] is Vector2:
+			p[k] = (p[k] as Vector2) + Vector2(dx, 0.0)
 
 
 func run_reacoes(caminho: String) -> void:
@@ -1219,8 +1237,9 @@ func run_reacoes(caminho: String) -> void:
 			strip.save_png(out_dir + res_to_rel(arquivo))
 			var maos := []
 			for q in rea[nome].frames:
-				var hf: Vector2 = mir(vet(q.get("hf", [14, -58])) * s)
-				var hb: Vector2 = mir(vet(q.get("hb", [5, -61])) * s)
+				var dtr := Vector2(_desvio_trava(q, s), 0.0)
+				var hf: Vector2 = mir(vet(q.get("hf", [14, -58])) * s + dtr)
+				var hb: Vector2 = mir(vet(q.get("hb", [5, -61])) * s + dtr)
 				maos.append({"hand_front": [hf.x, hf.y], "hand_back": [hb.x, hb.y]})
 			var e: Dictionary = (base as Dictionary).duplicate(true)
 			e["file"] = arquivo
@@ -1231,6 +1250,13 @@ func run_reacoes(caminho: String) -> void:
 			e["hands"] = maos
 			e.erase("hit_frame")
 			e.erase("hit_point")
+			if bool(rea[nome].get("attack", false)):   # 7a1: golpe do adversário (ground_punch): contato espelhado e na escala
+				var qh: Dictionary = rea[nome].frames[int(rea[nome].hit_frame)]
+				var hpq: Vector2 = mir(vet(rea[nome].hit_point) * s + Vector2(_desvio_trava(qh, s), 0.0))
+				e["hit_frame"] = int(rea[nome].hit_frame)
+				e["hit_point"] = [hpq.x, hpq.y]
+			if rea[nome].has("loop"):
+				e["loop"] = bool(rea[nome].loop)
 			if int(rea[nome].get("ground_frame", -1)) >= 0:
 				e["ground_frame"] = rea[nome].ground_frame
 			entradas[oid + "_" + nome] = e

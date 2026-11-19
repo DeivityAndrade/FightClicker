@@ -485,8 +485,10 @@ func subtitulo_escolha_arte() -> String: return _textos.subtitulo_escolha_arte()
 func texto_hud_arte() -> String: return _textos.texto_hud_arte()
 ## Texto da regra da arte para a janela de escolha: "+50% TREINO NO CLIQUE DA SUA MÃO", "EQUIPE +20% (SOBE 12% POR MINUTO ATÉ 100%)".
 func texto_regra_arte(id: String) -> String: return _textos.texto_regra_arte(id)
-## Texto do traço de luta da arte: "BOXE: +10% DE DANO", "JIU-JITSU: -10% DE DANO RECEBIDO". "" sem arte.
-func texto_traco_luta(id: String) -> String: return _textos.texto_traco_luta(id)
+## Nome antigo de texto_passiva (o traço +10%/-10% saiu na 7a1). "" sem arte.
+func texto_traco_luta(id: String) -> String: return _textos.texto_passiva(id)
+## Texto da passiva de luta da arte (cartão da janela de escolha). "" sem arte.
+func texto_passiva(id: String) -> String: return _textos.texto_passiva(id)
 ## Texto "FOR 40% / AGI 45% / RES 15%" do aparelho de arte ("" para os de toda carreira).
 func texto_divisao(aparelho_id: String) -> String: return _textos.texto_divisao(aparelho_id)
 ## Bloco PRÓXIMA LUTA: {show, text, legacy, seconds}. `show` = o adversário da academia está PERIGOSO (na melhor das 3 táticas)
@@ -816,7 +818,8 @@ func bonus_arte_equipe() -> float: return _academia.bonus_arte_equipe()
 ## true quando o bônus da equipe chegou no teto (a UI mostra "(MÁX.)").
 func arte_no_teto() -> bool: return _academia.arte_no_teto()
 ## O traço de luta da arte entra na tática do jogador (luta e prévia usam a mesma função, no motor).
-func _atualizar_traco() -> void: _academia._atualizar_traco()
+func _atualizar_passiva() -> void: _academia._atualizar_passiva()
+func _atualizar_traco() -> void: _academia._atualizar_passiva()  # nome antigo (testes e ferramentas)
 ## Tática do jogador já com o traço da arte (cópia). Útil para testes e para a UI mostrar números.
 func tatica_efetiva(tatica_id: String = "") -> Dictionary: return _academia.tatica_efetiva(tatica_id)
 
@@ -997,6 +1000,8 @@ func lutar() -> Dictionary: return _luta.lutar()
 func aguardar_motivo() -> void: _luta.aguardar_motivo()
 ## Luta em andamento recalculada da semente (determinística): eventos, tempos e resultado.
 func luta_atual() -> Dictionary: return _luta.luta_atual()
+## Prefixo do cenário da luta contra `adversario_id` (7a1): "arena" (borracharia) ou "arena_league" (liga da academia).
+func arena_da_luta(adversario_id: String) -> String: return _luta.arena_da_luta(adversario_id)
 ## Fim da animação (ou luta pendente ao reabrir): aplica o resultado UMA vez e salva.
 func concluir_luta() -> Dictionary: return _luta.concluir_luta()
 ## Motivo da derrota (design §7): {attribute, faltaram, who, round, model, tip, stat, better_tactic}.

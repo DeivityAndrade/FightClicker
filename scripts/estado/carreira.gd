@@ -227,7 +227,7 @@ func _zerar_carreira() -> void:
 	gs.local_id = gs.academia.local_padrao
 	gs.arte_id = ""
 	gs.arte_segundos = 0.0
-	gs._academia._atualizar_traco()
+	gs._academia._atualizar_passiva()
 	gs.segundos_campanha = 0.0
 	gs._arte_comentada = true  # sem arte ainda: o comentário volta a valer quando ela for escolhida
 	gs.nivel_luva = 0

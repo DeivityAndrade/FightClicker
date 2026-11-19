@@ -47,11 +47,19 @@ func previa() -> Dictionary:
 	var adv := _array_adversario(opp)
 	var riscos := {}
 	var com_porcentagem := tem_previa_detalhada()
+	var com_passiva: bool = not gs.motor.passiva.is_empty()
+	var passivas := {}  # 7a1: linha da passiva de cada tática (a UI troca sem recalcular)
 	for t in gs.lutas.taticas:
-		riscos[t.id] = risco_tatica(t.id)
+		if com_passiva:
+			# Mesma conta de risco_tatica (chance_detalhada é a chance do motor), mais as vitórias pela passiva.
+			var det: Dictionary = gs.motor.chance_detalhada(jog, adv, t.id)
+			riscos[t.id] = {"label": gs.motor.rotulo(det.chance), "chance": det.chance}
+			passivas[t.id] = gs._textos.passiva_da_previa(gs.motor.estado_passiva(jog, adv, t.id), det, t.id)
+		else:
+			riscos[t.id] = risco_tatica(t.id)
 		riscos[t.id]["percent"] = gs._textos._porcentagem(riscos[t.id].chance)
 	var rotulo: String = riscos[gs.tatica].label if riscos.has(gs.tatica) else ""
-	return {
+	var r := {
 		"opponent": opp.duplicate(), "you": {"strength": jog[0], "agility": jog[1], "endurance": jog[2]},
 		"tactic": gs.tatica, "risks": riscos, "risk": rotulo,
 		"lead": gs.motor.destaque(jog, adv),
@@ -64,12 +72,23 @@ func previa() -> Dictionary:
 		"percent_text": gs.preencher(gs.texto_ui("preview_percent", "{n}%"), {"n": int(riscos[gs.tatica].percent)}) if riscos.has(gs.tatica) else "",
 		"revenge": e_algoz(opp.id),
 		"wait_green": esperar_verde(opp.id, rotulo),
-		# Fase 5: traço de luta da arte ("BOXE: +10% DE DANO"); "" sem arte
+		# Fase 5/7a1: texto curto da passiva da arte (o mesmo do cartão da janela de escolha); "" sem arte
 		"art": gs.arte_id,
-		"art_fight_text": gs.texto_traco_luta(gs.arte_id),
+		"art_fight_text": gs.texto_passiva(gs.arte_id),
 		# Fase 6c2: nó "Caderno de recordes" (fora do verde); "" até ficar pronto (sinal previa_falta_pronta)
 		"missing_line": gs._honra._linha_o_que_falta(opp, jog, adv, rotulo),
 	}
+	if com_passiva:
+		# Fase 7a1 (só com arte): passive_name, passive_line, passive_state, passive_share, passive_share_n da tática escolhida;
+		# passive_tactics = {id_da_tática: o mesmo bloco} para a UI trocar de tática sem recalcular.
+		var atual: Dictionary = passivas.get(gs.tatica, {})
+		r["passive_name"] = atual.get("name", "")
+		r["passive_line"] = atual.get("line", "")
+		r["passive_state"] = atual.get("state", {})
+		r["passive_share"] = atual.get("share", "")
+		r["passive_share_n"] = atual.get("share_n", 0)
+		r["passive_tactics"] = passivas
+	return r
 
 
 ## Dinheiro da vitória contra `opp` com o bônus da árvore.
@@ -211,8 +230,19 @@ func aguardar_motivo() -> void:
 
 
 func _resultado_salvo(res: Dictionary) -> Dictionary:
-	return {"win": res.win, "ko": res.ko, "t_ko": res.t_ko, "t_end": res.t_end, "round": res.round,
+	var r := {"win": res.win, "ko": res.ko, "t_ko": res.t_ko, "t_end": res.t_end, "round": res.round,
 		"pct_player": res.pct_player, "pct_opponent": res.pct_opponent}
+	if res.has("finish"):  # 7a1: só lutas com arte; save sem ele = "damage" se ko, senão "points"
+		r["finish"] = res.finish
+	return r
+
+
+## Prefixo do cenário da luta (7a1): a arena é a do local do ADVERSÁRIO (`location`, padrão garagem).
+## "arena" = borracharia; "arena_league" = ginásio da liga da academia. A arte do cenário mora no manifest.
+func arena_da_luta(adversario_id: String) -> String:
+	var opp := gs.lutas.adversario(adversario_id)
+	var local_id := str(opp.get("location", gs.academia.local_padrao)) if not opp.is_empty() else gs.academia.local_padrao
+	return str(gs.academia.local(local_id).get("fight_arena", "arena"))
 
 
 ## Luta em andamento recalculada da semente (determinística): eventos, tempos e resultado.
@@ -241,7 +271,13 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	# Golpes (só visual, nunca muda o resultado): cada lado usa os golpes do seu estilo. Jogador = boxe por enquanto;
 	# `liberados` é o gancho para a árvore de habilidades liberar golpes (ids de nós) no futuro.
 	var liberados: Array = []
-	var golpes_lado: Array = [gs.golpes.disponiveis("boxing", liberados), gs.golpes.disponiveis(str(opp.get("style", "boxing")))]
+	# 7a1: Jiu-jitsu usa o estilo "bjj" (em pé e no chão); Boxe e sem arte seguem com "boxing".
+	var passiva: Dictionary = gs.motor.passiva
+	var eh_jj: bool = not passiva.is_empty() and str(passiva.type) == "submission"
+	var golpes_lado: Array = [gs.golpes.disponiveis("bjj" if eh_jj else "boxing", liberados), gs.golpes.disponiveis(str(opp.get("style", "boxing")))]
+	var golpes_baixo: Array = gs.golpes.disponiveis("ground_bottom")
+	var fase := "standing"
+	var chao_na_pegada := float(passiva.get("ground_at_grip", 0.5)) if eh_jj else 2.0
 	var golpe_anterior: Array = ["", ""]
 	var semente_golpes := int(gs.luta.seed)
 	for i in n:
@@ -263,8 +299,25 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		var golpe_id := ""
 		var golpe_anim := ""
 		var reacao := ""
+		var fase_depois := fase
+		var fim_passiva := str(e.get("finish", ""))
+		if eh_jj and kind != "dodge":
+			# 1º acerto do jogador com a pegada em ground_at_grip: vira queda e a luta vai para o chão;
+			# a finalização também leva ao chão. Só visual (design 7a1 §10.2).
+			if lado == 0 and fase == "standing" and (float(e.get("grip", 0.0)) >= chao_na_pegada or fim_passiva == "submission"):
+				fase_depois = "ground"
+				kind = "takedown"
+			if fim_passiva == "submission":
+				kind = "submission"
+				fase_depois = "ground"
 		if kind != "dodge":
-			golpe_id = gs.golpes.escolher(golpes_lado[lado], kind, semente_golpes, i, str(golpe_anterior[lado]))
+			var cands: Array = golpes_lado[lado]
+			var fase_golpe := ""
+			if eh_jj:
+				fase_golpe = fase if kind != "takedown" and kind != "submission" else ""
+				if lado == 1 and fase == "ground":
+					cands = golpes_baixo
+			golpe_id = gs.golpes.escolher(cands, kind, semente_golpes, i, str(golpe_anterior[lado]), fase_golpe)
 			if golpe_id != "":
 				golpe_anterior[lado] = golpe_id
 				golpe_anim = str(gs.golpes.golpes[golpe_id].anim)
@@ -278,7 +331,12 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 			"damage": e.damage, "life_after": e.life_after, "life_pct_after": e.life_after / vmax[alvo],
 			"round": int(floor(float(e.t) / float(c.round_length))) + 1,
 			"ko": bool(salvo.ko) and i == n - 1,
+			# 7a1: embalo (Boxe), pegada 0-1 (Jiu-jitsu), cansaço (Boxe), fim ("" | knockout | submission),
+			# fase visual ("standing" | "ground") e fase depois do evento (a queda começa em pé e termina no chão).
+			"streak": int(e.get("streak", 0)), "grip": float(e.get("grip", 0.0)), "tired": bool(e.get("tired", false)),
+			"finish": fim_passiva, "phase": fase, "phase_after": fase_depois,
 		})
+		fase = fase_depois
 	var perdedor := -1
 	if salvo.ko:
 		perdedor = 1 if salvo.win else 0
@@ -286,14 +344,24 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	var grogue := {}
 	if salvo.ko and t_ko < float(c.min_ko_time):
 		grogue = {"who": perdedor, "from": t_ko, "to": float(c.min_ko_time)}
-	return {
+	var info := {
 		"opponent": opp.id, "tactic": gs.luta.tactic, "seed": int(gs.luta.seed), "player": gs.luta.player.duplicate(),
 		"events": eventos, "result": salvo.duplicate(), "grogue": grogue, "loser": perdedor,
 		"life_max": {"player": vmax[0], "opponent": vmax[1]},
 		"intro_seconds": c.intro_seconds, "outro_seconds": c.outro_seconds,
 		"screen_seconds": float(c.intro_seconds) + float(salvo.t_end) + float(c.outro_seconds),
 		"counts": res.counts,
+		# 7a1: cenário (prefixo da arena), tipo da passiva ("" | fast_hands | submission) e dados para o HUD e o fim.
+		"arena": arena_da_luta(str(opp.id)), "passive": str(passiva.get("type", "")),
+		"streak_peak": int(res.get("streak_peak", 0)), "attempts": int(res.get("attempts", 0)),
+		"grip_full_at": float(res.get("grip_full_at", -1.0)), "tired_at": float(res.get("tired_at", -1.0)),
+		# `tires`: o lutador cansa nesta luta (Boxe fora do Defensivo). O evento `tired` só fica true quando `tires` é true.
+		"tires": bool(res.get("tires", false)),
 	}
+	# Save antigo (ou luta sem arte) não guarda `finish`: "damage" se ko, senão "points". Só na cópia que vai para a UI.
+	if not info.result.has("finish"):
+		info.result["finish"] = "damage" if bool(salvo.ko) else "points"
+	return info
 
 
 ## Fim da animação (ou luta pendente ao reabrir): aplica o resultado UMA vez e salva.
@@ -397,10 +465,14 @@ func _calcular_motivo(snap: Dictionary) -> Dictionary:
 			melhor = t.id
 	if m.kind == "luck":
 		melhor = ""  # azar nunca culpa a tática
-	return {
+	var r := {
 		"seed": seed_i, "kind": m.kind, "attribute": m.attribute, "faltaram": faltaram, "far_n": m.far_n,
 		"who": "ko" if res.ko else "points", "round": res.round,
 		"model": (seed_i / 3) % 2, "tip": seed_i % 3,
 		"stat": m.stat,
 		"better_tactic": melhor,
 	}
+	# 7a1: com arte, 1 linha extra quando a passiva pesou ({id, n, r} ou {}); sem arte a chave nem existe (save igual ao de antes).
+	if not gs.motor.passiva.is_empty():
+		r["passive_note"] = gs.motor.nota_passiva(res, tat)
+	return r

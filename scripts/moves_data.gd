@@ -6,9 +6,10 @@ extends RefCounted
 ## Mesma regra dos outros dados: campo ruim é ignorado e avisa no console; nunca derruba o jogo.
 
 const CAMINHO := "res://data/moves.json"
-const KINDS := ["jab", "crit", "counter"]
+const KINDS := ["jab", "crit", "counter", "takedown", "submission"]  # 7a1: takedown e submission (Jiu-jitsu)
+const FASES := ["standing", "ground"]
 
-var golpes: Dictionary = {}  # id -> {id, style, name, anim, kinds, unlock, defender_anim}
+var golpes: Dictionary = {}  # id -> {id, style, name, anim, kinds, unlock, defender_anim, phase}
 var estilos: Dictionary = {}  # id do estilo -> {name, moves: Array[String]}
 
 
@@ -33,6 +34,7 @@ static func carregar(caminho: String = CAMINHO) -> MovesData:
 		m.golpes[str(id)] = {
 			"id": str(id), "style": str(g.get("style", "")), "name": str(g.get("name", id)), "anim": anim,
 			"kinds": kinds, "unlock": str(g.get("unlock", "base")), "defender_anim": str(g.get("defender_anim", "")),
+			"phase": str(g.get("phase", "")) if str(g.get("phase", "")) in FASES else "",  # "" = vale em qualquer fase
 		}
 	for id in est:
 		var e: Variant = est[id]
@@ -81,10 +83,11 @@ func disponiveis(estilo: String, liberados: Array = []) -> Array[String]:
 
 ## Escolhe o golpe de um evento `kind` entre `ids`. Determinístico (semente + índice do evento). `anterior`
 ## evita repetir o mesmo golpe duas vezes seguidas quando há outra opção. "" = nenhum serve (a tela usa o antigo).
-func escolher(ids: Array, kind: String, semente: int, indice: int, anterior: String = "") -> String:
+## `fase` ("standing" | "ground", 7a1): só entram golpes dessa fase (ou sem fase). "" = sem filtro (como antes).
+func escolher(ids: Array, kind: String, semente: int, indice: int, anterior: String = "", fase: String = "") -> String:
 	var cand: Array[String] = []
 	for gid in ids:
-		if golpes.has(gid) and kind in golpes[gid].kinds:
+		if golpes.has(gid) and kind in golpes[gid].kinds and (fase == "" or golpes[gid].phase == "" or golpes[gid].phase == fase):
 			cand.append(str(gid))
 	if cand.is_empty():
 		return ""

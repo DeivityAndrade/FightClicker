@@ -174,7 +174,7 @@ func escolher_arte(id: String) -> bool:
 	gs._arte_comentada = false
 	gs.permanente["last_art"] = id
 	gs._arvore._recalcular_bonus()  # Fase 5.4: nós da arte passam a valer
-	_atualizar_traco()
+	_atualizar_passiva()
 	gs._chave_melhor = ""
 	gs.salvar()
 	gs.arte_mudou.emit(gs.arte_id)
@@ -215,19 +215,13 @@ func arte_no_teto() -> bool:
 	return float(r.start) + float(r.per_minute) * gs.arte_segundos / 60.0 >= float(r.cap) - 1.0e-9
 
 
-# O traço de luta da arte entra na tática do jogador (luta e prévia usam a mesma função, no motor).
-func _atualizar_traco() -> void:
-	var f: Dictionary = gs.academia.arte(gs.arte_id).get("fight", {})
-	var dano := float(f.get("damage_mult", 1.0))
-	var recebido := float(f.get("taken_mult", 1.0))
-	var extra := gs._arvore._b("art_fight_bonus")  # Fase 5.4: Contragolpe / Base firme (só da arte jogada)
-	if dano != 1.0:
-		dano *= 1.0 + extra
-	if recebido != 1.0:
-		recebido *= maxf(0.0, 1.0 - extra)
-	gs.motor.traco = {"damage_mult": dano, "taken_mult": recebido}
+# A passiva de luta da arte vai para o motor (luta e prévia usam a mesma função). Sem arte = passiva vazia.
+# `extra` = nós art_fight_bonus (Contragolpe: K.O. +50%; Base firme: pegada +50%), só da arte jogada.
+func _atualizar_passiva() -> void:
+	gs.motor.passiva = gs.academia.arte(gs.arte_id).get("passive", {}).duplicate(true)
+	gs.motor.extra_passiva = gs._arvore._b("art_fight_bonus") if not gs.motor.passiva.is_empty() else 0.0
 
 
-## Tática do jogador já com o traço da arte (cópia). Útil para testes e para a UI mostrar números.
+## Tática do jogador já com os multiplicadores da passiva (cópia). Útil para testes e para a UI mostrar números.
 func tatica_efetiva(tatica_id: String = "") -> Dictionary:
-	return gs.motor.aplicar_traco(gs.lutas.tatica(gs.tatica) if tatica_id == "" else gs.lutas.tatica(tatica_id))
+	return gs.motor.aplicar_passiva(gs.lutas.tatica(gs.tatica) if tatica_id == "" else gs.lutas.tatica(tatica_id))

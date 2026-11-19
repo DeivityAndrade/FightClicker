@@ -1,7 +1,7 @@
 class_name JanelaArte
 extends JanelaBase
 ## Janela "QUE TIPO DE LUTADOR VOCÊ QUER SER?" (Fase 5): as duas artes lado a lado, cada uma com o ícone do aparelho, o nome,
-## a frase de tom (`tagline`), a regra em número (`rule_text`), o traço de luta (`fight_text`), "VALE A CARREIRA INTEIRA" e o
+## a frase de tom (`tagline`), a regra em número (`rule_text`), a passiva de luta (`art_card_*_fight`, 3 linhas), "VALE A CARREIRA INTEIRA" e o
 ## botão ESCOLHER. Abre na 1ª chegada à academia, no começo de toda carreira (com as artes liberadas) e ao reabrir o jogo sem
 ## ter escolhido (`GameState.escolha_arte_pendente()`). Sem X: enquanto não escolhe, o jogo fica travado. 1 clique escolhe
 ## (no botão ESCOLHER ou em qualquer ponto do cartão). A arte da carreira anterior vem com a borda dourada e o selo
@@ -107,8 +107,9 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 	# Textos: tagline, regra, traço de luta, "vale a carreira inteira". Cada um centralizado, até 2 linhas em 174 px.
 	_texto(c, str(arte.tagline).to_upper(), UiTema.CREAM, 90.0, r.size.x)
 	_texto(c, str(arte.rule_text).to_upper(), UiTema.P2, 114.0, r.size.x)
-	_texto(c, str(arte.fight_text).to_upper(), UiTema.R3 if id == "boxing" else UiTema.B3, 138.0, r.size.x)
-	_texto(c, UiTema.txt("art_whole_career", "VALE A CARREIRA INTEIRA"), UiTema.G2, 166.0, r.size.x)
+	# 7a1: o cartão mostra a passiva (art_card_*_fight, até 3 linhas); sem a chave, o texto do arts.json.
+	_texto(c, UiTema.txt("art_card_%s_fight" % id, str(arte.fight_text)), UiTema.R3 if id == "boxing" else UiTema.B3, 138.0, r.size.x)
+	_texto(c, UiTema.txt("art_whole_career", "VALE A CARREIRA INTEIRA"), UiTema.G2, 170.0, r.size.x)
 
 	# Botão ESCOLHER, centralizado no cartão.
 	var b := UiTema.botao_estilizado(c, Rect2(floorf((r.size.x - LARG_BOTAO) / 2.0), 190, LARG_BOTAO, ALT_BOTAO), "ui_button_art")
