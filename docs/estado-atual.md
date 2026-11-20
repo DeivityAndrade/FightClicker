@@ -8,7 +8,7 @@ Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias an
   nos atributos na próxima luta, prévia honesta), relógio parado fora da sala (equipe só produz durante o minigame), semente do
   vulto mascarado (recorte na parede a partir da campanha 2 + boato do Osmar). Ignorar convites = jogo idêntico à main. Save v13.
   Docs: `fase7a2-design.md`, `fase7a2-textos.md`, `fase7a2-qa.md`, `fase7a2-revisao.md` (aprovada).
-- **Pergunta aberta ao dono:** o teto de 10% vale em **dias de campanha** (recomendação do Diretor; pior caso 9,2%)?
+- **Teto de 10% dos minigames: em dias de campanha** (confirmado pelo dono em 2026-11-20; pior caso 9,2%).
 - **Para o dono testar:** 7a1 e 7a2 (roteiro em `fase7a1-revisao.md` e `fase7a2-revisao.md`). Carro comprido de 2 portas fica anotado.
 - **Próximo:** 7b (Muay Thai, 2ª passiva) só com ordem do dono. Poupar GPU: um Godot por vez, headless sempre que der.
 
