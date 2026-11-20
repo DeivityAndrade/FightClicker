@@ -1,0 +1,110 @@
+{
+	"version": 1,
+	"_doc": "Fase 7a2 (Treino fora de hora). Dono dos valores: Designer (docs/fases/fase7a2-design.md). Convite do seu Osmar, Choque (sparring, variantes boxing/bjj), Panfletagem e a semente do Gato Preto. Tempos em segundos. 'Segundos de sala' = tempo com sala_ativa() (30 s = 1 dia de campanha). Nada daqui usa os sorteios rng/_rng_evento/_rng_fala/_rng_sucessao: o minigame tem o seu (_rng_treino).",
+
+	"invite": {
+		"_doc": "Design §2. O relógio do convite só anda com a sala ativa e o Osmar desenhado no local. Convite aberto some sozinho depois de visible_s de sala. O próximo aparece interval_s de sala depois do aparecimento do anterior (aceito ou não). Não acumula.",
+		"first_after_s": 300.0,
+		"interval_s": 240.0,
+		"visible_s": 60.0,
+		"min_after_return_s": 60.0,
+		"overhead_s": 6.0,
+		"_doc_overhead": "Só do simulador: clique em IR, contagem, tela de prêmio e volta (s de jogo fora da sala além do minigame).",
+		"choice": "alternate",
+		"_doc_choice": "alternate: só um elegível -> esse; AQUECIDO guardado -> panfletagem; senão o contrário do último oferecido. Primeiro da campanha: spar se elegível.",
+		"kinds": {
+			"spar":   { "requires_art": true,  "requires_milestone": "" },
+			"flyers": { "requires_art": false, "requires_milestone": "garage_saved" }
+		}
+	},
+
+	"level": {
+		"_doc": "Nível do minigame = índice da escada (0 = Dudu ... 5 = Kid; escada completa = 5). Cada tabela dos minigames tem 6 linhas, uma por nível.",
+		"source": "ladder_index",
+		"max": 5
+	},
+
+	"reward_ref": {
+		"_doc": "Produção de referência (Treino/s) = producao_total() + ref_clicks_per_s x por_clique(). É a sala de quem clica 3 vezes por segundo.",
+		"ref_clicks_per_s": 3.0
+	},
+
+	"spar": {
+		"_doc": "Design §3. Cabo de guerra numa barra de -1 (ele te encosta) a +1 (você encosta ele). Encostar = 1 ponto e a barra volta ao meio com reset_s de pausa. Dura duration_s fixos. VENCEU = pontos >= points_goal e pontos > pontos dele.",
+		"countdown_s": 2.0,
+		"duration_s": 30.0,
+		"points_goal": 3,
+		"reset_s": 1.0,
+		"counter_mult": 2.0,
+		"read_mult": 0.0,
+		"hold_is_guard_s": 0.20,
+		"variants": {
+			"boxing": { "control": "click", "push_per_click": 0.10, "breath_cost_per_click": 0.07, "breath_recover_per_s": 0.30, "weak_min": 0.15 },
+			"bjj":    { "control": "hold",  "pull_per_s": 0.65, "breath_drain_per_s": 0.20, "breath_recover_per_s": 0.40, "weak_min": 0.15, "burst_hold_drain_mult": 2.0 }
+		},
+		"_doc_levels": "base_push: empurrão dele por segundo fora dos padrões. burst: rajada (Boxe) / puxada forte (JJ). warn_s: aviso antes da rajada e da finta. feint: aviso de rajada que vira pausa curta (o sinal muda na metade do aviso). gap: espera entre padrões. w_*: pesos do sorteio do padrão.",
+		"levels": [
+			{ "base_push": 0.15, "burst_push": 0.8, "burst_s": 1.5, "warn_s": 1.0, "pause_s": 1.4, "pause_warn_s": 0.6, "feint_pause_s": 0.9, "gap_min": 2.0, "gap_max": 3.5, "w_burst": 0.50, "w_pause": 0.40, "w_feint": 0.10 },
+			{ "base_push": 0.18, "burst_push": 0.86, "burst_s": 1.5, "warn_s": 0.92, "pause_s": 1.35, "pause_warn_s": 0.6, "feint_pause_s": 0.9, "gap_min": 1.9, "gap_max": 3.3, "w_burst": 0.50, "w_pause": 0.37, "w_feint": 0.13 },
+			{ "base_push": 0.205, "burst_push": 0.92, "burst_s": 1.5, "warn_s": 0.84, "pause_s": 1.3, "pause_warn_s": 0.55, "feint_pause_s": 0.85, "gap_min": 1.7, "gap_max": 3.0, "w_burst": 0.48, "w_pause": 0.35, "w_feint": 0.17 },
+			{ "base_push": 0.23, "burst_push": 0.98, "burst_s": 1.5, "warn_s": 0.76, "pause_s": 1.25, "pause_warn_s": 0.5, "feint_pause_s": 0.8, "gap_min": 1.5, "gap_max": 2.8, "w_burst": 0.47, "w_pause": 0.33, "w_feint": 0.20 },
+			{ "base_push": 0.255, "burst_push": 1.04, "burst_s": 1.5, "warn_s": 0.68, "pause_s": 1.2, "pause_warn_s": 0.5, "feint_pause_s": 0.8, "gap_min": 1.4, "gap_max": 2.6, "w_burst": 0.46, "w_pause": 0.31, "w_feint": 0.23 },
+			{ "base_push": 0.28, "burst_push": 1.1, "burst_s": 1.5, "warn_s": 0.6, "pause_s": 1.2, "pause_warn_s": 0.5, "feint_pause_s": 0.8, "gap_min": 1.2, "gap_max": 2.4, "w_burst": 0.45, "w_pause": 0.30, "w_feint": 0.25 }
+		],
+		"reward": {
+			"_doc": "Treino = max_seconds x produção de referência x (floor + (1 - floor) x min(1, pontos / points_goal)). Vai para o saldo e para os atributos pela divisão do aparelho da arte (data/training.json). Sair no meio: conta os pontos feitos até ali.",
+			"max_seconds": 20.0,
+			"floor": 0.25
+		},
+		"warm": {
+			"_doc": "AQUECIDO: vencer o Choque guarda o bônus para a próxima luta oficial (ganhe ou perca, é gasto quando a luta começa). Atributos x (1 + attr_bonus) nessa luta, na prévia, no risco do HUD e no motor. Não soma: vencer de novo com ele guardado não dá outro. Some no fim da campanha.",
+			"attr_bonus": 0.03
+		}
+	},
+
+	"flyers": {
+		"_doc": "Design §4. Rua de noite; pessoas atravessam a tela. Clicar em quem está dando o sinal de interesse = ACEITOU. Clicar em quem não quer = 'não, valeu' e a mão fica ocupada miss_cooldown_s. Dura duration_s fixos.",
+		"countdown_s": 2.0,
+		"duration_s": 30.0,
+		"goal": 10,
+		"give_cooldown_s": 0.35,
+		"miss_cooldown_s": 0.8,
+		"miss_penalty": 0.5,
+		"cross_s": 4.5,
+		"_doc_levels": "spawn_s: uma pessoa a cada (em média). interested: parte que quer o panfleto. tell_s: quanto tempo o sinal de interesse fica visível. false_tell: parte dos sem interesse que dá um sinal falso (olha e desvia: o sinal some antes de completar).",
+		"levels": [
+			{ "spawn_s": 0.85, "interested": 0.42, "tell_s": 1.8, "false_tell": 0.00 },
+			{ "spawn_s": 0.80, "interested": 0.40, "tell_s": 1.6, "false_tell": 0.05 },
+			{ "spawn_s": 0.75, "interested": 0.38, "tell_s": 1.5, "false_tell": 0.10 },
+			{ "spawn_s": 0.70, "interested": 0.36, "tell_s": 1.4, "false_tell": 0.15 },
+			{ "spawn_s": 0.68, "interested": 0.35, "tell_s": 1.3, "false_tell": 0.20 },
+			{ "spawn_s": 0.65, "interested": 0.34, "tell_s": 1.2, "false_tell": 0.25 }
+		],
+		"reward": {
+			"_doc": "FAMA = arredonda(max(min_fame, fame_share x prize_fame do próximo adversário) x (floor + (1 - floor) x min(1, aceitos / goal))), no mínimo 1. Escada completa: usa o último adversário.",
+			"fame_share": 0.25,
+			"min_fame": 5,
+			"floor": 0.25
+		}
+	},
+
+	"black_cat_seed": {
+		"_doc": "Design §5. Só a semente: recorte de jornal na parede e um boato do Osmar. Sem minigame, sem efeito na economia.",
+		"clipping": {
+			"_doc": "Objeto parado na parede (como a foto antiga), com texto no hover. Aparece a partir da campanha min_campaign (1º discípulo) com o marco garage_saved. Na academia, só depois do marco da cena (mesma regra da foto).",
+			"requires_milestone": "garage_saved",
+			"min_campaign": 2,
+			"spot_by_location": { "garage": "clipping_spot", "gym": "gym_clipping_spot" },
+			"requires_milestone_by_location": { "garage": "", "gym": "cena_primeira_academia" },
+			"object_text": "black_cat_clipping"
+		},
+		"rumor": {
+			"_doc": "Fala do Osmar na abertura da Panfletagem (rua de noite), uma vez na vida do save: a 1ª Panfletagem jogada com o recorte já visível. Nunca sai na sala: quem ignora os convites não muda nada (critério 8). Marco gravado quando a fala aparece.",
+			"where": "flyers_intro",
+			"speaker": "coach",
+			"text_key": "black_cat_rumor",
+			"requires_clipping_visible": true,
+			"milestone": "black_cat_rumor_heard"
+		}
+	}
+}

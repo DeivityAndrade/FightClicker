@@ -9,7 +9,15 @@ func _init(g: EstadoJogo) -> void:
 	gs = g
 
 
+## Atributos que entram na conta da luta: com AQUECIDO (7a2) valem x1,03. Prévia, risco do HUD, chance e motor passam por aqui.
 func _atributos_array() -> Array:
+	var m := gs._treino.mult_aquecido()
+	var a := _atributos_cru()
+	return a if m == 1.0 else [a[0] * m, a[1] * m, a[2] * m]
+
+
+## Os atributos de verdade, sem AQUECIDO (o que a tela mostra como "você").
+func _atributos_cru() -> Array:
 	return [gs.atributos.get("strength", 0.0), gs.atributos.get("agility", 0.0), gs.atributos.get("endurance", 0.0)]
 
 
@@ -44,6 +52,7 @@ func previa() -> Dictionary:
 	if opp.is_empty():
 		return {}
 	var jog := _atributos_array()
+	var cru := _atributos_cru()
 	var adv := _array_adversario(opp)
 	var riscos := {}
 	var com_porcentagem := tem_previa_detalhada()
@@ -60,7 +69,7 @@ func previa() -> Dictionary:
 		riscos[t.id]["percent"] = gs._textos._porcentagem(riscos[t.id].chance)
 	var rotulo: String = riscos[gs.tatica].label if riscos.has(gs.tatica) else ""
 	var r := {
-		"opponent": opp.duplicate(), "you": {"strength": jog[0], "agility": jog[1], "endurance": jog[2]},
+		"opponent": opp.duplicate(), "you": {"strength": cru[0], "agility": cru[1], "endurance": cru[2]},
 		"tactic": gs.tatica, "risks": riscos, "risk": rotulo,
 		"lead": gs.motor.destaque(jog, adv),
 		"stake_win": gs.texto_stake_win(opp),
@@ -88,6 +97,8 @@ func previa() -> Dictionary:
 		r["passive_share"] = atual.get("share", "")
 		r["passive_share_n"] = atual.get("share_n", 0)
 		r["passive_tactics"] = passivas
+	if gs.aquecido():
+		r.merge(gs._treino.extras_previa(riscos, cru, adv, com_passiva))  # 7a2: a prévia mostra o AQUECIDO e o quanto ele pesa
 	return r
 
 
@@ -158,8 +169,8 @@ func _definir_risco_hud(adversario: String, rotulo: String) -> void:
 
 
 func _chave_estado_risco() -> String:
-	return "%d|%s|%s|%s|%s" % [gs.indice_escada, gs.tatica, gs.atributos.get("strength", 0.0), gs.atributos.get("agility", 0.0),
-		gs.atributos.get("endurance", 0.0)]
+	return "%d|%s|%s|%s|%s%s" % [gs.indice_escada, gs.tatica, gs.atributos.get("strength", 0.0), gs.atributos.get("agility", 0.0),
+		gs.atributos.get("endurance", 0.0), "|warm" if gs.aquecido() else ""]
 
 
 # No máximo 1 vez por `hud_refresh_seconds` e só se algum atributo (ou a tática) mudou.
@@ -189,6 +200,7 @@ func lutar() -> Dictionary:
 		"player": {"strength": jog[0], "agility": jog[1], "endurance": jog[2]},
 		"result": _resultado_salvo(res)}
 	gs._motivo_cache = {}
+	gs._treino.gastar_aquecido()  # 7a2: o AQUECIDO vale só para esta luta (ganhe ou perca)
 	gs.salvar()
 	# O motivo (busca cara, ~100-200 ms) é calculado em segundo plano em TODA luta (custo igual na
 	# vitória e na derrota); na vitória é descartado. Fica salvo antes de concluir_luta().

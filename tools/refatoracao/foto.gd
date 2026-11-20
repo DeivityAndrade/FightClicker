@@ -42,6 +42,14 @@ func _novo(nome: String) -> Node:
 	return gs
 
 
+# 7a2: o único campo novo do save (career.training_invite) sai antes do hash: ignorar os convites tem de dar a foto da main.
+func _save_sem_convite(gs: Node) -> Dictionary:
+	var e: Dictionary = gs.para_save()
+	if e.get("career") is Dictionary:
+		e["career"].erase("training_invite")
+	return e
+
+
 func _fim(gs: Node) -> void:
 	gs.aguardar_motivo()
 	gs.aguardar_falta()
@@ -68,7 +76,7 @@ func _sim() -> void:
 				gs.nova_carreira()
 		if int(round(t * 10)) % 3000 == 0:
 			_out.append("t=%.0f treino=%.3f dinheiro=%.3f dia=%s" % [t, gs.treino, gs.dinheiro, str(gs.fight_day)])
-	_out.append("LUTAS %d hash=%d" % [lutas, JSON.stringify(gs.para_save()).hash()])
+	_out.append("LUTAS %d hash=%d" % [lutas, JSON.stringify(_save_sem_convite(gs)).hash()])
 	_fim(gs)
 
 
@@ -82,7 +90,7 @@ func _robo() -> void:
 		for i in PASSOS:
 			_passo(gs)
 			if i % 100 == 99:
-				var j := JSON.stringify(gs.para_save())
+				var j := JSON.stringify(_save_sem_convite(gs))
 				_out.append("ep%d passo %d hash=%d treino=%s fim=%s suc=%s" % [ep, i + 1, j.hash(), str(gs.treino), str(not gs.fim.is_empty()), gs.sucessao])
 		_fim(gs)
 
@@ -175,7 +183,7 @@ func _ler(gs: Node, etapa: String) -> void:
 			continue  # precisa de argumento: fora da foto
 		var v: Variant = gs.call(n)
 		_out.append("%s = %s" % [n, JSON.stringify(v) if (v is Dictionary or v is Array) else str(v)])
-	_out.append("estado = " + JSON.stringify(gs.para_save()))
+	_out.append("estado = " + JSON.stringify(_save_sem_convite(gs)))
 
 
 func _roteiro() -> void:
@@ -229,5 +237,7 @@ func _roteiro() -> void:
 	gs.salvar()
 	var txt := FileAccess.get_file_as_string("user://test/foto_roteiro/save.json")
 	var rx := RegEx.create_from_string("\"saved_at_unix\":\\s*[0-9]+")
+	# 7a2: o campo novo do save sai do texto (bloco sem chaves dentro, com a vírgula e a quebra de linha)
+	txt = RegEx.create_from_string("\\s*\"training_invite\":\\s*\\{[^{}]*\\},?").sub(txt, "", true)
 	_out.append("SAVE " + rx.sub(txt, "\"saved_at_unix\": 0", true))
 	_fim(gs)

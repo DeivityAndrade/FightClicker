@@ -24,6 +24,8 @@ var _dica: Label
 var _aviso: Label
 var _falta: Label  # linha "FALTA ~N DE ATRIBUTO" (só com o nó hall_notes)
 var _percent: Label
+var _aquec: Control  # 7a2: a linha "AQUECIDO: +3% NOS ATRIBUTOS (+N NA CHANCE)" (só com AQUECIDO guardado)
+var _aquec_y := 0.0
 var _cartao: CartaoPassiva  # 7a1: a passiva da arte (só com arte), ao lado da janela
 var _t := 0.0
 var dia_da_luta := false  # Fase 5.3: prévia do dia (sem VOLTAR A TREINAR, sem X, sem Esc; com LUTAR e PASSAR O POSTO)
@@ -49,7 +51,8 @@ func _montar() -> void:
 	var revanche := bool(_dados.get("revenge", false))
 	var nota := GameState.tem_no_hall("hall_notes")  # 6c2: reserva a linha "FALTA ~N DE ATRIBUTO" (11 px) enquanto o nó existir
 	var regra := GameState.indice_escada == 0
-	var ex := (17.0 if revanche else 0.0) + (11.0 if nota else 0.0)
+	var aquecido := bool(_dados.get("warm", false))  # 7a2: reserva a linha do AQUECIDO (11 px) enquanto ele estiver guardado
+	var ex := (17.0 if revanche else 0.0) + (11.0 if nota else 0.0) + (11.0 if aquecido else 0.0)
 	# Revanche + nota juntas não cabem nos 360 px: os respiros de 1 px entre as seções (ar) somem e a janela encolhe 14 px.
 	var compacto := ex > 28.0 and not regra
 	if compacto:
@@ -141,6 +144,10 @@ func _montar() -> void:
 		_mostrar_falta(str(_dados.get("missing_line", "")))
 		GameState.previa_falta_pronta.connect(_mostrar_falta)
 		y += 11.0
+	if aquecido:
+		_aquec_y = y
+		_atualizar_aquecido(_tatica)
+		y += 11.0
 
 	# --- Em jogo ---
 	divisor(X0, y, X1 - X0)
@@ -200,6 +207,30 @@ func _atualizar_cartao(id: String, animar: bool) -> void:
 	var bloco: Dictionary = _dados.get("passive_tactics", {}).get(id, {})
 	if not bloco.is_empty():
 		_cartao.montar(bloco, str(_dados.get("art", "")), animar)
+
+
+## 7a2: linha do AQUECIDO (chama + texto) centralizada na janela. O "+N NA CHANCE" muda com a tática; a chance mostrada já vem
+## com os atributos x1,03 (a mesma conta do motor): a linha só explica de onde veio o número.
+func _atualizar_aquecido(id: String) -> void:
+	if not bool(_dados.get("warm", false)):
+		return
+	if _aquec != null:
+		_aquec.queue_free()
+		_aquec = null
+	var n := int(_dados.get("warm_gains", {}).get(id, _dados.get("warm_gain", 0)))
+	var texto := UiTema.txt("warm_preview_line", "AQUECIDO: +{pct}% NOS ATRIBUTOS (+{n} NA CHANCE)", {"pct": int(_dados.get("warm_pct", 3)), "n": n})
+	var w := 12.0 + UiTema.largura_visivel(texto)
+	if int(w) % 2 != 0:
+		w += 1.0  # largura par: o grupo fica no meio exato da janela (320)
+	_aquec = Control.new()
+	_aquec.name = "LinhaAquecido"
+	_aquec.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_aquec.position = Vector2(320.0 - w / 2.0, _aquec_y)
+	_aquec.size = Vector2(w, 9)
+	UiTema.alinhar(_aquec, "center_h")
+	painel.add_child(_aquec)
+	UiTema.textura_rect(_aquec, "icon_warm", 0, 0)
+	UiTema.rotulo(_aquec, texto, UiTema.Y1, 12, 0)
 
 
 ## Folhinha grande do dia ("HOJE" + número do dia em 2x), presa no canto de cima à esquerda da janela por cima da borda
@@ -303,6 +334,7 @@ func _escolher(id: String, tocou: bool) -> void:
 	var rot := str(_dados.risks.get(id, {}).get("label", ""))
 	_mostrar_risco(rot, tocou)
 	_atualizar_cartao(id, tocou)
+	_atualizar_aquecido(id)
 	if tocou and _falta != null:
 		_mostrar_falta(str(GameState.previa().get("missing_line", "")))  # a tática mudou: pede o cálculo de novo (vem pelo sinal)
 

@@ -1176,3 +1176,78 @@ embaixo, contorno `ink`, sombra de 1 px de fonte), com a **sombra azul b1** (cor
 **Placeholder / precisa de pixel artist:** a plateia é feita de blocos (rosto, braço e roupa à mão dariam vida), a arquibancada e
 a treliça são repetição pura, as placas de patrocinador pediriam logotipos desenhados, e o tatame pediria textura e desgaste.
 O letreiro e os ícones podem ficar com retoque.
+
+## 31. Fase 7a2 (Treino fora de hora: Choque, Panfletagem, AQUECIDO e o recorte do vulto)
+Gerador: `tools/art/make_arte_fase7a2.gd` (de uma pasta com `project.godot` vazio; `-- --no-assets` grava só os mockups,
+`-- --assets <pasta>` grava fora do projeto). Manifest: `python tools/art/manifest_7a2.py` (só as chaves da 7a2; lê o arquivo na
+hora; também registra as folhas do Artista de Personagens se existir `docs/arte/fase7a2-personagens-manifest.md`, formato da 7a1).
+Contrato das telas em `manifest.json → minigame_layout` (o mesmo das constantes no topo do gerador: mudar nos dois).
+
+**Mockups:** `mockups/fase7a2_choque_boxe.png` (aviso de RAJADA), `fase7a2_choque_jj.png` (PUXADA, fôlego no fim),
+`fase7a2_choque_estados_x3.png` (normal, rajada, pausa com X2, finta, ENCOSTOU!, afobado), `fase7a2_panfletagem.png`,
+`fase7a2_recorte_x3.png`, `fase7a2_convite_x2.png` (balão com IR + AQUECIDO na prévia/HUD) e `fase7a2_pecas_x4.png`.
+Nos mockups os personagens são folhas que já existem (medida e leitura); as poses do Choque, os pedestres e o lutador
+entregando são do Artista de Personagens.
+
+### 31.1 Choque: fundos da academia depois do expediente (`minigame/spar_bg`)
+- Parede de trás da Boa Esquina (reboco creme gasto + barrado verde, a cor de dentro vista de fora), porta dos FUNDOS aberta e
+  acesa, janela gradeada, ar-condicionado pingando, relógio de luz; à direita o alambrado da praça com árvores; poste com braço
+  iluminando um **tatame de EVA velho** (azul e verde, gasto no meio) no chão de cimento. Tralha só nos cantos (latão, pneu de
+  trator, caixotes, caixote com garrafa e toalha). Lua pequena e fria; a luz que manda é a do poste.
+- **Pés em y 318, lutador x 296 e parceiro x 346** (iguais à luta: as poses do Artista podem sair do mesmo quadro 112x104).
+  O **Osmar fica lá atrás, na porta (150,262)**, em escala da sala: a perspectiva explica o tamanho menor e ele não disputa com a dupla.
+- **y 0..71 = céu escuro** (o HUD fica ali). Centro x 200..440 sem objeto na frente.
+
+### 31.2 HUD do Choque
+| Peça | Regra |
+|---|---|
+| `ui_tug_track` 260x16 | Esquerda = **você (azul)**, direita = **ele (vermelho)**; cada ponta é a "parede". Marcador de x 8 (−1) a 251 (+1). Ganhar = empurrar a agulha até a parede dele (vale para Boxe e JJ) |
+| `ui_tug_marker` 11x22, 3 quadros | Agulha ouro (cabeça em triângulo, haste atravessando a barra). 1 = clique (claro, 1 quadro), 2 = contragolpe valendo |
+| `ui_tug_touch` 24x24, 3 | Estalo do ENCOSTOU! na ponta |
+| `ui_point_pip` 7x7, 3 | Pontos: vazia / seu (ouro) / dele (vermelho); meta 3 |
+| `ui_breath_bar` + `ui_breath_fill` + `icon_breath` | Fôlego só seu: verde > 50%, amarelo 25–50%, **vermelho < 25%** (a força já caiu: é o aviso do "afobado") |
+| `ui_warn_burst` 17x17, 2 | RAJADA/PUXADA: **estrela pontuda vermelha, ! branco**, acima da cabeça do parceiro |
+| `ui_warn_pause` 17x17, 2 | ELE ABRIU: **balão redondo branco, ! escuro**. Forma e cor mudam juntas: lê sem depender de cor |
+| `ui_warn_feint` 17x17, 3 | Finta: 0 rajada → 1 meio → 2 pausa, trocando na metade do aviso |
+| `ui_counter_x2` 19x13, 2 | X2 em cima da agulha enquanto a pausa vale |
+- O aviso fica **no corpo do parceiro** (acima da cabeça), não na barra: o jogador aprende a olhar o ombro dele.
+- Texto do aviso (RAJADA!, PUXADA!, ELE ABRIU!) com contorno ink, 10 px acima do ícone.
+
+### 31.3 Panfletagem: a rua do bairro (`minigame/flyers_bg`)
+- Mesma noite: muro com lambe-lambes e o **cartaz da escola** (R de raiz, RAÍZES, faixa AULA) em (26,168), padaria fechada com
+  "ALUGA", **LANCHES DA NENA** aceso (a luz quente na calçada), casa 27 com portão, ponto de ônibus. Dois postes (x 104 e 494);
+  no da esquerda, um lambe-lambe pequeno da escola, perto do lutador.
+- **Pedestres com pés em y 300** atravessando a tela inteira na frente das fachadas (fundo de meio-tom: a silhueta com contorno
+  ink lê bem); **lutador na frente à esquerda (70,324)**, **Osmar no canto direito (604,326)**. Tudo em escala da sala (~64 px):
+  as folhas de pedestre podem nascer das folhas de vizinhos e tios.
+- Peças: `ui_tell_mark` (? do sinal, 3 quadros; o sinal falso some em dither), `ui_flyer_fly` (panfleto voando), `icon_flyer`
+  (contador), `icon_flyers_16`. ACEITOU! em `gr3`, NÃO, VALEU em `g3`, os dois com contorno ink acima da pessoa.
+
+### 31.4 Convite, AQUECIDO e prêmio
+- Balão do convite = o `ui_balloon` de sempre com a etiqueta ouro do Osmar e o botão **`ui_invite_go`** (9-slice 14x13, ouro
+  `y0`, texto IR em ink) à direita do texto, na 2ª linha. Sem ícone dentro do balão (fica pequeno, como pede o design).
+- **AQUECIDO = chama laranja de miolo claro** (`icon_warm` 9x9 na prévia e ao lado do risco; `icon_warm_16` no prêmio).
+  Não é vermelho de Força nem roxo de arte: é "corpo quente", vale para todos os atributos.
+- `icon_spar_16` (luva vermelha x luva azul) e `icon_flyers_16` (maço com o R) para a tela de prêmio.
+
+### 31.5 Recorte de jornal do vulto (semente do Gato Preto)
+| Sprite | Ponto | Onde |
+|---|---|---|
+| `wall_clipping_black_cat` 23x28 | `clipping_spot` (304,100) | garagem: à direita do pôster SOCO, embaixo da lâmpada |
+| `wall_clipping_black_cat_gym` 23x28 | `gym_clipping_spot` (340,60) | academia: entre o espelho e o relógio de rounds |
+- **Manchete VULTO legível em 1x** (fonte 3x5 só deste objeto), foto granulada com a silhueta, colunas, borda picotada e fita.
+  A frase inteira vai no hover (`black_cat_clipping`). O nome "Gato Preto" não aparece nesta fase (Roteirista).
+- **O vigilante (original):** capuz preto com **orelhas de gato costuradas** (triângulos largos nas quinas da cabeça, com
+  ponto de costura), **faixa da escola amarrada nos olhos** com as duas pontas voando para o lado, **capa de lona caindo reta**
+  até o telhado, com remendo. Regras para nunca lembrar o morcego: capa **nunca aberta em asa**, orelhas **largas e baixas**
+  (não chifres finos e altos), nada de símbolo no peito, nada de cinto de utilidades. A faixa voando é a marca dele.
+- `ui_clipping_black_cat_zoom` 100x84 (opcional): o recorte grande para a dica, CORREIO DA ESQUINA / VULTO MASCARADO.
+- Conferido no gerador (0 problemas): fora da parede da memória, das correntes (x 257 e 335), da lâmpada, do metrônomo, do
+  letreiro, do relógio, do Osmar, da foto, do mural e da zona do alvo.
+
+### 31.6 Placeholder / precisa de pixel artist
+- Os dois cenários são montagem por código (blocos, elipses, dither). À mão: tijolo e reboco com textura de verdade, alambrado
+  com perspectiva, árvores com folhagem, fachadas com mais história (placas, fios, pichação com forma), luz do poste com cone.
+- A silhueta do vigilante tem 7x8 px no recorte e 18x19 no zoom: o desenho dele de verdade (folha de personagem) é do Artista
+  de Personagens quando o Gato Preto ganhar fase.
+- A agulha, os avisos e o X2 são peças honestas de placeholder; um artista faria a agulha como um nó de corda ou uma luva.

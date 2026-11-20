@@ -12,7 +12,7 @@ func _init(g: EstadoJogo) -> void:
 ## A ÚNICA condição de tick: relógio da campanha, equipe, Metrônomo, assistido, clique, luva dourada e Jiu-jitsu
 ## só andam com ela. Perder foco ou minimizar NÃO desliga; janela, luta, escolha da arte e dia da luta sim.
 func sala_ativa() -> bool:
-	return gs.fim.is_empty() and gs.sucessao == "none" and gs.cena_sala == "" and gs.luta.is_empty() and not gs.escolha_arte_pendente() and not gs.modal_aberto and not no_dia_da_luta()
+	return gs.fim.is_empty() and gs.sucessao == "none" and gs.cena_sala == "" and gs.luta.is_empty() and not gs.escolha_arte_pendente() and not gs.modal_aberto and gs.treino_fora == "" and not no_dia_da_luta()
 
 
 func calendario_ligado() -> bool:

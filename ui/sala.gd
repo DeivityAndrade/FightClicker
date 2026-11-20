@@ -30,6 +30,9 @@ signal clique_vazio
 ## Clique no mural da parede (Fase 6c2): o Fluxo abre a janela do mural.
 signal mural_clicado
 
+## 7a2: clique no Osmar com o balão do convite aberto (o Garagem decide se vai).
+signal osmar_convite
+
 var sfx: Sfx
 var _area := area()  # 6d2: a sala ocupa a tela (manifest.room_rect = 0,18,640,312)
 var _mural: AnimSprite  # mural da escola na parede (garagem e academia), ao lado da foto
@@ -96,6 +99,9 @@ var _coach_falando := false
 var _gesto: Gesto
 var _gesto_sprite := ""
 var _parede: Dictionary = {}  # objeto -> {sprite, rect, dica}
+var _recorte: AnimSprite  # 7a2: recorte de jornal do vulto (garagem e academia, campanha 2 em diante)
+var _recorte_rect := Rect2()  # área do hover (vazio = não desenhado)
+var _recorte_zoom: TextureRect  # dica de zoom: o recorte grande, só com o mouse em cima
 
 # 6d2: aparelho que não foi comprado é invisível (sem fita, silhueta nem cadeado): comprou = só a caixa; abriu = o aparelho.
 var _caixas: Dictionary = {}  # item -> CaixaSala
@@ -1178,6 +1184,7 @@ func _hover_em(p: Vector2) -> void:
 	elif _texto_parede(p) != "":
 		tip = _texto_parede(p)
 	_ancorar_dica_mentor2(sobre_mentor2)
+	_zoom_recorte(_recorte != null and _recorte.visible and _recorte_rect.has_point(p) and cx == "")
 	if tip != "":
 		Dica.pedir(tip)
 	else:
@@ -1197,6 +1204,7 @@ func _ancorar_dica_mentor2(sobre: bool) -> void:
 
 
 func _sair_hover() -> void:
+	_zoom_recorte(false)
 	_ancorar_dica_mentor2(false)
 	Dica.limpar()
 
@@ -1277,6 +1285,18 @@ func _texto_caixa(item: String) -> String:
 	var dica := GameState.texto_ui("box_hover_closed") if falta >= GameState.cliques_para_abrir() \
 		else GameState.preencher(GameState.texto_ui("box_hover_left"), {"n": falta})
 	return "%s\n%s\n%s" % [rotulo, carimbo, dica]
+
+
+## 7a2: alguma caixa de equipamento está animando a abertura (ou o aparelho ainda "nasce"): o balão do convite espera.
+## O estado abre a caixa de uma vez; só a UI sabe da animação.
+func caixa_abrindo() -> bool:
+	if not _revelar.is_empty():
+		return true
+	for item in _caixas:
+		var cx = _caixas[item]
+		if is_instance_valid(cx) and cx.abrindo:
+			return true
+	return false
 
 
 ## Janela aberta por cima (árvore, aposentar, prévia, luta...) ou jogo bloqueado: o clique não vai para a caixa.
@@ -1678,6 +1698,11 @@ func _montar_parede() -> void:
 		sf.visible = false
 		_mundo.add_child(sf)
 		_parede["photo_old_gym"] = {"sprite": sf, "dados": {}}
+	# 7a2: recorte de jornal do vulto (garagem e academia); a folha e o ponto vêm de recorte_gato_preto() e do manifest.
+	_recorte = AnimSprite.new()
+	_recorte.visible = false
+	_recorte.z_index = -45 + ordem.find("photo_old")
+	_mundo.add_child(_recorte)
 	# 6c2: o mural da escola (garagem e academia); a folha e o ponto vêm de mural_na_sala() e do manifest.
 	_mural = AnimSprite.new()
 	_mural.visible = false
@@ -1718,8 +1743,46 @@ func _atualizar_mural() -> void:
 	_mural_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
 
 
+## 7a2: recorte de jornal do vulto no ponto de `recorte_gato_preto()`; sem ele (campanha 1, sem o marco), nada é desenhado.
+func _atualizar_recorte() -> void:
+	if _recorte == null:
+		return
+	var r: Dictionary = GameState.recorte_gato_preto() if not ("wall_objects" in _cena_oculta) else {}
+	var spot: Array = r.get("spot", [])
+	var nome := "wall_clipping_black_cat_gym" if GameState.local_id == "gym" else "wall_clipping_black_cat"
+	if r.is_empty() or spot.size() != 2 or UiTema.sprite(nome).is_empty():
+		_recorte.visible = false
+		_recorte_rect = Rect2()
+		return
+	_recorte.definir(nome)
+	_recorte.position = Vector2(float(spot[0]), float(spot[1]))
+	_recorte.parar(0)
+	_recorte.visible = true
+	_recorte_rect = Rect2(_recorte.position, UiTema.tamanho_quadro(nome))
+
+
+## Dica de zoom do recorte: a imagem grande ao lado dele, só enquanto o mouse está em cima (nunca cobre a zona do alvo).
+func _zoom_recorte(sobre: bool) -> void:
+	if not sobre or _recorte_rect.size == Vector2.ZERO or UiTema.sprite("ui_clipping_black_cat_zoom").is_empty():
+		if _recorte_zoom != null:
+			_recorte_zoom.visible = false
+		return
+	if _recorte_zoom == null:
+		_recorte_zoom = UiTema.textura_rect(self, "ui_clipping_black_cat_zoom", 0, 0)
+		_recorte_zoom.z_index = 3000
+		UiTema.alinhar(_recorte_zoom, "ignore")
+	var q := UiTema.tamanho_quadro("ui_clipping_black_cat_zoom")
+	var x := _recorte_rect.end.x + 6.0
+	var y := clampf(_recorte_rect.position.y - 8.0, 22.0, 178.0 - q.y)
+	if x + q.x > 500.0:
+		x = _recorte_rect.position.x - 6.0 - q.x
+	_recorte_zoom.position = Vector2(x, y) - position  # o Sala não está na origem (room_rect começa em y 18)
+	_recorte_zoom.visible = true
+
+
 func _atualizar_parede() -> void:
 	_atualizar_mural()
+	_atualizar_recorte()
 	if _parede.is_empty():
 		return
 	var garagem := GameState.local_id == "garage" and not ("wall_objects" in _cena_oculta)
@@ -1751,6 +1814,8 @@ func _atualizar_parede() -> void:
 
 ## Texto da dica de um objeto da parede sob o ponto (coordenadas da tela base), ou "".
 func _texto_parede(p: Vector2) -> String:
+	if _recorte != null and _recorte.visible and _recorte_rect.has_point(p):
+		return GameState.texto_ui(str(GameState.recorte_gato_preto().get("object_text", "black_cat_clipping")), "")
 	if _mural != null and _mural.visible and _mural_rect.has_point(p):
 		var dm: DialogosData = GameState.dialogos
 		var chave_m := str(GameState.mural_na_sala().get("object_text", "mural"))

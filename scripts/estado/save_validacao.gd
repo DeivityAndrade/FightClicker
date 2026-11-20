@@ -79,6 +79,7 @@ func para_save() -> Dictionary:
 			"mentor_greeted": gs.mentor_cumprimentou,
 			"money_earned": gs.dinheiro_ganho,
 			"fight": gs.luta.duplicate(true) if not gs.luta.is_empty() else null,
+			"training_invite": gs.convite.duplicate(),  # 7a2, opcional (save antigo sem ele = padrão)
 		},
 		"permanent": gs.permanente.duplicate(),
 		"ending": gs.fim.duplicate(true) if not gs.fim.is_empty() else null,
@@ -166,6 +167,13 @@ func aplicar_save(estado: Dictionary) -> void:
 	# Fase 6a: escola (depois de permanente e fim: o padrão depende deles) e estado volátil das falas
 	gs.gestos_calcados = gs._escola._validar_gestos(c.get("gestured_gloves", []))
 	gs.escola = gs._escola._validar_escola(estado.get("school", null), not estado.is_empty())
+	# 7a2: convite do Osmar e AQUECIDO (precisam da escola e da arte já validadas); o minigame em andamento nunca é salvo
+	gs.treino_fora = ""
+	gs._treino_jogo = null
+	gs._treino_premio = {}
+	gs.convite = gs._treino.validar(c.get("training_invite", null))
+	gs._convite_local = gs.local_id
+	gs._convite_vis = ""
 	for b in gs.caixas_lista:  # 6c2: o hall pode ter baixado os cliques da caixa
 		b["hits"] = mini(int(b.hits), maxi(0, gs.cliques_para_abrir() - 1))
 	# Fase 6b1: passar o posto. O estado da sucessão vem do save (school.handover); o discípulo depois dele.
@@ -299,6 +307,7 @@ func _emitir_tudo(pedir_arte: bool = true) -> void:
 	gs._metro_prev = gs.nivel_metronomo  # Fase 6a: carga e NOVA CAMPANHA não contam como compra
 	gs._crew_prev = gs.crew_click_comprado
 	gs.treino_mudou.emit(gs.treino)
+	gs.aquecido_mudou.emit(gs.aquecido())  # 7a2
 	for id in gs.atributos:
 		gs.atributo_mudou.emit(id, gs.atributos[id])
 	gs.foco_mudou.emit(gs.foco)

@@ -505,5 +505,68 @@
 		"a pegada enche.\nsó não tenha pressa."
 	],
 	"arena_league_name": "GINÁSIO ALVORADA",
-	"bonus_warm_name": "AQUECIDO"
+	"bonus_warm_name": "AQUECIDO",
+
+	"treino_name": "TREINO FORA DE HORA",
+	"spar_name": "CHOQUE",
+	"spar_name_boxing": "CHOQUE: TROCA FRANCA",
+	"spar_name_bjj": "CHOQUE: DISPUTA DE PEGADA",
+	"flyers_name": "PANFLETAGEM",
+	"invite_go": "IR",
+	"invite_spar": [
+		"depois do expediente\ntem sparring. vem?",
+		"o saco tá frio.\nbora esquentar?",
+		"um choquezinho\nantes de fechar?"
+	],
+	"invite_flyers": [
+		"tem panfleto sobrando.\nvamos pra rua?",
+		"a escola precisa\nde cara nova. bora?",
+		"vinte minutinhos\nna calçada. vem?"
+	],
+	"mini_exit": "SAIR",
+	"mini_back": "VOLTAR",
+	"mini_ready": "PREPARAR",
+	"mini_go": "VAI!",
+	"mini_time": "{n} S",
+	"spar_tip_boxing": "CLIQUE PARA EMPURRAR. SEGURE NA RAJADA.",
+	"spar_tip_bjj": "SEGURE PARA PUXAR. SOLTE QUANDO ELE PUXAR.",
+	"spar_warn_burst": "RAJADA!",
+	"spar_warn_pull": "PUXADA!",
+	"spar_warn_pause": "ELE ABRIU!",
+	"spar_counter_x2": "X2",
+	"spar_point_you": "ENCOSTOU!",
+	"spar_point_him": "ELE ENCOSTOU",
+	"spar_breath": "FÔLEGO",
+	"spar_score": "VOCÊ {a} X {b} ELE",
+	"spar_won": "VENCEU!",
+	"spar_lost": "NÃO DEU",
+	"spar_draw": "EMPATE",
+	"spar_result_line": "{n} PONTOS",
+	"spar_reward_title": "TREINO FEITO",
+	"spar_reward_attr": "+{n} {atributo}",
+	"spar_warm_gain": "AQUECIDO PARA A PRÓXIMA LUTA",
+	"spar_warm_none": "SEM LUTA MARCADA",
+	"warm_preview_line": "AQUECIDO: +{pct}% NOS ATRIBUTOS (+{n} NA CHANCE)",
+	"flyers_tip": "ENTREGUE PARA QUEM OLHAR O CARTAZ.",
+	"flyers_accepted": "ACEITOU!",
+	"flyers_refused": "NÃO, VALEU",
+	"flyers_count": "{n} DE {goal}",
+	"flyers_reward_title": "RUA CUMPRIDA",
+	"flyers_reward_fame": "+{n} FAMA",
+	"flyers_ignored": [
+		"NÃO, OBRIGADO",
+		"TÔ ATRASADO",
+		"OUTRA HORA",
+		"DEPOIS EU VEJO",
+		"SÓ ESPERANDO O ÔNIBUS"
+	],
+	"flyers_took": [
+		"HUM, DEIXA EU VER",
+		"MEU PRIMO GOSTA DE LUTA",
+		"TEM AULA EXPERIMENTAL?",
+		"QUANTO É A MENSALIDADE?",
+		"VOU PASSAR LÁ"
+	],
+	"black_cat_clipping": "VULTO MASCARADO ASSUSTA LADRÃO PERTO DA BORRACHARIA",
+	"black_cat_rumor": "dizem que um vulto de capuz\nronda o bairro de noite."
 }
