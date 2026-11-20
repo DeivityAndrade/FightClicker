@@ -2,13 +2,26 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-19, fim do dia)
+## Situação agora (2026-11-20)
+- **Fase 7a2 fechada** ("Treino fora de hora"): convite do Osmar (300 s / 240 s, some em 60 s), minigames **Choque** (Boxe por
+  cliques, JJ segurar/soltar; fôlego, rajada, pausa X2, finta; 6 níveis) e **Panfletagem** (sinais, FAMA), bônus **AQUECIDO** (+3%
+  nos atributos na próxima luta, prévia honesta), relógio parado fora da sala (equipe só produz durante o minigame), semente do
+  vulto mascarado (recorte na parede a partir da campanha 2 + boato do Osmar). Ignorar convites = jogo idêntico à main. Save v13.
+  Docs: `fase7a2-design.md`, `fase7a2-textos.md`, `fase7a2-qa.md`, `fase7a2-revisao.md` (aprovada).
+- **Pergunta aberta ao dono:** o teto de 10% vale em **dias de campanha** (recomendação do Diretor; pior caso 9,2%)?
+- **Para o dono testar:** 7a1 e 7a2 (roteiro em `fase7a1-revisao.md` e `fase7a2-revisao.md`). Carro comprido de 2 portas fica anotado.
+- **Próximo:** 7b (Muay Thai, 2ª passiva) só com ordem do dono. Poupar GPU: um Godot por vez, headless sempre que der.
+
+## Situação anterior (2026-11-19, fim do dia)
 - **Fase 7a1 fechada** (cada arte luta do seu jeito): Boxe "Mão rápida" (embalo, K.O. cedo, cansa no 3º round), Jiu-jitsu
   "Finalização" (barra de pegada, queda, chão, FINALIZOU!, especial "SUPER PEGADA!"), arena da liga **GINÁSIO ALVORADA** (opção A),
   prévia honesta (±2 pontos), sem arte idêntico. Docs: `fase7a-escopo.md` (§8 decisões do dono), `fase7a1-design.md`,
   `fase7a1-textos.md`, `fase7a1-qa.md`, `fase7a1-revisao.md` (aprovada). Save continua v13.
 - **Próximo: 7a2** — minigames Choque (Boxe/JJ) e Panfletagem, bônus AQUECIDO, semente do Gato Preto. O dono autorizou seguir sem
   esperar teste dele ("pode tocar ficha"); ele testa tudo depois.
+- **Anotado pelo dono (2026-11-19), fazer depois:** voltar ao **modelo do carro da 1ª versão da 6d3** (sedã comprido, de 2 portas,
+  ~155 px — print do dono com o Osmar na frente), mas com a **lona cinza no estilo de antes** (a marrom saiu). Cuidado: o carro
+  comprido foi encurtado porque cobria gente; conferir os pontos novos da garagem (Osmar 52,258; mentor 210,254; 2º mentor 26,304).
 - Agentes: comandos longos (>180 s) vão para segundo plano sozinhos; mandar gravar saída em arquivo e esperar lendo o arquivo.
 
 ## Situação anterior (2026-11-19)

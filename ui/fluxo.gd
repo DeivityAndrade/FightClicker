@@ -13,6 +13,8 @@ var janela: JanelaBase  # prévia, vitória, fim ou confirmação de aposentar (
 
 var cartao: CartaoInicio  # "o que você trouxe" (Fase 4): não é janela, não bloqueia o alvo, mas pausa o Metrônomo
 
+var treino: TelaTreino  # 7a2: a tela do minigame (Choque ou Panfletagem) enquanto o jogador está no treino fora de hora
+
 var _barra: BarraBaixo
 var _tatica_antes := ""
 var _cartao_depois_da_arte := false  # NOVA CARREIRA com a escolha da arte pendente: o cartão "o que você trouxe" vem depois
@@ -33,6 +35,7 @@ func _ready() -> void:
 	GameState.escolha_arte_pedida.connect(_ao_escolha_arte_pedida)
 	GameState.dia_da_luta_chegou.connect(_ao_dia_da_luta_chegou)
 	GameState.aviso_data.connect(_ao_aviso_data)
+	GameState.treino_fora_mudou.connect(_ao_treino_fora)
 	call_deferred("_checar_pendencias")
 
 
@@ -44,7 +47,54 @@ func ligar(barra: BarraBaixo) -> void:
 
 
 func ocupado() -> bool:
-	return janela != null or tela.visible
+	return janela != null or tela.visible or treino != null
+
+
+# --- Fase 7a2: treino fora de hora (IR no balão do Osmar -> Choque ou Panfletagem -> prêmio -> VOLTAR) ---
+
+## Clicou em IR (ou no Osmar com o balão aberto). O GameState consome o convite e abre o minigame; a tela nasce pelo sinal
+## `treino_fora_mudou` e aqui recebe o resto (o boato do Osmar, que só vem na resposta do IR).
+func ir_para_treino() -> void:
+	if ocupado() or GameState.convite_visivel() == "":
+		return
+	var info := GameState.convite_ir()
+	if info.is_empty():
+		return
+	if treino == null:
+		_abrir_treino(str(info.get("kind", "")))
+	treino.definir_info(info)
+
+
+func _ao_treino_fora(estado: String) -> void:
+	if estado == "":
+		_fechar_treino()
+	elif treino == null:
+		_abrir_treino(estado)  # o IR veio de outro lugar (teste, atalho): a tela abre igual, sem o boato
+
+
+func _abrir_treino(estado: String) -> void:
+	if estado == "" or treino != null:
+		return
+	if GameState.treino_jogo() == null:
+		return
+	Dica.limpar()
+	_fechar_cartao()
+	treino = TelaChoque.new() if estado == "spar" else TelaPanfleto.new()
+	add_child(treino)
+	treino.abrir({"kind": estado, "art": GameState.arte_id, "rumor_text": ""})
+	if _barra != null:
+		_barra.definir_janela_aberta(true)
+	janela_mudou.emit(true)
+
+
+func _fechar_treino() -> void:
+	if treino == null:
+		return
+	treino.queue_free()
+	treino = null
+	if _barra != null and janela == null and not tela.visible:
+		_barra.definir_janela_aberta(false)
+	janela_mudou.emit(ocupado())
 
 
 # --- Prévia e luta ---
@@ -339,6 +389,8 @@ func abrir_aposentar() -> void:
 # --- Estado da carreira mudou (nova carreira, carga do save) ---
 
 func _ao_carreira_mudou() -> void:
+	if treino != null and GameState.treino_fora == "":
+		_fechar_treino()  # nova carreira ou carga do save com o minigame aberto: a sala volta
 	if tela.visible and tela.ativa and GameState.luta.is_empty():
 		tela.encerrar()  # o estado foi trocado (ex.: RECARREGAR da depuração)
 	if janela is JanelaFim and not GameState.tem_fim_pendente():

@@ -82,6 +82,11 @@ signal honra_mudou(honor: int)  # saldo de Honra mudou (fim de campanha por vont
 signal hall_mudou()  # nó do hall comprado ou carga do save
 signal previa_falta_pronta(texto: String)  # a linha "FALTA ~N DE ATRIBUTO" da prévia ficou pronta (calculada em segundo plano)
 
+# Fase 7a2 (Treino fora de hora): convite do seu Osmar, Choque e Panfletagem (contrato: docs/codigo/mapa.md)
+signal convite_mudou(tipo: String)  # o balão do convite apareceu ("spar" | "flyers") ou sumiu/escondeu ("")
+signal treino_fora_mudou(estado: String)  # o jogador foi para o minigame ("spar" | "flyers") ou voltou para a sala ("")
+signal aquecido_mudou(ativo: bool)  # AQUECIDO guardado ou gasto (ícone perto do HUD da luta)
+
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
 const PASTA_SAVE_TESTES := "user://test/autoload/"
@@ -237,6 +242,17 @@ var _arte_comentada := false  # o comentário da arte desta campanha já saiu (o
 var _reacao_cena := ""  # cena que armou a reação do 1º clique ("primeira_sucessao"); "" = toques sem fala
 var _falta_chave_atual := ""
 
+# Fase 7a2: treino fora de hora
+var minigames: MinigamesData  # data/minigames.json (vazio = sem convites)
+var convite: Dictionary = {}  # career.training_invite: {room_s, next_at, open, open_since, last, warm}
+var treino_fora := ""  # "" | "spar" | "flyers": o jogador está no minigame (sala_ativa falso, só a equipe produz). Não vai para o save
+var _treino_jogo = null  # ChoqueLogica | PanfletoLogica em andamento
+var _treino_premio: Dictionary = {}
+var _treino_fim_t := 0.0
+var _convite_vis := ""
+var _convite_local := ""
+var _rng_treino := RandomNumberGenerator.new()  # próprio: o minigame nunca mexe nos sorteios do jogo
+
 # Módulos (scripts/estado/): a lógica de cada assunto mora lá e trabalha nas variáveis acima.
 const _Depuracao := preload("res://scripts/estado/depuracao.gd")
 const _Textos := preload("res://scripts/estado/textos.gd")
@@ -252,6 +268,8 @@ const _LojaGeradores := preload("res://scripts/estado/loja_geradores.gd")
 const _Carreira := preload("res://scripts/estado/carreira.gd")
 const _LutaEstado := preload("res://scripts/estado/luta.gd")
 const _SaveValidacao := preload("res://scripts/estado/save_validacao.gd")
+const _TreinoFora := preload("res://scripts/estado/treino_fora.gd")
+var _treino := _TreinoFora.new(self)
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
 var _honra := _HonraMural.new(self)
@@ -317,6 +335,9 @@ func inicializar(pasta_save: String, caminho_config: String,
 	lutas = dados_lutas if dados_lutas != null else FightData.carregar()
 	motor = Luta.new(lutas)
 	golpes = MovesData.carregar()
+	minigames = MinigamesData.carregar()
+	_rng_treino.randomize()
+	_treino.zerar()
 	store = SaveStore.new(pasta_save)
 	_aparelhos._ajustar_assist()
 	carregar_save()
@@ -335,6 +356,7 @@ func tick(delta: float) -> void:
 		# Fase 5.3: UMA condição (sala_ativa) liga relógio, equipe, Metrônomo, assistido, ouro e arte.
 		# `dt` é o tempo de sala deste quadro (menor que delta se o relógio travou no dia da luta).
 		var dt := _calendario._avancar_relogio(delta)
+		_treino.tick(delta, dt)  # 7a2: relógio do convite (ou, no minigame, só a equipe produzindo)
 		if dt > 0.0:
 			var producao := producao_total()
 			if producao > 0.0:
@@ -349,6 +371,7 @@ func tick(delta: float) -> void:
 		_calendario._verificar_calendario()
 	_calendario._checar_sala()
 	_escola._tick_falas(delta)
+	_treino.atualizar_visivel()
 	if autosave_ativo:
 		_tempo_autosave += delta
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
@@ -374,11 +397,12 @@ static func preencher(modelo: String, vars: Dictionary = {}) -> String:
 
 
 # Soma ganho ao saldo e ao atributo do foco.
-func _ganhar(valor: float) -> void:
+func _ganhar(valor: float, aparelho_id: String = "") -> void:
 	if is_nan(valor) or valor <= 0.0:
 		return
 	# Fase 5: o aparelho da arte divide o ganho nos 3 atributos (o saldo recebe o valor inteiro).
-	var divisao := divisao_aparelho(foco)
+	# 7a2: `aparelho_id` vazio = o foco; o prêmio do Choque passa o aparelho da arte.
+	var divisao := divisao_aparelho(foco if aparelho_id == "" else aparelho_id)
 	for atributo in divisao:
 		var parte: float = valor * float(divisao[atributo])
 		if parte <= 0.0:
@@ -1020,3 +1044,25 @@ func para_save() -> Dictionary: return _save.para_save()
 func aplicar_save(estado: Dictionary) -> void: _save.aplicar_save(estado)
 ## Veja save_validacao.gd.
 func _emitir_tudo(pedir_arte: bool = true) -> void: _save._emitir_tudo(pedir_arte)
+
+# ===== Repasses para scripts/estado/treino_fora.gd (7a2) =====
+## Tipo do convite que a UI desenha agora ("" = nenhum balão): "spar" (Choque) | "flyers" (Panfletagem).
+func convite_visivel() -> String: return _treino.convite_visivel()
+## {kind, restante_s, proximo_em_s} do balão visível; {} sem balão.
+func convite_info() -> Dictionary: return _treino.convite_info()
+## Clicou em IR: consome o convite, salva e abre o minigame. {kind, art, level, variant, rumor_text, countdown_s, duration_s} ({} sem convite).
+func convite_ir() -> Dictionary: return _treino.convite_ir()
+## O minigame em andamento (ChoqueLogica | PanfletoLogica) ou null; o tick do GameState faz o tempo passar.
+func treino_jogo() -> Variant: return _treino.treino_jogo()
+## Fim do jogo ou SAIR: aplica e salva o prêmio e o devolve (chamar de novo devolve o mesmo).
+func treino_concluir() -> Dictionary: return _treino.treino_concluir()
+## VOLTAR: fecha a tela de prêmio e devolve a sala (relógio volta a andar).
+func treino_voltar() -> void: _treino.treino_voltar()
+## Nível do minigame agora (índice da escada, 0 a 5).
+func nivel_treino() -> int: return _treino.nivel_treino()
+## AQUECIDO guardado para a próxima luta.
+func aquecido() -> bool: return _treino.aquecido()
+## Fator dos atributos na luta (1,03 com AQUECIDO, senão 1).
+func mult_aquecido() -> float: return _treino.mult_aquecido()
+## O recorte de jornal do local atual: {spot, object_text} ou {} (Gato Preto, 7a2).
+func recorte_gato_preto() -> Dictionary: return _treino.recorte_gato_preto()

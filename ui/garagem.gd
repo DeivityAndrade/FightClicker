@@ -14,6 +14,8 @@ extends Control
 
 var _botao_mapa: BotaoMapa
 var _balao: Balao
+var _convite: BalaoConvite  # 7a2: balão do convite do Osmar (IR)
+var _convite_espera := 0.0  # se o balão não coube sem cobrir alguém, tenta de novo daqui a pouco
 var _faixa: FaixaAviso
 var _cursor: AnimSprite
 var _sujo := true
@@ -71,6 +73,30 @@ func _ready() -> void:
 	_atualizar_tudo()
 
 
+## 7a2: o balão do convite só existe com a sala livre e o estado pedindo; enquanto a caixa de equipamento anima abrindo ele espera
+## (o estado abre a caixa de uma vez, só a UI sabe da animação).
+func _atualizar_convite(delta: float) -> void:
+	if _convite == null:
+		return
+	var tipo := GameState.convite_visivel()
+	var livre := tipo != "" and not _fluxo.ocupado() and not _sala.caixa_abrindo() and not cena_forcada and not _balao.ativo()
+	if not livre:
+		if _convite.ativo():
+			_convite.esconder()
+		return
+	if _convite.ativo() and _convite.kind == tipo:
+		return
+	_convite_espera -= delta
+	if _convite_espera > 0.0:
+		return
+	var falas: Array = GameState.lista_ui("invite_" + tipo)
+	if falas.is_empty():
+		return
+	var idx := int(float(GameState.convite.get("open_since", 0.0))) % falas.size()  # determinístico: o convite não sorteia nada
+	if not _convite.mostrar(tipo, str(falas[idx]), _sala.ponto_cabeca("coach"), _sala.cabecas_a_evitar("coach")):
+		_convite_espera = 0.5
+
+
 ## Abre a aba TREINO e faz o cartão de compra do aparelho piscar. A compra em si acontece só ali.
 func _apontar_compra(aparelho: String) -> void:
 	_dir.destacar_compra(aparelho)
@@ -102,7 +128,7 @@ func _atualizar_tudo() -> void:
 	_barra.atualizar()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# O painel fecha sozinho durante as cenas (a cena do posto, a chegada à academia, a saída do John) e volta como estava.
 	var em_cena := cena_forcada or GameState.cena_sala != "" or GameState.sucessao_estado() != "none" or (_cena_ui != null and _cena_ui.player != null and _cena_ui.player.ativa)
 	_dir.forcar_fechado(em_cena)
@@ -110,6 +136,7 @@ func _process(_delta: float) -> void:
 	if _so_sala:
 		_aplicar_so_sala()
 	_sala.janela_aberta = _fluxo.ocupado()  # caixa não recebe clique com janela, prévia ou luta por cima
+	_atualizar_convite(delta)
 	_sala.dica_ativa = _barra.dica_ativa()
 	# Sobre a sala: esconde o cursor do sistema e desenha a luva (mesma arte da mão do lutador).
 	var sobre := get_viewport().gui_get_hovered_control() == _sala
@@ -207,6 +234,13 @@ func _montar_fala() -> void:
 	GameState.fala_pedida.connect(_ao_fala_pedida)
 	GameState.fala_cancelada.connect(func(id: String) -> void: _balao.cancelar(id))
 	_balao.falando.connect(_sala.definir_falando)
+	# 7a2: o balão do convite do Osmar (IR). O Osmar com o balão aberto também vale como IR.
+	_convite = BalaoConvite.new()
+	add_child(_convite)
+	_convite.ir_pedido.connect(_fluxo.ir_para_treino)
+	_sala.osmar_convite.connect(func() -> void:
+		if _convite.ativo():
+			_fluxo.ir_para_treino())
 	_sala.clique_vazio.connect(_balao.completar)
 	# Fase 6b1: a cena de passar o posto (palco na sala, faixas pretas, PULAR, balão e a tela de criação do discípulo).
 	var cena_ui := CenaUi.new()

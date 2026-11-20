@@ -115,6 +115,14 @@ const ESTADOS_TODOS := [
 	"f7a1_luta_boxe_defensivo", "f7a1_luta_boxe_ko", "f7a1_luta_jj_pegada", "f7a1_luta_jj_chao", "f7a1_luta_jj_finalizou",
 	"f7a1_luta_jj_finalizou_letreiro", "f7a1_arena_borracharia", "f7a1_arena_liga", "f7a1_fim_derrota_arena", "f7a1_fim_nota_boxe",
 	"f7a1_fim_nota_jj",
+	# Fase 7a2: treino fora de hora (convite do Osmar, Choque, Panfletagem, AQUECIDO e o recorte do vulto)
+	"f7a2_balao_garagem_spar", "f7a2_balao_garagem_flyers", "f7a2_balao_academia_spar", "f7a2_balao_academia_flyers", "f7a2_balao_espera",
+	"f7a2_choque_boxe_comeco", "f7a2_choque_boxe_rajada", "f7a2_choque_boxe_pausa", "f7a2_choque_boxe_finta", "f7a2_choque_boxe_folego",
+	"f7a2_choque_boxe_ponto", "f7a2_choque_boxe_premio", "f7a2_choque_boxe_premio_derrota",
+	"f7a2_choque_jj_comeco", "f7a2_choque_jj_rajada", "f7a2_choque_jj_pausa", "f7a2_choque_jj_finta", "f7a2_choque_jj_folego",
+	"f7a2_choque_jj_ponto", "f7a2_choque_jj_premio",
+	"f7a2_panfleto_comeco", "f7a2_panfleto_sinal", "f7a2_panfleto_aceitou", "f7a2_panfleto_erro", "f7a2_panfleto_premio",
+	"f7a2_previa_aquecido", "f7a2_hud_aquecido", "f7a2_recorte_garagem", "f7a2_recorte_academia",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -139,6 +147,7 @@ var _f6c2 = preload("res://tools/ui/audit/estados_f6c2.gd").new(self)
 var _f6d = preload("res://tools/ui/audit/estados_f6d.gd").new(self)
 var _f6d2 = preload("res://tools/ui/audit/estados_f6d2.gd").new(self)
 var _f7a1 = preload("res://tools/ui/audit/estados_f7a1.gd").new(self)
+var _f7a2 = preload("res://tools/ui/audit/estados_f7a2.gd").new(self)
 
 
 func _initialize() -> void:
@@ -366,6 +375,7 @@ func _rodar() -> void:
 	await _f6d._rodar_fase6d()
 	await _f6d2._rodar_fase6d2()
 	await _f7a1._rodar_fase7a1()
+	await _f7a2._rodar_fase7a2()
 	_fechar_cena()
 
 

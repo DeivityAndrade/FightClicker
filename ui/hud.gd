@@ -19,6 +19,8 @@ var _dica_nos: Control
 var _area_local: Control
 var _so_sala := false  # 6d2: modo "só a sala": fica só o grupo do Treino
 var _fundo: Panel
+var _aquecido: TextureRect  # 7a2: AQUECIDO guardado para a próxima luta (ícone da chama, perto do Fama e do Legado)
+var _aquecido_area: Control
 
 
 func _ready() -> void:
@@ -57,6 +59,18 @@ func _ready() -> void:
 	_emblema_rotulo = UiTema.rotulo(_emblema, "", UiTema.P2, 5, 0)
 
 	_areas_dica()
+	_aquecido = UiTema.textura_rect(self, "icon_warm", 0, 4)
+	_aquecido.visible = false
+	_aquecido_area = Control.new()
+	_aquecido_area.mouse_filter = Control.MOUSE_FILTER_PASS
+	_aquecido_area.visible = false
+	UiTema.alinhar(_aquecido_area, "ignore")
+	add_child(_aquecido_area)
+	_aquecido_area.mouse_entered.connect(func() -> void:
+		Dica.pedir_linhas([{"texto": UiTema.txt("bonus_warm_name", "AQUECIDO"), "cor": UiTema.R3},
+			{"texto": UiTema.txt("spar_warm_gain", "AQUECIDO PARA A PRÓXIMA LUTA"), "cor": UiTema.G3}], _aquecido_area))
+	_aquecido_area.mouse_exited.connect(func() -> void: Dica.limpar())
+	GameState.aquecido_mudou.connect(func(_a: bool) -> void: atualizar())
 	GameState.dinheiro_mudou.connect(_ao_dinheiro)
 	GameState.permanente_mudou.connect(atualizar)
 	GameState.local_mudou.connect(func(_l: String) -> void: atualizar())
@@ -91,7 +105,7 @@ func atualizar() -> void:
 	var legado: Dictionary = GameState.resumo_legado()
 	# Nome do local à direita: na academia vira "ACADEMIA: TREINO x2" (verde, com o ícone); na garagem, o nome de sempre.
 	var texto_local := GameState.texto_hud_local().to_upper()
-	var chave := "|".join(textos) + "|" + taxa + "|" + carreira + "|" + str(legado.label if int(legado.count) > 0 else "") + "|" + texto_local
+	var chave := ("W" if GameState.aquecido() else "-") + "|".join(textos) + "|" + taxa + "|" + carreira + "|" + str(legado.label if int(legado.count) > 0 else "") + "|" + texto_local
 	if chave == _ultimo:
 		return
 	_ultimo = chave
@@ -151,6 +165,15 @@ func _reposicionar() -> void:
 		area.position = Vector2(xr - 2.0, 0)
 		area.size = Vector2(w + 13.0 + 2.0, 18)
 		xr -= 10.0
+	# 7a2: o ícone do AQUECIDO fica à esquerda do Legado em jogo (some no modo "só a sala", que mostra só o Treino).
+	var quente := GameState.aquecido() and not _so_sala
+	_aquecido.visible = quente
+	_aquecido_area.visible = quente
+	if quente:
+		_aquecido.position.x = xr - 4.0
+		_aquecido_area.position = Vector2(xr - 6.0, 0)
+		_aquecido_area.size = Vector2(13, 18)
+		xr -= 12.0
 	# O nome do local só aparece se couber (na academia, com o ícone de 9 px + 3 de folga à esquerda do texto).
 	var na_academia := GameState.em_academia()
 	var largura_local := UiTema.largura_visivel(_local.text) + (12.0 if na_academia else 0.0)

@@ -78,7 +78,41 @@ func gpose_do_quadro(q: Dictionary) -> Dictionary:
 		p.erase("el")
 	if q.has("hr") and not q.has("er"):
 		p.erase("er")
+	# Fase 7a2: "prop" = panfletos da Panfletagem ("stack" = maço na mão esquerda da tela; "give" = maço + 1 panfleto na direita).
+	if q.has("prop"):
+		var kind: String = q.prop
+		p.erase("prop")
+		p["end"] = func(lib, _O: Vector2, ctx: Dictionary) -> void: panfletos(lib, ctx, kind)
 	return p
+
+
+## Fase 7a2: papel atrás dos dedos (não pinta por cima da mão: o polegar fica na frente = segurando).
+func papel(lib, c: Vector2, w: int, h: int, marca: bool) -> void:
+	var x0 := int(round(c.x)) - w / 2
+	var y0 := int(round(c.y)) - h + 2
+	for yy in h:
+		for xx in w:
+			var x := x0 + xx
+			var y := y0 + yy
+			if x < 0 or y < 0 or x >= lib.cw or y >= lib.ch:
+				continue
+			var idv: int = lib.ids[y * lib.cw + x]
+			if idv == lib.NEAR_GLOVE or idv == lib.NEAR_GLOVE_TOP + 1:
+				continue
+			var cor := "white"
+			if yy == h - 1 or xx == w - 1:
+				cor = "cream"
+			if marca and yy >= 1 and yy <= 3 and xx == 1:
+				cor = "b1"          # o R da Raízes (carimbo azul), 1 px de largura
+			if marca and yy == 1 and xx == 2:
+				cor = "b1"
+			lib.put(x, y, cor, lib.NEAR_GLOVE_TOP + 2)
+
+
+func panfletos(lib, ctx: Dictionary, kind: String) -> void:
+	papel(lib, ctx.hl + Vector2(0, 1), 5, 7, true)
+	if kind == "give":
+		papel(lib, ctx.hr + Vector2(2, 0), 4, 6, true)
 
 
 ## Golpes do TREINO (garagem): mesma ideia, visão 3/4. Devolve [quadros, ponto de contato relativo ao pivô].
