@@ -128,6 +128,13 @@ const ESTADOS_TODOS := [
 	"f7b1_luta_mt_marcas", "f7b1_luta_mt_cheia", "f7b1_luta_mt_rodado_liga", "f7b1_luta_mt_rodado_borracharia",
 	"f7b1_sala_saco_foco", "f7b1_sala_saco_chute", "f7b1_sala_saco_descanso_gym", "f7b1_sala_saco_caixa",
 	"f7b1_choque_mt_comeco", "f7b1_choque_mt_combo", "f7b1_choque_mt_chute", "f7b1_choque_mt_premio", "f7b1_arvore_mt",
+	# Fase 7b2: 2ª passiva (escolha com cadeado e meta, prévia, carga do Contragolpista, chão, clinch, 3 letreiros, aviso de liberação)
+	"f7b2_arte_0de3", "f7b2_arte_2de3", "f7b2_arte_liberada", "f7b2_arte_selecionada",
+	"f7b2_previa_boxe_counter", "f7b2_previa_boxe_aggressive", "f7b2_previa_jj_defensive", "f7b2_previa_jj_tarde",
+	"f7b2_previa_mt_aggressive", "f7b2_previa_mt_tarde",
+	"f7b2_luta_carga_0", "f7b2_luta_carga_1", "f7b2_luta_carga_2", "f7b2_luta_carga_3", "f7b2_luta_cp_ko_liga", "f7b2_luta_cp_ko_borracharia",
+	"f7b2_luta_jj_chao", "f7b2_luta_jj_levantou", "f7b2_luta_jj_juiz", "f7b2_luta_mt_clinch", "f7b2_luta_mt_joelhada",
+	"f7b2_fim_meta", "f7b2_fim_libera",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -154,6 +161,7 @@ var _f6d2 = preload("res://tools/ui/audit/estados_f6d2.gd").new(self)
 var _f7a1 = preload("res://tools/ui/audit/estados_f7a1.gd").new(self)
 var _f7a2 = preload("res://tools/ui/audit/estados_f7a2.gd").new(self)
 var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
+var _f7b2 = preload("res://tools/ui/audit/estados_f7b2.gd").new(self)
 
 
 func _initialize() -> void:
@@ -383,6 +391,7 @@ func _rodar() -> void:
 	await _f7a1._rodar_fase7a1()
 	await _f7a2._rodar_fase7a2()
 	await _f7b1._rodar_fase7b1()
+	await _f7b2._rodar_fase7b2()
 	_fechar_cena()
 
 

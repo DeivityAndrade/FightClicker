@@ -55,6 +55,7 @@ func para_save() -> Dictionary:
 			"location": gs.local_id,
 			"art": gs.arte_id,
 			"art_seconds": gs.arte_segundos,
+			"art_passive": gs.passiva_carreira,  # 7b2, opcional (ausente = 1ª passiva)
 			"apparatus_owned": gs.aparelhos_montados_ids.duplicate(),
 			"boxes": gs.caixas_lista.duplicate(true),
 			"training": gs.treino,
@@ -187,6 +188,9 @@ func aplicar_save(estado: Dictionary) -> void:
 		if gs._academia.fala_de_liberacao_pendente(str(arte_def.id)):
 			gs._escola._gravar_marco(str(arte_def.id) + "_unlocked", {}, false)
 			gs.disparar_gatilho(str(arte_def.id) + "_unlocked")
+		if gs._academia.fala_passiva2_pendente(str(arte_def.id)):  # 7b2: a fala da 2ª passiva também nunca se perde
+			gs._escola._gravar_marco("passive2_%s_unlocked" % arte_def.id, {}, false)
+			gs.disparar_gatilho("passive2_%s_unlocked" % arte_def.id)
 	gs._luta._finalizar_motivo(false)
 	gs._motivo_cache = {}
 
@@ -220,10 +224,10 @@ func _validar_luta(v: Variant) -> Dictionary:
 	# 7a1: `finish` é opcional (save antigo sem ele vale "damage" se ko, senão "points"; a UI usa luta_atual().result.finish).
 	# Incoerente (editado à mão) = campo descartado: precisa bater com `ko`/`win` e com a arte da carreira.
 	var fim := str(r.get("finish", ""))
-	var tipo_arte := str(gs.academia.arte(gs.arte_id).get("passive", {}).get("type", ""))
+	var tipo_arte := str(gs.motor.passiva.get("type", ""))  # 7b2: a passiva que vale na carreira (1ª ou 2ª)
 	var ko_ok: bool = luta_ok.result.ko
 	var ganhou: bool = luta_ok.result.win
-	var coerente: bool = (fim == "damage" and ko_ok) or (fim == "points" and not ko_ok) 		or (fim == "knockout" and ko_ok and ganhou and tipo_arte == "fast_hands") 		or (fim == "submission" and ko_ok and ganhou and tipo_arte == "submission") 		or (fim == "spin_kick" and ko_ok and ganhou and tipo_arte == "shin")
+	var coerente: bool = (fim == "damage" and ko_ok) or (fim == "points" and not ko_ok) 		or (fim == "knockout" and ko_ok and ganhou and tipo_arte == "fast_hands") 		or (fim == "submission" and ko_ok and ganhou and tipo_arte == "submission") 		or (fim == "spin_kick" and ko_ok and ganhou and tipo_arte == "shin") 		or (fim == "counter_ko" and ko_ok and ganhou and tipo_arte == "counter_punch") 		or (fim == "ground_stop" and ko_ok and ganhou and tipo_arte == "top_control") 		or (fim == "knee_ko" and ko_ok and ganhou and tipo_arte == "thai_clinch")
 	if coerente and tipo_arte != "":  # sem arte o jogo nunca grava `finish`
 		luta_ok.result["finish"] = fim
 	# Motivo calculado em lutar(); ausente (save antigo) = calculado sob demanda.
@@ -245,6 +249,7 @@ func _validar_permanente(v: Variant) -> Dictionary:
 		"arts_unlocked": _validar_artes_liberadas(p.get("arts_unlocked", [])),
 		"last_art": _validar_arte_id(p.get("last_art", "")),
 	}
+	_validar_passivas2(p, r)
 	r["tree_last_node"] = _validar_ultimo_no(p.get("tree_last_node", ""), r.skill_nodes)  # Fase 5.4
 	return r
 
@@ -370,6 +375,15 @@ func _validar_local_e_arte(c: Dictionary) -> void:
 		a = ""
 	gs.arte_id = a
 	gs.arte_segundos = gs._numero_valido(c.get("art_seconds", 0.0)) if a != "" else 0.0
+	# 7b2: career.art_passive (ausente = 1). A 2ª só vale com a arte, a 2ª passiva dela e a meta batida; senão volta para a 1ª (com aviso).
+	var ap := 1
+	var bruto_ap = c.get("art_passive", 1)
+	if (typeof(bruto_ap) == TYPE_INT or typeof(bruto_ap) == TYPE_FLOAT) and int(bruto_ap) == 2:
+		if a != "" and not gs.academia.arte(a).passive_2.is_empty() and (a in gs.permanente.get("passives_unlocked", [])):
+			ap = 2
+		else:
+			gs._avisar("Carreira salva com a 2ª passiva sem a meta batida ('%s'): voltou para a 1ª." % a)
+	gs.passiva_carreira = ap
 	gs._academia._atualizar_passiva()
 
 
@@ -400,6 +414,41 @@ func _validar_artes_liberadas(v: Variant) -> Array:
 func _validar_arte_id(v: Variant) -> String:
 	var id := str(v) if v is String else ""
 	return id if not gs.academia.arte(id).is_empty() else ""
+
+
+# 7b2: vitórias pela 1ª passiva (soma da linhagem), 2ªs passivas liberadas e a última escolhida. Tudo opcional (save antigo = vazio).
+# Só vale arte que tem `passive_2`; a meta batida (passive_wins >= count) libera a 2ª mesmo que a lista tenha se perdido.
+func _validar_passivas2(p: Dictionary, r: Dictionary) -> void:
+	var vitorias := {}
+	var bruto = p.get("passive_wins", {})
+	if bruto is Dictionary:
+		for id in bruto:
+			var a := gs.academia.arte(str(id))
+			if a.is_empty() or a.passive_2.is_empty():
+				continue
+			if typeof(bruto[id]) in [TYPE_INT, TYPE_FLOAT]:
+				vitorias[str(id)] = gs._inteiro_valido(bruto[id], 1.0e9)
+	var liberadas: Array = []
+	var lista = p.get("passives_unlocked", [])
+	if lista is Array:
+		for x in lista:
+			var a := gs.academia.arte(str(x))
+			if not a.is_empty() and not a.passive_2.is_empty() and not (str(x) in liberadas):
+				liberadas.append(str(x))
+	for a in gs.academia.artes:
+		if not a.passive_2.is_empty() and int(vitorias.get(a.id, 0)) >= int(a.passive_2.unlock.count) and not (a.id in liberadas):
+			liberadas.append(a.id)
+	var ultima := {}
+	var lp = p.get("last_passive", {})
+	if lp is Dictionary:
+		for id in lp:
+			if str(id) in liberadas and typeof(lp[id]) in [TYPE_INT, TYPE_FLOAT] and int(lp[id]) == 2:
+				ultima[str(id)] = 2
+			elif not gs.academia.arte(str(id)).is_empty():
+				ultima[str(id)] = 1
+	r["passive_wins"] = vitorias
+	r["passives_unlocked"] = liberadas
+	r["last_passive"] = ultima
 
 
 # Fase 5.4: último nó comprado (centro do mapa). Id desconhecido ou não comprado volta para o último de skill_nodes ("" se não há).

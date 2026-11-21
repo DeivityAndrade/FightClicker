@@ -10,17 +10,25 @@ extends JanelaBase
 
 signal escolheu(arte: String)
 
-const JANELA := Rect2(110, 34, 420, 268)
-const CARTOES := [Rect2(124, 70, 190, 220), Rect2(326, 70, 190, 220)]
+# 7b2: cada cartão ganhou as 2 opções de passiva (1ª e 2ª) e ficou mais alto (190x288); a janela cresce junto e continua no meio (14..346).
+const JANELA := Rect2(110, 14, 420, 332)
+const CARTOES := [Rect2(124, 48, 190, 288), Rect2(326, 48, 190, 288)]
 # 7b1: com a 3ª arte (Muay Thai) os 3 cartões de 190x220 ficam lado a lado numa janela mais larga (604 px, margem 11 px dos dois lados).
-const JANELA_3 := Rect2(18, 34, 604, 268)
-const CARTOES_3 := [Rect2(29, 70, 190, 220), Rect2(225, 70, 190, 220), Rect2(421, 70, 190, 220)]
+const JANELA_3 := Rect2(18, 14, 604, 332)
+const CARTOES_3 := [Rect2(29, 48, 190, 288), Rect2(225, 48, 190, 288), Rect2(421, 48, 190, 288)]
+# 7b2: as 2 caixas de passiva dentro do cartão (coordenadas do cartão).
+const OPC_X := 6.0
+const OPC_LARG := 178.0
+const OPC_ALT := 52.0
+const OPC_Y := [138.0, 194.0]
 const LARG_BOTAO := 120.0
 const ALT_BOTAO := 20.0
 
 var sfx: Sfx
 var _cartoes: Array[Dictionary] = []  # {id, area, fundo, ultima, container, botao, hover}
 var _escolhida := ""
+var _sel: Dictionary = {}  # arte -> passiva marcada (1 ou 2); a que vale quando o cartão é clicado
+var _opcoes: Dictionary = {}  # arte -> [{n, borda, fundo, botao, nome, estrela, trancada, cor}]
 var _t := 0.0
 
 
@@ -33,8 +41,8 @@ func abrir_com() -> void:
 	var janela := JANELA_3 if tres else JANELA
 	var posicoes: Array = CARTOES_3 if tres else CARTOES
 	moldura("ui_window", janela)
-	faixa_titulo("retire", Rect2(janela.position.x + 6.0, 40, janela.size.x - 12.0, 16), UiTema.txt("art_title", "QUE TIPO DE LUTADOR VOCÊ QUER SER?"))
-	UiTema.rotulo_centro(painel, GameState.subtitulo_escolha_arte().to_upper(), UiTema.G3, 320.0, 56.0)
+	faixa_titulo("retire", Rect2(janela.position.x + 6.0, janela.position.y + 6.0, janela.size.x - 12.0, 16), UiTema.txt("art_title", "QUE TIPO DE LUTADOR VOCÊ QUER SER?"))
+	UiTema.rotulo_centro(painel, GameState.subtitulo_escolha_arte().to_upper(), UiTema.G3, 320.0, janela.position.y + 22.0)
 	# Camadas: fundos dos cartões, a área clicável de cada cartão e, por cima, o conteúdo (rótulos e botões ESCOLHER).
 	var fundos := Control.new()
 	fundos.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -113,12 +121,18 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 	# Textos: tagline, regra, traço de luta, "vale a carreira inteira". Cada um centralizado, até 2 linhas em 174 px.
 	_texto(c, str(arte.tagline).to_upper(), UiTema.CREAM, 90.0, r.size.x)
 	_texto(c, str(arte.rule_text).to_upper(), UiTema.P2, 114.0, r.size.x)
-	# 7a1: o cartão mostra a passiva (art_card_*_fight, até 3 linhas); sem a chave, o texto do arts.json.
-	_texto(c, UiTema.txt("art_card_%s_fight" % id, str(arte.fight_text)), _cor_arte(id), 138.0, r.size.x)
-	_texto(c, UiTema.txt("art_whole_career", "VALE A CARREIRA INTEIRA"), UiTema.G2, 170.0, r.size.x)
+	# 7b2: as 2 opções de passiva (a 2ª trancada mostra o cadeado e a meta "N/3"). Clicar numa opção só a marca;
+	# a arte é escolhida pelo ESCOLHER ou pelo resto do cartão, com a passiva marcada.
+	var passivas: Array = arte.get("passives", [])
+	_sel[id] = int(arte.get("passive_default", 1))
+	_opcoes[id] = []
+	for k in mini(passivas.size(), OPC_Y.size()):
+		_opcoes[id].append(_montar_opcao(c, id, passivas[k], float(OPC_Y[k]), por_id))
+	_pintar(id)
+	_texto(c, UiTema.txt("art_whole_career", "VALE A CARREIRA INTEIRA"), UiTema.G2, 250.0, r.size.x)
 
 	# Botão ESCOLHER, centralizado no cartão.
-	var b := UiTema.botao_estilizado(c, Rect2(floorf((r.size.x - LARG_BOTAO) / 2.0), 190, LARG_BOTAO, ALT_BOTAO), "ui_button_art")
+	var b := UiTema.botao_estilizado(c, Rect2(floorf((r.size.x - LARG_BOTAO) / 2.0), 262, LARG_BOTAO, ALT_BOTAO), "ui_button_art")
 	UiTema.botao_conteudo(b, UiTema.txt("art_choose", "ESCOLHER"), UiTema.WHITE, 1)
 	b.set_meta("ui_pos", "center_h")
 	b.pressed.connect(func() -> void: _escolher(id))
@@ -129,13 +143,170 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 		var w := roundf(UiTema.largura_visivel(texto)) + 10.0
 		if int(w) % 2 != 0:
 			w += 1.0
-		var tag := UiTema.nine_patch(c, str(info.get("tag_last", "ui_art_tag_last")), Rect2(r.size.x - w - 10.0, -4, w, 13))
+		var tag := UiTema.nine_patch(c, str(info.get("tag_last", "ui_art_tag_last")), Rect2(r.size.x - w - 10.0, -7, w, 13))
 		var a := UiTema.area_nove("ui_art_tag_last", Vector2(w, 13))
 		var l := UiTema.rotulo(tag, texto, Sala.BR0, roundf(a.position.x + (a.size.x - UiTema.largura_visivel(texto)) / 2.0),
 			UiTema.y_texto(a), 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 		UiTema.alinhar(l, "left")
 	return {"id": id, "area": area, "fundo": fundo, "ultima": ultima, "container": c, "botao": b, "rect": r,
 		"normal": nome_normal, "hover": str(info.get("card", {}).get("hover", "ui_art_card_hover")), "aceso": false}
+
+
+## Uma caixa de passiva: ícone 16x16 + nome (linha de cima) e, embaixo, a frase da passiva ou, se trancada, "N/3 META" + barra.
+func _montar_opcao(c: Control, id: String, p: Dictionary, y: float, por_id: Dictionary) -> Dictionary:
+	var trancada := bool(p.get("locked", false))
+	var cor := _cor_arte(id)
+	var borda := ColorRect.new()
+	borda.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	borda.position = Vector2(OPC_X, y)
+	borda.size = Vector2(OPC_LARG, OPC_ALT)
+	borda.set_meta("ui_align", "ignore")
+	c.add_child(borda)
+	var fundo := ColorRect.new()
+	fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fundo.position = Vector2(1, 1)
+	fundo.size = Vector2(OPC_LARG - 2.0, OPC_ALT - 2.0)
+	fundo.set_meta("ui_align", "ignore")
+	borda.add_child(fundo)
+	# Ícone: a 1ª usa o ícone da arte; a 2ª, o ícone próprio (a versão cinza com cadeado enquanto trancada).
+	var icone := str(por_id.get("icon", "art_" + id)) if int(p.n) == 1 else str(p.get("icon", ""))
+	if trancada and icone != "":
+		icone += "_locked"
+	if icone != "" and not UiTema.sprite(icone).is_empty():
+		UiTema.textura_rect(borda, icone, 4, 2)
+	var nome := UiTema.rotulo(borda, str(p.name).to_upper(), UiTema.G1 if trancada else cor, 24, 5, 0.0, HORIZONTAL_ALIGNMENT_LEFT)
+	UiTema.alinhar(nome, "left")
+	var marca: Control = null
+	var texto_label: Label = null
+	var largura_texto := OPC_LARG - 10.0
+	if trancada:
+		# Cadeado à direita do nome; embaixo a meta e a barra.
+		marca = _quadro(borda, "ui_passive_lock", 9, 12, 0, OPC_LARG - 14.0, 2.0)
+		var prog: Dictionary = p.get("progress", {})
+		var l := UiTema.rotulo(borda, str(prog.get("text", "")).to_upper(), UiTema.Y1, 5, 21, largura_texto, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar(l, "left")
+		_barra_meta(borda, 5.0, 36.0, largura_texto, int(prog.get("n", 0)), int(prog.get("m", 3)))
+	else:
+		marca = _quadro(borda, "ui_passive_goal_pip", 7, 7, 0, OPC_LARG - 13.0, 5.0)
+		var l := UiTema.rotulo(borda, str(p.fight_text).to_upper(), UiTema.CREAM, 5, 19, largura_texto, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar(l, "left")
+		l.size = Vector2(largura_texto, 32)
+		texto_label = l
+	# Botão invisível sobre a caixa: marca a opção (a trancada só treme o cadeado).
+	var botao := Button.new()
+	botao.focus_mode = Control.FOCUS_NONE
+	botao.flat = true
+	botao.position = Vector2(OPC_X, y)
+	botao.size = Vector2(OPC_LARG, OPC_ALT)
+	for e in ["normal", "hover", "pressed", "disabled", "focus"]:
+		botao.add_theme_stylebox_override(e, StyleBoxEmpty.new())
+	botao.set_meta("ui_align", "ignore")
+	var n := int(p.n)
+	botao.pressed.connect(func() -> void: _marcar(id, n))
+	c.add_child(botao)
+	return {"n": n, "borda": borda, "fundo": fundo, "botao": botao, "nome": nome, "marca": marca, "trancada": trancada, "cor": cor, "texto": texto_label}
+
+
+## Quadro `q` de uma folha horizontal (cada quadro lw x lh).
+func _quadro(pai: Control, nome: String, lw: int, lh: int, q: int, x: float, y: float) -> Control:
+	if UiTema.sprite(nome).is_empty():
+		var cr := ColorRect.new()
+		cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cr.color = UiTema.Y2
+		cr.position = Vector2(x, y)
+		cr.size = Vector2(lw, lh)
+		pai.add_child(cr)
+		return cr
+	var t := TextureRect.new()
+	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var at := AtlasTexture.new()
+	at.atlas = UiTema.textura(nome)
+	at.region = Rect2(float(lw * q), 0, lw, lh)
+	t.texture = at
+	t.stretch_mode = TextureRect.STRETCH_KEEP
+	t.position = Vector2(x, y)
+	t.size = Vector2(lw, lh)
+	t.set_meta("ui_align", "ignore")
+	pai.add_child(t)
+	return t
+
+
+static func _definir_quadro(t: Control, lw: int, q: int) -> void:
+	if t is TextureRect and (t as TextureRect).texture is AtlasTexture:
+		var at := (t as TextureRect).texture as AtlasTexture
+		at.region = Rect2(float(lw * q), at.region.position.y, at.region.size.x, at.region.size.y)
+
+
+## Barra da meta: moldura 9-slice + enchimento (n/m do interior) + uma divisória em cada 1/m.
+func _barra_meta(pai: Control, x: float, y: float, larg: float, n: int, m: int) -> void:
+	var interior := larg - 4.0
+	if not UiTema.sprite("ui_passive_progress_bar").is_empty():
+		UiTema.nine_patch(pai, "ui_passive_progress_bar", Rect2(x, y, larg, 8)).set_meta("ui_align", "ignore")
+	else:
+		var q := ColorRect.new()
+		q.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		q.color = UiTema.D2
+		q.position = Vector2(x, y)
+		q.size = Vector2(larg, 8)
+		pai.add_child(q)
+	var w := roundf(interior * float(n) / float(maxi(m, 1)))
+	if w >= 1.0:
+		var t := TextureRect.new()
+		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if not UiTema.sprite("ui_passive_progress_fill").is_empty():
+			var at := AtlasTexture.new()
+			at.atlas = UiTema.textura("ui_passive_progress_fill")
+			at.region = Rect2(4.0 if n >= m else 0.0, 0, 4, 4)
+			t.texture = at
+		else:
+			var img := Image.create(4, 4, false, Image.FORMAT_RGBA8)
+			img.fill(UiTema.Y2)
+			t.texture = ImageTexture.create_from_image(img)
+		t.stretch_mode = TextureRect.STRETCH_TILE
+		t.position = Vector2(x + 2.0, y + 2.0)
+		t.size = Vector2(w, 4)
+		t.set_meta("ui_align", "ignore")
+		pai.add_child(t)
+	for k in range(1, m):
+		var tick := ColorRect.new()
+		tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tick.color = UiTema.G2
+		tick.position = Vector2(x + 2.0 + roundf(interior * float(k) / float(m)), y + 2.0)
+		tick.size = Vector2(1, 4)
+		tick.set_meta("ui_align", "ignore")
+		pai.add_child(tick)
+
+
+## Marca uma opção (a trancada não marca: o cadeado treme).
+func _marcar(id: String, n: int) -> void:
+	if _escolhida != "":
+		return
+	for o in _opcoes.get(id, []):
+		if int(o.n) != n:
+			continue
+		if bool(o.trancada):
+			var cad: Control = o.marca
+			var x0 := cad.position.x
+			var tw := create_tween()
+			tw.tween_property(cad, "position:x", x0 - 2.0, 0.04)
+			tw.tween_property(cad, "position:x", x0 + 2.0, 0.06)
+			tw.tween_property(cad, "position:x", x0, 0.04)
+			return
+		_sel[id] = n
+		_pintar(id)
+		return
+
+
+## Seleção clara: a marcada tem borda dourada, fundo mais claro, nome branco e a estrela cheia; as outras ficam apagadas.
+func _pintar(id: String) -> void:
+	for o in _opcoes.get(id, []):
+		var marcada: bool = int(o.n) == int(_sel.get(id, 1)) and not bool(o.trancada)
+		(o.borda as ColorRect).color = UiTema.Y2 if marcada else UiTema.G1
+		(o.fundo as ColorRect).color = UiTema.D2.lightened(0.1) if marcada else UiTema.INK
+		if not bool(o.trancada):
+			(o.nome as Label).add_theme_color_override("font_color", UiTema.WHITE if marcada else o.cor)
+			_definir_quadro(o.marca, 7, 1 if marcada else 0)
+			(o.marca as Control).modulate = Color.WHITE if marcada else Color(1, 1, 1, 0.6)
 
 
 ## Cor da arte no texto da passiva: Boxe vermelho, Jiu-jitsu azul, Muay Thai laranja de couro (7b1).
@@ -152,7 +323,7 @@ func _texto(c: Control, texto: String, cor: Color, y: float, largura_cartao: flo
 func _escolher(id: String) -> void:
 	if _escolhida != "":
 		return
-	if not GameState.escolher_arte(id):
+	if not GameState.escolher_arte(id, int(_sel.get(id, 0))):
 		return
 	_escolhida = id
 	sfx.no_aprendido()
@@ -170,6 +341,8 @@ func _escolher(id: String) -> void:
 			create_tween().tween_property(c.fundo, "modulate:a", 0.35, 0.15)
 		(c.area as Button).disabled = true
 		(c.botao as Button).disabled = true
+		for o in _opcoes.get(c.id, []):
+			(o.botao as Button).disabled = true
 	var tw := create_tween()
 	tw.tween_interval(0.22)
 	tw.tween_callback(func() -> void: escolheu.emit(id))

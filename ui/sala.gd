@@ -1972,6 +1972,8 @@ class Numero extends RefCounted:
 	var _origem := Vector2.ZERO
 	var _alt := 0.0
 	var _alfa := 1.0
+	var _sumir := 1.0  # 7b2: 1 = normal; cai para 0 quando um letreiro de fim limpa a área (ver `sumir_com`)
+	var _gen := 0  # conta os usos do número (um fade atrasado não apaga um número reaproveitado)
 	var _raiz: Node2D
 	var _principal: Label
 	var _extra: Label
@@ -2012,6 +2014,8 @@ class Numero extends RefCounted:
 	func iniciar(texto: String, cor: Color, grande: bool, linha_extra: String, origem: Vector2,
 			dur: float, subida: float, alfa: float = 1.0, escala: float = 0.0) -> void:
 		ativo = true
+		_gen += 1
+		_sumir = 1.0
 		_t = 0.0
 		_dur = dur
 		_subida = subida
@@ -2041,7 +2045,17 @@ class Numero extends RefCounted:
 		_raiz.position = Vector2(floorf(_origem.x), floorf(_origem.y - subiu))
 		_principal.position = Vector2(-100, -7)
 		_extra.position = Vector2(-100, -7 - 15.0 - _alt)
-		_raiz.modulate.a = _alfa * (1.0 if p < 0.65 else 1.0 - (p - 0.65) / 0.35)
+		_raiz.modulate.a = _alfa * (1.0 if p < 0.65 else 1.0 - (p - 0.65) / 0.35) * _sumir
+
+	## Letreiro de fim: `p` de 0 a 1 apaga o número (a 1 ele sai de cena). `gen` é o uso que estava na tela quando o fade começou.
+	func sumir_com(p: float, gen: int) -> void:
+		if not ativo or gen != _gen:
+			return
+		_sumir = 1.0 - clampf(p, 0.0, 1.0)
+		_raiz.modulate.a = minf(_raiz.modulate.a, _alfa * _sumir)
+		if p >= 1.0:
+			ativo = false
+			_raiz.visible = false
 
 
 ## Seta que balança sobre o alvo central até o primeiro clique.

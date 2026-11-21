@@ -552,6 +552,84 @@
 	"spar_beat_kick": "CHUTE!",
 	"spar_combo": "COMBO {n}",
 
+	"passive_counter_punch_name": "CONTRAGOLPISTA",
+	"passive_counter_punch_line": "VOCÊ ESQUIVA {d}%. CADA ESQUIVA CARREGA (+{c}). NO 3º ROUND, K.O. ATÉ {k}% POR GOLPE",
+	"passive_counter_punch_line_aggressive": "NO AGRESSIVO VOCÊ NÃO ESPERA",
+	"passive_share_counter_punch": "{n} EM 10 VITÓRIAS POR K.O. NO CONTRAGOLPE",
+	"passive_top_control_name": "POR CIMA",
+	"passive_top_control_line": "DERRUBA {p}% POR ACERTO (NO {r}º ROUND). ELE LEVANTA {e}%. COM ELE FRACO, O JUIZ PARA ({s}%)",
+	"passive_top_control_line_late": "SÓ DERRUBA EM {x} DE 10 LUTAS",
+	"passive_share_top_control": "{n} EM 10 VITÓRIAS COM O JUIZ PARANDO",
+	"passive_thai_clinch_name": "CLINCH",
+	"passive_thai_clinch_line": "PRENDE {p}% POR ACERTO (NO {r}º ROUND). NO CLINCH: JOELHADA {k}% DE CRÍTICO. ELE SOLTA {e}%",
+	"passive_thai_clinch_line_late": "SÓ PRENDE EM {x} DE 10 LUTAS",
+	"passive_share_thai_clinch": "{n} EM 10 VITÓRIAS POR JOELHADA",
+	"fight_charge_full": "CARGA!",
+	"fight_counter_ko": "K.O. NO CONTRAGOLPE!",
+	"fight_stood_up": "LEVANTOU",
+	"fight_ground_stop": "O JUIZ PAROU!",
+	"fight_clinch": "CLINCH!",
+	"fight_knee_ko": "JOELHADA!",
+	"reason_passive_cp_early": "VOCÊ CAIU ANTES DO 3º ROUND",
+	"reason_passive_cp_held": "ELE AGUENTOU {n} CONTRAGOLPES",
+	"reason_passive_cp_never_hurt": "ELE NUNCA BAIXOU DE 60%",
+	"reason_passive_tc_no_takedown": "VOCÊ NÃO CONSEGUIU DERRUBAR",
+	"reason_passive_tc_stood_up": "ELE LEVANTOU {n} VEZES",
+	"reason_passive_tc_never_hurt": "ELE NUNCA BAIXOU DE 50%",
+	"reason_passive_cl_never": "VOCÊ NÃO PRENDEU NO CLINCH",
+	"reason_passive_cl_released": "ELE SOLTOU DO CLINCH {n} VEZES",
+	"reason_passive_cl_held": "ELE AGUENTOU {n} JOELHADAS",
+	"tip_passive_cp_early": [
+		"RESISTÊNCIA PARA CHEGAR INTEIRO AO 3º",
+		"O CONTRAGOLPE SÓ MATA NO 3º ROUND. SEGURE ATÉ LÁ"
+	],
+	"tip_passive_cp_held": [
+		"NO CONTRA-ATAQUE, CADA ESQUIVA VALE 2 DE CARGA",
+		"RESISTÊNCIA PESA O K.O. DO CONTRAGOLPE"
+	],
+	"tip_passive_cp_never_hurt": [
+		"MAIS FORÇA PARA CANSAR ELE",
+		"O K.O. SÓ ENTRA COM ELE JÁ MACHUCADO. TREINE FORÇA"
+	],
+	"tip_passive_tc_no_takedown": [
+		"FORÇA DERRUBA. O AGRESSIVO DERRUBA MAIS",
+		"SEM QUEDA, NÃO TEM POR CIMA. TREINE FORÇA"
+	],
+	"tip_passive_tc_stood_up": [
+		"FORÇA SEGURA. O DEFENSIVO NÃO DEIXA ELE LEVANTAR",
+		"ÁGIL DEMAIS PARA SEGURAR? MAIS FORÇA NO SACO"
+	],
+	"tip_passive_tc_never_hurt": [
+		"MAIS FORÇA PARA CASTIGAR",
+		"POR CIMA SEM DANO NÃO ASSUSTA O JUIZ. TREINE FORÇA"
+	],
+	"tip_passive_cl_never": [
+		"FORÇA PRENDE. O DEFENSIVO PRENDE MAIS",
+		"O CLINCH SÓ ENTRA COM ELE JÁ MACHUCADO. ACERTE ANTES"
+	],
+	"tip_passive_cl_released": [
+		"RESISTÊNCIA SEGURA O CLINCH",
+		"O DEFENSIVO FAZ ELE SOLTAR MENOS"
+	],
+	"tip_passive_cl_held": [
+		"NO AGRESSIVO A JOELHADA DERRUBA MAIS",
+		"MAIS FORÇA NA JOELHADA. O CRÍTICO DO CLINCH FAZ O RESTO"
+	],
+	"art_card_passive_locked": "TRAVADO",
+	"art_card_passive_progress": "{n}/{m} {fim}",
+	"passive_finish_knockout": "K.O. DE EMBALO",
+	"passive_finish_submission": "FINALIZAÇÕES",
+	"passive_finish_spin_kick": "CHUTES RODADOS",
+	"passive2_unlocked_line": "NOVO JEITO DE LUTAR: {nome}. ESCOLHA NA PRÓXIMA CARREIRA",
+	"fight_hud_standing": "EM PÉ",
+	"fight_hud_ground": "NO CHÃO",
+	"fight_hud_apart": "SOLTO",
+	"fight_hud_clinch": "CLINCH",
+	"fight_hud_charge": "CARGA",
+	"passive2_boxing_unlocked": "três nocautes de embalo?\nagora aprende a esperar.",
+	"passive2_bjj_unlocked": "três finalizações. agora\naprende a derrubar antes.",
+	"passive2_muay_thai_unlocked": "três chutes rodados.\nagora cola nele e joelha.",
+
 	"treino_name": "TREINO FORA DE HORA",
 	"spar_name": "CHOQUE",
 	"spar_name_boxing": "CHOQUE: TROCA FRANCA",

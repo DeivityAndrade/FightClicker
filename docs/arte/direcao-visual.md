@@ -1308,3 +1308,45 @@ campo `icon` do `skill_tree.json`. Falta no código: `ui/janela_mapa.gd` lista o
 couro amassando e a corrente reagindo. O ícone da arte em 9 px e a corda do `skill_thai_rope` são os menos imediatos. As marcas
 na perna leem como "botinha" em 11 px: um artista faria a canela com o roxo do hematoma mais claro. Tamanhos fixos para trocar só
 os arquivos.
+
+## 33. Fase 7b2 (2ª passiva: cadeado e meta no cartão, ícones, carga do Contragolpista, letreiros)
+Gerador: `tools/art/make_arte_fase7b2.gd` (`godot --headless --path <projeto> --script res://tools/art/make_arte_fase7b2.gd`;
+`-- --no-assets` grava só os mockups). Manifest: `python tools/art/manifest_7b2.py` (lê `tools/art/fase7b2_sprites.json`; só
+acrescenta as chaves da 7b2; rodar de novo não muda nada). Lista completa, tamanhos e onde a UI usa: `docs/arte/fase7b2-manifest.md`.
+Textos = Roteirista (`fase7b2-textos.md`): constantes `TXT_*` no topo do gerador.
+
+**Regra de leitura (critério 10):** cada peça da 2ª passiva tem **forma** diferente da peça da 1ª, não só cor.
+| Arte | 1ª passiva | 2ª passiva |
+|---|---|---|
+| Boxe | bolinha redonda 7x7 (embalo), letreiro K.O.! | **losango 9x9** (carga 0–3), ícone luva em guarda alta + seta em L que volta, letreiro **K.O. NO CONTRAGOLPE!** |
+| Jiu-jitsu | barra da pegada + mão na gola, FINALIZOU! | ícone **seta azul pressionando quem está deitado no tatame**, letreiro **O JUIZ PAROU!** |
+| Muay Thai | canela marcada, CHUTE RODADO! | ícone **braços fechando atrás da nuca + joelho subindo**, letreiro **JOELHADA!** |
+A cor continua a da arte (Boxe vermelho, Jiu-jitsu azul, Muay Thai laranja de couro); a meta usa **ouro** (é recompensa, como o
+cadeado "dá para comprar" da loja).
+
+**Cartão da arte, 2ª opção** (mockup de sugestão `mockups/fase7b2_cartao_x2.png`; layout final é do UI/UX):
+- Trancada: `passive_<tipo>_locked` (16x16, cinza + cadeado no canto), nome em `g1`, linha `{n}/{m} {fim}` em `y1` (texto da
+  fonte do tema, não imagem), barra da meta embaixo e `ui_passive_lock` (quadro 0) à direita.
+- Barra: `ui_passive_progress_bar` (9-slice 8x6, a medida da `ui_grip_bar`) + `ui_passive_progress_fill` (4x4 repetido; quadro 1
+  quando n ≥ m) + `ui_passive_progress_tick` (1x4 em cada 1/m). **Ou** as estrelas `ui_passive_goal_pip` (7x7, passo 9) quando
+  m ≤ 5. As duas valem para qualquer m (o gerador não fixa 3).
+- Meta batida: cadeado 0 → 1 (clarão, 1 quadro) → 2 (aberto, ouro) e some; o ícone vira o colorido.
+
+**Carga do Contragolpista:** `ui_charge_pip` 9x9, 4 quadros (vazia / carregada: borda `r2` e miolo ouro / acendendo / cheia:
+contorno `r2`, piscar 1/3 a 6 fps com `ui_banner_charge_full` CARGA!). 3 com passo 11 px ao lado da **sua** vida (a canela
+fica ao lado da dele). `icon_charge` 9x9 para a prévia e o motivo.
+
+**Letreiros:** receita do K.O.!/FINALIZOU!/CHUTE RODADO! (amarelo `y1` em cima / `y0` embaixo, contorno `ink`, sombra de fonte
+na cor da arte: `r1` / `b1` / `br1`), fonte 3x, 2x no jogo em (320,118), pivô no meio. Texto mais largo que 300 px em 1x quebra
+sozinho em 2 linhas no espaço mais perto do meio: K.O. NO CONTRAGOLPE! sai em "K.O. NO / CONTRAGOLPE!" (209x68 → 418x136 em
+2x, y 50..186: não cobre o HUD nem as cabeças). Pequenos (fonte 2x, família do PERNA CHEIA!): CARGA!, LEVANTOU, CLINCH! —
+opcionais, o UI/UX pode usar texto. Conferido nas duas arenas: `mockups/fase7b2_letreiros.png`.
+
+**Animação:** nada novo. A guarda alta do Contragolpista é a pose `block` que já existe (a opcional "guarda alta" do Artista
+de Personagens ficou de fora: não seria barata sem refazer o idle do boxeador nas 5 luvas).
+
+**Mockups:** `fase7b2_pecas_x4.png` (todas as peças em 4x, lado a lado com as da 1ª), `fase7b2_cartao_x2.png`, `fase7b2_letreiros.png`.
+
+**Placeholder / precisa de pixel artist:** o ícone do Clinch em 16 px é o mais fraco (os braços em volta da cabeça leem como
+capuz de longe; à mão, de perfil, com os dois corpos colados, ficaria claro); o do Por cima pede o lutador de cima visível,
+não só a seta. Cadeado, estrelas, barra e losango são peças de UI honestas e podem ficar. Tamanhos fixos para trocar só os arquivos.

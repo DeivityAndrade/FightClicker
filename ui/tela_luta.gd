@@ -82,6 +82,19 @@ var _marcas_cheias := false
 var _tween_marcas: Tween
 var _letreiro_cheia: TextureRect  # PERNA CHEIA! (7b1), abaixo das marcas
 var _banner_spin: Sprite2D  # CHUTE RODADO! no meio da arena (7b1)
+# Fase 7b2: 2ª passiva. Contragolpista: 3 losangos de carga; Por cima: sinal "NO CHÃO"/"EM PÉ"; Clinch: sinal aceso enquanto preso.
+var _area_letreiro := Rect2()  # área do letreiro de fim na tela (vazia = sem letreiro): nada flutua nela enquanto ele está lá
+var _cargas_hud: Array = []
+var _carga_atual := 0
+var _carga_cheia := false
+var _tween_carga: Tween
+var _letreiro_carga: TextureRect  # CARGA! (opcional), abaixo da fileira da tática
+var _banners_fim: Dictionary = {}  # finish (counter_ko | ground_stop | knee_ko) -> letreiro do fim (Sprite2D)
+var _sinais: Dictionary = {}  # stood_up | clinch -> sinal pequeno (Sprite2D) que sobe da cabeça dele
+var _sinal_icone: TextureRect  # Por cima / Clinch: ícone do sinal fixo do HUD
+var _sinal_rotulo: Label
+var _sinal_textos: Array = []  # [apagado, aceso]
+var _sinal_aceso := false
 var _cansado := false
 var _rot_cansado: Control
 var _grip_fill: TextureRect
@@ -125,6 +138,16 @@ func _montar(opp_id: String) -> void:
 	_marcas_cheias = false
 	_letreiro_cheia = null
 	_banner_spin = null
+	_cargas_hud.clear()
+	_carga_atual = 0
+	_carga_cheia = false
+	_letreiro_carga = null
+	_banners_fim.clear()
+	_sinais.clear()
+	_sinal_icone = null
+	_sinal_rotulo = null
+	_sinal_aceso = false
+	_area_letreiro = Rect2()
 	_cansado = false
 	_rot_cansado = null
 	_grip_fill = null
@@ -209,6 +232,8 @@ func _montar(opp_id: String) -> void:
 	_banner_spin.visible = false
 	_mundo.add_child(_banner_spin)
 
+	_montar_letreiros_2()
+
 	_banner_sub_img = Sprite2D.new()
 	_banner_sub_img.texture = UiTema.textura("ui_banner_submission")
 	_banner_sub_img.position = Vector2(320, 118)
@@ -253,6 +278,42 @@ func _camada(pre: String, camada: String) -> String:
 
 func _vetor(a: Array) -> Vector2:
 	return Vector2(float(a[0]), float(a[1]))
+
+
+## 7b2: os 3 letreiros do fim (K.O. NO CONTRAGOLPE! / O JUIZ PAROU! / JOELHADA!, 2x no meio da arena) e os sinais pequenos
+## (LEVANTOU, CLINCH!). z 1000 dentro do mundo: acima dos números de dano (que vão até 100 + 989), como o fix B2 da 7b1.
+## B1 (QA 7b2): 1000 ainda ficava atrás dos números de dano (o verificador provou com um sentinela); 3000 fica acima de tudo da luta.
+const ZLETREIRO := 3000
+
+
+func _montar_letreiros_2() -> void:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("passive_2_banners", {})
+	var pos: Array = info.get("banner_pos", [320, 118])
+	for finish in ["counter_ko", "ground_stop", "knee_ko"]:
+		var nome := str(info.get(finish, ""))
+		if nome == "" or UiTema.sprite(nome).is_empty():
+			continue
+		var b := Sprite2D.new()
+		b.texture = UiTema.textura(nome)
+		b.position = Vector2(float(pos[0]), float(pos[1]))
+		b.scale = Vector2(2, 2)
+		b.z_index = ZLETREIRO
+		b.visible = false
+		b.set_meta("ui_align", "ignore")
+		_mundo.add_child(b)
+		_banners_fim[finish] = b
+	var pequenos: Dictionary = info.get("small", {})
+	for chave in ["stood_up", "clinch"]:
+		var nome2 := str(pequenos.get(chave, ""))
+		if nome2 == "" or UiTema.sprite(nome2).is_empty():
+			continue
+		var sp := Sprite2D.new()
+		sp.texture = UiTema.textura(nome2)
+		sp.z_index = ZLETREIRO - 1500
+		sp.visible = false
+		sp.set_meta("ui_align", "ignore")
+		_mundo.add_child(sp)
+		_sinais[chave] = sp
 
 
 func _anim(nome: String, p: Vector2, z: int) -> AnimSprite:
@@ -388,6 +449,13 @@ func _montar_hud_passiva(hud: Control, y_tatica: float) -> void:
 		UiTema.rotulo(_rot_cansado, texto, UiTema.Y1, 12.0 if tem_icone else 0.0, 1)
 	elif _passiva == "shin":
 		_montar_marcas(hud, y_tatica)
+	elif _passiva == "counter_punch":
+		_montar_cargas(hud, y_tatica)
+	elif _passiva == "top_control":
+		_montar_sinal_fixo(hud, y_tatica, "passive_top_control_9",
+			[UiTema.txt("fight_hud_standing", "EM PÉ"), UiTema.txt("fight_hud_ground", "NO CHÃO")])
+	elif _passiva == "thai_clinch":
+		_montar_sinal_fixo(hud, y_tatica, "passive_thai_clinch_9", [UiTema.txt("fight_hud_apart", "SOLTO"), UiTema.txt("fight_hud_clinch", "CLINCH")])
 	elif _passiva == "submission":
 		_grip_larg = 128.0
 		if not UiTema.sprite("icon_grip").is_empty():
@@ -411,6 +479,36 @@ func _montar_marcas(hud: Control, y_tatica: float) -> void:
 		_marcas_hud.append(CartaoPassiva.marca_perna(hud, x0 + 13.0 + passo * float(i), y_tatica - 1.0, 0))
 	_letreiro_cheia = UiTema.textura_rect(hud, str(info.get("banner_full", "ui_banner_marks_full")), x0, y_tatica + 13.0)
 	_letreiro_cheia.visible = false
+
+
+## HUD do Contragolpista (7b2): 3 losangos (passo 11; sem ícone ao lado: ele também é um losango e viraria 4 cargas) na fileira da tática, coladas na ponta da barra de vida DELA
+## (x 282), no mesmo lugar das 5 bolinhas do Boxe. Cada esquiva acende (quadro 1, com 1 quadro de clarão); com 3 piscam e aparece CARGA!.
+func _montar_cargas(hud: Control, y_tatica: float) -> void:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("counter_hud", {})
+	var n := int(luta.get("charge_max", info.get("count", 3)))
+	var passo := float(info.get("step_px", 11))
+	var x0 := 282.0 - (passo * float(n) - 2.0)
+	var rot := UiTema.txt("fight_hud_charge", "CARGA")
+	UiTema.rotulo(hud, rot, UiTema.G3, roundf(x0 - 6.0 - UiTema.largura_visivel(rot)), y_tatica + 1.0)
+	for i in n:
+		_cargas_hud.append(CartaoPassiva.pip_carga(hud, x0 + passo * float(i), y_tatica, 0))
+	var nome := str(info.get("banner_full", "ui_banner_charge_full"))
+	if not UiTema.sprite(nome).is_empty():
+		_letreiro_carga = UiTema.textura_rect(hud, nome, 282.0 - 70.0, y_tatica + 17.0)
+		_letreiro_carga.visible = false
+
+
+## Sinal fixo do HUD (Por cima: EM PÉ / NO CHÃO; Clinch: SOLTO / CLINCH): ícone 9x9 + texto, o grupo colado na ponta (x 282).
+## Apagado até acontecer; aceso (branco, com clarão) enquanto durar.
+func _montar_sinal_fixo(hud: Control, y_tatica: float, icone: String, textos: Array) -> void:
+	_sinal_textos = textos
+	var larg := 0.0
+	for t in textos:
+		larg = maxf(larg, UiTema.largura_visivel(str(t)))
+	var x0 := 282.0 - (larg + 12.0)
+	_sinal_icone = UiTema.textura_rect(hud, icone, x0, y_tatica - 1.0)
+	_sinal_rotulo = UiTema.rotulo(hud, str(textos[0]), UiTema.G2, x0 + 12.0, y_tatica)
+	_sinal_icone.modulate = Color(1, 1, 1, 0.45)
 
 
 func _cor_tatica(nome_cor: String) -> Color:
@@ -514,7 +612,7 @@ func _agendar_tudo() -> void:
 	if bool(res.ko) and perdedor >= 0:
 		var vencedor := 1 - perdedor
 		var t_ko := float(res.t_ko)
-		if str(res.get("finish", "")) == "submission":
+		if str(res.get("finish", "")) in ["submission", "ground_stop"]:  # 7b2: o juiz para a luta no chão, sem queda do K.O.
 			_agendar_finalizacao(perdedor, vencedor, t_ko)
 			_t_parada = t_ko
 			return
@@ -562,7 +660,9 @@ func _agendar_tudo() -> void:
 ## segura o último quadro), o letreiro FINALIZOU! entra e a torcida vibra. Sem as folhas, ele só cansa e o jogador comemora.
 func _agendar_finalizacao(perdedor: int, vencedor: int, t_ko: float) -> void:
 	_cue(t_ko + 0.5, func() -> void:
-		if str(_l[perdedor].estado) != "preso":
+		if str(luta.result.get("finish", "")) == "ground_stop":
+			pass  # 7b2: ele fica no chão e o jogador por cima; só o letreiro entra
+		elif str(_l[perdedor].estado) != "preso":
 			_estado(perdedor, "tired")
 			_estado(vencedor, "victory")
 		_banner_finalizou())
@@ -585,7 +685,11 @@ func _banner_finalizou() -> void:
 	_lampada.tocar([1, 0, 1, 0], 8.0)
 	_publico_cheer(true)
 	sfx.queda()
+	if str(luta.result.get("finish", "")) == "ground_stop":
+		_banner_fim_mostrar("ground_stop", UiTema.txt("fight_ground_stop", "O JUIZ PAROU!"))
+		return
 	if not UiTema.sprite("ui_banner_submission").is_empty():
+		_limpar_area_do_letreiro(_banner_sub_img)
 		_banner_sub_img.visible = true
 		_banner_sub_img.scale = Vector2(3, 3)
 		_banner_sub_img.modulate.a = 0.0
@@ -619,6 +723,8 @@ func _ficar_cansado() -> void:
 ## Pegada cheia: o número PEGADA! sobe da cabeça do jogador e a barra pisca (o quadro 1 é a barra cheia).
 func _pegada_cheia() -> void:
 	_grip_cheia = true
+	if _bloqueado(_ponto_cabeca(0) + Vector2(0, -14)):
+		return
 	var n := _pegar_numero()
 	_ordem_numeros += 1
 	n.definir_z(940 + _ordem_numeros % 40)
@@ -708,6 +814,8 @@ func _quadro_marcas(q: int) -> void:
 
 ## Aviso de texto curto que sobe da cabeça do adversário (quando o letreiro desenhado não existe).
 func _numero_aviso(texto: String, cor: Color) -> void:
+	if _bloqueado(_ponto_cabeca(1) + Vector2(0, -14)):
+		return
 	var n := _pegar_numero()
 	_ordem_numeros += 1
 	n.definir_z(940 + _ordem_numeros % 40)
@@ -832,11 +940,11 @@ func _agendar_evento(e: Dictionary) -> void:
 ## Golpe do especial dos cliques: [animação, reação]. Boxe e sem arte: uppercut / hit_up. Jiu-jitsu nunca usa animação de boxe:
 ## em pé é o clinch_push (reação hit_clinch) e no chão é o ground_pressure (reação ground_hit). ["", ""] se a folha não existe.
 func _golpe_especial(e: Dictionary) -> Array:
-	if _passiva == "shin":  # 7b1 (lição A1 da 7a1): o Muay Thai nunca usa o uppercut (golpe de boxe); o especial é o chute rodado
+	if _passiva == "shin" or _passiva == "thai_clinch":  # 7b1 (lição A1 da 7a1): o Muay Thai nunca usa o uppercut (golpe de boxe); o especial é o chute rodado
 		if _existe_anim(0, "spin_kick"):
 			return ["spin_kick", "hit_spin"]
 		return ["knee", "hit_body"] if _existe_anim(0, "knee") else ["", ""]
-	if _passiva != "submission":
+	if _passiva != "submission" and _passiva != "top_control":
 		return ["uppercut", "hit_up"] if _existe_anim(0, "uppercut") else ["", ""]
 	if str(e.get("phase", "standing")) == "ground" and _pose_chao_ok() and _existe_anim(0, "ground_pressure"):
 		return ["ground_pressure", "ground_hit"]
@@ -936,7 +1044,10 @@ func _repouso(i: int) -> void:
 			elif i == 0 and _cansado and _existe_anim(0, "tired"):
 				pose = "tired"  # Boxe cansado no 3º round: a pose cansada entre os golpes
 			spr.definir(_nome(i, pose))
-			spr.tocar([0, 1, 2, 3], float(UiTema.sprite(spr.nome_sprite).get("fps", 6.0)), true)
+			if pose == "block":
+				spr.parar(2)  # guarda alta parada (como o "guard")
+			else:
+				spr.tocar([0, 1, 2, 3], float(UiTema.sprite(spr.nome_sprite).get("fps", 6.0)), true)
 	_ajustar_sombra(i)
 	_atualizar_suor(i)
 
@@ -944,6 +1055,10 @@ func _repouso(i: int) -> void:
 ## Pose de repouso em pé. Muay Thai (7b1): o jogador fica na guarda tailandesa (mt_idle) e o adversário manca com 2 marcas
 ## (limp) ou 3 (limp_heavy; sem ela, limp). Sem a folha nova, o idle de sempre.
 func _idle_da_arte(i: int) -> String:
+	if _passiva == "counter_punch" and i == 0 and _existe_anim(0, "block"):
+		return "block"  # 7b2: guarda alta entre os golpes (a 2ª passiva do Boxe se vê só pela pose)
+	if _passiva == "thai_clinch":
+		return "mt_idle" if i == 0 and _existe_anim(0, "mt_idle") else "idle"  # sem marcas e sem mancar
 	if _passiva != "shin":
 		return "idle"
 	if i == 0:
@@ -1014,7 +1129,7 @@ func _acertou(e: Dictionary) -> void:
 
 	# Reação de quem apanha (no K.O. sem grogue a queda assume; na finalização o tap_out é a reação).
 	var ko := bool(e.ko)
-	var finalizou := str(e.get("finish", "")) == "submission"
+	var finalizou := str(e.get("finish", "")) in ["submission", "ground_stop"]
 	if not ko or not luta.grogue.is_empty() or finalizou:
 		_tocar(alvo, str(e.get("reacao_usada", e.defender_anim)))
 		_flash_lutador(alvo)
@@ -1028,6 +1143,7 @@ func _acertou(e: Dictionary) -> void:
 			_tocar_fx("fx_fight_crit", contato, quem == 1)
 
 	_hud_embalo(int(e.get("streak", 0)))
+	_hud_passiva2(e)
 	if _passiva == "shin":
 		_hud_marcas(int(e.get("marks", _marcas_acesas)))
 	_fase_visual = str(e.get("phase_after", _fase_visual))  # a queda leva os dois ao chão (as poses de repouso mudam)
@@ -1139,7 +1255,7 @@ func _estourar_especial(contato: Vector2) -> void:
 
 
 func _mostrar_combo() -> void:
-	if _combo < 2 or _rotulo_combo == null:
+	if _combo < 2 or _rotulo_combo == null or _area_letreiro.size != Vector2.ZERO:
 		return
 	_rotulo_combo.text = UiTema.txt("fight_combo", "COMBO X{n}", {"n": _combo}).to_upper()
 	_rotulo_combo.modulate.a = 1.0
@@ -1154,6 +1270,8 @@ func _mostrar_combo() -> void:
 ## empurrados para cima (a mesma solução da garagem), para dois golpes seguidos no mesmo ponto não se encavalarem.
 func _numero_de_dano(dano: float, tipo: String, bloqueado: bool, origem: Vector2) -> void:
 	var forte := tipo == "crit" or tipo == "counter"
+	if _bloqueado(origem):
+		return
 	var n := _pegar_numero()
 	_ordem_numeros += 1
 	n.definir_z(900 + (50 if forte else 0) + _ordem_numeros % 40)
@@ -1171,8 +1289,12 @@ func _esquivou(e: Dictionary) -> void:
 	if int(e.who) == 0:
 		_combo = 0  # o soco do jogador foi esquivado: acaba o combo
 	_hud_embalo(int(e.get("streak", 0)))
+	_hud_passiva2(e)
 	if str(e.get("phase", "standing")) == "ground" and _pose_chao_ok():
 		var baixo := (_l[alvo].base as Vector2) + Vector2(0, -26)
+		if _bloqueado(baixo):
+			sfx.esquiva()
+			return
 		var ng := _pegar_numero()
 		_ordem_numeros += 1
 		ng.definir_z(930 + _ordem_numeros % 40)
@@ -1181,6 +1303,9 @@ func _esquivou(e: Dictionary) -> void:
 		sfx.esquiva()
 		return
 	var cab := _ponto_cabeca(alvo)
+	if _bloqueado(cab + Vector2(0, -8)):
+		sfx.esquiva()
+		return
 	# Vento do soco que passou (desenhado para o soco do adversário; espelha quando é o adversário que esquiva).
 	_tocar_fx("fx_whoosh", cab + Vector2(-8.0 * float(_l[alvo].dir), 6.0), alvo == 1)
 	var n := _pegar_numero()
@@ -1217,7 +1342,7 @@ func _chao(i: int) -> void:
 	sfx.publico(-10.0)
 	_lampada.tocar([1, 0, 1, 0], 8.0)
 	_publico_cheer(true)
-	_banner_ko_mostrar(str(luta.result.get("finish", "")) == "spin_kick")
+	_banner_ko_mostrar(str(luta.result.get("finish", "")))
 	var est: AnimSprite = l["estrelas"]
 	var ko_cab := _vetor(UiTema.manifest().get("fight_layout", {}).get("ko_head_point", [-36, -12]))
 	if frente:
@@ -1230,8 +1355,13 @@ func _chao(i: int) -> void:
 
 
 ## O letreiro do fim: K.O.! (ou CHUTE RODADO! quando o chute rodado derrubou: o mesmo pop e a mesma tremida).
-func _banner_ko_mostrar(rodado: bool = false) -> void:
+func _banner_ko_mostrar(finish: String = "") -> void:
+	if _banners_fim.has(finish):  # 7b2: K.O. NO CONTRAGOLPE! / JOELHADA!
+		_banner_fim_mostrar(finish, "")
+		return
+	var rodado := finish == "spin_kick"
 	var b := _banner_spin if rodado and not UiTema.sprite("ui_banner_spin_kick").is_empty() else _banner_ko
+	_limpar_area_do_letreiro(b)
 	b.visible = true
 	b.scale = Vector2(3, 3)
 	b.modulate.a = 0.0
@@ -1239,6 +1369,157 @@ func _banner_ko_mostrar(rodado: bool = false) -> void:
 	tw.tween_property(b, "modulate:a", 1.0, 0.08)
 	tw.tween_callback(func() -> void: b.scale = Vector2(2, 2)).set_delay(0.09)
 	_tremer(2, 0.3)
+
+
+## Número novo que nasceria dentro (ou logo embaixo) da área do letreiro de fim: não nasce (o letreiro tem que ler limpo).
+func _bloqueado(p: Vector2) -> bool:
+	return _area_letreiro.size != Vector2.ZERO and _area_letreiro.grow(32.0).has_point(p)
+
+
+## Um letreiro de fim entrou: marca a área dele e apaga (fade de 0,15 s) os números de dano, o combo, o CARGA! e os sinais que
+## estiverem nela. `b` = o sprite do letreiro (já na escala final, 2x).
+func _limpar_area_do_letreiro(b: Sprite2D) -> void:
+	var tam := b.texture.get_size() * 2.0
+	_area_letreiro = Rect2(b.position - tam / 2.0, tam)
+	var area := _area_letreiro.grow(8.0)
+	for n in _numeros:
+		# O número ainda sobe (`_subida` px): vale o caminho inteiro dele, não só onde ele está agora.
+		var r: Rect2 = n.retangulo()
+		var caminho := Rect2(r.position.x, r.position.y - n._subida, r.size.x, r.size.y + n._subida)
+		if n.ativo and caminho.intersects(area):
+			var gen: int = n._gen
+			var tw := create_tween().set_ignore_time_scale(true)
+			tw.tween_method(func(p: float) -> void: n.sumir_com(p, gen), 0.0, 1.0, 0.15)
+	# Textos fixos do mundo que passam por baixo do letreiro: combo (HUD, só o texto que invade a área), CARGA! e os sinais.
+	var extras: Array = []
+	if _rotulo_combo != null:
+		var rc := Rect2(_rotulo_combo.global_position, _rotulo_combo.get_combined_minimum_size() * _rotulo_combo.scale)
+		if rc.intersects(area):
+			if _tween_combo != null and _tween_combo.is_valid():
+				_tween_combo.kill()
+			extras.append(_rotulo_combo)
+	if _letreiro_carga != null and Rect2(_letreiro_carga.global_position, _letreiro_carga.size).intersects(area):
+		extras.append(_letreiro_carga)
+	for sp in _sinais.values():
+		if sp.visible:
+			extras.append(sp)
+	for x in extras:
+		var no: CanvasItem = x
+		var tw2 := create_tween().set_ignore_time_scale(true)
+		tw2.tween_property(no, "modulate:a", 0.0, 0.15)
+		tw2.tween_callback(no.hide)  # some de vez (outro tween de modulate, como o do CARGA!, não pode trazê-lo de volta)
+
+
+## Letreiro do fim da 2ª passiva: mesma entrada do K.O.! (pop 3x -> 2x, tremida de 2 px). Sem a folha, o texto do tema.
+func _banner_fim_mostrar(finish: String, texto: String) -> void:
+	if not _banners_fim.has(finish):
+		_texto_banner(texto if texto != "" else UiTema.txt("fight_" + finish, finish.to_upper()), UiTema.Y2, 3)
+		return
+	var b: Sprite2D = _banners_fim[finish]
+	_limpar_area_do_letreiro(b)
+	b.visible = true
+	b.scale = Vector2(3, 3)
+	b.modulate.a = 0.0
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(b, "modulate:a", 1.0, 0.08)
+	tw.tween_callback(func() -> void: b.scale = Vector2(2, 2)).set_delay(0.09)
+	_tremer(2, 0.3)
+
+
+## 7b2: o que o evento diz da 2ª passiva (carga, chão, clinch) vai para o HUD.
+func _hud_passiva2(e: Dictionary) -> void:
+	match _passiva:
+		"counter_punch":
+			_hud_carga(int(e.get("charge", _carga_atual)))
+		"top_control":
+			_hud_sinal(bool(e.get("ground", _sinal_aceso)), "stood_up")
+		"thai_clinch":
+			_hud_sinal(bool(e.get("clinch", _sinal_aceso)), "clinch")
+
+
+## Carga do Contragolpista: acende os losangos até `n` (o novo pisca 1 quadro); com a carga cheia os 3 piscam (quadros 1/3) e CARGA!
+## aparece. A carga volta a 0 depois do contragolpe: tudo apaga.
+func _hud_carga(n: int) -> void:
+	if _cargas_hud.is_empty() or n == _carga_atual:
+		return
+	var subiu := n > _carga_atual
+	_carga_atual = n
+	var cheia := n >= _cargas_hud.size()
+	if _tween_carga != null and _tween_carga.is_valid():
+		_tween_carga.kill()
+	for i in _cargas_hud.size():
+		var b: Control = _cargas_hud[i]
+		if i < n:
+			if subiu and i == n - 1 and not cheia:
+				CartaoPassiva.definir_pip_carga(b, 2)
+				var tw := create_tween()
+				tw.tween_interval(0.08)
+				tw.tween_callback(func() -> void:
+					if is_instance_valid(b):
+						CartaoPassiva.definir_pip_carga(b, 1))
+			else:
+				CartaoPassiva.definir_pip_carga(b, 1)
+		else:
+			CartaoPassiva.definir_pip_carga(b, 0)
+	if cheia and not _carga_cheia:
+		_carga_cheia = true
+		_tween_carga = create_tween().set_loops()
+		_tween_carga.tween_callback(func() -> void: _quadro_cargas(3))
+		_tween_carga.tween_interval(1.0 / 6.0)
+		_tween_carga.tween_callback(func() -> void: _quadro_cargas(1))
+		_tween_carga.tween_interval(1.0 / 6.0)
+		if _letreiro_carga != null:
+			_letreiro_carga.visible = true
+			_letreiro_carga.modulate = Color(2, 2, 2)
+			create_tween().tween_property(_letreiro_carga, "modulate", Color.WHITE, 0.3)
+		else:
+			_numero_aviso(UiTema.txt("fight_charge_full", "CARGA!"), UiTema.Y1)
+		sfx.publico(-12.0)
+		_flash_tela(0.2)
+	elif not cheia:
+		_carga_cheia = false
+		if _letreiro_carga != null:
+			_letreiro_carga.visible = false
+
+
+func _quadro_cargas(q: int) -> void:
+	for b in _cargas_hud:
+		if is_instance_valid(b):
+			CartaoPassiva.definir_pip_carga(b, q)
+
+
+## Sinal fixo do Por cima (NO CHÃO) e do Clinch (CLINCH). Ao acender no Clinch aparece o sinal CLINCH!; no Por cima, ao ele levantar,
+## aparece LEVANTOU. `sinal` = qual sinal pequeno mostrar na mudança de estado.
+func _hud_sinal(aceso: bool, sinal: String) -> void:
+	if _sinal_icone == null or aceso == _sinal_aceso:
+		return
+	var antes := _sinal_aceso
+	_sinal_aceso = aceso
+	_sinal_icone.modulate = Color.WHITE if aceso else Color(1, 1, 1, 0.45)
+	_sinal_rotulo.text = str(_sinal_textos[1 if aceso else 0])
+	_sinal_rotulo.add_theme_color_override("font_color", UiTema.WHITE if aceso else UiTema.G2)
+	_sinal_rotulo.modulate = Color(2, 2, 2)
+	_sinal_rotulo.create_tween().tween_property(_sinal_rotulo, "modulate", Color.WHITE, 0.25)
+	if (sinal == "clinch" and aceso) or (sinal == "stood_up" and antes and not aceso):
+		_sinal_pequeno(sinal)
+
+
+## Sinal pequeno que sobe da cabeça dele (LEVANTOU / CLINCH!). Sem a folha, um número de aviso de texto.
+func _sinal_pequeno(chave: String) -> void:
+	var texto := UiTema.txt("fight_" + chave, chave.to_upper())
+	if not _sinais.has(chave):
+		_numero_aviso(texto, UiTema.WHITE)
+		return
+	var sp: Sprite2D = _sinais[chave]
+	var p := _ponto_cabeca(1) + Vector2(0, -22)
+	sp.position = Vector2(roundf(p.x), roundf(p.y))
+	sp.visible = true
+	sp.modulate = Color(1.6, 1.6, 1.6, 1.0)
+	var tw := create_tween()
+	tw.tween_property(sp, "modulate", Color.WHITE, 0.15)
+	tw.tween_interval(0.7)
+	tw.tween_property(sp, "modulate:a", 0.0, 0.25)
+	tw.tween_callback(func() -> void: sp.visible = false)
 
 
 # --- Efeitos ---

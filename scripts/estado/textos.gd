@@ -99,7 +99,10 @@ func _porcentagem(chance: float) -> int:
 func texto_efeito_no(n: Dictionary) -> String:
 	var v := float(n.get("effect_value", 0.0))
 	var vn := str(int(v)) if v == floorf(v) else String.num(v)
-	return gs.preencher(str(n.get("effect_text", "")), {"pct": int(round(100.0 * v)), "n": vn})
+	var modelo := str(n.get("effect_text", ""))
+	if gs.passiva_carreira == 2 and gs.arte_id != "" and str(n.get("effect_text_2", "")) != "":
+		modelo = str(n.effect_text_2)  # 7b2: os nós da raiz da arte descrevem a 2ª passiva quando ela está escolhida
+	return gs.preencher(modelo, {"pct": int(round(100.0 * v)), "n": vn})
 
 
 ## "ACADEMIA: TREINO x2" fora da garagem, "" na garagem.
@@ -165,10 +168,12 @@ func texto_regra_arte(id: String) -> String:
 
 ## Texto da passiva de luta da arte para o cartão da janela de escolha ("MÃO RÁPIDA: ..."). "" sem arte.
 ## Vem da chave art_card_<arte>_fight (ui_texts.json, do Roteirista); sem ela, `fight_text` do arts.json.
-func texto_passiva(id: String) -> String:
+func texto_passiva(id: String, passiva: int = 1) -> String:
 	var a = gs.academia.arte(id)
 	if a.is_empty():
 		return ""
+	if passiva == 2 and not a.passive_2.is_empty():  # 7b2: a 2ª passiva tem o texto no próprio arts.json
+		return gs.preencher(str(a.passive_2.fight_text), {})
 	var t := texto_ui("art_card_%s_fight" % id, str(a.fight_text))
 	return gs.preencher(t, {})
 
@@ -205,6 +210,8 @@ func passiva_da_previa(est: Dictionary, det: Dictionary, tatica_id: String) -> D
 				"tired_round": est.tired_round, "tired": not descansa, "tires": not descansa, "opp_counter": est.opp_counter}}
 	if P.type == "shin":
 		return _passiva_shin(est, det, n10)
+	if P.type in ["counter_punch", "top_control", "thai_clinch"]:
+		return _passiva2_da_previa(est, det, n10, P, tatica_id)
 	var linha_j := ""
 	if est.grip_in_time:
 		linha_j = gs.preencher(texto_ui("passive_bjj_line", "PEGADA CHEIA NO {r}º ROUND ({t} S). {p}% POR GOLPE PARA FINALIZAR"),
@@ -241,6 +248,55 @@ func _passiva_shin(est: Dictionary, det: Dictionary, n10: int) -> Dictionary:
 			"full_share": share, "late": tarde, "crit_now": est.crit_now, "crit_full": est.crit_full,
 			"spin_chance": est.spin_chance, "slow_full": est.slow_full, "opp_counter": est.opp_counter,
 			"marks_per_counter": est.marks_per_counter}}
+
+
+## 7b2: linha da 2ª passiva na prévia (design 7b2 §8.2). Os números vêm do mesmo `estado_passiva` e das mesmas 200 sementes da chance;
+## a linha não repete limiares fixos (50%, 80%). Top/Clinch: se derruba/prende em menos de metade das lutas, a linha vira `_line_late`.
+func _passiva2_da_previa(est: Dictionary, det: Dictionary, n10: int, P: Dictionary, tatica_id: String) -> Dictionary:
+	var compasso := float(gs.lutas.combate.round_length)
+	var tipo := str(P.type)
+	var share := float(det.get("share", 0.0))
+	var at := float(det.get("at", -1.0))
+	var rodada := (int(floor(at / compasso + 1.0e-9)) + 1) if at >= 0.0 else 0
+	var tarde := share < 0.5
+	var pct := func(x: float) -> int: return int(round(100.0 * x))
+	var linha := ""
+	var estado := {}
+	var nome := ""
+	var share_txt := ""
+	if tipo == "counter_punch":
+		nome = texto_ui("passive_counter_punch_name", "CONTRAGOLPISTA")
+		linha = gs.preencher(texto_ui("passive_counter_punch_line", "VOCÊ ESQUIVA {d}%. CADA ESQUIVA CARREGA (+{c}). NO 3º ROUND, K.O. ATÉ {k}% POR GOLPE"),
+			{"d": pct.call(est.dodge), "c": est.charge_per_dodge, "k": pct.call(est.ko_max)})
+		var tp: Dictionary = P.tactics.get(tatica_id, {})
+		if float(tp.get("dodge_mult", 1.0)) < 1.0:  # Agressivo: "você não espera"
+			linha += ". " + texto_ui("passive_counter_punch_line_aggressive", "NO AGRESSIVO VOCÊ NÃO ESPERA")
+		share_txt = gs.preencher(texto_ui("passive_share_counter_punch", "{n} EM 10 VITÓRIAS POR K.O. NO CONTRAGOLPE"), {"n": n10})
+		estado = {"dodge_now": est.dodge_now, "dodge": est.dodge, "charge_max": est.charge_max, "charge_per_dodge": est.charge_per_dodge,
+			"charge_med": float(det.get("charge_med", 0.0)), "ko_max": est.ko_max, "ko_round": est.ko_round, "ko_from": est.ko_from,
+			"end_factor": est.end_factor, "counter_power": est.counter_power}
+	elif tipo == "top_control":
+		nome = texto_ui("passive_top_control_name", "POR CIMA")
+		if tarde:
+			linha = gs.preencher(texto_ui("passive_top_control_line_late", "SÓ DERRUBA EM {x} DE 10 LUTAS"), {"x": int(round(10.0 * share))})
+		else:
+			linha = gs.preencher(texto_ui("passive_top_control_line", "DERRUBA {p}% POR ACERTO (NO {r}º ROUND). ELE LEVANTA {e}%. COM ELE FRACO, O JUIZ PARA ({s}%)"),
+				{"p": pct.call(est.td_chance), "r": rodada, "e": pct.call(est.escape), "s": pct.call(est.stop_chance)})
+		share_txt = gs.preencher(texto_ui("passive_share_top_control", "{n} EM 10 VITÓRIAS COM O JUIZ PARANDO"), {"n": n10})
+		estado = {"td_chance": est.td_chance, "td_at": at, "td_round": rodada, "td_share": share, "late": tarde, "escape": est.escape,
+			"stop_life": est.stop_life, "stop_chance": est.stop_chance}
+	else:
+		nome = texto_ui("passive_thai_clinch_name", "CLINCH")
+		if tarde:
+			linha = gs.preencher(texto_ui("passive_thai_clinch_line_late", "SÓ PRENDE EM {x} DE 10 LUTAS"), {"x": int(round(10.0 * share))})
+		else:
+			linha = gs.preencher(texto_ui("passive_thai_clinch_line", "PRENDE {p}% POR ACERTO (NO {r}º ROUND). NO CLINCH: JOELHADA {k}% DE CRÍTICO. ELE SOLTA {e}%"),
+				{"p": pct.call(est.clinch_chance), "r": rodada, "k": pct.call(est.knee_crit), "e": pct.call(est.escape)})
+		share_txt = gs.preencher(texto_ui("passive_share_thai_clinch", "{n} EM 10 VITÓRIAS POR JOELHADA"), {"n": n10})
+		estado = {"clinch_chance": est.clinch_chance, "clinch_at": at, "clinch_round": rodada, "clinch_share": share, "late": tarde,
+			"escape": est.escape, "clinch_life": est.clinch_life, "clinch_s": est.clinch_s, "crit_now": est.crit_now,
+			"knee_crit": est.knee_crit, "knee_ko": est.knee_ko, "knee_life": est.knee_life}
+	return {"name": nome, "kind": tipo, "line": linha, "share": share_txt, "share_n": n10, "state": estado}
 
 
 ## Nota da passiva no fim da derrota: {id, n, r, text, tip} (text/tip "" se a chave faltar). {} sem nota.

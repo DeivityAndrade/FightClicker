@@ -226,6 +226,7 @@ func _zerar_carreira() -> void:
 	# Fase 5: toda carreira começa na garagem e sem arte (a janela de arte vem logo depois, se já liberou)
 	gs.local_id = gs.academia.local_padrao
 	gs.arte_id = ""
+	gs.passiva_carreira = 1  # 7b2: a passiva se escolhe junto com a arte
 	gs.arte_segundos = 0.0
 	gs._academia._atualizar_passiva()
 	gs.segundos_campanha = 0.0

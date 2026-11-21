@@ -1,0 +1,288 @@
+{
+	"icon_charge": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_charge.png"
+	},
+	"passive_counter_punch": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_counter_punch.png"
+	},
+	"passive_counter_punch_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_counter_punch_9.png"
+	},
+	"passive_counter_punch_locked": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_counter_punch_locked.png"
+	},
+	"passive_thai_clinch": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_thai_clinch.png"
+	},
+	"passive_thai_clinch_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_thai_clinch_9.png"
+	},
+	"passive_thai_clinch_locked": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_thai_clinch_locked.png"
+	},
+	"passive_top_control": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_top_control.png"
+	},
+	"passive_top_control_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_top_control_9.png"
+	},
+	"passive_top_control_locked": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/passive_top_control_locked.png"
+	},
+	"ui_banner_charge_full": {
+		"fps": 0.0,
+		"frame_size": [
+			70,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			35,
+			14
+		],
+		"rel": "ui/ui_banner_charge_full.png"
+	},
+	"ui_banner_clinch": {
+		"fps": 0.0,
+		"frame_size": [
+			78,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			39,
+			14
+		],
+		"rel": "ui/ui_banner_clinch.png"
+	},
+	"ui_banner_counter_ko": {
+		"fps": 0.0,
+		"frame_size": [
+			209,
+			68
+		],
+		"frames": 1,
+		"pivot": [
+			104,
+			34
+		],
+		"rel": "ui/ui_banner_counter_ko.png"
+	},
+	"ui_banner_ground_stop": {
+		"fps": 0.0,
+		"frame_size": [
+			209,
+			40
+		],
+		"frames": 1,
+		"pivot": [
+			104,
+			20
+		],
+		"rel": "ui/ui_banner_ground_stop.png"
+	},
+	"ui_banner_knee_ko": {
+		"fps": 0.0,
+		"frame_size": [
+			155,
+			40
+		],
+		"frames": 1,
+		"pivot": [
+			77,
+			20
+		],
+		"rel": "ui/ui_banner_knee_ko.png"
+	},
+	"ui_banner_stood_up": {
+		"fps": 0.0,
+		"frame_size": [
+			102,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			51,
+			14
+		],
+		"rel": "ui/ui_banner_stood_up.png"
+	},
+	"ui_charge_pip": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 4,
+		"pivot": [
+			4,
+			4
+		],
+		"rel": "ui/ui_charge_pip.png"
+	},
+	"ui_passive_goal_pip": {
+		"fps": 0.0,
+		"frame_size": [
+			7,
+			7
+		],
+		"frames": 3,
+		"pivot": [
+			3,
+			3
+		],
+		"rel": "ui/ui_passive_goal_pip.png"
+	},
+	"ui_passive_lock": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			12
+		],
+		"frames": 3,
+		"pivot": [
+			4,
+			6
+		],
+		"rel": "ui/ui_passive_lock.png"
+	},
+	"ui_passive_progress_bar": {
+		"fps": 0.0,
+		"frame_size": [
+			8,
+			6
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_passive_progress_bar.png"
+	},
+	"ui_passive_progress_fill": {
+		"fps": 0.0,
+		"frame_size": [
+			4,
+			4
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_passive_progress_fill.png"
+	},
+	"ui_passive_progress_tick": {
+		"fps": 0.0,
+		"frame_size": [
+			1,
+			4
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_passive_progress_tick.png"
+	}
+}
