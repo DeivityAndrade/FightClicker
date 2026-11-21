@@ -32,8 +32,11 @@ func montar(bloco: Dictionary, arte: String, animar: bool) -> void:
 	_corpo = Control.new()
 	_corpo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_corpo)
-	var shin := str(bloco.get("kind", "")) == "shin"
-	var recuo := 12.0 if shin else 0.0  # Muay Thai: o ícone da perna fica na margem esquerda da linha
+	var tipo := str(bloco.get("kind", ""))
+	var segunda := tipo in ["counter_punch", "top_control", "thai_clinch"]  # 7b2: a 2ª passiva da arte
+	var icone_linha := _icone_linha(tipo)
+	var shin := icone_linha != ""
+	var recuo := 12.0 if shin else 0.0  # Muay Thai e 2ªs passivas: o ícone fica na margem esquerda da linha
 	var linha := _quebrar(str(bloco.get("line", "")).to_upper(), INTERIOR - recuo)
 	var partilha := _quebrar(str(bloco.get("share", "")).to_upper(), INTERIOR)
 	var y := 6.0
@@ -52,15 +55,19 @@ func montar(bloco: Dictionary, arte: String, animar: bool) -> void:
 	var fundo := UiTema.nine_patch(_corpo, "ui_card", Rect2(0, 0, LARG, _altura))
 	fundo.set_meta("ui_align", "ignore")
 	var boxe := str(bloco.get("kind", "")) == "fast_hands"
-	var cor_arte := UiTema.R3 if boxe else (UiTema.BR3 if shin else UiTema.B3)
-	_cabecalho(arte, str(bloco.get("name", "")).to_upper(), cor_arte, y_nome)
+	var cor_arte := UiTema.R3 if arte == "boxing" else (UiTema.BR3 if arte == "muay_thai" else UiTema.B3)
+	_cabecalho(arte, str(bloco.get("name", "")).to_upper(), cor_arte, y_nome, tipo if segunda else "")
 	if shin:
-		_linha_com_icone(linha, y_linha)
+		_linha_com_icone(linha, y_linha, icone_linha)
 	else:
 		_texto(linha.size(), "\n".join(linha), UiTema.CREAM, y_linha)
 	var estado: Dictionary = bloco.get("state", {})
 	if boxe:
 		_indicador_boxe(estado, y_ind)
+	elif tipo == "counter_punch":
+		_indicador_carga(estado, y_ind)
+	elif segunda:
+		_indicador_round(estado, y_ind, tipo)
 	elif shin:
 		_indicador_shin(estado, y_ind)
 	else:
@@ -95,8 +102,8 @@ func _texto(n: int, texto: String, cor: Color, y: float) -> Label:
 
 
 ## Muay Thai: linha da passiva alinhada à esquerda, com o ícone da perna (9x9) na margem.
-func _linha_com_icone(linhas: Array[String], y: float) -> void:
-	UiTema.textura_rect(_corpo, "icon_shin", PAD, y)
+func _linha_com_icone(linhas: Array[String], y: float, icone: String) -> void:
+	UiTema.textura_rect(_corpo, icone, PAD, y)
 	var l := UiTema.rotulo(_corpo, "\n".join(linhas), UiTema.CREAM, PAD + 12.0, y, 0.0, HORIZONTAL_ALIGNMENT_LEFT)
 	l.size = Vector2(INTERIOR - 12.0, float(linhas.size()) * 10.0 + 2.0)
 	linha_rotulo = l
@@ -105,20 +112,72 @@ func _linha_com_icone(linhas: Array[String], y: float) -> void:
 
 
 ## Ícone da arte + nome, o grupo centralizado no cartão.
-func _cabecalho(arte: String, nome: String, cor: Color, y: float) -> void:
+func _cabecalho(arte: String, nome: String, cor: Color, y: float, tipo2: String = "") -> void:
 	var faixa := Control.new()
 	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	faixa.position = Vector2(PAD, y)
 	faixa.size = Vector2(INTERIOR, 9)
 	faixa.set_meta("ui_margens", "h")
 	_corpo.add_child(faixa)
-	var icone := "art_%s_9" % arte
+	var icone := "art_%s_9" % arte if tipo2 == "" else "passive_%s_9" % tipo2
 	var tem := not UiTema.sprite(icone).is_empty()
 	var grupo := UiTema.largura_visivel(nome) + (12.0 if tem else 0.0)
 	var gx := roundf((INTERIOR - grupo) / 2.0)
 	if tem:
 		UiTema.textura_rect(faixa, icone, gx, 0)
 	UiTema.rotulo(faixa, nome, cor, gx + (12.0 if tem else 0.0), 0)
+
+
+## Ícone (9x9) na margem da linha: a perna (Canela) ou o da 2ª passiva; "" = sem ícone.
+func _icone_linha(tipo: String) -> String:
+	match tipo:
+		"shin":
+			return "icon_shin"
+		"counter_punch":
+			return "icon_charge"
+		"top_control", "thai_clinch":
+			return "passive_%s_9" % tipo
+	return ""
+
+
+## Contragolpista (7b2): os 3 losangos de carga apagados + o K.O. máximo por golpe no 3º round ("25%"), o grupo centralizado.
+func _indicador_carga(est: Dictionary, y: float) -> void:
+	var n := int(est.get("charge_max", 3))
+	var pct := "%d%%" % int(round(100.0 * float(est.get("ko_max", 0.0))))
+	var faixa := Control.new()
+	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	faixa.position = Vector2(PAD, y)
+	faixa.size = Vector2(INTERIOR, ALT_INDICADOR)
+	faixa.set_meta("ui_margens", "h")
+	_corpo.add_child(faixa)
+	indicador = faixa
+	var passo := 11.0
+	var largura_pips := passo * float(n) - 2.0
+	var grupo := largura_pips + 6.0 + UiTema.largura_visivel(pct)
+	var gx := roundf((INTERIOR - grupo) / 2.0)
+	for i in n:
+		pip_carga(faixa, gx + passo * float(i), 1.0, 0)
+	UiTema.rotulo(faixa, pct, UiTema.WHITE, gx + largura_pips + 6.0, 2.0)
+
+
+## Por cima e Clinch (7b2): o ícone da passiva e o round em que derruba / prende ("1º ROUND"); se só acontece em menos de
+## metade das lutas (linha "SÓ DERRUBA EM N DE 10"), só o ícone.
+func _indicador_round(est: Dictionary, y: float, tipo: String) -> void:
+	var rodada := int(est.get("td_round", est.get("clinch_round", 0)))
+	var texto := UiTema.txt("fight_round", "{n}º ROUND", {"n": rodada}).to_upper() if rodada > 0 and not bool(est.get("late", false)) else ""
+	var faixa := Control.new()
+	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	faixa.position = Vector2(PAD, y)
+	faixa.size = Vector2(INTERIOR, ALT_INDICADOR)
+	faixa.set_meta("ui_margens", "h")
+	_corpo.add_child(faixa)
+	indicador = faixa
+	if texto == "":
+		return  # "SÓ DERRUBA EM N DE 10": a linha já tem o ícone; a fileira fica vazia
+	var grupo := 9.0 + 6.0 + UiTema.largura_visivel(texto)
+	var gx := roundf((INTERIOR - grupo) / 2.0)
+	UiTema.textura_rect(faixa, "passive_%s_9" % tipo, gx, 1.0)
+	UiTema.rotulo(faixa, texto, UiTema.WHITE, gx + 15.0, 2.0)
 
 
 ## Boxe: 5 bolinhas de embalo apagadas + o K.O. máximo por golpe ("20%"), o grupo centralizado.
@@ -218,6 +277,36 @@ static func bolinha(pai: Control, x: float, y: float, estado: int) -> Control:
 	q.size = Vector2(7, 7)
 	pai.add_child(q)
 	return q
+
+
+## Losango de carga do Contragolpista (9x9). estado: 0 vazia, 1 carregada, 2 acendendo (clarão de 1 quadro), 3 cheia (pisca com a 1).
+static func pip_carga(pai: Control, x: float, y: float, estado: int) -> Control:
+	if not UiTema.sprite("ui_charge_pip").is_empty():
+		var t := TextureRect.new()
+		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var at := AtlasTexture.new()
+		at.atlas = UiTema.textura("ui_charge_pip")
+		at.region = Rect2(9.0 * float(estado), 0, 9, 9)
+		t.texture = at
+		t.stretch_mode = TextureRect.STRETCH_KEEP
+		t.position = Vector2(x, y)
+		t.size = Vector2(9, 9)
+		pai.add_child(t)
+		return t
+	var q := ColorRect.new()
+	q.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	q.color = UiTema.G1 if estado == 0 else UiTema.Y1
+	q.position = Vector2(x, y)
+	q.size = Vector2(9, 9)
+	pai.add_child(q)
+	return q
+
+
+static func definir_pip_carga(b: Control, estado: int) -> void:
+	if b is TextureRect and (b as TextureRect).texture is AtlasTexture:
+		((b as TextureRect).texture as AtlasTexture).region = Rect2(9.0 * float(estado), 0, 9, 9)
+	elif b is ColorRect:
+		(b as ColorRect).color = UiTema.G1 if estado == 0 else UiTema.Y1
 
 
 static func definir_bolinha(b: Control, estado: int) -> void:

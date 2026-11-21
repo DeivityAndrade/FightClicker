@@ -88,6 +88,8 @@ func estado_passiva(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 	var ej := efetivos(jog)
 	var ea := efetivos(adv)
 	var tp: Dictionary = P.tactics.get(tatica_id, {})
+	if P.type in ["counter_punch", "top_control", "thai_clinch"]:
+		return _estado_passiva2(ej, ea, P, tp, tatica_id)
 	if P.type == "fast_hands":
 		var tem: bool = ej[1] + ea[1] > 0.0
 		var agi_raw: float = 2.0 * ej[1] / (ej[1] + ea[1]) if tem else 1.0
@@ -114,6 +116,47 @@ func estado_passiva(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 		"grip_round": int(floor(t_cheia / c.round_length + 1e-9)) + 1,
 		"grip_in_time": t_cheia <= c.time_limit + 1e-9,
 		"end_factor": fr, "str_factor": ff, "sub_chance": minf(P.sub_cap, P.sub_base * ff)}
+
+
+## Fator F(meu, dele, min, max) = clamp(2 meu / (meu + dele), min, max); 1 se os dois são zero (design 7b2 §1).
+func _fator(meu: float, dele: float, minimo: float, maximo: float) -> float:
+	return _clamp_fator(2.0 * meu / (meu + dele), minimo, maximo) if meu + dele > 0.0 else 1.0
+
+
+## 2ªs passivas (design 7b2 §2-§4): números fixos da luta, que a prévia mostra. Determinístico.
+func _estado_passiva2(ej: Array, ea: Array, P: Dictionary, tp: Dictionary, tatica_id: String) -> Dictionary:
+	if P.type == "counter_punch":
+		var fa := _fator(ej[1], ea[1], P.dodge_agility_min, P.dodge_agility_max)
+		var tj := _tatica(tatica_id)
+		var esq0: float = golpe(ea, ej, NEUTRA, tj)[2]  # a esquiva sua contra o ataque normal dele, sem a passiva
+		var esq := minf(c.dodge_cap, esq0 + float(P.dodge_add) * fa * float(tp.get("dodge_mult", 1.0)))
+		var fr := _fator(ej[2], ea[0], P.ko_endurance_min, P.ko_endurance_max)
+		var cmax := int(P.charge_max)
+		var kmax := minf(P.ko_cap, cmax * float(P.ko_per_charge) * fr * float(tp.get("ko_mult", 1.0)) * (1.0 + extra_passiva))
+		return {"kind": "counter_punch", "agi_factor": fa, "dodge_now": esq0, "dodge": esq, "dodge_add": esq - esq0,
+			"end_factor": fr, "charge_max": cmax, "charge_per_dodge": int(tp.get("charge_per_dodge", P.charge_per_dodge)),
+			"ko_max": kmax, "ko_per_charge": kmax / cmax, "ko_from": (float(P.ko_from_round) - 1.0) * c.round_length,
+			"ko_round": int(P.ko_from_round), "counter_power": P.counter_power,
+			"counter_mult": maxf(float(tj.counter_mult), float(P.counter_mult))}
+	if P.type == "top_control":
+		var ft := _fator(ej[0], ea[1], P.td_strength_min, P.td_strength_max)
+		var td := minf(P.td_cap, float(P.td_base) * ft * float(tp.get("td_mult", 1.0)) * (1.0 + extra_passiva))
+		var fe := _fator(ea[1], ej[0], P.escape_agility_min, P.escape_agility_max)
+		var esc := minf(P.escape_cap, float(P.escape_base) * fe * float(tp.get("escape_mult", 1.0)))
+		return {"kind": "top_control", "str_factor": ft, "td_chance": td, "opp_agi_factor": fe, "escape": esc,
+			"stop_life": P.stop_life_max, "stop_chance": P.stop_chance,
+			"top_damage_mult": P.top_damage_mult, "bottom_damage_mult": P.bottom_damage_mult}
+	var fs := _fator(ej[0], ea[0], P.clinch_strength_min, P.clinch_strength_max)
+	var ent := minf(P.clinch_cap, float(P.clinch_base) * fs * float(tp.get("clinch_mult", 1.0)) * (1.0 + extra_passiva))
+	var fe2 := _fator(ea[2], ej[2], P.escape_endurance_min, P.escape_endurance_max)
+	var esc2 := minf(P.escape_cap, float(P.escape_base) * fe2 * float(tp.get("escape_mult", 1.0)))
+	var n1: float = golpe(ej, ea, NEUTRA, NEUTRA)[1]
+	var kc := maxf(n1, minf(P.crit_cap, n1 + float(P.clinch_crit_add)))
+	var kko := minf(1.0, float(P.knee_ko) * float(tp.get("knee_mult", 1.0)))
+	return {"kind": "thai_clinch", "str_factor": fs, "clinch_chance": ent, "opp_end_factor": fe2, "escape": esc2,
+		"clinch_life": P.clinch_life_max, "clinch_s": P.clinch_s, "crit_now": n1, "knee_crit": kc, "knee_ko": kko,
+		"knee_life": P.knee_life_max, "knee_chance": kc * kko,
+		"knee_damage_mult": float(P.knee_damage_mult) * float(tp.get("knee_damage_mult", 1.0))}
 
 
 ## Muay Thai (Canela, design 7b1 §1.2): marcas por chute, crítico com a perna cheia, chute rodado e lentidão dele. Determinístico.
@@ -147,10 +190,16 @@ func preparar(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 		if passiva.type == "fast_hands" or passiva.type == "shin":  # Agressivo: ele contragolpeia quando esquiva (o `counter_mult` da tática DELE)
 			ta = NEUTRA.duplicate()
 			ta["counter_mult"] = float(tp.get("opponent_counter", 0.0))
+	var num := [golpe(ef_j, ef_a, tj, ta), golpe(ef_a, ef_j, ta, tj)]
+	if not passiva.is_empty() and passiva.type == "counter_punch":
+		# Contragolpista: a sua esquiva leva o bônus da passiva e toda esquiva vira contragolpe (counter_mult da passiva)
+		num[1][2] = est.dodge
+		tj = tj.duplicate()
+		tj["counter_mult"] = est.counter_mult
 	return {
 		"tac": [tj, ta],
 		"vmax": [vida_max(ef_j), vida_max(ef_a)],
-		"num": [golpe(ef_j, ef_a, tj, ta), golpe(ef_a, ef_j, ta, tj)],
+		"num": num,
 		# quem tem mais Agilidade efetiva ataca primeiro; empate: o jogador
 		"primeiro": 0 if ef_j[1] >= ef_a[1] else 1,
 		"est": est, "tp": tp,
@@ -175,8 +224,15 @@ func lutar_com_sorteios(jog: Array, adv: Array, tatica_id: String, sorteios: Pac
 ## Núcleo. `rng` null = usa a lista `sorteios`.
 func rodar(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
 	if not passiva.is_empty():
-		if passiva.type == "shin":
-			return _rodar_shin(cen, rng, sorteios, registro)
+		match str(passiva.type):
+			"shin":
+				return _rodar_shin(cen, rng, sorteios, registro)
+			"counter_punch":
+				return _rodar_contra(cen, rng, sorteios, registro)
+			"top_control":
+				return _rodar_cima(cen, rng, sorteios, registro)
+			"thai_clinch":
+				return _rodar_clinch(cen, rng, sorteios, registro)
 		return _rodar_arte(cen, rng, sorteios, registro)
 	var limite: float = c.time_limit
 	var intervalo: float = c.attack_interval
@@ -672,6 +728,466 @@ func _rodar_shin(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 	return res
 
 
+# --- 7b2: as 2ªs passivas (porta de _lutar_contra, _lutar_cima e _lutar_clinch de tools/sim/fase7b2_sim.py) ---
+
+## Próximo evento: [t, tipo (0 contragolpe | 1 ataque normal), quem, índice do contragolpe]. Menor tempo; no empate, contragolpe
+## antes de ataque normal; depois o jogador (igual ao laço de sempre).
+func _proximo_evento(prox: Array, contra_t: Array[float], contra_q: Array[int]) -> Array:
+	var t: float = prox[0]
+	var tipo := 1
+	var quem := 0
+	if prox[1] < t:
+		t = prox[1]
+		quem = 1
+	var idx := -1
+	for i in contra_t.size():
+		var tc := contra_t[i]
+		var qc := contra_q[i]
+		if tc < t or (tc == t and (tipo == 1 or qc < quem)):
+			t = tc
+			tipo = 0
+			quem = qc
+			idx = i
+	return [t, tipo, quem, idx]
+
+
+## Os 4 sorteios de um ataque [r_esq, r_crit, r_var, r_arte] (do rng ou da lista dada).
+func _sorteios4(rng: RandomNumberGenerator, sorteios: PackedFloat64Array, usados: int) -> Array:
+	if rng != null:
+		var a := rng.randf()
+		var b := rng.randf()
+		var d := rng.randf()
+		var e := rng.randf()
+		return [a, b, d, e]
+	return [sorteios[usados], sorteios[usados + 1], sorteios[usados + 2], sorteios[usados + 3]]
+
+
+## Fim comum das 2ªs passivas: o resultado de sempre + `extra` (campos da passiva). `finish` vazio = acabou por pontos.
+func _fechar_passiva2(vida: Array, vmax: Array, finish: String, t_ko: float, vencedor: int, cont: Dictionary, usados: int,
+		eventos: Array, registro: bool, extra: Dictionary) -> Dictionary:
+	var p0: float = maxf(0.0, vida[0]) / vmax[0]
+	var p1: float = maxf(0.0, vida[1]) / vmax[1]
+	var ko := finish != ""
+	var venceu: bool
+	var t_fim: float
+	var round_n := 0
+	if ko:
+		venceu = vencedor == 0
+		t_fim = maxf(t_ko, c.min_ko_time)
+		round_n = int(floor(t_ko / c.round_length)) + 1
+	else:
+		venceu = p0 > p1  # empate exato: vence o adversário
+		t_fim = c.time_limit
+		finish = "points"
+	var res := {
+		"win": venceu, "ko": ko, "t_ko": t_ko, "t_end": t_fim, "round": round_n,
+		"pct_player": p0, "pct_opponent": p1,
+		"counts": {"player": _contagem(cont, 0), "opponent": _contagem(cont, 1)},
+		"life_max": vmax.duplicate(), "draws_used": usados,
+		"finish": finish, "streak_peak": 0, "attempts": 0,
+		"opp_counter_damage": 0.0, "grip_full_at": -1.0, "tired_at": -1.0, "tires": false, "ahead_at_tired": false,
+	}
+	res.merge(extra, true)
+	if registro:
+		res["events"] = eventos
+	return res
+
+
+## Evento das 2ªs passivas: os campos de sempre (com os das outras artes neutros) + `extra` (charge | ground | clinch, move).
+func _evento2(t: float, quem: int, tipo: String, contra: bool, dano: float, vida_depois: float, fim: String, extra: Dictionary) -> Dictionary:
+	var e := {"t": t, "who": quem, "type": tipo, "counter": contra, "damage": dano, "life_after": vida_depois,
+		"streak": 0, "grip": 0.0, "tired": false, "finish": fim, "marks": 0, "move": ""}
+	e.merge(extra, true)
+	return e
+
+
+## Boxe, Contragolpista (design 7b2 §2): toda esquiva sua vira contragolpe (x counter_power) e soma carga; cada round que começa
+## soma carga. A partir do `ko_from_round`, acerto seu com ele abaixo de `ko_life_max` e carga > 0 pode ser K.O. (metade fora do contragolpe).
+## Não cansa. Resultado: finish "counter_ko", charge_peak, attempts. Eventos ganham `charge` (0-3 depois do evento).
+func _rodar_contra(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
+	var P := passiva
+	var est: Dictionary = cen.est
+	var limite: float = c.time_limit
+	var base: float = c.attack_interval
+	var atraso: float = c.counter_delay
+	var spread: float = c.damage_spread
+	var cm: float = c.crit_multiplier
+	var tac: Array = cen.tac
+	var vmax: Array = cen.vmax
+	var num: Array = cen.num
+	var vida := [vmax[0], vmax[1]]
+	var iv_j: float = base * float(P.interval_mult)
+	var cmax := int(est.charge_max)
+	var por_esq := int(est.charge_per_dodge)
+	var kpc: float = est.ko_per_charge
+	var ko_de: float = est.ko_from
+	var kvida: float = P.ko_life_max
+	var hmult: float = P.hit_ko_mult
+	var pot: float = P.counter_power
+	var por_round := int(P.charge_per_round)
+	var prox := [0.0, 0.0]
+	prox[cen.primeiro] = c.first_attack
+	prox[1 - cen.primeiro] = c.first_attack + base / 2.0
+	var contra_t: Array[float] = []
+	var contra_q: Array[int] = []
+	var cont := {"attacks": [0, 0], "counters": [0, 0], "hits": [0, 0], "dodges": [0, 0], "crits": [0, 0], "damage": [0.0, 0.0]}
+	var eventos: Array = []
+	var usados := 0
+	var carga := 0
+	var carga_pico := 0
+	var rounds_vistos := 0
+	var tentativas := 0
+	var finish := ""
+	var t_ko := -1.0
+	var vencedor := -1
+
+	while true:
+		var prox_ev := _proximo_evento(prox, contra_t, contra_q)
+		var t: float = prox_ev[0]
+		var quem: int = prox_ev[2]
+		var eh_contra: bool = int(prox_ev[1]) == 0
+		if t > limite + 1e-9:
+			break
+		if eh_contra:
+			contra_t.remove_at(int(prox_ev[3]))
+			contra_q.remove_at(int(prox_ev[3]))
+		elif quem == 0:
+			prox[0] += iv_j
+		else:
+			prox[1] += base
+		var alvo := 1 - quem
+		var rd := int(floor(t / c.round_length + 1e-9))  # rounds que já passaram (0, 1, 2)
+		if rd > rounds_vistos:
+			carga = mini(cmax, carga + por_round * (rd - rounds_vistos))
+			carga_pico = maxi(carga_pico, carga)
+			rounds_vistos = rd
+		var n: Array = num[quem]
+		var sor := _sorteios4(rng, sorteios, usados)
+		if rng == null:
+			usados += 4
+		var r_esq: float = sor[0]
+		var r_crit: float = sor[1]
+		var r_var: float = sor[2]
+		var r_arte: float = sor[3]
+		cont.attacks[quem] += 1
+		if eh_contra:
+			cont.counters[quem] += 1
+		if not eh_contra and r_esq < n[2]:
+			cont.dodges[alvo] += 1
+			if alvo == 0:
+				carga = mini(cmax, carga + por_esq)
+				carga_pico = maxi(carga_pico, carga)
+			if tac[alvo].counter_mult > 0.0 and t + atraso <= limite + 1e-9:
+				contra_t.append(t + atraso)
+				contra_q.append(alvo)
+			if registro:
+				eventos.append(_evento2(t, quem, "dodge", false, 0.0, vida[alvo], "", {"charge": carga}))
+			continue
+		var e_crit: bool = r_crit < n[1]
+		var d: float = n[0]
+		if e_crit:
+			d *= 1.0 + (cm - 1.0) * (1.0 - tac[alvo].crit_guard)
+		if eh_contra:
+			d *= tac[quem].counter_mult * (pot if quem == 0 else 1.0)
+		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		vida[alvo] -= d
+		cont.hits[quem] += 1
+		cont.damage[quem] += d
+		if e_crit:
+			cont.crits[quem] += 1
+		var fim := ""
+		if vida[alvo] <= 1e-9 * vmax[alvo]:
+			fim = "damage"
+		elif quem == 0 and t >= ko_de - 1e-9 and carga > 0 and vida[1] <= kvida * vmax[1]:
+			tentativas += 1
+			if r_arte < carga * kpc * (1.0 if eh_contra else hmult):
+				fim = "counter_ko"
+		if registro:
+			eventos.append(_evento2(t, quem, "crit" if e_crit else "hit", eh_contra, d, maxf(0.0, vida[alvo]),
+				fim if fim != "damage" else "", {"charge": carga}))
+		if fim != "":
+			finish = fim
+			t_ko = t
+			vencedor = quem
+			break
+	return _fechar_passiva2(vida, vmax, finish, t_ko, vencedor, cont, usados, eventos, registro,
+		{"charge_peak": carga_pico, "attempts": tentativas})
+
+
+## Jiu-jitsu, Por cima (design 7b2 §3): em pé, acerto seu (que não derrubou por dano) pode derrubar (r_arte < td). Por cima: você bate
+## mais rápido, ele esquiva metade e bate fraco, e a cada ataque normal dele ANTES de resolver r_arte < esc o faz levantar. Por cima, com ele
+## abaixo de `stop_life_max`, cada acerto pode parar a luta. Resultado: finish "ground_stop", takedowns, stood_up, takedown_at, attempts.
+func _rodar_cima(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
+	var P := passiva
+	var est: Dictionary = cen.est
+	var limite: float = c.time_limit
+	var base: float = c.attack_interval
+	var atraso: float = c.counter_delay
+	var spread: float = c.damage_spread
+	var cm: float = c.crit_multiplier
+	var tac: Array = cen.tac
+	var vmax: Array = cen.vmax
+	var num: Array = cen.num
+	var vida := [vmax[0], vmax[1]]
+	var iv_pe: float = base * float(P.interval_mult)
+	var iv_chao: float = iv_pe * float(P.top_interval_mult)
+	var td: float = est.td_chance
+	var esc: float = est.escape
+	var top_d: float = P.top_damage_mult
+	var bot_d: float = P.bottom_damage_mult
+	var bot_e: float = P.bottom_dodge_mult
+	var svida: float = P.stop_life_max
+	var sch: float = P.stop_chance
+	var prox := [0.0, 0.0]
+	prox[cen.primeiro] = c.first_attack
+	prox[1 - cen.primeiro] = c.first_attack + base / 2.0
+	var contra_t: Array[float] = []
+	var contra_q: Array[int] = []
+	var cont := {"attacks": [0, 0], "counters": [0, 0], "hits": [0, 0], "dodges": [0, 0], "crits": [0, 0], "damage": [0.0, 0.0]}
+	var dano_contra_dele := 0.0
+	var eventos: Array = []
+	var usados := 0
+	var chao := false
+	var quedas := 0
+	var levantou := 0
+	var queda_em := -1.0
+	var tentativas := 0
+	var finish := ""
+	var t_ko := -1.0
+	var vencedor := -1
+
+	while true:
+		var prox_ev := _proximo_evento(prox, contra_t, contra_q)
+		var t: float = prox_ev[0]
+		var quem: int = prox_ev[2]
+		var eh_contra: bool = int(prox_ev[1]) == 0
+		if t > limite + 1e-9:
+			break
+		if eh_contra:
+			contra_t.remove_at(int(prox_ev[3]))
+			contra_q.remove_at(int(prox_ev[3]))
+		elif quem == 0:
+			prox[0] += iv_chao if chao else iv_pe
+		else:
+			prox[1] += base
+		var alvo := 1 - quem
+		var sor := _sorteios4(rng, sorteios, usados)
+		if rng == null:
+			usados += 4
+		var r_esq: float = sor[0]
+		var r_crit: float = sor[1]
+		var r_var: float = sor[2]
+		var r_arte: float = sor[3]
+		if quem == 1 and not eh_contra and chao and r_arte < esc:
+			chao = false  # ele levantou (o ataque sai em pé)
+			levantou += 1
+		var n: Array = num[quem]
+		var dano: float = n[0]
+		var crit: float = n[1]
+		var esq: float = n[2]
+		if chao:
+			if quem == 0:
+				dano *= top_d
+				esq *= bot_e
+			else:
+				dano *= bot_d
+		cont.attacks[quem] += 1
+		if eh_contra:
+			cont.counters[quem] += 1
+		if not eh_contra and r_esq < esq:
+			cont.dodges[alvo] += 1
+			if tac[alvo].counter_mult > 0.0 and t + atraso <= limite + 1e-9:
+				contra_t.append(t + atraso)
+				contra_q.append(alvo)
+			if registro:
+				eventos.append(_evento2(t, quem, "dodge", false, 0.0, vida[alvo], "", {"ground": chao}))
+			continue
+		var e_crit: bool = r_crit < crit
+		var d: float = dano
+		if e_crit:
+			d *= 1.0 + (cm - 1.0) * (1.0 - tac[alvo].crit_guard)
+		if eh_contra:
+			d *= tac[quem].counter_mult
+			if quem == 1:
+				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
+		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		vida[alvo] -= d
+		cont.hits[quem] += 1
+		cont.damage[quem] += d
+		if e_crit:
+			cont.crits[quem] += 1
+		var fim := ""
+		var golpe_v := ""
+		if vida[alvo] <= 1e-9 * vmax[alvo]:
+			fim = "damage"
+		elif quem == 0:
+			if chao:
+				golpe_v = "ground"
+				if vida[1] <= svida * vmax[1]:
+					tentativas += 1
+					if r_arte < sch:
+						fim = "ground_stop"
+			elif r_arte < td:
+				golpe_v = "takedown"
+				chao = true
+				quedas += 1
+				if queda_em < 0.0:
+					queda_em = t
+		if registro:
+			eventos.append(_evento2(t, quem, "crit" if e_crit else "hit", eh_contra, d, maxf(0.0, vida[alvo]),
+				fim if fim != "damage" else "", {"ground": chao, "move": golpe_v}))
+		if fim != "":
+			finish = fim
+			t_ko = t
+			vencedor = quem
+			break
+	return _fechar_passiva2(vida, vmax, finish, t_ko, vencedor, cont, usados, eventos, registro,
+		{"takedowns": quedas, "stood_up": levantou, "takedown_at": queda_em, "attempts": tentativas,
+		"opp_counter_damage": dano_contra_dele})
+
+
+## Muay Thai, Clinch (design 7b2 §4): com ele abaixo de `clinch_life_max`, acerto seu pode prender (r_arte < ent) por `clinch_s`.
+## Preso: ele não esquiva, o seu crítico sobe (joelhada), você bate mais rápido e ele bate fraco; a cada ataque normal dele, ANTES de
+## resolver, r_arte < esc solta. Joelhada crítica com ele abaixo de `knee_life_max` pode derrubar. Resultado: finish "knee_ko",
+## clinches, released, clinch_at, knees, attempts. Eventos ganham `clinch` (preso depois do evento) e `move` ("clinch"|"knee"|"hit").
+func _rodar_clinch(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
+	var P := passiva
+	var est: Dictionary = cen.est
+	var limite: float = c.time_limit
+	var base: float = c.attack_interval
+	var atraso: float = c.counter_delay
+	var spread: float = c.damage_spread
+	var cm: float = c.crit_multiplier
+	var tac: Array = cen.tac
+	var vmax: Array = cen.vmax
+	var num: Array = cen.num
+	var vida := [vmax[0], vmax[1]]
+	var iv_j: float = base * float(P.interval_mult)
+	var iv_cl: float = iv_j * float(P.clinch_interval_mult)
+	var ent: float = est.clinch_chance
+	var esc: float = est.escape
+	var cl_s: float = P.clinch_s
+	var cl_vida: float = P.clinch_life_max
+	var kc: float = est.knee_crit
+	var kko: float = est.knee_ko
+	var kvida: float = P.knee_life_max
+	var ctk: float = P.clinch_taken_mult
+	var kdm: float = est.knee_damage_mult
+	var prox := [0.0, 0.0]
+	prox[cen.primeiro] = c.first_attack
+	prox[1 - cen.primeiro] = c.first_attack + base / 2.0
+	var contra_t: Array[float] = []
+	var contra_q: Array[int] = []
+	var cont := {"attacks": [0, 0], "counters": [0, 0], "hits": [0, 0], "dodges": [0, 0], "crits": [0, 0], "damage": [0.0, 0.0]}
+	var dano_contra_dele := 0.0
+	var eventos: Array = []
+	var usados := 0
+	var preso_ate := -1.0
+	var clinches := 0
+	var soltou := 0
+	var tentativas := 0
+	var joelhadas := 0
+	var clinch_em := -1.0
+	var finish := ""
+	var t_ko := -1.0
+	var vencedor := -1
+
+	while true:
+		var prox_ev := _proximo_evento(prox, contra_t, contra_q)
+		var t: float = prox_ev[0]
+		var quem: int = prox_ev[2]
+		var eh_contra: bool = int(prox_ev[1]) == 0
+		if t > limite + 1e-9:
+			break
+		var preso: bool = t < preso_ate - 1e-9
+		if eh_contra:
+			contra_t.remove_at(int(prox_ev[3]))
+			contra_q.remove_at(int(prox_ev[3]))
+		elif quem == 0:
+			prox[0] += iv_cl if preso else iv_j
+		else:
+			prox[1] += base
+		var alvo := 1 - quem
+		var sor := _sorteios4(rng, sorteios, usados)
+		if rng == null:
+			usados += 4
+		var r_esq: float = sor[0]
+		var r_crit: float = sor[1]
+		var r_var: float = sor[2]
+		var r_arte: float = sor[3]
+		if quem == 1 and not eh_contra and preso and r_arte < esc:
+			preso = false  # soltou (o ataque sai fora do clinch)
+			preso_ate = t
+			soltou += 1
+		var n: Array = num[quem]
+		var dano: float = n[0]
+		var crit: float = n[1]
+		var esq: float = n[2]
+		if preso:
+			if quem == 0:
+				esq = 0.0
+				crit = kc
+				dano *= kdm
+			else:
+				dano *= ctk
+		cont.attacks[quem] += 1
+		if eh_contra:
+			cont.counters[quem] += 1
+		if not eh_contra and r_esq < esq:
+			cont.dodges[alvo] += 1
+			if tac[alvo].counter_mult > 0.0 and t + atraso <= limite + 1e-9:
+				contra_t.append(t + atraso)
+				contra_q.append(alvo)
+			if registro:
+				eventos.append(_evento2(t, quem, "dodge", false, 0.0, vida[alvo], "", {"clinch": preso}))
+			continue
+		var e_crit: bool = r_crit < crit
+		var d: float = dano
+		if e_crit:
+			d *= 1.0 + (cm - 1.0) * (1.0 - tac[alvo].crit_guard)
+		if eh_contra:
+			d *= tac[quem].counter_mult
+			if quem == 1:
+				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
+		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		vida[alvo] -= d
+		cont.hits[quem] += 1
+		cont.damage[quem] += d
+		if e_crit:
+			cont.crits[quem] += 1
+		var fim := ""
+		var golpe_v := ""
+		if quem == 0:
+			golpe_v = "knee" if preso else "hit"
+			if preso and e_crit:
+				joelhadas += 1
+		if vida[alvo] <= 1e-9 * vmax[alvo]:
+			fim = "damage"
+		elif quem == 0:
+			if preso:
+				if e_crit and vida[1] <= kvida * vmax[1]:
+					tentativas += 1
+					if r_arte < kko:
+						fim = "knee_ko"
+			elif vida[1] <= cl_vida * vmax[1] and r_arte < ent:
+				golpe_v = "clinch"
+				preso_ate = t + cl_s
+				clinches += 1
+				if clinch_em < 0.0:
+					clinch_em = t
+		if registro:
+			eventos.append(_evento2(t, quem, "crit" if e_crit else "hit", eh_contra, d, maxf(0.0, vida[alvo]),
+				fim if fim != "damage" else "", {"clinch": t < preso_ate - 1e-9, "move": golpe_v}))
+		if fim != "":
+			finish = fim
+			t_ko = t
+			vencedor = quem
+			break
+	return _fechar_passiva2(vida, vmax, finish, t_ko, vencedor, cont, usados, eventos, registro,
+		{"clinches": clinches, "released": soltou, "clinch_at": clinch_em, "knees": joelhadas, "attempts": tentativas,
+		"opp_counter_damage": dano_contra_dele})
+
+
 ## Pegada (0..1) no instante t; 0 quando a arte não tem pegada (t_cheia < 0).
 func _pegada(t: float, t_cheia: float) -> float:
 	return minf(1.0, t / t_cheia) if t_cheia > 0.0 else 0.0
@@ -685,6 +1201,8 @@ func nota_passiva(res: Dictionary, tatica_id: String) -> Dictionary:
 		return {}
 	var vmax_j: float = res.life_max[0]
 	var t_fim: float = res.t_end
+	if passiva.type in ["counter_punch", "top_control", "thai_clinch"]:
+		return _nota_passiva2(res)
 	if passiva.type == "shin":
 		return _nota_shin(res, tatica_id, vmax_j, t_fim)
 	if passiva.type == "fast_hands":
@@ -704,6 +1222,36 @@ func nota_passiva(res: Dictionary, tatica_id: String) -> Dictionary:
 	if int(res.attempts) >= 1:
 		return {"id": "bjj_escaped", "n": int(res.attempts), "r": rodada}
 	return {"id": "bjj_never_hurt", "n": 0, "r": rodada}
+
+
+## Motivo da derrota das 2ªs passivas (design 7b2 §12), a 1ª que valer, na ordem da tabela. {} se nenhuma.
+## cp_early | cp_held | cp_never_hurt (Contragolpista); tc_no_takedown | tc_stood_up | tc_never_hurt (Por cima);
+## cl_never | cl_released | cl_held (Clinch).
+func _nota_passiva2(res: Dictionary) -> Dictionary:
+	match str(passiva.type):
+		"counter_punch":
+			var ko_de := (float(passiva.ko_from_round) - 1.0) * float(c.round_length)
+			var t_fim: float = float(res.t_ko) if bool(res.ko) else float(res.t_end)  # quando a luta acabou de verdade
+			if t_fim < ko_de - 1e-9:
+				return {"id": "cp_early", "n": 0, "r": 0}
+			if int(res.attempts) >= 1:
+				return {"id": "cp_held", "n": int(res.attempts), "r": 0}
+			return {"id": "cp_never_hurt", "n": 0, "r": 0}
+		"top_control":
+			if int(res.takedowns) == 0:
+				return {"id": "tc_no_takedown", "n": 0, "r": 0}
+			if int(res.stood_up) >= 2:
+				return {"id": "tc_stood_up", "n": int(res.stood_up), "r": 0}
+			if int(res.attempts) == 0:
+				return {"id": "tc_never_hurt", "n": 0, "r": 0}
+		"thai_clinch":
+			if int(res.clinches) == 0:
+				return {"id": "cl_never", "n": 0, "r": 0}
+			if int(res.released) >= 2:
+				return {"id": "cl_released", "n": int(res.released), "r": 0}
+			if int(res.attempts) >= 1:
+				return {"id": "cl_held", "n": int(res.attempts), "r": 0}
+	return {}
 
 
 ## Motivo da derrota do Muay Thai (design 7b1 §11), a 1ª que valer: mt_counter | mt_marks_late | mt_held | mt_never_hurt.
@@ -747,21 +1295,37 @@ func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> 
 	var w := 0
 	var wp := 0
 	var cheias: Array[float] = []
+	var marcas: Array[float] = []  # 7b2: Por cima / Clinch: 1º instante da queda / do clinch; Contragolpista: carga máxima de cada luta
 	for s in range(1, n + 1):
 		rng.seed = s
 		var r := rodar(cen, rng, sem, false)
 		if r.win:
 			w += 1
 			var f: String = r.get("finish", "")
-			if f == "knockout" or f == "submission" or f == "spin_kick":
+			if f == "knockout" or f == "submission" or f == "spin_kick" or f == "counter_ko" or f == "ground_stop" or f == "knee_ko":
 				wp += 1
 		if float(r.get("marks_full_at", -1.0)) >= 0.0:
 			cheias.append(float(r.marks_full_at))
+		if float(r.get("takedown_at", -1.0)) >= 0.0:
+			marcas.append(float(r.takedown_at))
+		if float(r.get("clinch_at", -1.0)) >= 0.0:
+			marcas.append(float(r.clinch_at))
+		if r.has("charge_peak"):
+			marcas.append(float(r.charge_peak))
 	var res := {"chance": float(w) / float(n), "wins": w, "wins_passive": wp, "n": n}
-	if not passiva.is_empty() and passiva.type == "shin":
+	if passiva.is_empty():
+		return res
+	if passiva.type == "shin":
 		cheias.sort()
 		res["full_share"] = float(cheias.size()) / float(n)
 		res["full_at"] = cheias[cheias.size() / 2] if not cheias.is_empty() else -1.0
+	elif passiva.type == "top_control" or passiva.type == "thai_clinch":
+		marcas.sort()
+		res["share"] = float(marcas.size()) / float(n)  # em quantas lutas derrubou / prendeu
+		res["at"] = marcas[marcas.size() / 2] if not marcas.is_empty() else -1.0  # mediana do 1º instante
+	elif passiva.type == "counter_punch":
+		marcas.sort()
+		res["charge_med"] = marcas[marcas.size() / 2] if not marcas.is_empty() else 0.0
 	return res
 
 

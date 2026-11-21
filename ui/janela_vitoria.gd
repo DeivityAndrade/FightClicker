@@ -43,9 +43,12 @@ func _montar_normal(r: Dictionary) -> void:
 	var bloco := 56.0 + 14.0 + _largura_ganhos(r, 2)
 	var lj := maxf(288.0, roundf(bloco / 2.0) * 2.0 + 40.0)
 	var xj := 320.0 - lj / 2.0
-	var topo := 42.0 if revanche else 72.0
-	var dy := 32.0 if revanche else 0.0  # deslocamento do miolo (posições originais + dy)
-	moldura("ui_window", Rect2(xj, topo, lj, 222.0 + (62.0 if revanche else 0.0)))
+	# 7b2: uma linha a mais para a meta da 2ª passiva ("2/3 K.O. DE EMBALO") ou, quando abre, o aviso único NOVO JEITO DE LUTAR.
+	var extra := _altura_passiva(r)
+	var corr := -roundf(extra / 2.0)  # a janela cresce para os dois lados (continua no meio)
+	var topo := (42.0 if revanche else 72.0) + corr
+	var dy := (32.0 if revanche else 0.0) + corr  # deslocamento do miolo (posições originais + dy)
+	moldura("ui_window", Rect2(xj, topo, lj, 222.0 + (62.0 if revanche else 0.0) + extra))
 	faixa_titulo("victory", Rect2(xj + 6.0, topo + 6.0, lj - 12.0, 22), UiTema.txt("victory_title", "VENCEU!"), UiTema.Y2, 2)
 	if revanche:
 		_letreiro_revanche(r, topo + 32.0)
@@ -65,8 +68,56 @@ func _montar_normal(r: Dictionary) -> void:
 	if str(r.get("next_name", "")) != "":
 		UiTema.rotulo_centro(painel, UiTema.txt("victory_next", "PRÓXIMO: {nome}", {"nome": str(r.next_name)}),
 			UiTema.WHITE, 320.0, 212.0 + dy)
-	var b := botao_texto(Rect2(240, 242.0 + dy, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+	_bloco_passiva(r, xj, lj, 228.0 + dy)
+	var b := botao_texto(Rect2(240, 242.0 + dy + extra, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
+
+
+## 7b2: altura extra da janela para a linha da 2ª passiva (0 sem nada; 14 com a meta; 36 com o aviso de liberação).
+func _altura_passiva(r: Dictionary) -> float:
+	if str(r.get("passive2_line", "")) != "" and str(r.get("passive2_unlocked", "")) != "":
+		return 36.0
+	return 14.0 if _texto_meta(r) != "" else 0.0
+
+
+## "2/3 K.O. DE EMBALO" (de n, m e do nome do fim; o `text` do resumo só vem preenchido no aviso de liberação).
+func _texto_meta(r: Dictionary) -> String:
+	var meta: Dictionary = r.get("passive_goal", {})
+	if meta.is_empty() or not bool(meta.get("counted", false)) or int(meta.get("m", 0)) <= 0:
+		return ""
+	return UiTema.txt("art_card_passive_progress", "{n}/{m} {fim}", {"n": int(meta.n), "m": int(meta.m), "fim": str(meta.get("finish_text", ""))}).to_upper()
+
+
+## 7b2: a meta batida na luta ("2/3 K.O. DE EMBALO", com o ícone da passiva) ou, na luta que libera, o aviso único
+## "NOVO JEITO DE LUTAR: {NOME}. ESCOLHA NA PRÓXIMA CARREIRA" numa caixa de 2 linhas com o ícone 16x16. `y` = topo do bloco.
+func _bloco_passiva(r: Dictionary, xj: float, lj: float, y: float) -> void:
+	var por_arte: Dictionary = UiTema.manifest().get("by_data_id", {})
+	var linha := str(r.get("passive2_line", ""))
+	var liberou := str(r.get("passive2_unlocked", ""))
+	if linha != "" and liberou != "":
+		var icone := str(por_arte.get(liberou, {}).get("passive_2_icon", ""))
+		var caixa := fundo_cor(Rect2(xj + 14.0, y - 4.0, lj - 28.0, 30.0), Color(UiTema.P0, 0.55))
+		caixa.set_meta("ui_align", "ignore")
+		var x_txt := xj + 14.0 + 6.0
+		if icone != "" and not UiTema.sprite(icone).is_empty():
+			UiTema.textura_rect(painel, icone, x_txt, y + 3.0)
+			x_txt += 22.0
+		var larg := xj + lj - 14.0 - 6.0 - x_txt
+		var l := UiTema.rotulo(painel, linha.to_upper(), UiTema.Y1, x_txt, y + 1.0, larg, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar(l, "left")
+		return
+	var texto := _texto_meta(r)
+	if texto == "":
+		return
+	var meta: Dictionary = r.get("passive_goal", {})
+	var icone9 := str(por_arte.get(str(meta.get("art", "")), {}).get("passive_2_icon_9", ""))
+	var tem := icone9 != "" and not UiTema.sprite(icone9).is_empty()
+	var grupo := UiTema.largura_visivel(texto) + (12.0 if tem else 0.0)
+	var gx := roundf(320.0 - grupo / 2.0)
+	if tem:
+		UiTema.textura_rect(painel, icone9, gx, y - 1.0)
+	var lt := UiTema.rotulo(painel, texto, UiTema.Y1, gx + (12.0 if tem else 0.0), y)
+	UiTema.alinhar(lt, "left")
 
 
 ## "REVANCHE!" (letreiro com estouro, 2 quadros) e a linha do Roteirista logo abaixo. Entra com um "pop" e a tremida de 2 px

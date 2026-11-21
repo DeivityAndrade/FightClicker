@@ -127,6 +127,7 @@ var _rng_evento := RandomNumberGenerator.new()  # próprio: não mexe nos sortei
 var nivel_metronomo := 0  # Fase 4: 0 = sem Metrônomo (career.metronome_level)
 var local_id := ""  # Fase 5: career.location ("garage" | "gym")
 var arte_id := ""  # Fase 5: career.art ("" = sem arte)
+var passiva_carreira := 1  # 7b2: career.art_passive (1 = 1ª passiva da arte, 2 = a 2ª; vale a carreira inteira)
 var arte_segundos := 0.0  # Fase 5: career.art_seconds, tempo de carreira desde a escolha da arte
 # Bloco `permanent` do save
 var permanente: Dictionary = {}
@@ -512,7 +513,7 @@ func texto_regra_arte(id: String) -> String: return _textos.texto_regra_arte(id)
 ## Nome antigo de texto_passiva (o traço +10%/-10% saiu na 7a1). "" sem arte.
 func texto_traco_luta(id: String) -> String: return _textos.texto_passiva(id)
 ## Texto da passiva de luta da arte (cartão da janela de escolha). "" sem arte.
-func texto_passiva(id: String) -> String: return _textos.texto_passiva(id)
+func texto_passiva(id: String, passiva: int = 1) -> String: return _textos.texto_passiva(id, passiva)
 ## Texto "FOR 40% / AGI 45% / RES 15%" do aparelho de arte ("" para os de toda carreira).
 func texto_divisao(aparelho_id: String) -> String: return _textos.texto_divisao(aparelho_id)
 ## Bloco PRÓXIMA LUTA: {show, text, legacy, seconds}. `show` = o adversário da academia está PERIGOSO (na melhor das 3 táticas)
@@ -832,7 +833,16 @@ func escolha_arte_primeira() -> bool: return _academia.escolha_arte_primeira()
 ## Cartões da janela de escolha: [{id, name, tagline, rule_text, fight_text, icon, apparatus, apparatus_name, last, last_text}].
 func artes_para_escolha() -> Array: return _academia.artes_para_escolha()
 ## Escolhe a arte da carreira (1 clique). Vale a carreira inteira: não existe função de troca. Só com a escolha pendente
-func escolher_arte(id: String) -> bool: return _academia.escolher_arte(id)
+## 7b2: `passiva` 0 = a marcada por padrão (a última escolhida, se vale), 1 ou 2; a 2ª só com a meta batida (senão devolve false).
+func escolher_arte(id: String, passiva: int = 0) -> bool: return _academia.escolher_arte(id, passiva)
+## 7b2: opções de passiva do cartão da arte [{n, name, fight_text, icon, locked, locked_text, selected, progress}].
+func passivas_do_cartao(arte_id: String) -> Array: return _academia.passivas_do_cartao(arte_id)
+## 7b2: meta da 2ª passiva da arte: {art, has, n, m, finish, finish_text, text, liberada} (text = "2/3 K.O. DE EMBALO").
+func progresso_passiva(arte_id: String) -> Dictionary: return _academia.progresso_passiva(arte_id)
+## 7b2: a 2ª passiva da arte já foi liberada (para sempre)?
+func passiva_liberada(arte_id: String) -> bool: return _academia.passiva_liberada(arte_id)
+## 7b2: conta uma vitória pela 1ª passiva (a luta já chama isto sozinha em concluir_luta); devolve {} se não contou.
+func contar_vitoria_passiva(finish: String) -> Dictionary: return _academia.contar_vitoria_passiva(finish)
 ## Soma dos nós ESTILO comprados da arte (0 ou 0,5): o efeito da regra dela fica x(1 + estilo).
 func estilo_arte(id: String) -> float: return _academia.estilo_arte(id)
 ## Bônus do Boxe no clique MANUAL (0,50; com o nó 0,75). 0 sem arte ou com outra arte.

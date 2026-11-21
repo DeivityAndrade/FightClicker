@@ -6,7 +6,7 @@ extends RefCounted
 ## Mesma regra dos outros dados: campo ruim é ignorado e avisa no console; nunca derruba o jogo.
 
 const CAMINHO := "res://data/moves.json"
-const KINDS := ["jab", "crit", "counter", "takedown", "submission", "spin_kick"]  # 7a1: takedown e submission (Jiu-jitsu); 7b1: spin_kick (Muay Thai)
+const KINDS := ["jab", "crit", "counter", "takedown", "submission", "spin_kick", "counter_ko", "ground_stop", "knee_ko"]  # 7b2: fins das 2as passivas; 7a1: takedown e submission (Jiu-jitsu); 7b1: spin_kick (Muay Thai)
 const FASES := ["standing", "ground"]
 
 var golpes: Dictionary = {}  # id -> {id, style, name, anim, kinds, unlock, defender_anim, phase}

@@ -1723,7 +1723,10 @@
 			"card_art": "art_card_boxing",
 			"card_header": "ui_art_card_header_boxing",
 			"apparatus": "speed_bag",
-			"color": "r1"
+			"color": "r1",
+			"passive_2_icon": "passive_counter_punch",
+			"passive_2_icon_9": "passive_counter_punch_9",
+			"passive_2_icon_locked": "passive_counter_punch_locked"
 		},
 		"bjj": {
 			"icon": "art_bjj",
@@ -1731,7 +1734,10 @@
 			"card_art": "art_card_bjj",
 			"card_header": "ui_art_card_header_bjj",
 			"apparatus": "grappling_dummy",
-			"color": "b1"
+			"color": "b1",
+			"passive_2_icon": "passive_top_control",
+			"passive_2_icon_9": "passive_top_control_9",
+			"passive_2_icon_locked": "passive_top_control_locked"
 		},
 		"art_window": {
 			"card": {
@@ -3922,7 +3928,10 @@
 			"card_art": "art_card_muay_thai",
 			"card_header": "ui_art_card_header_muay_thai",
 			"apparatus": "kick_bag",
-			"color": "br2"
+			"color": "br2",
+			"passive_2_icon": "passive_thai_clinch",
+			"passive_2_icon_9": "passive_thai_clinch_9",
+			"passive_2_icon_locked": "passive_thai_clinch_locked"
 		},
 		"shin_hud": {
 			"mark": "ui_shin_mark",
@@ -3939,7 +3948,47 @@
 			"note": "Fase 7b1: 3 marcas ao lado da vida DELE (UI/UX decide o ponto; sugestão: abaixo da barra dele, alinhadas à direita em x 594, y 31). Acende 1 por marca inteira (quadro 2 por 1 quadro, depois 1). Cheias: alternar 1/3 a 6 fps e PERNA CHEIA!. O adversário mancando é animação (limp) do Artista de Personagens."
 		},
 		"_nota_fase7b1_arte": "Fase 7b1 (Diretor de Arte): kick_bag, unlock_kick_bag, box (kick_bag), muay_thai, art_hud.icons, shin_hud, layout.foco_saco_comprido, skill_map (região muay_thai). direcao-visual.md §32.",
-		"_nota_fase7b1_poses": "Fase 7b1 (Artista de Personagens): golpes do Muay Thai (mt_idle, low_kick, knee, thai_clinch, spin_kick), reações dos adversários (hit_leg, limp, limp_heavy, held_clinch, hit_spin, fall_spin), Choque (spar_mt_*) e o chute no saco. docs/arte/fase7b1-poses-manifest.md."
+		"_nota_fase7b1_poses": "Fase 7b1 (Artista de Personagens): golpes do Muay Thai (mt_idle, low_kick, knee, thai_clinch, spin_kick), reações dos adversários (hit_leg, limp, limp_heavy, held_clinch, hit_spin, fall_spin), Choque (spar_mt_*) e o chute no saco. docs/arte/fase7b1-poses-manifest.md.",
+		"passive_2_card": {
+			"lock": "ui_passive_lock",
+			"bar": "ui_passive_progress_bar",
+			"fill": "ui_passive_progress_fill",
+			"tick": "ui_passive_progress_tick",
+			"goal_pip": "ui_passive_goal_pip",
+			"goal_pip_step_px": 9,
+			"icons": {
+				"counter_punch": "passive_counter_punch",
+				"top_control": "passive_top_control",
+				"thai_clinch": "passive_thai_clinch"
+			},
+			"mockup": "docs/arte/mockups/fase7b2_cartao_x2.png",
+			"note": "Fase 7b2: 2ª opção do cartão da arte. Trancada: ícone _locked, nome em g1, linha '{n}/{m} {fim}' em y1 (texto pela fonte do tema), barra (ou estrelas) embaixo e o cadeado (quadro 0) à direita. Meta batida: cadeado 0→1→2 e some; ícone colorido. Posição e medida finais são do UI/UX."
+		},
+		"counter_hud": {
+			"pip": "ui_charge_pip",
+			"count": 3,
+			"step_px": 11,
+			"icon": "icon_charge",
+			"banner_full": "ui_banner_charge_full",
+			"note": "Fase 7b2: 3 losangos ao lado da SUA vida (sugestão: abaixo dela, a partir de x 50, y 35). Acende conforme o evento charge."
+		},
+		"passive_2_banners": {
+			"counter_ko": "ui_banner_counter_ko",
+			"ground_stop": "ui_banner_ground_stop",
+			"knee_ko": "ui_banner_knee_ko",
+			"small": {
+				"charge_full": "ui_banner_charge_full",
+				"stood_up": "ui_banner_stood_up",
+				"clinch": "ui_banner_clinch"
+			},
+			"banner_pos": [
+				320,
+				118
+			],
+			"banner_scale": 2,
+			"note": "Fase 7b2: o letreiro do fim pelo finish (counter_ko/ground_stop/knee_ko); mesma entrada do K.O.!. Pivô no meio do PNG."
+		},
+		"_nota_fase7b2_arte": "Fase 7b2 (Diretor de Arte): passive_2_card, counter_hud, passive_2_banners, boxing/bjj/muay_thai.passive_2_icon*. direcao-visual.md §33, docs/arte/fase7b2-manifest.md."
 	},
 	"palette_swap_glove": {
 		"r0": "#5a1a22",
@@ -133403,6 +133452,324 @@
 				56,
 				98
 			]
+		},
+		"icon_charge": {
+			"file": "res://assets/sprites/ui/icon_charge.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Carga 9x9 (um losango aceso) para a linha da prévia e o motivo da derrota do Contragolpista. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_counter_punch": {
+			"file": "res://assets/sprites/ui/passive_counter_punch.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone da 2ª passiva do Boxe, Contragolpista (16x16): luva em guarda alta + seta que desce e volta (esquiva e contragolpe). Cartão da arte, prévia, tela de fim. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_counter_punch_9": {
+			"file": "res://assets/sprites/ui/passive_counter_punch_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Contragolpista 9x9: linha da prévia, motivo da derrota, HUD. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_counter_punch_locked": {
+			"file": "res://assets/sprites/ui/passive_counter_punch_locked.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Contragolpista trancado (cinza + cadeado), para a 2ª opção antes da meta. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_thai_clinch": {
+			"file": "res://assets/sprites/ui/passive_thai_clinch.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone da 2ª passiva do Muay Thai, Clinch (16x16): braços fechando atrás da nuca dele (faixa laranja no pulso) e o joelho subindo. Cartão, prévia, fim. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_thai_clinch_9": {
+			"file": "res://assets/sprites/ui/passive_thai_clinch_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Clinch 9x9: prévia, motivo e HUD (aceso enquanto clinch = true). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_thai_clinch_locked": {
+			"file": "res://assets/sprites/ui/passive_thai_clinch_locked.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Clinch trancado (cinza + cadeado). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_top_control": {
+			"file": "res://assets/sprites/ui/passive_top_control.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ícone da 2ª passiva do Jiu-jitsu, Por cima (16x16): seta azul pressionando quem está deitado no tatame. Cartão, prévia, fim. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_top_control_9": {
+			"file": "res://assets/sprites/ui/passive_top_control_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Por cima 9x9: prévia, motivo e HUD (estado 'no chão'; com ele de pé, o UI/UX apaga o ícone ou mostra LEVANTOU). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"passive_top_control_locked": {
+			"file": "res://assets/sprites/ui/passive_top_control_locked.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Por cima trancado (cinza + cadeado). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_banner_charge_full": {
+			"file": "res://assets/sprites/ui/ui_banner_charge_full.png",
+			"frame_size": [
+				70,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				35,
+				14
+			],
+			"note": "Letreiro pequeno CARGA! (fight_charge_full), fonte 2x, sombra r1. Pisca com as 3 cargas cheias (como PERNA CHEIA!). Se o UI/UX preferir texto, pode ignorar. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_banner_clinch": {
+			"file": "res://assets/sprites/ui/ui_banner_clinch.png",
+			"frame_size": [
+				78,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				39,
+				14
+			],
+			"note": "Letreiro pequeno CLINCH! (fight_clinch), fonte 2x, sombra br1. Quando prende. Opcional (pode ser texto). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_banner_counter_ko": {
+			"file": "res://assets/sprites/ui/ui_banner_counter_ko.png",
+			"frame_size": [
+				209,
+				68
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				104,
+				34
+			],
+			"note": "Letreiro K.O. NO CONTRAGOLPE! (fight_counter_ko) em 2 linhas (quebra automática do gerador), sombra vermelha r1 do Boxe. No centro da arena (320,118), 2x inteiro, mesma entrada do K.O.! (tremida de 2 px). Troca o K.O.! quando finish = counter_ko. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_banner_ground_stop": {
+			"file": "res://assets/sprites/ui/ui_banner_ground_stop.png",
+			"frame_size": [
+				209,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				104,
+				20
+			],
+			"note": "Letreiro O JUIZ PAROU! (fight_ground_stop), sombra azul b1 do Jiu-jitsu, (320,118) 2x. Troca o FINALIZOU! quando finish = ground_stop. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_banner_knee_ko": {
+			"file": "res://assets/sprites/ui/ui_banner_knee_ko.png",
+			"frame_size": [
+				155,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				77,
+				20
+			],
+			"note": "Letreiro JOELHADA! (fight_knee_ko), sombra laranja br1 do Muay Thai, (320,118) 2x. Troca o K.O.! quando finish = knee_ko. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_banner_stood_up": {
+			"file": "res://assets/sprites/ui/ui_banner_stood_up.png",
+			"frame_size": [
+				102,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				51,
+				14
+			],
+			"note": "Letreiro pequeno LEVANTOU (fight_stood_up), fonte 2x, sombra b1. Quando ele levanta no Por cima. Opcional (pode ser texto). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_charge_pip": {
+			"file": "res://assets/sprites/ui/ui_charge_pip.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 4,
+			"fps": 0.0,
+			"pivot": [
+				4,
+				4
+			],
+			"frames_note": "0 vazia, 1 carregada, 2 acendendo (clarão de 1 quadro ~0,08 s, depois 1), 3 cheia (alternar 1/3 a 6 fps com CARGA!).",
+			"note": "Carga do Contragolpista (losango 9x9; o embalo da 1ª é bolinha 7x7). 3 com passo 11 px ao lado da SUA vida. Evento charge 0–3 = quantos acesos. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_passive_goal_pip": {
+			"file": "res://assets/sprites/ui/ui_passive_goal_pip.png",
+			"frame_size": [
+				7,
+				7
+			],
+			"frames": 3,
+			"fps": 0.0,
+			"pivot": [
+				3,
+				3
+			],
+			"frames_note": "0 falta, 1 feita (ouro), 2 acendendo (clarão de 1 quadro, depois 1).",
+			"note": "Estrelinha da meta (alternativa à barra, boa para m ≤ 5): 1 por vitória pela 1ª passiva, passo 9 px. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_passive_lock": {
+			"file": "res://assets/sprites/ui/ui_passive_lock.png",
+			"frame_size": [
+				9,
+				12
+			],
+			"frames": 3,
+			"fps": 0.0,
+			"pivot": [
+				4,
+				6
+			],
+			"frames_note": "0 trancado (cinza), 1 clarão (1 quadro ~0,08 s ao bater a meta), 2 aberto (ouro; depois some em fade e a opção acende).",
+			"note": "Cadeado da 2ª opção do cartão da arte (9x12, pivô no meio). Fica à direita do nome enquanto a meta não bate. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_passive_progress_bar": {
+			"file": "res://assets/sprites/ui/ui_passive_progress_bar.png",
+			"frame_size": [
+				8,
+				6
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"note": "Moldura 9-slice (8x6, cantos de 2 px) da barra da meta '{n}/{m}' da 2ª passiva (mesma medida da ui_grip_bar). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_passive_progress_fill": {
+			"file": "res://assets/sprites/ui/ui_passive_progress_fill.png",
+			"frame_size": [
+				4,
+				4
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"frames_note": "0 enchendo (ouro y0), 1 cheia (y1 claro) quando n ≥ m.",
+			"note": "Enchimento 4x4 repetido na horizontal dentro da moldura (área interna 4 px). Largura = interior × n/m. Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"ui_passive_progress_tick": {
+			"file": "res://assets/sprites/ui/ui_passive_progress_tick.png",
+			"frame_size": [
+				1,
+				4
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Divisória 1x4 (ink) em cada 1/m da barra (m = unlock.count; hoje 3 → 2 divisórias). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
 		}
 	},
 	"fight_layout": {

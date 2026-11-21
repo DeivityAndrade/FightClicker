@@ -83,7 +83,8 @@ func previa() -> Dictionary:
 		"wait_green": esperar_verde(opp.id, rotulo),
 		# Fase 5/7a1: texto curto da passiva da arte (o mesmo do cartão da janela de escolha); "" sem arte
 		"art": gs.arte_id,
-		"art_fight_text": gs.texto_passiva(gs.arte_id),
+		"art_fight_text": gs.texto_passiva(gs.arte_id, gs.passiva_carreira),
+		"art_passive": gs.passiva_carreira if gs.arte_id != "" else 0,  # 7b2: qual passiva vale nesta carreira (1 | 2)
 		# Fase 6c2: nó "Caderno de recordes" (fora do verde); "" até ficar pronto (sinal previa_falta_pronta)
 		"missing_line": gs._honra._linha_o_que_falta(opp, jog, adv, rotulo),
 	}
@@ -285,9 +286,12 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	var liberados: Array = []
 	# 7a1: Jiu-jitsu usa o estilo "bjj" (em pé e no chão); Boxe e sem arte seguem com "boxing".
 	var passiva: Dictionary = gs.motor.passiva
-	var eh_jj: bool = not passiva.is_empty() and str(passiva.type) == "submission"
-	var eh_mt: bool = not passiva.is_empty() and str(passiva.type) == "shin"  # 7b1: Muay Thai usa o estilo "muay_thai"
-	var golpes_lado: Array = [gs.golpes.disponiveis("bjj" if eh_jj else ("muay_thai" if eh_mt else "boxing"), liberados),
+	var tipo_passiva := str(passiva.get("type", ""))
+	var eh_top: bool = tipo_passiva == "top_control"  # 7b2: Por cima (Jiu-jitsu): chão pelo evento `ground`, sem pegada
+	var eh_cl: bool = tipo_passiva == "thai_clinch"  # 7b2: Clinch (Muay Thai): `clinch` preso, joelhada
+	var eh_jj: bool = tipo_passiva == "submission" or eh_top
+	var eh_mt: bool = tipo_passiva == "shin"  # 7b1: Muay Thai usa o estilo "muay_thai"
+	var golpes_lado: Array = [gs.golpes.disponiveis("bjj" if eh_jj else ("muay_thai" if (eh_mt or eh_cl) else "boxing"), liberados),
 		gs.golpes.disponiveis(str(opp.get("style", "boxing")))]
 	var golpes_baixo: Array = gs.golpes.disponiveis("ground_bottom")
 	var fase := "standing"
@@ -316,9 +320,16 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		var fase_depois := fase
 		var fim_passiva := str(e.get("finish", ""))
 		var mt_golpe := str(e.get("move", "")) if eh_mt and lado == 0 else ""
+		var p2_golpe := str(e.get("move", "")) if (eh_top or eh_cl) and lado == 0 else ""  # 7b2: takedown | ground | clinch | knee | hit
 		if mt_golpe == "spin":
 			kind = "spin_kick"  # todo crítico com a perna cheia é chute rodado (derrube ou não)
-		if eh_jj and kind != "dodge":
+		if eh_top:
+			if kind != "dodge" and p2_golpe == "takedown":
+				kind = "takedown"
+			fase_depois = "ground" if bool(e.get("ground", false)) else "standing"  # ele levantou = os dois de pé
+		elif eh_cl and kind != "dodge" and (p2_golpe == "clinch" or p2_golpe == "knee"):
+			kind = "crit"  # prender e joelhar usam os golpes de crítico do estilo (thai_clinch, knee)
+		if eh_jj and not eh_top and kind != "dodge":
 			# 1º acerto do jogador com a pegada em ground_at_grip: vira queda e a luta vai para o chão;
 			# a finalização também leva ao chão. Só visual (design 7a1 §10.2).
 			if lado == 0 and fase == "standing" and (float(e.get("grip", 0.0)) >= chao_na_pegada or fim_passiva == "submission"):
@@ -356,6 +367,10 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 			"finish": fim_passiva, "phase": fase, "phase_after": fase_depois,
 			# 7b1 (Muay Thai): marcas inteiras na perna DEPOIS do evento (0-3) e o tipo do golpe ("kick"|"crit"|"spin"; "" no adversário)
 			"marks": int(e.get("marks", 0)), "shin_move": mt_golpe,
+			# 7b2: Contragolpista (carga 0-3 depois do evento), Por cima (`ground`: no chão depois do evento), Clinch (`clinch`: preso depois
+			# do evento) e o que o jogador fez em `passive_move` (takedown | ground | clinch | knee | hit | "")
+			"charge": int(e.get("charge", 0)), "ground": bool(e.get("ground", false)), "clinch": bool(e.get("clinch", false)),
+			"passive_move": p2_golpe,
 		})
 		fase = fase_depois
 	var perdedor := -1
@@ -374,6 +389,7 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		"counts": res.counts,
 		# 7a1: cenário (prefixo da arena), tipo da passiva ("" | fast_hands | submission) e dados para o HUD e o fim.
 		"arena": arena_da_luta(str(opp.id)), "passive": str(passiva.get("type", "")),
+		"art_passive": gs.passiva_carreira if gs.arte_id != "" else 0,
 		"streak_peak": int(res.get("streak_peak", 0)), "attempts": int(res.get("attempts", 0)),
 		"grip_full_at": float(res.get("grip_full_at", -1.0)), "tired_at": float(res.get("tired_at", -1.0)),
 		# `tires`: o lutador cansa nesta luta (Boxe fora do Defensivo). O evento `tired` só fica true quando `tires` é true.
@@ -385,6 +401,21 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		info["marks_peak"] = int(res.get("marks_peak", 0))
 		info["marks_full_at"] = float(res.get("marks_full_at", -1.0))
 		info["spins"] = int(res.get("spins", 0))
+	# 7b2: campos das 2ªs passivas na luta (só com a passiva do tipo). Eventos já trazem charge | ground | clinch e move.
+	match str(passiva.get("type", "")):
+		"counter_punch":
+			info["charge_max"] = int(passiva.charge_max)
+			info["charge_peak"] = int(res.get("charge_peak", 0))
+		"top_control":
+			info["takedowns"] = int(res.get("takedowns", 0))
+			info["stood_up"] = int(res.get("stood_up", 0))
+			info["takedown_at"] = float(res.get("takedown_at", -1.0))
+		"thai_clinch":
+			info["clinches"] = int(res.get("clinches", 0))
+			info["released"] = int(res.get("released", 0))
+			info["clinch_at"] = float(res.get("clinch_at", -1.0))
+			info["knees"] = int(res.get("knees", 0))
+			info["clinch_s"] = float(passiva.clinch_s)
 	# Save antigo (ou luta sem arte) não guarda `finish`: "damage" se ko, senão "points". Só na cópia que vai para a UI.
 	if not info.result.has("finish"):
 		info.result["finish"] = "damage" if bool(salvo.ko) else "points"
@@ -416,6 +447,7 @@ func concluir_luta() -> Dictionary:
 		var recorde := int(gs.permanente.best_wins) > 0 and gs.indice_escada > int(gs.permanente.best_wins)
 		var primeira_vitoria := gs._escola._gravar_marco("first_school_win", {}, false)
 		var artes_novas := gs._academia.liberar_por_vitoria(str(opp.id))  # 7b1: 1ª vitória contra o Kid libera o Muay Thai (mesmo save)
+		var meta := gs._academia.contar_vitoria_passiva(str(snap.result.get("finish", "")))  # 7b2: vitória pela 1ª passiva soma na meta (mesmo save)
 		var garagem_salva := false
 		if opp.belt:
 			garagem_salva = gs._escola._gravar_marco("garage_saved", {"opponent": str(opp.id), "by_first": gs.lutador_atual() == "first"}, false)
@@ -435,14 +467,20 @@ func concluir_luta() -> Dictionary:
 			"legacy_gain": gs.legado_em_jogo() - pote_antes, "legacy_run": gs.legado_em_jogo(), "belt": opp.belt,
 			"next": proximo.get("id", ""), "next_name": proximo.get("name", ""), "revenge": revanche,
 			"record": recorde, "first_school_win": primeira_vitoria, "garage_saved": garagem_salva,
-			"revenge_line": gs.preencher(gs.texto_ui("victory_revenge_line"), {"nome": opp.name}) if revanche else ""}
+			"revenge_line": gs.preencher(gs.texto_ui("victory_revenge_line"), {"nome": opp.name}) if revanche else "",
+			# 7b2: passive_goal = {} se a luta não contou; senão {art, n, m, text ("2/3 K.O. DE EMBALO"), counted, unlocked_now, ...}.
+			# passive2_unlocked = id da arte cuja 2ª passiva abriu AGORA ("" nas outras); passive2_line = o aviso único (texto pronto)
+			"passive_goal": meta, "passive2_unlocked": str(meta.get("art", "")) if bool(meta.get("unlocked_now", false)) else "",
+			"passive2_line": str(meta.get("text", ""))}
 		gs.dinheiro_mudou.emit(gs.dinheiro)
 		gs.fama_mudou.emit(gs.fama)
 		gs.escada_mudou.emit()
 		gs.economia_mudou.emit()
 		gs.salvar()
-		if revanche or not artes_novas.is_empty():
+		if revanche or not artes_novas.is_empty() or not meta.is_empty():
 			gs.permanente_mudou.emit()
+		if bool(meta.get("unlocked_now", false)):
+			gs.disparar_gatilho("passive2_%s_unlocked" % meta.art)  # a fala do Osmar (uma vez, na próxima sala livre)
 		for arte_nova in artes_novas:
 			gs.disparar_gatilho(str(arte_nova) + "_unlocked")  # a fala do Osmar (uma vez, na próxima sala livre)
 		atualizar_risco_hud()

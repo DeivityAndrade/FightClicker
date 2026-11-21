@@ -2,7 +2,18 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-21)
+## Situação agora (2026-11-21, tarde)
+- **Fase 7b2 fechada** (2ª passiva das 3 artes): Boxe **CONTRAGOLPISTA** (guarda alta, esquiva enche carga 0–3, contragolpe pode
+  derrubar no 3º round; pede Contra-ataque), Jiu-jitsu **POR CIMA** (derruba e castiga no chão até o juiz parar; FORÇA + Agressivo),
+  Muay Thai **CLINCH** (prende, joelhada crítica pode derrubar; FORÇA+RESISTÊNCIA + Defensivo). Escolhida no começo da carreira,
+  substitui a 1ª e vale a carreira inteira. Libera com **3 vitórias pela 1ª passiva** somando a linhagem (dono reduziu de 5 para 3).
+  Equilíbrio medido pela **mediana** (dono aceitou; cauda do Por cima a 3/s só em observação). Save v13.
+- Letreiros de fim agora limpam os números de dano da área (vale também para os da 7b1/7a1).
+- Docs: `fase7b2-design.md`, `fase7b2-textos.md`, `fase7b2-qa.md`, `fase7b2-revisao.md` (aprovada com ressalvas; roteiro do dono e
+  tarefas futuras D2–D7 lá: prévia otimista contra Brutão/Dudu, medir a meta de 3 com o robô que busca a meta, arte à mão dos ícones).
+- **Próximo:** esperar o dono testar a 7b ou mandar seguir para a próxima fase.
+
+## Situação anterior (2026-11-21, manhã)
 - **Fase 7b1 fechada** (Muay Thai): passiva **CANELA** (chute baixo marca a perna até 3 marcas, adversário manca, com a perna
   cheia o crítico vira **CHUTE RODADO**, que pode derrubar), crítico do clique 20% x4,1, **saco comprido de chute** (50/35/15),
   4 nós na região MUAY THAI (um é "Pé de pluma"), **Choque no compasso** (batida 0,5 s, 3º clique no tempo vira chute), liberação

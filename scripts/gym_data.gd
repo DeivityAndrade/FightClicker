@@ -172,8 +172,10 @@ func _montar_arte(item: Dictionary, id: String) -> Dictionary:
 	var ub = item.get("unlock", null)
 	if ub is Dictionary and str(ub.get("type", "")) == "first_win" and str(ub.get("opponent", "")) != "":
 		liberacao = {"type": "first_win", "opponent": str(ub.opponent)}
+	# 7b2: 2ª passiva (`passive_2`), escolhida no começo da carreira no lugar da 1ª. {} = a arte só tem a 1ª.
+	var passiva2 := _montar_passiva2(item.get("passive_2", null), id)
 	return {
-		"id": id, "apparatus": str(item.get("apparatus", "")), "rule": regra, "passive": passiva, "unlock": liberacao,
+		"id": id, "apparatus": str(item.get("apparatus", "")), "rule": regra, "passive": passiva, "passive_2": passiva2, "unlock": liberacao,
 		"name": TrainingData._txt(item, "name", id), "tagline": TrainingData._txt(item, "tagline", ""),
 		"rule_text": TrainingData._txt(item, "rule_text", ""), "fight_text": TrainingData._txt(item, "fight_text", ""),
 		"icon": TrainingData._txt(item, "icon", ""),
@@ -183,6 +185,7 @@ func _montar_arte(item: Dictionary, id: String) -> Dictionary:
 ## Fase 7a1: passiva de luta da arte (`passive` em data/arts.json). {} = arte sem passiva.
 ## Campo ausente = neutro (mult 1, extra 0); fora da faixa é recortado, com aviso.
 const PASSIVAS_TIPOS: Array[String] = ["fast_hands", "submission", "shin"]
+const PASSIVAS2_TIPOS: Array[String] = ["counter_punch", "top_control", "thai_clinch"]  # 7b2
 
 
 func _montar_passiva(bruto: Variant, id: String) -> Dictionary:
@@ -231,6 +234,12 @@ func _montar_passiva(bruto: Variant, id: String) -> Dictionary:
 		p["sub_strength_min"] = _recortar(bruto, "sub_strength_min", 0.25, 0.0, 1.0, pf)
 		p["sub_strength_max"] = _recortar(bruto, "sub_strength_max", 2.0, 1.0, 10.0, pf)
 		p["sub_cap"] = _recortar(bruto, "sub_cap", 0.6, 0.0, 1.0, pf)
+	p["tactics"] = _taticas_da_passiva(bruto)
+	return p
+
+
+## Números por tática da passiva (`tactics`): só números finitos, recortados em 0..10.
+static func _taticas_da_passiva(bruto: Dictionary) -> Dictionary:
 	var taticas := {}
 	var tb = bruto.get("tactics", null)
 	if tb is Dictionary:
@@ -244,7 +253,78 @@ func _montar_passiva(bruto: Variant, id: String) -> Dictionary:
 				if (typeof(v) == TYPE_FLOAT or typeof(v) == TYPE_INT) and is_finite(float(v)):
 					tt[str(chave)] = clampf(float(v), 0.0, 10.0)
 			taticas[str(tid)] = tt
-	p["tactics"] = taticas
+	return taticas
+
+
+## Fase 7b2: 2ª passiva da arte. Mesmo formato da 1ª (type, mults, tactics), mais `name`, `fight_text`, `icon` e `unlock`
+## ({type "passive_wins", count, finish}: a meta). Inválida (tipo, meta ou finish ruim) = {}: a arte fica só com a 1ª.
+func _montar_passiva2(bruto: Variant, id: String) -> Dictionary:
+	if not (bruto is Dictionary) or str(bruto.get("type", "")) not in PASSIVAS2_TIPOS:
+		return {}
+	var ub = bruto.get("unlock", null)
+	if not (ub is Dictionary) or str(ub.get("type", "")) != "passive_wins" or str(ub.get("finish", "")) == "" 			or typeof(ub.get("count", null)) not in [TYPE_FLOAT, TYPE_INT] or float(ub.get("count", 0)) < 1.0:
+		push_warning("GymData: passive_2 de '%s' sem `unlock` válido (passive_wins, count >= 1, finish): arte sem 2ª passiva." % id)
+		return {}
+	var pf := id + ".passive_2."
+	var p := {"type": str(bruto.type),
+		"unlock": {"type": "passive_wins", "count": int(clampf(float(ub.count), 1.0, 99.0)), "finish": str(ub.finish)},
+		"name": TrainingData._txt(bruto, "name", id), "fight_text": TrainingData._txt(bruto, "fight_text", ""),
+		"icon": TrainingData._txt(bruto, "icon", "")}
+	p["damage_mult"] = _recortar(bruto, "damage_mult", 1.0, 0.1, 5.0, pf)
+	p["taken_mult"] = _recortar(bruto, "taken_mult", 1.0, 0.1, 5.0, pf)
+	p["interval_mult"] = _recortar(bruto, "interval_mult", 1.0, 0.5, 2.0, pf)
+	p["need_ahead"] = _recortar(bruto, "need_ahead", 0.0, 0.0, 1.0, pf)
+	match p.type:
+		"counter_punch":
+			p["dodge_add"] = _recortar(bruto, "dodge_add", 0.08, 0.0, 1.0, pf)
+			p["dodge_agility_min"] = _recortar(bruto, "dodge_agility_min", 0.5, 0.01, 1.0, pf)
+			p["dodge_agility_max"] = _recortar(bruto, "dodge_agility_max", 1.0, 1.0, 5.0, pf)
+			p["counter_mult"] = _recortar(bruto, "counter_mult", 1.0, 0.0, 5.0, pf)
+			p["counter_power"] = _recortar(bruto, "counter_power", 1.0, 0.1, 5.0, pf)
+			p["charge_max"] = float(int(_recortar(bruto, "charge_max", 3.0, 1.0, 5.0, pf)))
+			p["charge_per_dodge"] = float(int(_recortar(bruto, "charge_per_dodge", 1.0, 0.0, 5.0, pf)))
+			p["charge_per_round"] = float(int(_recortar(bruto, "charge_per_round", 1.0, 0.0, 5.0, pf)))
+			p["ko_from_round"] = float(int(_recortar(bruto, "ko_from_round", 3.0, 1.0, 10.0, pf)))
+			p["ko_life_max"] = _recortar(bruto, "ko_life_max", 0.6, 0.0, 1.0, pf)
+			p["ko_per_charge"] = _recortar(bruto, "ko_per_charge", 0.07, 0.0, 1.0, pf)
+			p["ko_endurance_min"] = _recortar(bruto, "ko_endurance_min", 0.5, 0.01, 1.0, pf)
+			p["ko_endurance_max"] = _recortar(bruto, "ko_endurance_max", 2.0, 1.0, 10.0, pf)
+			p["ko_cap"] = _recortar(bruto, "ko_cap", 0.6, 0.0, 1.0, pf)
+			p["hit_ko_mult"] = _recortar(bruto, "hit_ko_mult", 0.5, 0.0, 3.0, pf)
+		"top_control":
+			p["td_base"] = _recortar(bruto, "td_base", 0.3, 0.0, 1.0, pf)
+			p["td_strength_min"] = _recortar(bruto, "td_strength_min", 0.5, 0.01, 1.0, pf)
+			p["td_strength_max"] = _recortar(bruto, "td_strength_max", 1.3, 1.0, 5.0, pf)
+			p["td_cap"] = _recortar(bruto, "td_cap", 0.8, 0.0, 1.0, pf)
+			p["top_damage_mult"] = _recortar(bruto, "top_damage_mult", 1.0, 0.1, 5.0, pf)
+			p["top_interval_mult"] = _recortar(bruto, "top_interval_mult", 0.8, 0.1, 2.0, pf)
+			p["bottom_damage_mult"] = _recortar(bruto, "bottom_damage_mult", 0.6, 0.0, 5.0, pf)
+			p["bottom_dodge_mult"] = _recortar(bruto, "bottom_dodge_mult", 0.5, 0.0, 5.0, pf)
+			p["escape_base"] = _recortar(bruto, "escape_base", 0.2, 0.0, 1.0, pf)
+			p["escape_agility_min"] = _recortar(bruto, "escape_agility_min", 0.5, 0.01, 1.0, pf)
+			p["escape_agility_max"] = _recortar(bruto, "escape_agility_max", 2.0, 1.0, 10.0, pf)
+			p["escape_cap"] = _recortar(bruto, "escape_cap", 0.6, 0.0, 1.0, pf)
+			p["stop_life_max"] = _recortar(bruto, "stop_life_max", 0.5, 0.0, 1.0, pf)
+			p["stop_chance"] = _recortar(bruto, "stop_chance", 0.35, 0.0, 1.0, pf)
+		_:  # thai_clinch
+			p["clinch_life_max"] = _recortar(bruto, "clinch_life_max", 0.8, 0.0, 1.0, pf)
+			p["clinch_base"] = _recortar(bruto, "clinch_base", 0.3, 0.0, 1.0, pf)
+			p["clinch_strength_min"] = _recortar(bruto, "clinch_strength_min", 0.5, 0.01, 1.0, pf)
+			p["clinch_strength_max"] = _recortar(bruto, "clinch_strength_max", 2.0, 1.0, 10.0, pf)
+			p["clinch_cap"] = _recortar(bruto, "clinch_cap", 0.8, 0.0, 1.0, pf)
+			p["clinch_s"] = _recortar(bruto, "clinch_s", 3.5, 0.5, 8.0, pf)
+			p["clinch_interval_mult"] = _recortar(bruto, "clinch_interval_mult", 0.75, 0.1, 2.0, pf)
+			p["clinch_crit_add"] = _recortar(bruto, "clinch_crit_add", 0.3, 0.0, 1.0, pf)
+			p["crit_cap"] = _recortar(bruto, "crit_cap", 0.6, 0.0, 1.0, pf)
+			p["clinch_taken_mult"] = _recortar(bruto, "clinch_taken_mult", 0.6, 0.0, 5.0, pf)
+			p["knee_damage_mult"] = _recortar(bruto, "knee_damage_mult", 1.0, 0.0, 5.0, pf)
+			p["escape_base"] = _recortar(bruto, "escape_base", 0.25, 0.0, 1.0, pf)
+			p["escape_endurance_min"] = _recortar(bruto, "escape_endurance_min", 0.5, 0.01, 1.0, pf)
+			p["escape_endurance_max"] = _recortar(bruto, "escape_endurance_max", 2.0, 1.0, 10.0, pf)
+			p["escape_cap"] = _recortar(bruto, "escape_cap", 0.8, 0.0, 1.0, pf)
+			p["knee_life_max"] = _recortar(bruto, "knee_life_max", 0.4, 0.0, 1.0, pf)
+			p["knee_ko"] = _recortar(bruto, "knee_ko", 0.5, 0.0, 1.0, pf)
+	p["tactics"] = _taticas_da_passiva(bruto)
 	return p
 
 

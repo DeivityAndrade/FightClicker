@@ -577,6 +577,7 @@ func _ler_arvore(dados: Dictionary) -> void:
 			"effect_type": str(ef.type), "effect_value": float(valor), "effect_target": alvo,
 			"name": TrainingData._txt(item, "name", id), "description": TrainingData._txt(item, "description", ""),
 			"effect_text": TrainingData._txt(item, "effect_text", ""), "icon": TrainingData._txt(item, "icon", ""),
+			"effect_text_2": TrainingData._txt(item, "effect_text_2", ""),  # 7b2: texto do nó com a 2ª passiva escolhida ("" = o de sempre)
 		})
 	# `requires`: tem de existir, ser do mesmo ramo e não formar ciclo; senão vira "" (nó raiz).
 	for n in arvore:

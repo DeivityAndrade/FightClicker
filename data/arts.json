@@ -16,6 +16,20 @@
 				"counter": { "streak_per_counter": 2 }
 			}
 		  },
+		  "passive_2": {
+			"_doc": "Fase 7b2 (docs/fases/fase7b2-design.md). 2a passiva: escolhida no inicio da carreira NO LUGAR da 1a. Liberada por unlock (vitorias pela 1a passiva, somando a linhagem). Nomes e textos [ROT].",
+			"unlock": {"type": "passive_wins", "count": 3, "finish": "knockout"},
+			"name": "Contragolpista", "fight_text": "GUARDA ALTA: ESQUIVA CARREGA O CONTRAGOLPE. NO 3º ROUND, VEM O K.O.", "icon": "passive_counter_punch",
+			"type": "counter_punch", "damage_mult": 0.80, "taken_mult": 0.9, "interval_mult": 1.0, "need_ahead": 0,
+			"dodge_add": 0.08, "dodge_agility_min": 0.5, "dodge_agility_max": 1.0, "counter_mult": 1.0, "counter_power": 1.3,
+			"charge_max": 3, "charge_per_dodge": 1, "charge_per_round": 1, "ko_from_round": 3, "ko_life_max": 0.6,
+			"ko_per_charge": 0.07, "ko_endurance_min": 0.5, "ko_endurance_max": 2.0, "ko_cap": 0.6, "hit_ko_mult": 0.5,
+			"tactics": {
+				"aggressive": {"dodge_mult": 0.5, "ko_mult": 0.5},
+				"defensive": {"ko_mult": 0.75},
+				"counter": {"charge_per_dodge": 2}
+			}
+		  },
 		  "rule_text": "+{pct}% TREINO NO CLIQUE DA SUA MÃO",
 		  "fight_text": "SOCA MAIS RÁPIDO E ACABA CEDO COM K.O. CANSA NO 3º ROUND",
 		  "icon": "art_boxing" },
@@ -32,6 +46,20 @@
 				"aggressive": { "grip_mult": 0.75 },
 				"defensive": { "grip_mult": 1.5 },
 				"counter": { "grip_mult": 1.0 }
+			}
+		  },
+		  "passive_2": {
+			"_doc": "Fase 7b2 (docs/fases/fase7b2-design.md). 2a passiva: escolhida no inicio da carreira NO LUGAR da 1a. Liberada por unlock (vitorias pela 1a passiva, somando a linhagem). Nomes e textos [ROT].",
+			"unlock": {"type": "passive_wins", "count": 3, "finish": "submission"},
+			"name": "Por cima", "fight_text": "DERRUBA CEDO E CASTIGA NO CHÃO ATÉ O JUIZ PARAR", "icon": "passive_top_control",
+			"type": "top_control", "damage_mult": 1.15, "taken_mult": 1.0, "interval_mult": 1.25, "need_ahead": 0,
+			"td_base": 0.3, "td_strength_min": 0.5, "td_strength_max": 1.3, "td_cap": 0.8, "top_damage_mult": 1.0,
+			"top_interval_mult": 0.8, "bottom_damage_mult": 0.6, "bottom_dodge_mult": 0.5, "escape_base": 0.20, "escape_agility_min": 0.5,
+			"escape_agility_max": 2.0, "escape_cap": 0.6, "stop_life_max": 0.5, "stop_chance": 0.35,
+			"tactics": {
+				"aggressive": {"td_mult": 1.5},
+				"defensive": {"td_mult": 1.0, "escape_mult": 0.5},
+				"counter": {"td_mult": 1.0}
 			}
 		  },
 		  "rule_text": "EQUIPE +{pct}% (SOBE {rate}% POR MINUTO ATÉ {cap}%)",
@@ -54,6 +82,21 @@
 				"aggressive": { "mark_mult": 1.5, "opponent_counter": 0.6 },
 				"defensive": { "mark_mult": 0.75, "slow_mult": 1.5 },
 				"counter": { "marks_per_counter": 1 }
+			}
+		  },
+		  "passive_2": {
+			"_doc": "Fase 7b2 (docs/fases/fase7b2-design.md). 2a passiva: escolhida no inicio da carreira NO LUGAR da 1a. Liberada por unlock (vitorias pela 1a passiva, somando a linhagem). Nomes e textos [ROT].",
+			"unlock": {"type": "passive_wins", "count": 3, "finish": "spin_kick"},
+			"name": "Clinch", "fight_text": "PRENDE NO CLINCH: ELE NÃO ESQUIVA E A JOELHADA ENTRA", "icon": "passive_thai_clinch",
+			"type": "thai_clinch", "damage_mult": 0.86, "taken_mult": 1.0, "interval_mult": 1.0, "need_ahead": 0,
+			"clinch_life_max": 0.8, "clinch_base": 0.3, "clinch_strength_min": 0.5, "clinch_strength_max": 2.0, "clinch_cap": 0.8,
+			"clinch_s": 3.5, "clinch_interval_mult": 0.75, "clinch_crit_add": 0.3, "crit_cap": 0.6, "clinch_taken_mult": 0.6,
+			"knee_damage_mult": 1.0, "escape_base": 0.25, "escape_endurance_min": 0.5, "escape_endurance_max": 2.0, "escape_cap": 0.8,
+			"knee_life_max": 0.4, "knee_ko": 0.5,
+			"tactics": {
+				"aggressive": {"clinch_mult": 0.5, "knee_mult": 1.3},
+				"defensive": {"clinch_mult": 1.5, "escape_mult": 0.6, "knee_damage_mult": 1.4},
+				"counter": {"clinch_mult": 1.0}
 			}
 		  },
 		  "rule_text": "CRÍTICO DO CLIQUE: {chance}% DE CHANCE, x{mult}",

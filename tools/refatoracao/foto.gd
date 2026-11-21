@@ -47,6 +47,10 @@ func _save_sem_convite(gs: Node) -> Dictionary:
 	var e: Dictionary = gs.para_save()
 	if e.get("career") is Dictionary:
 		e["career"].erase("training_invite")
+		e["career"].erase("art_passive")  # 7b2: campos opcionais novos (a foto sem 2ª passiva tem de dar a da main)
+	if e.get("permanent") is Dictionary:
+		for chave in ["passive_wins", "passives_unlocked", "last_passive"]:
+			e["permanent"].erase(chave)
 	return e
 
 

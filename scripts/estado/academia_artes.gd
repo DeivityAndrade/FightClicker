@@ -163,6 +163,70 @@ func fala_de_liberacao_pendente(arte_id: String) -> bool:
 	return arte_id in gs.permanente.get("arts_unlocked", []) and not gs.academia.arte(arte_id).get("unlock", {}).is_empty() 		and gs.dialogos.gatilho(arte_id + "_unlocked") != {} and not gs.escola.lines_seen.has("cl_" + arte_id)
 
 
+## 7b2: vitória da escada `finish` conta para a meta da 2ª passiva? Só com arte, com a 1ª passiva e quando a luta acabou do jeito da 1ª
+## (`passive_2.unlock.finish`: knockout | submission | spin_kick). Soma na linhagem (`permanent.passive_wins`). Sem salvar: quem chama
+## salva no mesmo save da luta. Devolve {art, n, m, counted, unlocked_now, text}; {} se não contou nada (sem arte / 2ª passiva / outro fim).
+func contar_vitoria_passiva(finish: String) -> Dictionary:
+	var a := gs.academia.arte(gs.arte_id)
+	if a.is_empty() or a.passive_2.is_empty() or gs.passiva_carreira != 1 or finish != str(a.passive_2.unlock.finish):
+		return {}
+	_garantir_campos_passiva()
+	var vitorias: Dictionary = gs.permanente["passive_wins"]
+	var n := int(vitorias.get(a.id, 0)) + 1
+	vitorias[a.id] = n
+	var m := int(a.passive_2.unlock.count)
+	var novo := false
+	if n >= m and not (a.id in gs.permanente["passives_unlocked"]):
+		gs.permanente["passives_unlocked"].append(a.id)
+		gs._escola._gravar_marco("passive2_%s_unlocked" % a.id, {}, false)
+		novo = true
+	var r := progresso_passiva(str(a.id))
+	r["counted"] = true
+	r["unlocked_now"] = novo
+	r["text"] = gs.preencher(gs.texto_ui("passive2_unlocked_line"), {"nome": str(a.passive_2.name).to_upper()}) if novo else ""
+	return r
+
+
+## 7b2: meta da 2ª passiva de uma arte: {art, n (já limitado à meta), m, finish, finish_text, text ("2/3 K.O. DE EMBALO"), liberada, has}.
+## `has` = false quando a arte não tem 2ª passiva.
+func progresso_passiva(arte_id: String) -> Dictionary:
+	var a := gs.academia.arte(arte_id)
+	if a.is_empty() or a.passive_2.is_empty():
+		return {"art": arte_id, "has": false, "n": 0, "m": 0, "finish": "", "finish_text": "", "text": "", "liberada": false}
+	var m := int(a.passive_2.unlock.count)
+	var n := mini(int(gs.permanente.get("passive_wins", {}).get(arte_id, 0)), m)
+	var fim := str(a.passive_2.unlock.finish)
+	var fim_txt := gs.texto_ui("passive_finish_" + fim, fim.to_upper())
+	return {"art": arte_id, "has": true, "n": n, "m": m, "finish": fim, "finish_text": fim_txt,
+		"text": gs.preencher(gs.texto_ui("art_card_passive_progress", "{n}/{m} {fim}"), {"n": n, "m": m, "fim": fim_txt}),
+		"liberada": passiva_liberada(arte_id)}
+
+
+## Estado só de teste (permanent montado à mão): garante os 3 campos da 7b2.
+func _garantir_campos_passiva() -> void:
+	for chave in ["passive_wins", "last_passive"]:
+		if not (gs.permanente.get(chave, null) is Dictionary):
+			gs.permanente[chave] = {}
+	if not (gs.permanente.get("passives_unlocked", null) is Array):
+		gs.permanente["passives_unlocked"] = []
+
+
+func passiva_liberada(arte_id: String) -> bool:
+	return arte_id in gs.permanente.get("passives_unlocked", [])
+
+
+## Passiva marcada por padrão no cartão da arte: a última escolhida (se a 2ª ainda vale), senão a 1ª.
+func passiva_padrao(arte_id: String) -> int:
+	if int(gs.permanente.get("last_passive", {}).get(arte_id, 1)) == 2 and passiva_liberada(arte_id):
+		return 2
+	return 1
+
+
+## A fala do Osmar da 2ª passiva ainda não passou? (a única nunca se perde: volta a pedir ao carregar.)
+func fala_passiva2_pendente(arte_id: String) -> bool:
+	return passiva_liberada(arte_id) and gs.dialogos.gatilho("passive2_%s_unlocked" % arte_id) != {} 		and not gs.escola.lines_seen.has("cl_passive2_" + arte_id)
+
+
 ## Artes liberadas para sempre (ids), na ordem do arquivo.
 func artes_liberadas() -> Array:
 	return gs.permanente.get("arts_unlocked", []).duplicate()
@@ -198,16 +262,43 @@ func artes_para_escolha() -> Array:
 			"apparatus": a.apparatus, "apparatus_name": gs.nome_curto_aparelho(a.apparatus).to_upper() if a.apparatus != "" else "",
 			"last": eh_ultima,
 			"last_text": gs.preencher(gs.texto_ui("art_last", "ÚLTIMA: {nome}"), {"nome": str(a.name).to_upper()}) if eh_ultima else "",
+			"passives": passivas_do_cartao(str(a.id)), "passive_default": passiva_padrao(str(a.id)),
 		})
+	return r
+
+
+## 7b2: as opções de passiva do cartão da arte: [{n (1|2), name, fight_text, icon, locked, locked_text, selected, progress}].
+## Arte sem `passive_2` devolve só a 1ª (como antes). A 2ª vem travada até bater a meta (`progress.text` = "2/3 K.O. DE EMBALO").
+func passivas_do_cartao(arte_id: String) -> Array:
+	var a := gs.academia.arte(arte_id)
+	if a.is_empty():
+		return []
+	var padrao := passiva_padrao(arte_id)
+	var r: Array = [{"n": 1, "name": gs.texto_ui("passive_%s_name" % arte_id, str(a.name)), "fight_text": gs.texto_passiva(arte_id),
+		"icon": "", "locked": false, "selected": padrao == 1, "progress": {}, "locked_text": ""}]
+	if not a.passive_2.is_empty():
+		var prog := progresso_passiva(arte_id)
+		r.append({"n": 2, "name": str(a.passive_2.name), "fight_text": str(a.passive_2.fight_text), "icon": str(a.passive_2.icon),
+			"locked": not prog.liberada, "selected": padrao == 2, "progress": prog,
+			"locked_text": gs.texto_ui("art_card_passive_locked", "TRAVADO") if not prog.liberada else ""})
 	return r
 
 
 ## Escolhe a arte da carreira (1 clique). Vale a carreira inteira: não existe função de troca. Só com a escolha pendente
 ## e uma arte liberada. Salva na hora; zera `art_seconds`; guarda `last_art`.
-func escolher_arte(id: String) -> bool:
+func escolher_arte(id: String, passiva: int = 0) -> bool:
 	if not escolha_arte_pendente() or gs.academia.arte(id).is_empty() or not (id in gs.permanente.arts_unlocked):
 		return false
+	# 7b2: `passiva` 0 = a marcada por padrão (a última escolhida, se vale); 1 ou 2 = escolha. A 2ª só com a meta batida.
+	var qual := passiva_padrao(id) if passiva == 0 else passiva
+	if qual != 1 and qual != 2:
+		return false
+	if qual == 2 and not (passiva_liberada(id) and not gs.academia.arte(id).passive_2.is_empty()):
+		return false
 	gs.arte_id = id
+	gs.passiva_carreira = qual
+	_garantir_campos_passiva()
+	gs.permanente["last_passive"][id] = qual
 	gs.arte_segundos = 0.0
 	gs._arte_comentada = false
 	gs.permanente["last_art"] = id
@@ -268,7 +359,9 @@ func arte_no_teto() -> bool:
 # A passiva de luta da arte vai para o motor (luta e prévia usam a mesma função). Sem arte = passiva vazia.
 # `extra` = nós art_fight_bonus (Contragolpe: K.O. +50%; Base firme: pegada +50%), só da arte jogada.
 func _atualizar_passiva() -> void:
-	gs.motor.passiva = gs.academia.arte(gs.arte_id).get("passive", {}).duplicate(true)
+	var arte := gs.academia.arte(gs.arte_id)
+	var chave := "passive_2" if gs.passiva_carreira == 2 and not arte.get("passive_2", {}).is_empty() else "passive"
+	gs.motor.passiva = arte.get(chave, {}).duplicate(true)
 	gs.motor.extra_passiva = gs._arvore._b("art_fight_bonus") if not gs.motor.passiva.is_empty() else 0.0
 
 
