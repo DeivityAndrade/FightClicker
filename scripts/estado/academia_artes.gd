@@ -79,7 +79,7 @@ func mudar() -> bool:
 		gs.fight_day = gs._calendario._data_da_proxima_luta()  # B3: chegou ao novo local, folga cheia a partir de hoje
 	var primeira: bool = gs.permanente.arts_unlocked.is_empty() and not gs.academia.artes.is_empty()
 	if primeira:
-		gs.permanente["arts_unlocked"] = gs.academia.ids_artes()
+		gs.permanente["arts_unlocked"] = gs.academia.ids_artes_iniciais()
 	# 6c1: a 1ª chegada à academia toca a cena. O marco entra no MESMO salvar() da mudança (fechar o jogo no meio não repete).
 	var cena_id := gs._casa._cena_da_chegada()
 	if cena_id != "":
@@ -123,6 +123,44 @@ func loja_estado(custo: float) -> String:
 	if gs.dinheiro - custo < reserva_mudanca() * (1.0 - Economia.EPS):
 		return "reserve"
 	return "ok"
+
+
+## 7b1: vitória contra `adversario_id` libera as artes com `unlock {type: first_win, opponent}` (a 1ª vez). Grava o marco
+## `<arte>_unlocked` (sem salvar: quem chama salva no mesmo save da luta). Devolve os ids liberados agora.
+func liberar_por_vitoria(adversario_id: String) -> Array:
+	var novas: Array = []
+	if gs.permanente.arts_unlocked.is_empty():
+		return novas  # nunca chegou à academia: a 1ª chegada é que abre as artes (estado só de teste)
+	for a in gs.academia.artes:
+		if a.unlock.is_empty() or str(a.unlock.opponent) != adversario_id or a.id in gs.permanente.arts_unlocked:
+			continue
+		gs.permanente["arts_unlocked"].append(a.id)
+		gs._escola._gravar_marco(str(a.id) + "_unlocked", {}, false)
+		novas.append(a.id)
+	return novas
+
+
+## 7b1, ao carregar: quem já venceu o adversário da liberação (best_wins >= índice + 1, ou a carreira atual já passou dele)
+## recebe a arte, sem tocar no resto. Devolve os ids acrescentados.
+func liberar_ao_carregar() -> Array:
+	var novas: Array = []
+	if gs.permanente.arts_unlocked.is_empty():
+		return novas
+	for a in gs.academia.artes:
+		if a.unlock.is_empty() or a.id in gs.permanente.arts_unlocked:
+			continue
+		var i: int = gs.lutas.indice_adversario(str(a.unlock.opponent))
+		if i < 0:
+			continue
+		if int(gs.permanente.get("best_wins", 0)) >= i + 1 or gs.indice_escada >= i + 1:
+			gs.permanente["arts_unlocked"].append(a.id)
+			novas.append(a.id)
+	return novas
+
+
+## A fala do Osmar da arte liberada ainda não passou? (a única nunca se perde: volta a pedir ao carregar.)
+func fala_de_liberacao_pendente(arte_id: String) -> bool:
+	return arte_id in gs.permanente.get("arts_unlocked", []) and not gs.academia.arte(arte_id).get("unlock", {}).is_empty() 		and gs.dialogos.gatilho(arte_id + "_unlocked") != {} and not gs.escola.lines_seen.has("cl_" + arte_id)
 
 
 ## Artes liberadas para sempre (ids), na ordem do arquivo.
@@ -195,6 +233,18 @@ func bonus_arte_clique() -> float:
 	if a.is_empty() or a.rule.type != "manual_click_bonus":
 		return 0.0
 	return float(a.rule.value) * (1.0 + estilo_arte(gs.arte_id))
+
+
+## Crítico do clique MANUAL: {chance, mult} efetivos. Sem arte (ou Boxe/Jiu-jitsu) = o de sempre (10%, x3). Muay Thai
+## (`click_crit_bonus`): chance + chance_add e mult + mult_add x (1 + estilo). A tela lê daqui; o auto-soco nunca usa o bônus.
+func bonus_arte_critico() -> Dictionary:
+	var chance: float = gs.dados.crit_chance
+	var mult: float = gs.dados.crit_multiplier
+	var a := gs.academia.arte(gs.arte_id)
+	if not a.is_empty() and a.rule.type == "click_crit_bonus":
+		chance = minf(1.0, chance + float(a.rule.chance_add))
+		mult += float(a.rule.mult_add) * (1.0 + estilo_arte(gs.arte_id))
+	return {"chance": chance, "mult": mult}
 
 
 ## Bônus do Jiu-jitsu na equipe: (1 + estilo) x min(teto, começo + por_minuto x minutos de arte). 0 sem a arte.

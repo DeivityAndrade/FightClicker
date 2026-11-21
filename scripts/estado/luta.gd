@@ -286,7 +286,9 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	# 7a1: Jiu-jitsu usa o estilo "bjj" (em pé e no chão); Boxe e sem arte seguem com "boxing".
 	var passiva: Dictionary = gs.motor.passiva
 	var eh_jj: bool = not passiva.is_empty() and str(passiva.type) == "submission"
-	var golpes_lado: Array = [gs.golpes.disponiveis("bjj" if eh_jj else "boxing", liberados), gs.golpes.disponiveis(str(opp.get("style", "boxing")))]
+	var eh_mt: bool = not passiva.is_empty() and str(passiva.type) == "shin"  # 7b1: Muay Thai usa o estilo "muay_thai"
+	var golpes_lado: Array = [gs.golpes.disponiveis("bjj" if eh_jj else ("muay_thai" if eh_mt else "boxing"), liberados),
+		gs.golpes.disponiveis(str(opp.get("style", "boxing")))]
 	var golpes_baixo: Array = gs.golpes.disponiveis("ground_bottom")
 	var fase := "standing"
 	var chao_na_pegada := float(passiva.get("ground_at_grip", 0.5)) if eh_jj else 2.0
@@ -313,6 +315,9 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		var reacao := ""
 		var fase_depois := fase
 		var fim_passiva := str(e.get("finish", ""))
+		var mt_golpe := str(e.get("move", "")) if eh_mt and lado == 0 else ""
+		if mt_golpe == "spin":
+			kind = "spin_kick"  # todo crítico com a perna cheia é chute rodado (derrube ou não)
 		if eh_jj and kind != "dodge":
 			# 1º acerto do jogador com a pegada em ground_at_grip: vira queda e a luta vai para o chão;
 			# a finalização também leva ao chão. Só visual (design 7a1 §10.2).
@@ -335,9 +340,11 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 				golpe_anim = str(gs.golpes.golpes[golpe_id].anim)
 				if d_anim == "hit":
 					reacao = str(gs.golpes.golpes[golpe_id].defender_anim)
+					if kind == "spin_kick" and fim_passiva != "spin_kick":
+						reacao = "hit_spin"  # o rodado que não derruba: torce e volta à guarda (só o final usa fall_spin)
 		eventos.append({
 			"t": e.t, "who": e.who, "target": alvo, "type": tipo, "counter": e.counter,
-			"kind": kind, "attack_anim": "heavy" if kind == "crit" or kind == "counter" else "jab",
+			"kind": kind, "attack_anim": "heavy" if kind == "crit" or kind == "counter" or kind == "spin_kick" else "jab",
 			"move": golpe_id, "move_anim": golpe_anim, "defender_move_anim": reacao,
 			"defender_anim": d_anim, "blocked": bloqueou,
 			"damage": e.damage, "life_after": e.life_after, "life_pct_after": e.life_after / vmax[alvo],
@@ -347,6 +354,8 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 			# fase visual ("standing" | "ground") e fase depois do evento (a queda começa em pé e termina no chão).
 			"streak": int(e.get("streak", 0)), "grip": float(e.get("grip", 0.0)), "tired": bool(e.get("tired", false)),
 			"finish": fim_passiva, "phase": fase, "phase_after": fase_depois,
+			# 7b1 (Muay Thai): marcas inteiras na perna DEPOIS do evento (0-3) e o tipo do golpe ("kick"|"crit"|"spin"; "" no adversário)
+			"marks": int(e.get("marks", 0)), "shin_move": mt_golpe,
 		})
 		fase = fase_depois
 	var perdedor := -1
@@ -370,6 +379,12 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		# `tires`: o lutador cansa nesta luta (Boxe fora do Defensivo). O evento `tired` só fica true quando `tires` é true.
 		"tires": bool(res.get("tires", false)),
 	}
+	if eh_mt:  # 7b1: dados do HUD das marcas e do letreiro (só com Muay Thai)
+		info["marks_max"] = int(passiva.marks_max)
+		info["limp_from_marks"] = int(passiva.limp_from_marks)
+		info["marks_peak"] = int(res.get("marks_peak", 0))
+		info["marks_full_at"] = float(res.get("marks_full_at", -1.0))
+		info["spins"] = int(res.get("spins", 0))
 	# Save antigo (ou luta sem arte) não guarda `finish`: "damage" se ko, senão "points". Só na cópia que vai para a UI.
 	if not info.result.has("finish"):
 		info.result["finish"] = "damage" if bool(salvo.ko) else "points"
@@ -400,6 +415,7 @@ func concluir_luta() -> Dictionary:
 		# sobre o adversário do cinturão (qualquer lutador da escola); nunca por belts_won.
 		var recorde := int(gs.permanente.best_wins) > 0 and gs.indice_escada > int(gs.permanente.best_wins)
 		var primeira_vitoria := gs._escola._gravar_marco("first_school_win", {}, false)
+		var artes_novas := gs._academia.liberar_por_vitoria(str(opp.id))  # 7b1: 1ª vitória contra o Kid libera o Muay Thai (mesmo save)
 		var garagem_salva := false
 		if opp.belt:
 			garagem_salva = gs._escola._gravar_marco("garage_saved", {"opponent": str(opp.id), "by_first": gs.lutador_atual() == "first"}, false)
@@ -425,8 +441,10 @@ func concluir_luta() -> Dictionary:
 		gs.escada_mudou.emit()
 		gs.economia_mudou.emit()
 		gs.salvar()
-		if revanche:
+		if revanche or not artes_novas.is_empty():
 			gs.permanente_mudou.emit()
+		for arte_nova in artes_novas:
+			gs.disparar_gatilho(str(arte_nova) + "_unlocked")  # a fala do Osmar (uma vez, na próxima sala livre)
 		atualizar_risco_hud()
 	else:
 		var motivo := motivo_da_luta(snap)

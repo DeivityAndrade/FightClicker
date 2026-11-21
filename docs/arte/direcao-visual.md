@@ -1137,6 +1137,12 @@ O carro maior ficava atrás do Osmar e do John sentado. Correção (garagem só;
   do lutador precisa ficar).
 - A luz pintada nas folhas do Osmar e do John sentado ainda é a dos pontos antigos (diferença pequena): pedir folhas novas ao
   Artista de Personagens quando houver rodada de personagens.
+- **7b (pedido do dono): o sedã comprido volta.** Sem `car_squeeze` (`CAR_CUTS = []`), 14 px para a esquerda: **x 66..226**
+  (~160 px, 2 portas). A lona volta ao estilo da 6d2: cinza-ardósia fosco (rampa `st`), cúpula arredondada com brilho
+  pontilhado, faixa clara no ombro, dobras verticais onduladas, barra escura e corda laranja com nó; cobre a metade de trás
+  (teto e vidro de trás, porta-malas, traseira) até o alto da roda de trás, que aparece no arco. Único ponto mexido: mentor
+  sentado `mentor_spot` **210,254 -> 232,270**, caixote **194,234 -> 216,250** (sort 266); mais à direita a cabeça bate no saco
+  de lado. Osmar e 2º mentor não mudam. Manifest: `tools/art/manifest_7b.py`. Prancha: `mockups/fase7b_carro_comprido.png`.
 - Também trocados para o R: `icon_garage_saved` (linha de prêmio GARAGEM SALVA) e `icon_honor_16` (roseta da Honra).
 
 ## 30. Fase 7a1 (arena da liga, FINALIZOU! e HUD da passiva)
@@ -1251,3 +1257,54 @@ entregando são do Artista de Personagens.
 - A silhueta do vigilante tem 7x8 px no recorte e 18x19 no zoom: o desenho dele de verdade (folha de personagem) é do Artista
   de Personagens quando o Gato Preto ganhar fase.
 - A agulha, os avisos e o X2 são peças honestas de placeholder; um artista faria a agulha como um nó de corda ou uma luva.
+
+## 32. Fase 7b1 (Muay Thai: saco comprido, marcas na perna, CHUTE RODADO!, região da árvore)
+Gerador: `tools/art/make_arte_fase7b1.gd` (`godot --headless --path <projeto> --script res://tools/art/make_arte_fase7b1.gd`;
+`-- --no-assets` grava só os mockups). Manifest: `python tools/art/manifest_7b1.py` (lê `tools/art/fase7b1_sprites.json`, que o
+gerador grava; só acrescenta as chaves da 7b1; rodar de novo não muda nada). Textos dos letreiros = finais do Roteirista
+(`fase7b1-textos.md`): `BANNER_TEXT` e `MARKS_TEXT` no topo do gerador.
+
+**Cor do Muay Thai: laranja de couro** (`br1/br2/br3`, brilho `y0`). Boxe é vermelho, Jiu-jitsu azul, Campanha ouro (`y0/y1`):
+o anel do mapa usa `br2/br3` (tom `orange`) para não confundir com o ouro.
+
+**Saco comprido de chute** (`kick_bag`, mesmo padrão da pera e do boneco):
+- Silhueta oposta à do saco de pancada: **fino e comprido** (corpo 22x68 contra 30x62), **pendurado baixo**. Foco:
+  `kick_bag_lN_idle/hit` (quadro 34x80, pivô 17,0 no gancho) em **(336,190)**, corrente `bag_chain_tile` de y 33; corpo em y 200..267,
+  4 px acima do chão do lutador. Ordenar como y 266 (o lutador em 303,272 fica na frente). Clique: o pé do saco vai 5 px e afunda
+  na altura da canela, 4 quadros a 12 fps. A lona é **gasta na altura da canela** (y 244..260): é ali que se chuta.
+- Descanso: `kick_bag_lN_rest(_gym)` (80x28, pivô 40,25), **deitado de lado no canto da frente à esquerda (192,318)**, o slot `art`
+  da caixa e o mesmo lugar do boneco (só existe o aparelho da arte da carreira). Tiras e corrente enrolada à esquerda. Luz pintada
+  (garagem: as 3 luzes da 6d2; academia: os 4 tubos). Conferido com os vizinhos (72,322) e (126,322): não encosta.
+- l0 = lona cor de couro cru, cintas creme, remendo de fita prata ("veio enrolado num tapete"); l1 (`tech_mt_1` Chute baixo) =
+  vinil preto com faixas laranja e as 3 marquinhas. Chega na **caixa grande** (`box_big`, slot `art`), cai deitado como o boneco.
+- O lutador usa `fighter_punch` até o Artista de Personagens fazer a pose de chute baixo no saco: contato da canela em **(326,250)**.
+- UI: `icon_kick_bag` (+ `_locked`, `_locked_buyable`), `art_muay_thai` (perna no chute de frente, calção laranja, faixa no
+  tornozelo; 16 e `_9`), `art_card_muay_thai` (72x56), `ui_art_card_header_muay_thai`.
+
+**HUD da passiva (Canela):** `ui_shin_mark` 11x11, 4 quadros (apagada / acesa / acendendo / cheia), 3 com passo 12 px ao lado da
+vida **dele**; `icon_shin` 9x9 para a prévia e o motivo; `ui_banner_marks_full` (PERNA CHEIA!, fonte 2x) para piscar com as
+marcas cheias. `by_data_id.shin_hud` tem a regra. Posição final é do UI/UX.
+
+**Letreiro CHUTE RODADO!** (`ui_banner_spin_kick`, pivô no meio, y 20): receita do K.O.!/FINALIZOU! com **sombra laranja `br1`**,
+fonte 3x; em 2x no jogo dá ~430 px em (320,118). Lê nas duas arenas (`mockups/fase7b1_chute_rodado_alcance.png`).
+
+**Conferência do chute rodado entre os pivôs (296/346):** lutador com 80 px, quadril em (296,278), perna ~40 px; queixo do Tonhão
+(×1,04) em (340,243): **56 px do quadril**. Parado no pivô, a perna esticada + 6 px de quadril (46 px) **alcança a costela e o
+ombro, não o queixo**. Para o rodado no rosto, o Artista desenha o giro com **um passo de ~10 px para a frente dentro do quadro**
+(o pé de apoio gira e avança; o pivô não muda). Tudo cabe no quadro 112x104: o pé chega a x ~340 (pivô +44; o quadro vai até +56)
+e a y ~243 (pivô −75; o quadro vai até −98). Nada da arena atrapalha: x 200..440 é livre nas duas e o público da frente fica nos
+cantos. Os pivôs não mudam; o passo volta no fim do golpe (ou fica, se derrubar).
+
+**Árvore:** região MUAY THAI = **corda de cânhamo trançada** (`map_tile_muay_thai`), anel `orange`
+(`map_node_s|b_owned_orange`), plaquinha `ui_map_region_label_muay_thai`, `icon_region_muay_thai(_9)` (o mongkol, cordão
+trançado da cabeça). Nós: `skill_style_muay_thai` (Canela de ferro: canela de aço estalando), `skill_shin_kick` (Chute na coxa:
+perna dele com 3 marcas), `skill_thai_oil` (frasco âmbar), `skill_thai_rope` (corda sob o pé na ponta). `icon_by_node` manda sobre o
+campo `icon` do `skill_tree.json`. Falta no código: `ui/janela_mapa.gd` lista os ladrilhos na mão; precisa ganhar `muay_thai`.
+
+**Mockups:** `fase7b1_saco_sala.png` (garagem e academia: foco, descanso, caixa), `fase7b1_saco_zoom.png` (zoom + quadros),
+`fase7b1_pecas_x4.png` (ícones, marcas, cartão, PERNA CHEIA!, nós no chão de corda), `fase7b1_chute_rodado_alcance.png`.
+
+**Placeholder / precisa de pixel artist:** o saco é um cilindro com cisalhamento (balanço sem volume de verdade); à mão teria
+couro amassando e a corrente reagindo. O ícone da arte em 9 px e a corda do `skill_thai_rope` são os menos imediatos. As marcas
+na perna leem como "botinha" em 11 px: um artista faria a canela com o roxo do hematoma mais claro. Tamanhos fixos para trocar só
+os arquivos.

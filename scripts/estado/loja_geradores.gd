@@ -159,8 +159,10 @@ func auto_socar() -> Dictionary:
 func _socar(auto: bool) -> Dictionary:
 	var aparelho_id := gs.foco
 	var atributo := atributo_do_aparelho(aparelho_id)
-	var critico := gs.rng.randf() < gs.dados.crit_chance
-	var ganho := (por_auto_soco() if auto else por_clique()) * (gs.dados.crit_multiplier if critico else 1.0) * mult_frenesi()
+	# 7b1: Muay Thai (clique com picos) sobe a chance e o multiplicador do crítico, só no clique manual. Continua UM randf() aqui.
+	var cc := gs.bonus_arte_critico() if not auto else {"chance": gs.dados.crit_chance, "mult": gs.dados.crit_multiplier}
+	var critico := gs.rng.randf() < float(cc.chance)
+	var ganho := (por_auto_soco() if auto else por_clique()) * (float(cc.mult) if critico else 1.0) * mult_frenesi()
 	var texto := ""
 	if critico:
 		var textos: Array = gs.dados.aparelho(aparelho_id).crit_texts

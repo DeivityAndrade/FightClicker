@@ -72,7 +72,7 @@ const CRATE_OFF := Vector2i(-16, -20)
 ## Na academia continua tudo como na 6d2. pt(local, chave) devolve o ponto certo.
 var G6D3 := {
 	"coach": Vector2i(52, 258),       # Osmar: encostado na frente do carro (era 196,236)
-	"mentor": Vector2i(210, 254),     # John / último sentado: atrás do carro, perto do saco (era 132,254); caixote = +(-16,-20)
+	"mentor": Vector2i(232, 270),     # John / último sentado: logo depois do carro comprido (7b; 6d3 era 210,254); caixote = +(-16,-20)
 	"mentor_2": Vector2i(26, 304),    # 2º mentor de pé: canto da frente à esquerda (era 62,256)
 }
 func pt(local: String, k: String) -> Vector2i:
@@ -353,9 +353,12 @@ func car_top(x: int) -> int:
 
 func garage_car(img: Image) -> void:
 	# sombra no chão (passos de rampa, sem alpha): miolo 2 passos, borda 1 passo em dither
+	# 7b: a sombra acompanha o carro comprido (centro e raio saem das pontas do carro já deslocado)
+	var sc := float(CAR_X0 + CAR_X1) / 2.0 + 3.0 + CAR_SHIFT
+	var sr := float(CAR_X1 - CAR_X0) / 2.0 + 10.0
 	for y in range(219, 232):
-		for x in range(70, 252):
-			var d := Vector2((x + 0.5 - 132.0) / 66.0, (y + 0.5 - 226.0) / 5.0).length()
+		for x in range(int(sc - sr) - 1, int(sc + sr) + 2):
+			var d := Vector2((x + 0.5 - sc) / sr, (y + 0.5 - 226.0) / 5.0).length()
 			if d > 1.0 or not on_floor(x, y):
 				continue
 			var n := -2 if d < 0.7 else (-1 if bayer(x, y) > (d - 0.7) / 0.3 * 0.8 else 0)
@@ -457,8 +460,11 @@ func garage_car(img: Image) -> void:
 ## 6d3 (bug B1): o carro encolhe 25 px no miolo das portas (tira 12 colunas da porta da frente e 13 da de trás; frente, rodas,
 ## traseira e lona ficam inteiras) e anda 5 px para a esquerda: fica em x 75..211, entre o John sentado (agora à esquerda do
 ## nariz) e o Osmar. Valores finais: tira 36 colunas e anda 11 px (x 69..194). Os pontos estão em G6D3.
-const CAR_CUTS := [[172, 19], [136, 17]]     # [x inicial, largura], da direita para a esquerda
-const CAR_SHIFT := -11
+## 7b (pedido do dono): volta o sedã comprido de 2 portas da 1ª rodada da 6d3 ("parece um carro realmente"): sem cortes, só
+## anda 14 px para a esquerda (nariz em x 66, no canto da parede, sem tocar o cano nem o Osmar). O mentor sentado foi o único
+## ponto que mudou (210,254 -> 232,270): mais à direita o saco de lado (lado_esquerdo) bate na cabeça dele, então ele desce um pouco.
+const CAR_CUTS := []                         # 6d3 era [[172, 19], [136, 17]]: [x inicial, largura], da direita para a esquerda
+const CAR_SHIFT := -14                       # 6d3 era -11
 
 func car_squeeze(c: Image) -> Image:
 	var src: Image = c
@@ -473,56 +479,93 @@ func car_squeeze(c: Image) -> Image:
 	moved.blit_rect(src, Rect2i(0, 0, 640, 360), Vector2i(CAR_SHIFT, 0))
 	return moved
 
-const TARP_X0 := 150
-const TARP_FOLDS := [171, 186, 199, 213, 226]
+## 7b (pedido do dono): a lona volta ao ESTILO DA 6D2 (pano cinza-ardósia fosco, cúpula arredondada com brilho pontilhado,
+## faixa clara no ombro, dobras verticais escuras e onduladas, corda laranja amarrada), mas só na metade de trás do sedã
+## comprido: teto de trás, vidro de trás, porta-malas e traseira, caindo pelo lado até o alto da roda de trás. A frente
+## (farol, porta, roda da frente) fica à mostra. Coordenadas do carro antes do deslocamento (CAR_SHIFT).
+const TARP_X0 := 152                           # borda da frente no alto do teto; desce em diagonal para trás
+const TARP_X1 := 239                           # sobra do pano atrás da traseira
+const TARP_FOLDS := [175, 189, 204, 219, 231]
+
+func tarp_front(y: int) -> float:
+	return float(TARP_X0) + float(y - 170) * 0.42
+
+func tarp_top(x: int) -> int:
+	if x <= 188:
+		return 170
+	if x < 214:
+		var u := float(x - 188) / 26.0
+		return 170 + int(round(20.0 * (1.0 - cos(PI * u)) / 2.0))
+	if x <= 236:
+		return 190
+	return [191, 193, 196][mini(x - 237, 2)]
 
 func tarp_hem(x: int) -> int:
-	var h := 212 if x >= 176 else int(round(lerpf(203, 212, float(x - TARP_X0) / 26.0)))
-	if x > CAR_X1:
-		h = 214
-	return h + (1 if sin(float(x) * 0.55) > 0.35 else 0)
+	var h := 211
+	if x < 180:
+		h = int(round(lerpf(206, 211, clampf(float(x - 158) / 22.0, 0.0, 1.0))))
+	if absf(float(x) - CAR_WR.x) < 11.0:
+		h = 208                                    # o pano sobe no arco da roda: o pneu aparece
+	if x >= 236:
+		h = 213
+	return h + (1 if sin(float(x) * 0.7) > 0.4 else 0)
 
 func car_tarp(c: Image) -> void:
-	for x in range(TARP_X0, 242):
-		var top := (car_top(x) if x <= CAR_X1 else 191) - 1
-		if x > 196 and x < 214:
-			top += 1                                  # o pano afunda no vidro de trás
+	var hi := Vector2(178, 176)                    # brilho da cúpula (a lâmpada fica à direita, no alto)
+	for x in range(TARP_X0, TARP_X1 + 1):
+		var top := tarp_top(x)
 		var hem := tarp_hem(x)
 		for y in range(top, hem + 1):
-			var xl := float(TARP_X0) + float(y - 170) * 0.5
-			var dx := float(x) - xl
+			var dx := float(x) - tarp_front(y)
 			if dx < 0.0:
 				# sombra do pano na lataria, logo à frente da borda
 				if dx >= -2.0 and c.get_pixel(x, y).a > 0.0:
 					c.set_pixel(x, y, L.shade(c.get_pixel(x, y), -1))
 				continue
-			var tone := "st2"
-			if y > 201 and bayer(x, y) < float(y - 201) / 9.0:
-				tone = "st1"                           # o pano pende: embaixo mais escuro (volume)
-			if dx < 1.0:
+			var tone := "st1"
+			if y < 191:
+				# cúpula: st1 com brilho pontilhado em st2; embaixo, perto do ombro, escurece
 				tone = "st1"
-			elif dx < 2.5:
-				tone = "st3"                           # rolo da borda da frente
-			elif y <= top + 1:
-				tone = "st3"
-			elif y >= hem:
-				tone = "st0"
-			elif y >= hem - 3:
-				tone = "st1"
+				var d := Vector2((x - hi.x) / 30.0, (y - hi.y) / 9.0).length()
+				if d < 0.45:
+					tone = "st2"
+				elif d < 1.0 and bayer(x, y) < (1.0 - d) / 0.55 * 0.7:
+					tone = "st2"
+				if y >= 188 and bayer(x, y) < float(y - 187) / 4.0:
+					tone = "st0"
+			elif y == 191:
+				tone = "st3"                           # faixa clara onde o pano dobra no ombro da lataria
+			elif y <= 193:
+				tone = "st2"
 			else:
+				if y <= 197 and bayer(x, y) < float(198 - y) / 5.0:
+					tone = "st2"
+				if y >= hem - 3 and bayer(x, y) < float(y - hem + 4) / 4.0:
+					tone = "st0"                       # o pano pende: a barra fica escura
 				for fx: int in TARP_FOLDS:
-					var fxx := fx + (y - top) / 8
-					if x == fxx:
-						tone = "st1"
-					elif x == fxx - 1 and y < hem - 4:
-						tone = "st3"
+					var fxx := fx + (1 if (y / 3) % 2 == 0 else 0)
+					if x == fxx and y < hem - 1 and y != 200 and y != 201:
+						tone = "st0"
+					elif x == fxx - 1 and y < hem - 3 and (y / 3) % 2 == 1:
+						tone = "st2"
+			if y >= hem:
+				tone = "d1"
+			if dx < 1.0:
+				tone = "st2"                           # rolo claro da borda da frente
+			elif dx < 2.0 and y > top:
+				tone = "st1"
 			c.set_pixel(x, y, L.col(tone))
-	# corda amarrada em volta, com o nó
-	for x in range(158, 242):
-		var yy := 199 + (1 if x > 200 else 0)
-		if c.get_pixel(x, yy).a > 0.0 and x >= int(TARP_X0 + (yy - 170) * 0.5) + 3:
-			L.P(c, x, yy, "br3" if x % 3 else "br2")
-	L.R(c, 216, 198, 3, 3, "br2"); L.P(c, 217, 198, "br3"); L.P(c, 215, 201, "br2"); L.P(c, 219, 202, "br2")
+	# corda laranja amarrada em volta (degrau como na 6d2), com o nó
+	for x in range(int(tarp_front(200)) + 3, TARP_X1 + 1):
+		var yy := 201 if x < 197 else 200
+		if c.get_pixel(x, yy).a > 0.0:
+			L.P(c, x, yy, "br3" if x % 4 else "br2")
+	L.R(c, 210, 199, 3, 3, "br2"); L.P(c, 211, 199, "br3"); L.P(c, 210, 202, "br2"); L.P(c, 212, 203, "br1")
+	# a corda também cruza a cúpula (vista de lado: uma linha descendo da borda de cima até o ombro)
+	for y in range(171, 191):
+		var x := 200 + (y - 171) / 3
+		if c.get_pixel(x, y).a > 0.0:
+			L.P(c, x, y, "br2" if y % 3 else "br1")
 
 ## pneu com calota: banda escura, ranhuras, lateral com brilho em cima, calota cromada (a de trás meio murcha)
 func car_wheel(c: Image, w: Vector2, flat: bool) -> void:

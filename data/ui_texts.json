@@ -506,6 +506,51 @@
 	],
 	"arena_league_name": "GINÁSIO ALVORADA",
 	"bonus_warm_name": "AQUECIDO",
+	"spar_beat_label": "BATIDA",
+	"spar_combo_label": "COMBO",
+
+	"passive_muay_thai_name": "CANELA",
+	"passive_muay_thai_line": "PERNA CHEIA NO {r}º ROUND ({k} CHUTES). RODADO {p}% POR GOLPE. ELE {s}% MAIS LENTO",
+	"passive_muay_thai_line_late": "A PERNA SÓ ENCHE EM {x} DE 10 LUTAS",
+	"passive_muay_thai_counter_warn": "ELE CONTRAGOLPEIA",
+	"passive_muay_thai_counter_marks": "SEU CONTRAGOLPE MARCA A PERNA",
+	"passive_share_muay_thai": "{n} EM 10 VITÓRIAS POR CHUTE RODADO",
+	"fight_marks_full": "PERNA CHEIA!",
+	"fight_spin_kick": "CHUTE RODADO!",
+	"fight_special_banner_muay_thai": "CHUTE RODADO!",
+	"reason_passive_mt_counter": "OS CONTRAGOLPES DELE TIRARAM {n}% DA SUA VIDA",
+	"reason_passive_mt_marks_late": "A PERNA NÃO ENCHEU: SÓ {n} DE 3 MARCAS",
+	"reason_passive_mt_held": "ELE AGUENTOU {n}X O CHUTE RODADO",
+	"reason_passive_mt_never_hurt": "A PERNA ENCHEU, MAS ELE NUNCA BAIXOU DE 60%",
+	"tip_passive_mt_counter": [
+		"NO AGRESSIVO, CADA CHUTE ERRADO VIRA SOCO DELE",
+		"ERROU DEMAIS? TENTE O CONTRA-ATAQUE: ELE MARCA DE GRAÇA"
+	],
+	"tip_passive_mt_marks_late": [
+		"FORÇA (OU O CONTRA-ATAQUE) MARCA A PERNA MAIS RÁPIDO",
+		"MAIS SACO DE CHUTE. A PERNA PRECISA ENCHER CEDO"
+	],
+	"tip_passive_mt_held": [
+		"AGILIDADE FAZ MAIS CRÍTICO, E CADA CRÍTICO É UM RODADO",
+		"ELE AGUENTOU. TREINE AGILIDADE E GIRE DE NOVO"
+	],
+	"tip_passive_mt_never_hurt": [
+		"MAIS FORÇA PARA CANSAR ELE",
+		"RODADO SÓ DERRUBA QUEM JÁ ESTÁ CANSADO. TREINE FORÇA"
+	],
+	"art_card_muay_thai_fight": "CANELA: CHUTE BAIXO MARCA A PERNA. CHEIA, VEM O CHUTE RODADO",
+	"art_focus_muay_thai": "FORÇA MARCA A PERNA. AGILIDADE FAZ O CRÍTICO",
+	"mentor_style_muay_thai": [
+		"canela se faz\ncom paciência.",
+		"força marca a perna.\nagilidade manda o resto."
+	],
+	"muay_thai_unlocked": "o kid caiu? então guardei\num chute pra você.",
+	"spar_name_muay_thai": "CHOQUE: NO COMPASSO",
+	"spar_tip_muay_thai": "CLIQUE NA BATIDA. TRÊS NO TEMPO, CHUTE. SEGURE PARA GUARDAR.",
+	"spar_beat_on": "NO TEMPO!",
+	"spar_beat_off": "FORA DO TEMPO",
+	"spar_beat_kick": "CHUTE!",
+	"spar_combo": "COMBO {n}",
 
 	"treino_name": "TREINO FORA DE HORA",
 	"spar_name": "CHOQUE",

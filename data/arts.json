@@ -36,6 +36,28 @@
 		  },
 		  "rule_text": "EQUIPE +{pct}% (SOBE {rate}% POR MINUTO ATÉ {cap}%)",
 		  "fight_text": "FINALIZAÇÃO: SOCA DEVAGAR, MAS A PEGADA ENCHE E ELE BATE NO CHÃO",
-		  "icon": "art_bjj" }
+		  "icon": "art_bjj" },
+		{ "id": "muay_thai", "name": "Muay Thai", "apparatus": "kick_bag",
+		  "_doc": "Fase 7b1 (docs/fases/fase7b1-design.md). Só vale com o código da 7b1: liberada pela 1ª vitória contra o Kid (unlock), regra click_crit_bonus e passiva shin (Canela).",
+		  "unlock": { "type": "first_win", "opponent": "opp_gym_2" },
+		  "tagline": "Canela dura, paciência curta. Uma marca por chute.",
+		  "rule": { "type": "click_crit_bonus", "chance_add": 0.10, "mult_add": 1.1 },
+		  "passive": {
+			"type": "shin",
+			"damage_mult": 0.88, "taken_mult": 1.0, "interval_mult": 1.0, "need_ahead": 0,
+			"marks_max": 3, "mark_per_kick": 1.0, "mark_strength_min": 0.5, "mark_strength_max": 2.0, "mark_cap": 1.0,
+			"slow_per_mark": 0.08,
+			"crit_per_mark": 0.06, "crit_agility_min": 0.5, "crit_agility_max": 1.6, "crit_cap": 0.6,
+			"spin_life_max": 0.60, "spin_ko": 0.65,
+			"limp_from_marks": 2,
+			"tactics": {
+				"aggressive": { "mark_mult": 1.5, "opponent_counter": 0.6 },
+				"defensive": { "mark_mult": 0.75, "slow_mult": 1.5 },
+				"counter": { "marks_per_counter": 1 }
+			}
+		  },
+		  "rule_text": "CRÍTICO DO CLIQUE: {chance}% DE CHANCE, x{mult}",
+		  "fight_text": "CANELA: CHUTE BAIXO MARCA A PERNA. CHEIA, VEM O CHUTE RODADO",
+		  "icon": "art_muay_thai" }
 	]
 }

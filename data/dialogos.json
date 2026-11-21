@@ -41,7 +41,8 @@
 		"idle": { "priority": 1, "defer": false, "campaign_cap": 1 },
 		"retire": { "priority": 5, "defer": false },
 		"art_choice": { "priority": 5, "defer": true, "campaign_cap": 1 },
-		"mentor_won": { "priority": 7, "defer": true }
+		"mentor_won": { "priority": 7, "defer": true },
+		"muay_thai_unlocked": { "priority": 9, "defer": true }
 	},
 	"opening": {
 		"max_seconds": 20, "skip_hold_seconds": 0.5, "gap_between": 0.3, "first_line_at": 1.5,
@@ -58,6 +59,7 @@
 		{ "id": "cl_primeira_derrota", "speaker": "coach", "text": "todo mundo cai primeiro.\neu caí em três países.", "trigger": "after_defeat", "repeat": "once", "priority": 9, "conditions": { "location": "garage" } },
 		{ "id": "cl_luva_par", "speaker": "coach", "text": "a velha é o par do {first}.\npassa de mão em mão.", "trigger": "glove_new", "repeat": "once", "conditions": { "location": "garage" } },
 		{ "id": "cl_garagem_salva", "speaker": "coach", "text": "o aviso saiu da parede.\nainda é nossa, viu?", "trigger": "garage_saved_return", "repeat": "once", "conditions": { "location": "garage" } },
+		{ "id": "cl_muay_thai", "speaker": "coach", "text": "o kid caiu? então guardei\num chute pra você.", "trigger": "muay_thai_unlocked", "repeat": "once", "conditions": { "milestone_present": ["muay_thai_unlocked"] } },
 		{ "id": "cl_primeira_academia", "speaker": "coach", "text": "a garagem vai junto,\nmesmo sem a lâmpada.", "trigger": "gym_arrival", "repeat": "once", "conditions": { "location": "gym", "milestone_present": ["cena_primeira_academia"] } },
 		{ "id": "cl_passar_posto", "speaker": "coach", "text": "a escola não para.\nquem sai ensina.", "trigger": "retire", "repeat": "once", "enabled": false, "conditions": { "location": "garage" } },
 

@@ -7,7 +7,7 @@ extends RefCounted
 const CAMINHO_LOCAIS := "res://data/locations.json"
 const CAMINHO_ARTES := "res://data/arts.json"
 
-const REGRAS: Array[String] = ["manual_click_bonus", "crew_time_bonus"]
+const REGRAS: Array[String] = ["manual_click_bonus", "crew_time_bonus", "click_crit_bonus"]  # 7b1: click_crit_bonus (Muay Thai)
 const PADRAO_LOCAL := "garage"
 
 var local_padrao := PADRAO_LOCAL
@@ -40,6 +40,15 @@ func ids_artes() -> Array:
 	var r: Array = []
 	for a in artes:
 		r.append(a.id)
+	return r
+
+
+## Artes que valem desde a 1ª chegada à academia: as que NÃO têm `unlock` (7b1: o Muay Thai espera a 1ª vitória contra o Kid).
+func ids_artes_iniciais() -> Array:
+	var r: Array = []
+	for a in artes:
+		if a.unlock.is_empty():
+			r.append(a.id)
 	return r
 
 
@@ -145,6 +154,9 @@ func _montar_arte(item: Dictionary, id: String) -> Dictionary:
 		regra["type"] = str(r.type)
 		if r.type == "manual_click_bonus":
 			regra["value"] = _recortar(r, "value", 0.0, 0.0, 5.0, id + ".rule.")
+		elif r.type == "click_crit_bonus":
+			regra["chance_add"] = _recortar(r, "chance_add", 0.0, 0.0, 1.0, id + ".rule.")
+			regra["mult_add"] = _recortar(r, "mult_add", 0.0, 0.0, 20.0, id + ".rule.")
 		else:
 			regra["start"] = _recortar(r, "start", 0.0, 0.0, 10.0, id + ".rule.")
 			regra["per_minute"] = _recortar(r, "per_minute", 0.0, 0.0, 1.0, id + ".rule.")
@@ -155,8 +167,13 @@ func _montar_arte(item: Dictionary, id: String) -> Dictionary:
 	else:
 		push_warning("GymData: arte '%s' sem regra válida (rule.type): arte sem regra." % id)
 	var passiva := _montar_passiva(item.get("passive", null), id)
+	# 7b1: liberação por vitória (`unlock`: {type: "first_win", opponent}). Sem `unlock` = vale desde a 1ª academia (Boxe, Jiu-jitsu).
+	var liberacao := {}
+	var ub = item.get("unlock", null)
+	if ub is Dictionary and str(ub.get("type", "")) == "first_win" and str(ub.get("opponent", "")) != "":
+		liberacao = {"type": "first_win", "opponent": str(ub.opponent)}
 	return {
-		"id": id, "apparatus": str(item.get("apparatus", "")), "rule": regra, "passive": passiva,
+		"id": id, "apparatus": str(item.get("apparatus", "")), "rule": regra, "passive": passiva, "unlock": liberacao,
 		"name": TrainingData._txt(item, "name", id), "tagline": TrainingData._txt(item, "tagline", ""),
 		"rule_text": TrainingData._txt(item, "rule_text", ""), "fight_text": TrainingData._txt(item, "fight_text", ""),
 		"icon": TrainingData._txt(item, "icon", ""),
@@ -165,7 +182,7 @@ func _montar_arte(item: Dictionary, id: String) -> Dictionary:
 
 ## Fase 7a1: passiva de luta da arte (`passive` em data/arts.json). {} = arte sem passiva.
 ## Campo ausente = neutro (mult 1, extra 0); fora da faixa é recortado, com aviso.
-const PASSIVAS_TIPOS: Array[String] = ["fast_hands", "submission"]
+const PASSIVAS_TIPOS: Array[String] = ["fast_hands", "submission", "shin"]
 
 
 func _montar_passiva(bruto: Variant, id: String) -> Dictionary:
@@ -189,6 +206,20 @@ func _montar_passiva(bruto: Variant, id: String) -> Dictionary:
 		p["ko_agility_min"] = _recortar(bruto, "ko_agility_min", 0.4, 0.0, 1.0, pf)
 		p["ko_agility_max"] = _recortar(bruto, "ko_agility_max", 1.6, 1.0, 5.0, pf)
 		p["ko_cap"] = _recortar(bruto, "ko_cap", 0.5, 0.0, 1.0, pf)
+	elif p.type == "shin":
+		p["marks_max"] = float(int(_recortar(bruto, "marks_max", 3.0, 1.0, 5.0, pf)))
+		p["mark_per_kick"] = _recortar(bruto, "mark_per_kick", 1.0, 0.01, 5.0, pf)
+		p["mark_strength_min"] = _recortar(bruto, "mark_strength_min", 0.5, 0.01, 1.0, pf)
+		p["mark_strength_max"] = _recortar(bruto, "mark_strength_max", 2.0, 1.0, 10.0, pf)
+		p["mark_cap"] = _recortar(bruto, "mark_cap", 1.0, 0.01, 5.0, pf)
+		p["slow_per_mark"] = _recortar(bruto, "slow_per_mark", 0.0, 0.0, 1.0, pf)
+		p["crit_per_mark"] = _recortar(bruto, "crit_per_mark", 0.0, 0.0, 1.0, pf)
+		p["crit_agility_min"] = _recortar(bruto, "crit_agility_min", 0.5, 0.0, 1.0, pf)
+		p["crit_agility_max"] = _recortar(bruto, "crit_agility_max", 1.6, 1.0, 5.0, pf)
+		p["crit_cap"] = _recortar(bruto, "crit_cap", 0.6, 0.0, 1.0, pf)
+		p["spin_life_max"] = _recortar(bruto, "spin_life_max", 0.6, 0.0, 1.0, pf)
+		p["spin_ko"] = _recortar(bruto, "spin_ko", 0.65, 0.0, 1.0, pf)
+		p["limp_from_marks"] = float(int(_recortar(bruto, "limp_from_marks", 2.0, 0.0, 5.0, pf)))
 	else:
 		p["grip_per_round"] = _recortar(bruto, "grip_per_round", 0.5, 0.01, 10.0, pf)
 		p["grip_endurance_min"] = _recortar(bruto, "grip_endurance_min", 0.5, 0.01, 1.0, pf)

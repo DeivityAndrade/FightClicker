@@ -837,6 +837,10 @@ func escolher_arte(id: String) -> bool: return _academia.escolher_arte(id)
 func estilo_arte(id: String) -> float: return _academia.estilo_arte(id)
 ## Bônus do Boxe no clique MANUAL (0,50; com o nó 0,75). 0 sem arte ou com outra arte.
 func bonus_arte_clique() -> float: return _academia.bonus_arte_clique()
+## 7b1: crítico do clique manual {chance, mult}; o Muay Thai tem 20% e x4,1 (sem arte: 10% e x3).
+func bonus_arte_critico() -> Dictionary: return _academia.bonus_arte_critico()
+## 7b1: vitória contra o adversário libera as artes com `unlock` (Muay Thai: o Kid). Devolve os ids novos (a luta já chama isto sozinha).
+func liberar_artes_por_vitoria(adversario_id: String) -> Array: return _academia.liberar_por_vitoria(adversario_id)
 ## Bônus do Jiu-jitsu na equipe: (1 + estilo) x min(teto, começo + por_minuto x minutos de arte). 0 sem a arte.
 func bonus_arte_equipe() -> float: return _academia.bonus_arte_equipe()
 ## true quando o bônus da equipe chegou no teto (a UI mostra "(MÁX.)").

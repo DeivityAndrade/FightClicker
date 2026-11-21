@@ -1,8 +1,21 @@
-# Onde paramos (atualizado em 2026-11-18, noite)
+# Onde paramos (atualizado em 2026-11-21)
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-20)
+## Situação agora (2026-11-21)
+- **Fase 7b1 fechada** (Muay Thai): passiva **CANELA** (chute baixo marca a perna até 3 marcas, adversário manca, com a perna
+  cheia o crítico vira **CHUTE RODADO**, que pode derrubar), crítico do clique 20% x4,1, **saco comprido de chute** (50/35/15),
+  4 nós na região MUAY THAI (um é "Pé de pluma"), **Choque no compasso** (batida 0,5 s, 3º clique no tempo vira chute), liberação
+  na 1ª vitória contra o Kid (fala do Osmar; save antigo com best_wins >= 6 recebe). Save v13.
+- Balanço: dono pediu "as três mais ou menos na mesma %"; mediana do tempo até o Kid a ≤1% entre as artes. Na média a 4/s o
+  Jiu-jitsu fica ~5% mais lento — dono: "seguir assim".
+- Docs: `fase7b1-design.md`, `fase7b1-textos.md`, `fase7b1-qa.md`, `fase7b1-revisao.md` (aprovada com ressalvas; roteiro do dono lá).
+- **Próximo: 7b2** (2ª passiva das 3 artes: Contragolpista, Por cima, Clinch; meta M1 de 5 vitórias pela passiva) — o dono já aprovou
+  o escopo (`fase7b-escopo.md`). Esperar o dono testar a 7b1 ou mandar seguir.
+- A pasta principal `E:\Fightclicker` (branch `fase-7b`) ainda tem cópias soltas e antigas do começo da 7b1, não commitadas.
+  A versão certa é a do PR da 7b1. Descartar aquelas mudanças antes de usar a pasta (pedir ao dono).
+
+## Situação anterior (2026-11-20)
 - **Fase 7a2 fechada** ("Treino fora de hora"): convite do Osmar (300 s / 240 s, some em 60 s), minigames **Choque** (Boxe por
   cliques, JJ segurar/soltar; fôlego, rajada, pausa X2, finta; 6 níveis) e **Panfletagem** (sinais, FAMA), bônus **AQUECIDO** (+3%
   nos atributos na próxima luta, prévia honesta), relógio parado fora da sala (equipe só produz durante o minigame), semente do

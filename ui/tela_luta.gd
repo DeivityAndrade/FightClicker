@@ -75,6 +75,13 @@ var _gesto_nome := ""
 var _passiva := ""  # "" | "fast_hands" | "submission"
 var _pips: Array = []
 var _embalo_atual := 0
+var _marcas := 0  # 7b1 (Muay Thai): marcas na perna dele depois do último golpe mostrado (0-3); com 2+ ele manca (limp)
+var _marcas_hud: Array = []  # 7b1: as 3 marcas (ui_shin_mark) ao lado da vida dele
+var _marcas_acesas := 0
+var _marcas_cheias := false
+var _tween_marcas: Tween
+var _letreiro_cheia: TextureRect  # PERNA CHEIA! (7b1), abaixo das marcas
+var _banner_spin: Sprite2D  # CHUTE RODADO! no meio da arena (7b1)
 var _cansado := false
 var _rot_cansado: Control
 var _grip_fill: TextureRect
@@ -112,6 +119,12 @@ func _montar(opp_id: String) -> void:
 	_barras.clear()
 	_pips.clear()
 	_embalo_atual = 0
+	_marcas = 0
+	_marcas_hud.clear()
+	_marcas_acesas = 0
+	_marcas_cheias = false
+	_letreiro_cheia = null
+	_banner_spin = null
 	_cansado = false
 	_rot_cansado = null
 	_grip_fill = null
@@ -188,6 +201,14 @@ func _montar(opp_id: String) -> void:
 	_banner_ko.visible = false
 	_mundo.add_child(_banner_ko)
 
+	_banner_spin = Sprite2D.new()  # 7b1: o fim pelo chute rodado troca o K.O.! por este letreiro
+	_banner_spin.texture = UiTema.textura("ui_banner_spin_kick")
+	_banner_spin.position = Vector2(320, 118)
+	_banner_spin.scale = Vector2(2, 2)
+	_banner_spin.z_index = 950
+	_banner_spin.visible = false
+	_mundo.add_child(_banner_spin)
+
 	_banner_sub_img = Sprite2D.new()
 	_banner_sub_img.texture = UiTema.textura("ui_banner_submission")
 	_banner_sub_img.position = Vector2(320, 118)
@@ -211,14 +232,17 @@ func _montar(opp_id: String) -> void:
 	_banner_fundo.visible = false
 	add_child(_banner_fundo)
 	_banner_fundo.set_meta("ui_pos", "center_h")
+	_banner_fundo.z_index = 1090  # B2 (QA 7b1): os letreiros do meio ficam acima dos numeros de dano (mundo z 100 + 900..1000)
 	# Letreiros: o Label ocupa a largura da tela e centraliza o texto (ver `_posicionar_banner`).
 	_banner = UiTema.rotulo(self, "", UiTema.Y2, 0, 100, 0, HORIZONTAL_ALIGNMENT_CENTER, false, true)
 	_banner.visible = false
 	UiTema.alinhar(_banner, "center_h")
+	_banner.z_index = 1100
 	_banner_sub = UiTema.rotulo(self, "", UiTema.WHITE, 0, 140, 0, HORIZONTAL_ALIGNMENT_CENTER, false, true)
 	_banner_sub.size = Vector2(TELA.x, 12.0)
 	_banner_sub.visible = false
 	UiTema.alinhar(_banner_sub, "center_h")
+	_banner_sub.z_index = 1100
 
 
 ## Camada do cenário com o prefixo da arena; se faltar no manifest, a da borracharia.
@@ -254,7 +278,7 @@ func _novo_lutador(i: int, base: Vector2, escala: float) -> Dictionary:
 	_mundo.add_child(spr)
 	var l := {"spr": spr, "sombra": sombra, "base": base, "escala": escala, "dir": 1 if i == 0 else -1,
 		"estado": "idle", "vida": 1.0}
-	_l_definir(l, i, "idle")
+	_l_definir(l, i, _idle_da_arte(i))
 	return l
 
 
@@ -362,6 +386,8 @@ func _montar_hud_passiva(hud: Control, y_tatica: float) -> void:
 		if tem_icone:
 			UiTema.textura_rect(_rot_cansado, "icon_tired", 0, 0)
 		UiTema.rotulo(_rot_cansado, texto, UiTema.Y1, 12.0 if tem_icone else 0.0, 1)
+	elif _passiva == "shin":
+		_montar_marcas(hud, y_tatica)
 	elif _passiva == "submission":
 		_grip_larg = 128.0
 		if not UiTema.sprite("icon_grip").is_empty():
@@ -369,6 +395,22 @@ func _montar_hud_passiva(hud: Control, y_tatica: float) -> void:
 		CartaoPassiva.barra(hud, 151.0, y_tatica + 1.0, _grip_larg + 2.0)
 		_grip_fill = CartaoPassiva.enchimento(hud, 152.0, y_tatica + 2.0, 0.0, 0)
 		_grip_fill.visible = false
+
+
+## HUD do Muay Thai (7b1): ícone da perna + 3 marcas ao lado da vida DELE, coladas no começo da barra dele (x 358), na fileira do perfil.
+## Cada marca inteira acende (quadro 1, com 1 quadro de clarão); cheias, piscam e o letreiro PERNA CHEIA! aparece logo abaixo.
+func _montar_marcas(hud: Control, y_tatica: float) -> void:
+	var lay: Dictionary = UiTema.manifest().get("fight_layout", {})
+	var bo: Array = lay.get("opponent_hp_bar", [358, 16, 236, 12])
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("shin_hud", {})
+	var n := int(luta.get("marks_max", info.get("count", 3)))
+	var passo := float(info.get("step_px", 12))
+	var x0 := float(bo[0])
+	UiTema.textura_rect(hud, str(info.get("icon", "icon_shin")), x0, y_tatica)
+	for i in n:
+		_marcas_hud.append(CartaoPassiva.marca_perna(hud, x0 + 13.0 + passo * float(i), y_tatica - 1.0, 0))
+	_letreiro_cheia = UiTema.textura_rect(hud, str(info.get("banner_full", "ui_banner_marks_full")), x0, y_tatica + 13.0)
+	_letreiro_cheia.visible = false
 
 
 func _cor_tatica(nome_cor: String) -> Color:
@@ -607,6 +649,72 @@ func _hud_embalo(n: int) -> void:
 			CartaoPassiva.definir_bolinha(b, 0)
 
 
+## Marcas da perna do Muay Thai: acende até `n` (a nova pisca 1 quadro) e, na perna cheia, as 3 piscam (quadro 1/3) com o letreiro.
+func _hud_marcas(n: int) -> void:
+	if _marcas_hud.is_empty() or n == _marcas_acesas:
+		return
+	var subiu := n > _marcas_acesas
+	_marcas_acesas = n
+	var cheia := n >= _marcas_hud.size()
+	for i in _marcas_hud.size():
+		var m: Control = _marcas_hud[i]
+		if i < n:
+			if subiu and i == n - 1 and not cheia:
+				CartaoPassiva.definir_marca_perna(m, 2)
+				var tw := create_tween()
+				tw.tween_interval(0.08)
+				tw.tween_callback(func() -> void:
+					if is_instance_valid(m):
+						CartaoPassiva.definir_marca_perna(m, 1))
+			else:
+				CartaoPassiva.definir_marca_perna(m, 1)
+		else:
+			CartaoPassiva.definir_marca_perna(m, 0)
+	if cheia and not _marcas_cheias:
+		_marcas_cheias = true
+		_perna_cheia()
+	elif not cheia:
+		_marcas_cheias = false
+		if _tween_marcas != null and _tween_marcas.is_valid():
+			_tween_marcas.kill()
+		if _letreiro_cheia != null:
+			_letreiro_cheia.visible = false
+
+
+## Perna cheia: as marcas alternam entre o quadro 1 e o 3 (6 quadros por segundo) e o letreiro PERNA CHEIA! entra (pop) e fica.
+func _perna_cheia() -> void:
+	if _tween_marcas != null and _tween_marcas.is_valid():
+		_tween_marcas.kill()
+	_tween_marcas = create_tween().set_loops()
+	_tween_marcas.tween_callback(func() -> void: _quadro_marcas(3))
+	_tween_marcas.tween_interval(1.0 / 6.0)
+	_tween_marcas.tween_callback(func() -> void: _quadro_marcas(1))
+	_tween_marcas.tween_interval(1.0 / 6.0)
+	if _letreiro_cheia != null and not UiTema.sprite("ui_banner_marks_full").is_empty():
+		_letreiro_cheia.visible = true
+		_letreiro_cheia.modulate = Color(2, 2, 2)
+		create_tween().tween_property(_letreiro_cheia, "modulate", Color.WHITE, 0.3)
+	else:
+		_numero_aviso(UiTema.txt("fight_marks_full", "PERNA CHEIA!"), UiTema.BR3)
+	sfx.publico(-12.0)
+	_flash_tela(0.2)
+
+
+func _quadro_marcas(q: int) -> void:
+	for m in _marcas_hud:
+		if is_instance_valid(m):
+			CartaoPassiva.definir_marca_perna(m, q)
+
+
+## Aviso de texto curto que sobe da cabeça do adversário (quando o letreiro desenhado não existe).
+func _numero_aviso(texto: String, cor: Color) -> void:
+	var n := _pegar_numero()
+	_ordem_numeros += 1
+	n.definir_z(940 + _ordem_numeros % 40)
+	n.iniciar(texto, cor, true, "", _ponto_cabeca(1) + Vector2(0, -14), 0.9, 18.0)
+	Sala.afastar(_numeros, n, true)
+
+
 ## Vitória: se o jogador é o John, entra o gesto curto (0,15-0,59 s) e a pose de braços erguidos vem logo depois.
 func _comemorar(vencedor: int) -> void:
 	if vencedor == 0:
@@ -724,6 +832,10 @@ func _agendar_evento(e: Dictionary) -> void:
 ## Golpe do especial dos cliques: [animação, reação]. Boxe e sem arte: uppercut / hit_up. Jiu-jitsu nunca usa animação de boxe:
 ## em pé é o clinch_push (reação hit_clinch) e no chão é o ground_pressure (reação ground_hit). ["", ""] se a folha não existe.
 func _golpe_especial(e: Dictionary) -> Array:
+	if _passiva == "shin":  # 7b1 (lição A1 da 7a1): o Muay Thai nunca usa o uppercut (golpe de boxe); o especial é o chute rodado
+		if _existe_anim(0, "spin_kick"):
+			return ["spin_kick", "hit_spin"]
+		return ["knee", "hit_body"] if _existe_anim(0, "knee") else ["", ""]
 	if _passiva != "submission":
 		return ["uppercut", "hit_up"] if _existe_anim(0, "uppercut") else ["", ""]
 	if str(e.get("phase", "standing")) == "ground" and _pose_chao_ok() and _existe_anim(0, "ground_pressure"):
@@ -755,7 +867,9 @@ func _anim_do_golpe(quem: int, e: Dictionary) -> String:
 func _queda_do_golpe(alvo: int, e: Dictionary) -> String:
 	var anim := str(e.get("anim_usada", e.get("attack_anim", "")))
 	var nome := "ko"
-	if anim in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]:
+	if anim == "spin_kick" or str(e.get("finish", "")) == "spin_kick":
+		nome = "fall_spin"  # 7b1: chute rodado final; sem a folha, a queda de sempre (volta para "ko" no fim da função)
+	elif anim in ["uppercut", "heavy"] or str(e.get("kind", "")) in ["crit", "counter"]:
 		nome = "ko_back"
 	elif anim == "body_shot" or int(round(float(e.get("t", 0.0)) * 100.0)) % 2 == 0:
 		nome = "ko_knees"
@@ -816,7 +930,7 @@ func _repouso(i: int) -> void:
 			spr.definir(_nome(i, "block"))
 			spr.parar(2)
 		_:
-			var pose := "idle"
+			var pose := _idle_da_arte(i)
 			if _fase_visual == "ground" and _pose_chao_ok():
 				pose = "ground_top_idle" if i == 0 else "ground_bottom_idle"  # no chão o repouso é a pose de chão
 			elif i == 0 and _cansado and _existe_anim(0, "tired"):
@@ -825,6 +939,21 @@ func _repouso(i: int) -> void:
 			spr.tocar([0, 1, 2, 3], float(UiTema.sprite(spr.nome_sprite).get("fps", 6.0)), true)
 	_ajustar_sombra(i)
 	_atualizar_suor(i)
+
+
+## Pose de repouso em pé. Muay Thai (7b1): o jogador fica na guarda tailandesa (mt_idle) e o adversário manca com 2 marcas
+## (limp) ou 3 (limp_heavy; sem ela, limp). Sem a folha nova, o idle de sempre.
+func _idle_da_arte(i: int) -> String:
+	if _passiva != "shin":
+		return "idle"
+	if i == 0:
+		return "mt_idle" if _existe_anim(0, "mt_idle") else "idle"
+	var desde := int(luta.get("limp_from_marks", 2))
+	if _marcas >= int(luta.get("marks_max", 3)) and _existe_anim(1, "limp_heavy"):
+		return "limp_heavy"
+	if _marcas >= desde and _existe_anim(1, "limp"):
+		return "limp"
+	return "idle"
 
 
 ## As folhas de chão existem para os dois lutadores? Sem elas a luta continua em pé (jab, esquiva e idle de sempre).
@@ -876,6 +1005,7 @@ func _acertou(e: Dictionary) -> void:
 	var alvo := int(e.target)
 	var tipo := str(e.kind)
 	var forte := tipo == "crit" or tipo == "counter"
+	_marcas = int(e.get("marks", _marcas))  # 7b1: antes da reação, para o repouso dele já mancar
 	var bloqueado := bool(e.blocked)
 	var spr_a := UiTema.sprite(_nome(quem, str(e.get("anim_usada", e.attack_anim))))
 	var hp := _vetor(spr_a.get("hit_point", [31, -61]))
@@ -898,6 +1028,8 @@ func _acertou(e: Dictionary) -> void:
 			_tocar_fx("fx_fight_crit", contato, quem == 1)
 
 	_hud_embalo(int(e.get("streak", 0)))
+	if _passiva == "shin":
+		_hud_marcas(int(e.get("marks", _marcas_acesas)))
 	_fase_visual = str(e.get("phase_after", _fase_visual))  # a queda leva os dois ao chão (as poses de repouso mudam)
 
 	# Número flutuante: sai do ponto de contato e sobe.
@@ -987,6 +1119,8 @@ func _preparar_especial() -> void:
 	spr.create_tween().tween_property(spr, "modulate", Color.WHITE, 0.6)
 	if _passiva == "submission":
 		_texto_banner(UiTema.txt("fight_special_banner_bjj", "SUPER PEGADA!"), UiTema.Y2, 2)
+	elif _passiva == "shin":
+		_texto_banner(UiTema.txt("fight_special_banner_muay_thai", "SUPER CHUTE RODADO!"), UiTema.BR3, 2)
 	else:
 		_texto_banner(UiTema.txt("fight_special_banner", "SUPER UPPERCUT!"), UiTema.Y2, 2)
 	sfx.publico()
@@ -1083,7 +1217,7 @@ func _chao(i: int) -> void:
 	sfx.publico(-10.0)
 	_lampada.tocar([1, 0, 1, 0], 8.0)
 	_publico_cheer(true)
-	_banner_ko_mostrar()
+	_banner_ko_mostrar(str(luta.result.get("finish", "")) == "spin_kick")
 	var est: AnimSprite = l["estrelas"]
 	var ko_cab := _vetor(UiTema.manifest().get("fight_layout", {}).get("ko_head_point", [-36, -12]))
 	if frente:
@@ -1095,13 +1229,15 @@ func _chao(i: int) -> void:
 	est.tocar([0, 1, 2, 3, 4, 5], 10.0, true)
 
 
-func _banner_ko_mostrar() -> void:
-	_banner_ko.visible = true
-	_banner_ko.scale = Vector2(3, 3)
-	_banner_ko.modulate.a = 0.0
+## O letreiro do fim: K.O.! (ou CHUTE RODADO! quando o chute rodado derrubou: o mesmo pop e a mesma tremida).
+func _banner_ko_mostrar(rodado: bool = false) -> void:
+	var b := _banner_spin if rodado and not UiTema.sprite("ui_banner_spin_kick").is_empty() else _banner_ko
+	b.visible = true
+	b.scale = Vector2(3, 3)
+	b.modulate.a = 0.0
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(_banner_ko, "modulate:a", 1.0, 0.08)
-	tw.tween_callback(func() -> void: _banner_ko.scale = Vector2(2, 2)).set_delay(0.09)
+	tw.tween_property(b, "modulate:a", 1.0, 0.08)
+	tw.tween_callback(func() -> void: b.scale = Vector2(2, 2)).set_delay(0.09)
 	_tremer(2, 0.3)
 
 

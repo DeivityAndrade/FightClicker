@@ -102,6 +102,25 @@
 				{ "id": "tech_bjj_3", "cost": 600000, "multiplier": 3, "visual_level": 1, "name": "Raspagem dupla", "description": "Dois giros, uma saída." },
 				{ "id": "tech_bjj_4", "cost": 6000000, "multiplier": 3, "visual_level": 1, "name": "Passagem de guarda", "description": "O chão passa a ser seu." }
 			]
+		},
+		{
+			"id": "kick_bag",
+			"art": "muay_thai",
+			"_doc": "Fase 7b1 (docs/fases/fase7b1-design.md §5). Saco comprido de chute, pendurado baixo. Textos provisórios (Roteirista).",
+			"split": { "strength": 0.50, "agility": 0.35, "endurance": 0.15 },
+			"unlock": { "id": "unlock_kick_bag", "cost": 2500, "requires": "treadmill",
+			            "name": "Saco comprido", "description": "Comprido, pesado e pendurado na altura da canela.",
+			            "arrives_as": "Veio enrolado num tapete. Dois vizinhos pra carregar." },
+			"name": "Saco de chute",
+			"focus_label": ["MUAY THAI", "CHUTE"],
+			"first_hint": "Chute o saco comprido: força e agilidade juntas",
+			"crit_texts": ["CANELA!", "ESSE ESTALOU!", "O SACO DOBROU!", "TEP!", "MARCOU!", "ECOOU NO BAIRRO!", "ESTALO SECO!", "SOLTOU AREIA!"],
+			"upgrades": [
+				{ "id": "tech_mt_1", "cost": 1500, "multiplier": 3, "visual_level": 1, "name": "Chute baixo", "description": "Na coxa, de novo, no mesmo lugar." },
+				{ "id": "tech_mt_2", "cost": 15000, "multiplier": 5, "visual_level": 1, "name": "Joelhada", "description": "Puxa a nuca, sobe o joelho." },
+				{ "id": "tech_mt_3", "cost": 600000, "multiplier": 3, "visual_level": 1, "name": "Clinch tailandês", "description": "As duas mãos na nuca. Ninguém sai." },
+				{ "id": "tech_mt_4", "cost": 6000000, "multiplier": 3, "visual_level": 1, "name": "Chute rodado", "description": "Gira o corpo inteiro. Acerta uma vez." }
+			]
 		}
 	]
 }

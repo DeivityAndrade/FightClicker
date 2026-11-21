@@ -22,6 +22,7 @@ const CORDA := "jump_rope"
 const ESTEIRA := "treadmill"
 const PERA := "speed_bag"  # Fase 5: aparelho do Boxe
 const BONECO := "grappling_dummy"  # Fase 5: aparelho do Jiu-jitsu
+const SACO_CHUTE := "kick_bag"  # 7b1: saco comprido do Muay Thai (o lutador chuta: fighter_low_kick, quadro 64x72, mesmo pivô do foco_saco)
 const BR0 := Color("3b2622")  # caneta da plaquinha de papelão (direcao-visual §3)
 
 ## Clique na sala que nao pegou nada (fora do alvo, de caixa e de aparelho): completa o balao que esta escrevendo (Fase 6a).
@@ -49,6 +50,8 @@ var _bg_nome := ""
 var _tubos: Array[AnimSprite] = []  # tubos da academia (a luz da garagem é a lâmpada)
 var _pera: AnimSprite  # speed_bag: na parede (descanso) ou em pé no centro (foco)
 var _boneco: AnimSprite  # grappling_dummy: no canto (descanso) ou sentado no centro (foco)
+var _chute: AnimSprite  # 7b1: kick_bag, saco comprido do Muay Thai: deitado no canto (descanso) ou pendurado no gancho do centro (foco)
+var _corrente_chute: Corrente  # corrente do saco comprido (da viga, y 33, ate o gancho em 336,190)
 var _local_anterior := ""
 var _chegada_pendente := false  # festa da chegada na academia: espera a janela de arte fechar
 var _saco: AnimSprite
@@ -241,6 +244,13 @@ func _montar() -> void:
 	_pera.visible = false
 	_boneco = _novo_anim("grappling_dummy_l0_rest", "canto", 0)
 	_boneco.visible = false
+	_chute = _novo_anim("kick_bag_l0_rest", "canto", 0)
+	_chute.visible = false
+	_corrente_chute = Corrente.new()
+	_corrente_chute.textura = UiTema.textura("bag_chain_tile")
+	_corrente_chute.z_index = -34
+	_corrente_chute.visible = false
+	_mundo.add_child(_corrente_chute)
 
 	_sombra_lutador = Sprite2D.new()
 	_sombra_lutador.texture = UiTema.textura("floor_shadow")
@@ -351,6 +361,7 @@ func _aplicar_layout() -> void:
 
 	_aplicar_arte(PERA, foco)
 	_aplicar_arte(BONECO, foco)
+	_aplicar_arte(SACO_CHUTE, foco)
 	_pose_repouso()
 	_esconder_reveladas()
 	_ocultar_da_cena()
@@ -364,7 +375,7 @@ func _pose_repouso() -> void:
 	_corda_giro.visible = false
 	_corda_costas.visible = false
 	match foco:
-		SACO, PERA, BONECO:  # a pera e o boneco usam o fighter_idle/punch no ponto do saco (303,272)
+		SACO, PERA, BONECO, SACO_CHUTE:  # a pera, o boneco e o saco de chute usam o fighter_idle no ponto do saco (303,272)
 			_lutador.definir(_f("fighter_idle"))
 			_lutador.position = UiTema.pos("fighter_idle", "foco_saco")
 			_lutador.z_index = int(_lutador.position.y)
@@ -424,10 +435,12 @@ func _aplicar_local() -> void:
 ## Pera (Boxe) e boneco (Jiu-jitsu): só existem na carreira da arte e depois de comprados. No foco ficam no centro
 ## (em pé / sentado); fora dele, a pera na parede e o boneco deitado no canto. Aparelho de outra arte: nada é desenhado.
 func _aplicar_arte(id: String, foco: String) -> void:
-	var a: AnimSprite = _pera if id == PERA else _boneco
-	var base := "speed_bag" if id == PERA else "grappling_dummy"
+	var a: AnimSprite = _anim_do(id)
+	var base := "speed_bag" if id == PERA else ("kick_bag" if id == SACO_CHUTE else "grappling_dummy")
 	var existe := GameState.estado_aparelho(id) == "owned" or false
 	a.visible = existe
+	if id == SACO_CHUTE:
+		_corrente_chute.visible = existe and foco == id
 	if not existe:
 		return
 	var n := GameState.nivel_visual(id)
@@ -438,6 +451,11 @@ func _aplicar_arte(id: String, foco: String) -> void:
 		a.z_index = int(UiTema.sprite(nome).get("sort_y", a.position.y))
 		if id == PERA:
 			a.tocar([0, 1], 2.0, true)  # balanço leve
+		elif id == SACO_CHUTE:
+			a.tocar([0, 1, 2, 3], 3.0, true)  # balanço lento do saco pendurado
+			_corrente_chute.x = a.position.x - 1.0
+			_corrente_chute.y_fim = a.position.y
+			_corrente_chute.queue_redraw()
 		else:
 			a.parar(0)
 	else:
@@ -552,6 +570,8 @@ func _anim_do(id: String) -> AnimSprite:
 			return _pera
 		BONECO:
 			return _boneco
+		SACO_CHUTE:
+			return _chute
 	return _esteira
 
 
@@ -787,6 +807,22 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			_pera.definir("speed_bag_l%d_hit" % np_)
 			_pera.tocar([0, 1, 2, 3, 4], 18.0, false, _pera_repouso)
 			_impacto(_ponto_impacto(_pera.nome_sprite, "speed_bag", Vector2(325, 218)), critico)
+		SACO_CHUTE:
+			# 7b1: chute baixo inteiro a cada clique (6 quadros a 18 fps), canela no ponto de impacto do manifest (326,250).
+			# Sem a folha (manifest sem fighter_low_kick), cai no soco de sempre. O objeto do saco comprido é desenhado pela sala (UI/UX).
+			var chute := _f("fighter_low_kick")
+			if UiTema.sprite(chute).is_empty():
+				chute = _f("fighter_punch")
+				_lutador.definir(chute)
+				_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
+			else:
+				_lutador.definir(chute)
+				_lutador.tocar([0, 1, 2, 3, 4, 5], 18.0, false, _pose_repouso)
+			var nk := GameState.nivel_visual(SACO_CHUTE)
+			_chute.definir("kick_bag_l%d_hit" % nk)
+			_chute.tocar([0, 1, 2, 3], 12.0, false, _chute_repouso)
+			var hc: Array = UiTema.sprite(chute).get("hit_point", [326, 250])
+			_impacto(Vector2(float(hc[0]), float(hc[1])), critico)
 		BONECO:
 			# O boneco amassa, tomba e volta (3 quadros a 12 fps). Sem pose de grappling nesta fase: o lutador soca.
 			var nd_ := GameState.nivel_visual(BONECO)
@@ -997,6 +1033,11 @@ func _pera_repouso() -> void:
 	_pera.tocar([0, 1], 2.0, true)
 
 
+func _chute_repouso() -> void:
+	_chute.definir("kick_bag_l%d_idle" % GameState.nivel_visual(SACO_CHUTE))
+	_chute.tocar([0, 1, 2, 3], 3.0, true)
+
+
 func _boneco_repouso() -> void:
 	_boneco.definir("grappling_dummy_l%d_idle" % GameState.nivel_visual(BONECO))
 	_boneco.parar(0)
@@ -1060,10 +1101,10 @@ func _ao_melhorar(aparelho: String, _melhoria: String, nivel: int) -> void:
 				dy = -4
 			ESTEIRA:
 				dy = -58
-			PERA, BONECO:
+			PERA, BONECO, SACO_CHUTE:
 				dy = -60 if GameState.foco == aparelho else 48  # em foco: acima do aparelho; senão logo abaixo do descanso
 		_mostrar_texto(alvo.position + Vector2(0, dy), str(ups[nivel - 1].get("name", "")).to_upper(), UiTema.Y1)
-	_critico_fx(alvo.position + Vector2(0, 30 if aparelho == SACO else (-30 if aparelho in [PERA, BONECO] and GameState.foco == aparelho else -10)))
+	_critico_fx(alvo.position + Vector2(0, 30 if aparelho == SACO else (-30 if aparelho in [PERA, BONECO, SACO_CHUTE] and GameState.foco == aparelho else -10)))
 
 
 func _mostrar_texto(p: Vector2, texto: String, cor: Color) -> void:

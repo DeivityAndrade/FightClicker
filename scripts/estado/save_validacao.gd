@@ -156,6 +156,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	gs._dia_anterior = gs.dia_campanha()
 	gs._aviso_data_chave = -2
 	gs._dia_chegou_emitido = false
+	gs._academia.liberar_ao_carregar()  # 7b1: save antigo de quem já venceu o Kid recebe o Muay Thai
 	gs.nos_ativos_ids = _validar_ativos(c.get("active_nodes", null))
 	gs._arvore._recalcular_bonus()
 	gs._academia._atualizar_passiva()
@@ -182,6 +183,10 @@ func aplicar_save(estado: Dictionary) -> void:
 	var greeted = c.get("mentor_greeted", true)  # ausente = true: save sem o campo não dispara toques no meio da campanha
 	gs.mentor_cumprimentou = typeof(greeted) != TYPE_BOOL or greeted
 	gs._escola._reiniciar_falas()
+	for arte_def in gs.academia.artes:  # 7b1: arte liberada cuja fala do Osmar ainda não passou (save antigo ou fechou antes de ver)
+		if gs._academia.fala_de_liberacao_pendente(str(arte_def.id)):
+			gs._escola._gravar_marco(str(arte_def.id) + "_unlocked", {}, false)
+			gs.disparar_gatilho(str(arte_def.id) + "_unlocked")
 	gs._luta._finalizar_motivo(false)
 	gs._motivo_cache = {}
 
@@ -218,7 +223,7 @@ func _validar_luta(v: Variant) -> Dictionary:
 	var tipo_arte := str(gs.academia.arte(gs.arte_id).get("passive", {}).get("type", ""))
 	var ko_ok: bool = luta_ok.result.ko
 	var ganhou: bool = luta_ok.result.win
-	var coerente: bool = (fim == "damage" and ko_ok) or (fim == "points" and not ko_ok) 		or (fim == "knockout" and ko_ok and ganhou and tipo_arte == "fast_hands") 		or (fim == "submission" and ko_ok and ganhou and tipo_arte == "submission")
+	var coerente: bool = (fim == "damage" and ko_ok) or (fim == "points" and not ko_ok) 		or (fim == "knockout" and ko_ok and ganhou and tipo_arte == "fast_hands") 		or (fim == "submission" and ko_ok and ganhou and tipo_arte == "submission") 		or (fim == "spin_kick" and ko_ok and ganhou and tipo_arte == "shin")
 	if coerente and tipo_arte != "":  # sem arte o jogo nunca grava `finish`
 		luta_ok.result["finish"] = fim
 	# Motivo calculado em lutar(); ausente (save antigo) = calculado sob demanda.

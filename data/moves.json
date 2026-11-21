@@ -2,6 +2,7 @@
 	"_sobre": "Golpes das lutas (Fase 6 proposta). Os MESMOS golpes valem para o jogador e para os adversários: cada lutador tem um estilo, e o estilo lista os golpes. A escolha do golpe é só visual: não usa o sorteio da simulação e não muda dano, esquiva nem resultado de luta. Campo `anim` = nome da ação no manifest (by_data_id.<lutador>.actions, ou fight_player_<anim> / <id>_<anim>); se o sprite não existir, a tela usa o golpe antigo (jab/heavy). Campo `defender_anim` = reação de quem apanha (também com fallback para `hit`).",
 	"_kinds": "Tipo do evento onde o golpe pode aparecer: jab (acerto normal), crit (crítico), counter (contra-ataque). Esquiva e bloqueio não usam golpe novo.",
 	"_unlock": "base = todo lutador do estilo já tem; ou o id de um nó da árvore de habilidades (reservado: a árvore vai liberar golpes por estilo).",
+	"_fase7b1": "Fase 7b1 (docs/fases/fase7b1-design.md §8): estilo muay_thai. Kind novo spin_kick: com as marcas cheias, todo crítico do jogador vira chute rodado (finalize ou não). Chute baixo = acerto normal e contra-ataque (é o que marca a perna); joelhada e clinch = crítico antes das marcas cheias. Reação nova do adversário: hit_leg, held_clinch, fall_spin (fallback: hit / fall); idle mancando = limp (estado, não golpe). Tudo só visual.",
 	"_fase7a1": "Fase 7a1 (docs/fases/fase7a1-design.md §7): o jogador usa o estilo da arte (boxing / bjj; sem arte = boxing). Kinds novos: takedown (o 1º acerto do Jiu-jitsu com a pegada em ground_at_grip leva a luta para o chão) e submission (o acerto que finaliza). Campo `phase` (standing | ground): em pé só entram golpes standing; depois da queda, só ground. O adversário por baixo usa o estilo ground_bottom. Tudo só visual.",
 	"styles": {
 		"boxing": {
@@ -15,6 +16,10 @@
 		"ground_bottom": {
 			"name": "Por baixo",
 			"moves": ["ground_punch"]
+		},
+		"muay_thai": {
+			"name": "Muay Thai",
+			"moves": ["low_kick", "knee", "thai_clinch", "spin_kick"]
 		}
 	},
 	"moves": {
@@ -55,6 +60,22 @@
 		"ground_punch": {
 			"style": "ground_bottom", "name": "Soco de baixo", "anim": "ground_punch", "kinds": ["jab", "crit", "counter"], "unlock": "base",
 			"phase": "ground", "defender_anim": "ground_top_hit"
+		},
+		"low_kick": {
+			"style": "muay_thai", "name": "Chute baixo", "anim": "low_kick", "kinds": ["jab", "counter"], "unlock": "base",
+			"defender_anim": "hit_leg"
+		},
+		"knee": {
+			"style": "muay_thai", "name": "Joelhada", "anim": "knee", "kinds": ["crit"], "unlock": "base",
+			"defender_anim": "hit_body"
+		},
+		"thai_clinch": {
+			"style": "muay_thai", "name": "Clinch tailandês", "anim": "thai_clinch", "kinds": ["crit"], "unlock": "base",
+			"defender_anim": "held_clinch"
+		},
+		"spin_kick": {
+			"style": "muay_thai", "name": "Chute rodado", "anim": "spin_kick", "kinds": ["spin_kick"], "unlock": "base",
+			"defender_anim": "fall_spin"
 		}
 	}
 }

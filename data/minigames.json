@@ -40,8 +40,10 @@
 		"hold_is_guard_s": 0.20,
 		"variants": {
 			"boxing": { "control": "click", "push_per_click": 0.10, "breath_cost_per_click": 0.07, "breath_recover_per_s": 0.30, "weak_min": 0.15 },
-			"bjj":    { "control": "hold",  "pull_per_s": 0.65, "breath_drain_per_s": 0.20, "breath_recover_per_s": 0.40, "weak_min": 0.15, "burst_hold_drain_mult": 2.0 }
+			"bjj":    { "control": "hold",  "pull_per_s": 0.65, "breath_drain_per_s": 0.20, "breath_recover_per_s": 0.40, "weak_min": 0.15, "burst_hold_drain_mult": 2.0 },
+			"muay_thai": { "control": "beat", "beat_s": 0.5, "window_s": 0.12, "combo_kick": 3, "push_on_beat": 0.10, "push_kick": 0.45, "push_off_beat": 0.03, "breath_cost_per_click": 0.07, "breath_cost_kick": 0.15, "breath_recover_per_s": 0.30, "weak_min": 0.15 }
 		},
+		"_doc_muay_thai": "Fase 7b1 (fase7b1-design.md §7): batida a cada beat_s desde o início do jogo. Clique a até window_s de uma batida ainda não usada = NO TEMPO (combo +1; o combo_kick-ésimo vira CHUTE: push_kick e combo zera). Fora do tempo = push_off_beat e combo zera. Segurar = guarda (igual ao Boxe, hold_is_guard_s). Força = weak_min + (1 - weak_min) x fôlego; pausa x counter_mult.",
 		"_doc_levels": "base_push: empurrão dele por segundo fora dos padrões. burst: rajada (Boxe) / puxada forte (JJ). warn_s: aviso antes da rajada e da finta. feint: aviso de rajada que vira pausa curta (o sinal muda na metade do aviso). gap: espera entre padrões. w_*: pesos do sorteio do padrão.",
 		"levels": [
 			{ "base_push": 0.15, "burst_push": 0.8, "burst_s": 1.5, "warn_s": 1.0, "pause_s": 1.4, "pause_warn_s": 0.6, "feint_pause_s": 0.9, "gap_min": 2.0, "gap_max": 3.5, "w_burst": 0.50, "w_pause": 0.40, "w_feint": 0.10 },
