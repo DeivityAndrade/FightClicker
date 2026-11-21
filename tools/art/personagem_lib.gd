@@ -1586,12 +1586,12 @@ func forearm_opts(b: Dictionary, far: bool) -> Dictionary:
 	return o
 
 ## Perna: quadril -> (IK) joelho -> tornozelo do tênis. Tênis ancorado pela ponta (não escorrega).
-func leg(b: Dictionary, id_th: int, hip: Vector2, toe: Vector2, shoe: String, lt: float, ls: float, far: bool, tag: String, r: Array, kp: Vector2) -> Vector2:
+func leg(b: Dictionary, id_th: int, hip: Vector2, toe: Vector2, shoe: String, lt: float, ls: float, far: bool, tag: String, r: Array, kp: Vector2, ang_add := 0.0) -> Vector2:
 	var sm: Dictionary = b.shoe_maps
 	var sd: Dictionary = sm[shoe] if sm.has(shoe) else SHOES[shoe]
 	var tv: Vector2i = sd.toe
 	var av: Vector2i = sd.ankle
-	var ang: float = sd.ang
+	var ang: float = float(sd.ang) + ang_add   # 7b1: "angf"/"angb" giram o pé (chute com o peito do pé esticado)
 	var ankle := toe + rotv(Vector2(av - tv), ang)
 	var knee := ik(hip, ankle, lt, ls, kp, tag)
 	var skin: Array = b.skin_far if far else b.skin
@@ -1869,7 +1869,13 @@ func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112
 	var lt: float = b.lt
 	var ls: float = b.ls
 	var kp_def := fr * 1.0 - dn * 0.1
-	leg(b, FAR_THIGH, fh, O + p.get("toeb", Vector2(-3, -1)), p.get("shoeb", "flat"), lt, ls, true, tag + " perna de trás", b.leg_r, p.get("kb", kp_def))
+	# 7b1: "legs_swap" = chute com a perna de trás. O quadril girou: a perna de trás (toeb) sai do quadril da FRENTE e é
+	# desenhada na frente (cores da frente); a de apoio (toef) fica no quadril de trás, atrás do corpo.
+	var swap: bool = bool(p.get("legs_swap", false))
+	if swap:
+		leg(b, FAR_THIGH, fh, O + p.get("toef", Vector2(15, -1)), p.get("shoef", "flat"), lt, ls, true, tag + " perna de apoio", b.leg_r, p.get("kf", kp_def), float(p.get("angf", 0.0)))
+	else:
+		leg(b, FAR_THIGH, fh, O + p.get("toeb", Vector2(-3, -1)), p.get("shoeb", "flat"), lt, ls, true, tag + " perna de trás", b.leg_r, p.get("kb", kp_def), float(p.get("angb", 0.0)))
 	var hb: Vector2 = O + p.hb
 	var pdef := -fr * 0.35 - dn * 1.0
 	var elb := arm(b, FAR_UP, sb, hb, lu, lf, true, tag + " braço de trás", p.get("pb", pdef), b.arm_r, (O + p.eb) if p.has("eb") else null)
@@ -1882,7 +1888,10 @@ func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112
 		"top": [top.x - O.x, top.y - O.y], "tw": p.get("tw", 0.0), "face": p.get("face", "normal")}
 	var ctx := {"hip": hip, "top": top, "dn": dn, "fr": fr, "hd": hd, "sf": sf, "sb": sb, "hb": hb, "elb": elb, "nh": nh, "fh": fh, "hrot": hrot}
 	_hook(p, "after_torso", O, ctx)
-	leg(b, NEAR_THIGH, nh, O + p.get("toef", Vector2(15, -1)), p.get("shoef", "flat"), lt, ls, false, tag + " perna da frente", b.leg_r, p.get("kf", kp_def))
+	if swap:
+		leg(b, NEAR_THIGH, nh, O + p.get("toeb", Vector2(-3, -1)), p.get("shoeb", "flat"), lt, ls, false, tag + " perna que chuta", b.leg_r, p.get("kb", kp_def), float(p.get("angb", 0.0)))
+	else:
+		leg(b, NEAR_THIGH, nh, O + p.get("toef", Vector2(15, -1)), p.get("shoef", "flat"), lt, ls, false, tag + " perna da frente", b.leg_r, p.get("kf", kp_def), float(p.get("angf", 0.0)))
 	_hook(p, "after_near_leg", O, ctx)
 	var hf: Vector2 = O + p.hf
 	var elf := arm(b, NEAR_UP, sf, hf, lu, lf, false, tag + " braço da frente", p.get("pf", pdef), b.arm_r, (O + p.ef) if p.has("ef") else null)
@@ -1934,8 +1943,8 @@ func garage_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(48
 			o_up["hem_c"] = b.trim
 	limb(FAR_UP, shr, elr, ar[0], ar[1], skin, o_up)
 	# pernas
-	leg(b, FAR_THIGH, hr, O + p.get("toer", Vector2(10, 0)), p.get("shoer", "34"), b.glt, b.gls, false, tag + " perna direita", lr, p.get("kr", Vector2(0.6, 0)))
-	leg(b, G_LEG_L, hl, O + p.get("toel", Vector2(-1, 0)), p.get("shoel", "34"), b.glt, b.gls, false, tag + " perna esquerda", lr, p.get("kl", Vector2(0.5, 0)))
+	leg(b, FAR_THIGH, hr, O + p.get("toer", Vector2(10, 0)), p.get("shoer", "34"), b.glt, b.gls, false, tag + " perna direita", lr, p.get("kr", Vector2(0.6, 0)), float(p.get("angr", 0.0)))
+	leg(b, G_LEG_L, hl, O + p.get("toel", Vector2(-1, 0)), p.get("shoel", "34"), b.glt, b.gls, false, tag + " perna esquerda", lr, p.get("kl", Vector2(0.5, 0)), float(p.get("angl", 0.0)))
 	torso(b, TORSO, hip, top, "34", p.get("tw", 0.0))
 	var hd: Vector2 = O + p.head
 	limb(TORSO, top + Vector2(0, 1), hd + Vector2(0, 4), 2.3, 2.2, skin)

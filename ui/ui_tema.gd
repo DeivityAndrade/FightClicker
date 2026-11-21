@@ -26,6 +26,8 @@ const R1 := Color("9c2a2a")
 const R2 := Color("d4473a")
 const R3 := Color("f07a5a")
 const B2 := Color("4d7bb3")
+const BR2 := Color("9a5f36")  # 7b1: laranja de couro do Muay Thai (br2/br3 da direcao-visual)
+const BR3 := Color("c98a4b")
 const B3 := Color("8fbbe0")
 const GR2 := Color("5aa25a")
 const GR3 := Color("a6d86a")
@@ -139,6 +141,8 @@ static func cor_nome(nome: String, padrao: Color = G3) -> Color:
 			return P2  # o roxo do perfil do Tonhão sobe um tom: p1 sobre a moldura escura lê mal
 		"st2":
 			return STEEL2
+		"br2", "br3", "orange":
+			return BR3
 		"white":
 			return WHITE
 	return padrao

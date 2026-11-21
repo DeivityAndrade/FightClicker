@@ -188,6 +188,53 @@ def exportar_7a1():
     print("gravado %s: %d casos com arte; fins: %s" % (destino, len(casos), sorted(fins.items())))
 
 
+def exportar_7b1():
+    """7b1: casos exatos do Muay Thai (passiva shin, Canela) em tests/data/fase7b1_casos.json. Importa fase7b1_sim so aqui:
+    o ramo novo nao muda Boxe, Jiu-jitsu nem 'sem arte' (fase7b1_sim.py ident), entao fase7a1_casos.json sai igual."""
+    import fase7b1_sim as f7b  # noqa: E402
+    f7b.random = f3.random
+    fim = dict(FINISH, chute_rodado="spin_kick")
+    casos = []
+
+    def caso(jog, adv, tat, semente, extra):
+        RA = f7.regras_arte7(R, {"fight": {}}, extra, "muay_thai")
+        r = RA.lutar(jog, adv, tat, semente, registro=True)
+        sorteios = list(Gravador.ultimo.sorteados)
+        ev = [[e["t"], e["who"], e["type"], bool(e.get("counter", False)), e.get("damage", 0.0), e.get("life_after", 0.0),
+               e.get("marks", 0), e.get("move", ""), e.get("finish", "")] for e in r["ev"]]
+        est = RA.estado_passiva(jog, adv, tat)
+        return {
+            "player": list(jog), "opponent": list(adv), "tactic": tat, "art": "muay_thai", "extra": extra, "draws": sorteios,
+            "win": r["win"], "ko": r["ko"], "t_ko": r["t_ko"] if r["t_ko"] is not None else -1.0,
+            "t_end": r["t"], "pct_player": r["pct"][0], "pct_opponent": r["pct"][1], "vmax": list(r["vmax"]),
+            "events": ev, "counts": r["cont"], "finish": fim[r["metodo"]], "marks_peak": r["marcas_pico"],
+            "marks_full_at": r["cheia_em"], "attempts": r["tentativas"], "spins": r["rodados"],
+            "opp_counter_damage": r["cont"]["dano_contra"][1],
+            "est": {k: v for k, v in est.items() if isinstance(v, (int, float, bool, str))},
+        }
+    for extra in (0.0, 0.5):
+        for i, (jog, adv, tat) in enumerate(estados(90, 71 + int(extra * 2))):
+            casos.append(caso(jog, adv, tat, 7000 + int(extra * 2) * 1000 + i, extra))
+    rng = random.Random(77)
+    for tat in R.tac_ids:
+        for k in range(20):
+            o = R.opp[3 + rng.randrange(len(R.opp) - 3)]
+            adv = (o["strength"], o["agility"], o["endurance"])
+            m = rng.uniform(0.75, 1.3)
+            w = [rng.random() + 0.3 for _ in range(3)]
+            s = sum(w)
+            jog = tuple(sum(adv) * m * x / s for x in w)
+            casos.append(caso(jog, adv, tat, 9500 + k, 0.5 if k % 2 else 0.0))
+    destino = os.path.join(f3.RAIZ, "tests", "data", "fase7b1_casos.json")
+    with open(destino, "w", encoding="utf-8") as f:
+        json.dump({"exatos": casos}, f, ensure_ascii=False)
+    fins = {}
+    for c in casos:
+        fins[c["finish"]] = fins.get(c["finish"], 0) + 1
+    print("gravado %s: %d casos do Muay Thai; fins: %s" % (destino, len(casos), sorted(fins.items())))
+
+
 if __name__ == "__main__":
     main()
     exportar_7a1()
+    exportar_7b1()

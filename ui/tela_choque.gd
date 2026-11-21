@@ -9,7 +9,7 @@ extends TelaTreino
 
 const PIP_X := 9.0
 
-var _arte := "boxing"
+var _arte := "boxing"  # "boxing" | "bjj" | "muay_thai" (7b1: no Muay Thai a tela reusa o parceiro e os efeitos do Boxe)
 var _jog: AnimSprite
 var _par: AnimSprite
 var _osmar: AnimSprite
@@ -44,6 +44,10 @@ var _trans_p := ""
 var _trans_p_t := 0.0
 var _segurava := false
 var _fase_ant := ""
+# 7b1 (Muay Thai): faixa da batida (a esquerda da barra) e os 3 degraus do combo (a direita)
+var _faixa: FaixaBatida
+var _degraus: Array[ColorRect] = []
+var _combo_ant := -1
 
 
 func _chave_layout() -> String:
@@ -55,15 +59,16 @@ func _nome_fundo() -> String:
 
 
 func _titulo() -> String:
-	return UiTema.txt("spar_name_bjj" if _arte == "bjj" else "spar_name_boxing", "CHOQUE")
+	return UiTema.txt("spar_name_" + _arte if _arte in ["bjj", "muay_thai"] else "spar_name_boxing", "CHOQUE")
 
 
 func _dica_texto() -> String:
-	return UiTema.txt("spar_tip_bjj" if _arte == "bjj" else "spar_tip_boxing", "")
+	return UiTema.txt("spar_tip_" + _arte if _arte in ["bjj", "muay_thai"] else "spar_tip_boxing", "")
 
 
 func abrir(info_: Dictionary) -> void:
-	_arte = "bjj" if str(info_.get("art", GameState.arte_id)) == "bjj" else "boxing"
+	var arte_do_jogo := str(info_.get("art", GameState.arte_id))
+	_arte = arte_do_jogo if arte_do_jogo in ["bjj", "muay_thai"] else "boxing"
 	super.abrir(info_)
 
 
@@ -108,8 +113,8 @@ func _montar_mundo() -> void:
 ## Folha do discípulo para uma ação do manifest (`player_actions`), com a luva equipada e as camadas do visual dele.
 ## As folhas do Choque só existem em "_disc": sem discípulo (a 1ª carreira, John) usa a mesma folha sem o visual dele.
 func _folha_jogador(acao: String) -> String:
-	var mapa: Dictionary = layout().get("player_actions", {}).get("jj" if _arte == "bjj" else "box", {})
-	var base := str(mapa.get(acao, "")).split(" ")[0]
+	var mapa: Dictionary = layout().get("player_actions", {}).get({"bjj": "jj", "muay_thai": "mt"}.get(_arte, "box"), {})
+	var base := str(mapa.get(acao, mapa.get("kick", "") if acao == "counter" else "")).split(" ")[0]
 	var por_luva := base + GameState.sufixo_luva() + "_disc"
 	for nome in [UiTema.com_luva(base), por_luva, base + "_disc"]:
 		if _existe(nome):
@@ -197,6 +202,39 @@ func _montar_hud() -> void:
 	_folego_fill.stretch_mode = TextureRect.STRETCH_TILE
 	_folego_fill.size = Vector2(bb.size.x - 2.0, 4.0)
 	_folego_rot = UiTema.rotulo(_hud, UiTema.txt("spar_breath", "FÔLEGO"), UiTema.G3, float(bl[0]), float(bl[1]) - 1.0)
+	if _arte == "muay_thai":
+		_montar_hud_muay_thai(tt)
+
+
+## 7b1: faixa da batida na esquerda (as batidas chegam da direita e a zona do "no tempo" fica a 30 px do começo) e os 3 degraus
+## do combo na direita (1, 2 e CHUTE), na altura da barra. O jogador clica olhando a faixa; o resto da tela é igual ao Boxe.
+func _montar_hud_muay_thai(trilho: Rect2) -> void:
+	var v: Dictionary = GameState.minigames.spar.get("variants", {}).get("muay_thai", {})
+	var y := trilho.position.y + 1.0  # 14 px de altura, no meio da barra (28..44)
+	var alt := trilho.size.y - 2.0
+	UiTema.rotulo(_hud, UiTema.txt("spar_beat_label", "BATIDA"), UiTema.G3, FaixaBatida.X, y - 10.0)
+	_faixa = FaixaBatida.new()
+	_faixa.position = Vector2(FaixaBatida.X, y)
+	_faixa.size = Vector2(FaixaBatida.LARG, alt)
+	_faixa.beat_s = float(v.get("beat_s", 0.5))
+	_faixa.janela_s = float(v.get("window_s", 0.12))
+	UiTema.alinhar(_faixa, "ignore")  # desenho livre dentro da faixa
+	_hud.add_child(_faixa)
+	var larg := 36.0
+	var passo := larg + 4.0
+	var x0 := 630.0 - (passo * 3.0 - 4.0)
+	UiTema.rotulo(_hud, UiTema.txt("spar_combo_label", "COMBO"), UiTema.G3, x0, y - 10.0)
+	var kick_txt := UiTema.txt("spar_beat_kick", "CHUTE!").replace("!", "")
+	for i in 3:
+		var q := ColorRect.new()
+		q.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		q.position = Vector2(x0 + passo * float(i), y)
+		q.size = Vector2(larg, alt)
+		q.color = UiTema.D1
+		q.set_meta("ui_align", "ignore")
+		_hud.add_child(q)
+		UiTema.rotulo_centrado(q, Rect2(0, 0, larg, alt), kick_txt if i == 2 else str(i + 1), UiTema.G2, 1, false, "center")
+		_degraus.append(q)
 
 
 func _novo_toque() -> AnimSprite:
@@ -235,6 +273,8 @@ func _atualizar(e: Dictionary, delta: float) -> void:
 	_atualizar_folego(e)
 	_atualizar_aviso(e)
 	_atualizar_poses(e)
+	if _faixa != null:
+		_atualizar_muay_thai(e, delta)
 
 
 func _atualizar_pontos(e: Dictionary) -> void:
@@ -264,6 +304,22 @@ func _atualizar_folego(e: Dictionary) -> void:
 		_folego_larg = larg
 		_folego_fill.size.x = float(larg)
 		_folego_fill.visible = larg > 0
+
+
+## 7b1: faixa da batida (ritmo) e degraus do combo.
+func _atualizar_muay_thai(e: Dictionary, delta: float) -> void:
+	_faixa.estado = e
+	_faixa.passo(delta)
+	var combo := int(e.get("combo", 0))
+	if combo != _combo_ant:
+		_combo_ant = combo
+		for i in _degraus.size():
+			var aceso := i < combo
+			var q := _degraus[i]
+			q.color = UiTema.BR2 if aceso else (UiTema.D2 if i == 2 and combo == 2 else UiTema.D1)  # 2 degraus acesos: o CHUTE fica "armado"
+			for l in q.get_children():
+				if l is Label:
+					(l as Label).add_theme_color_override("font_color", UiTema.WHITE if aceso or (i == 2 and combo == 2) else UiTema.G2)
 
 
 ## Aviso acima do parceiro: rajada (estrela vermelha), pausa (balão branco) e finta (começa vermelho e vira branco na metade).
@@ -402,22 +458,41 @@ func _ao_soltar() -> void:
 # ---------------------------------------------------------------- eventos (juice)
 func _evento(ev: String, _e: Dictionary) -> void:
 	match ev:
-		"clique":
-			if _arte == "boxing":
+		"clique", "no_tempo", "fora_do_tempo":  # 7b1: no Muay Thai o clique é no tempo ou fora do tempo
+			if _arte != "bjj":
 				_trans_jogador("click", 0.3)
 			_agulha_pulso = 0.06
 			_tremer_barra(1)
 			_tremer(1, 0.05)
 			sfx.golpe_luta(false)
+			if _faixa != null:
+				var no_tempo := ev == "no_tempo"
+				_faixa.marcar(no_tempo, float(_e.get("tempo", 0.0)))
+				_flutuar(UiTema.txt("spar_beat_on", "NO TEMPO!") if no_tempo else UiTema.txt("spar_beat_off", "FORA DO TEMPO"),
+					UiTema.GR3 if no_tempo else UiTema.R3, Vector2(238.0, 250.0), 1, 12.0, 0.6)
+		"chute":  # 7b1: 3º clique no tempo (o empurrão forte)
+			if _faixa != null:
+				_faixa.marcar(true, float(_e.get("tempo", 0.0)))
+				_piscar(UiTema.BR2, 0.3, 0.2)
+				_flutuar(UiTema.txt("spar_beat_kick", "CHUTE!"), UiTema.Y2, Vector2(250.0, 226.0), 2, 16.0, 0.8)
+				for q in _degraus:
+					q.color = UiTema.Y1
+				get_tree().create_timer(0.3).timeout.connect(func() -> void: _combo_ant = -1)
+			_trans_jogador("kick", 0.45)
+			_trans_parceiro("recoil", 0.4)
+			_agulha_pulso = 0.1
+			_tremer_barra(2)
+			_tremer(2, 0.1)
+			sfx.golpe_luta(true)
 		"contragolpe":
 			_trans_jogador("counter", 0.4)
-			_trans_parceiro("recoil" if _arte == "boxing" else "yanked", 0.4)
+			_trans_parceiro("recoil" if _arte != "bjj" else "yanked", 0.4)
 			_agulha_pulso = 0.1
 			_tremer_barra(2)
 			_tremer(2, 0.1)
 			sfx.golpe_luta(true)
 		"ponto_jogador":
-			_trans_parceiro("recoil" if _arte == "boxing" else "yanked", 0.5)
+			_trans_parceiro("recoil" if _arte != "bjj" else "yanked", 0.5)
 			_piscar(UiTema.Y2, 0.35)
 			_tremer(3, 0.16)
 			_estalo(_toque_dir, Vector2(_trilho_pos.x + 252.0, _trilho_pos.y + 8.0))
@@ -425,7 +500,7 @@ func _evento(ev: String, _e: Dictionary) -> void:
 			sfx.golpe_luta(true)
 			sfx.moeda()
 		"ponto_dele":
-			_trans_jogador("pushed" if _arte == "boxing" else "yanked", 0.5)
+			_trans_jogador("pushed" if _arte != "bjj" else "yanked", 0.5)
 			_piscar(UiTema.R2, 0.3)
 			_tremer(2, 0.14)
 			_estalo(_toque_esq, Vector2(_trilho_pos.x + 8.0, _trilho_pos.y + 8.0))
@@ -456,3 +531,60 @@ func _tremer_barra(px: int) -> void:
 	tw.tween_callback(func() -> void: _barra_no.position = Vector2(0, -px if px > 1 else 0))
 	tw.tween_interval(0.03)
 	tw.tween_callback(func() -> void: _barra_no.position = Vector2.ZERO)
+
+
+# ---------------------------------------------------------------- faixa da batida (Muay Thai, 7b1)
+## Faixa de ritmo: as batidas (marcas brancas) chegam da direita para a zona do "no tempo" (a janela de clique); a marca que ja foi
+## usada fica verde e a borda pisca verde (no tempo) ou vermelha (fora do tempo). So desenha o `estado()` do ChoqueLogica.
+class FaixaBatida extends Control:
+	const X := 10.0
+	const LARG := 170.0
+	const ZONA_X := 40.0  # centro da zona (px dentro da faixa)
+	const VELOC := 100.0  # px por segundo (a janela de 0,12 s vira 12 px para cada lado)
+
+	var beat_s := 0.5
+	var janela_s := 0.12
+	var estado: Dictionary = {}
+	var _usadas := {}
+	var _flash := 0.0
+	var _flash_ok := true
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func passo(delta: float) -> void:
+		_flash = maxf(_flash - delta, 0.0)
+		queue_redraw()
+
+	func marcar(no_tempo: bool, tempo: float) -> void:
+		_flash = 0.18
+		_flash_ok = no_tempo
+		if no_tempo:
+			_usadas[int(round(tempo / beat_s))] = true
+
+	func _draw() -> void:
+		var alt := size.y
+		draw_rect(Rect2(0, 0, size.x, alt), UiTema.D1)
+		var borda := UiTema.D2
+		if _flash > 0.0:
+			borda = UiTema.GR3 if _flash_ok else UiTema.R3
+		var jw := roundf(janela_s * VELOC)
+		var na_janela := bool(estado.get("na_janela", false))
+		draw_rect(Rect2(ZONA_X - jw, 1, jw * 2.0 + 1.0, alt - 2.0), UiTema.Y0 if na_janela else UiTema.D2)
+		draw_rect(Rect2(ZONA_X, 1, 1, alt - 2.0), UiTema.CREAM)  # a linha da batida certa
+		var fase := str(estado.get("fase", "contagem"))
+		if fase != "fim":
+			var tempo := float(estado.get("tempo", 0.0)) if fase == "jogando" else 0.0
+			var j0 := maxi(1, int(floor(tempo / beat_s)))
+			for j in range(j0, j0 + 5):
+				var d := float(j) * beat_s - tempo
+				var x := ZONA_X + roundf(d * VELOC)
+				if d < -0.25 or x > size.x - 4.0:
+					continue
+				var passou := d < -janela_s
+				var cor := UiTema.GR3 if _usadas.has(j) else (UiTema.G1 if passou else UiTema.WHITE)
+				draw_rect(Rect2(x - 1.0, 3, 3, alt - 6.0), cor)
+		draw_rect(Rect2(0, 0, size.x, 1), borda)
+		draw_rect(Rect2(0, alt - 1.0, size.x, 1), borda)
+		draw_rect(Rect2(0, 0, 1, alt), borda)
+		draw_rect(Rect2(size.x - 1.0, 0, 1, alt), borda)

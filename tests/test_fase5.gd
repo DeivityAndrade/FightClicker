@@ -85,7 +85,8 @@ func _teste_dados() -> void:
 	checar_igual([a.local("gym").training_mult, a.local("gym").move.cost, a.local("gym").apparatus_suffix], [2.0, 1000.0, "_gym"],
 		"academia: x2, $1.000, sufixo _gym")
 	checar_igual(a.local("garage").move, {}, "garagem não se compra")
-	checar_igual(a.ids_artes(), ["boxing", "bjj"], "2 artes: Boxe e Jiu-jitsu")
+	checar_igual(a.ids_artes(), ["boxing", "bjj", "muay_thai"], "3 artes: Boxe, Jiu-jitsu e Muay Thai (7b1)")
+	checar_igual(a.ids_artes_iniciais(), ["boxing", "bjj"], "1ª chegada: só Boxe e Jiu-jitsu (o Muay Thai espera o Kid)")
 	checar_igual(a.arte("boxing").rule, {"type": "manual_click_bonus", "value": 0.5}, "Boxe: +50% no clique manual")
 	var rjj: Dictionary = a.arte("bjj").rule
 	checar(rjj.type == "crew_time_bonus" and float(rjj.start) > 0.0 and float(rjj.cap) > float(rjj.start), "Jiu-jitsu: regra de tempo (valores vêm do JSON)")
@@ -93,7 +94,7 @@ func _teste_dados() -> void:
 	checar_igual([a.arte("boxing").passive.damage_mult, a.arte("bjj").passive.damage_mult], [0.88, 1.20], "passivas: dano x0,88 / x1,20")
 	var d := TrainingData.carregar()
 	checar_igual(d.aparelhos.size(), 3, "3 aparelhos de toda carreira")
-	checar_igual(d.aparelhos_arte.size(), 2, "2 aparelhos de arte")
+	checar_igual(d.aparelhos_arte.size(), 3, "3 aparelhos de arte (pera, boneco e saco de chute)")
 	var pera := d.aparelho("speed_bag")
 	var boneco := d.aparelho("grappling_dummy")
 	checar_igual([pera.art, pera.unlock.cost, pera.unlock.requires, pera.split], ["boxing", 2500.0, "treadmill",
@@ -618,7 +619,8 @@ func _teste_estilo() -> void:
 	gs.permanente["arts_unlocked"] = ["boxing", "bjj"]
 	checar_igual(gs.arvore_ramos().map(func(b): return b.id), ["body", "career", "style"], "com artes liberadas a aba ESTILO aparece")
 	var estilo: Array = gs.arvore_nos().filter(func(n): return n.branch == "style")
-	checar_igual(estilo.size(), 2, "2 nós na aba")
+	checar_igual(estilo.size(), 3, "3 nós na aba (Boxe, Jiu-jitsu e o do Muay Thai, que fica trancado sem a arte, 7b1)")
+	checar_igual(gs.estado_no("style_muay_thai"), "locked", "nó ESTILO do Muay Thai trancado sem a arte liberada")
 	checar_igual(estilo[0].art_only_text, "SÓ VALE JOGANDO DE BOXE", "texto 'só vale jogando de'")
 	checar_igual(estilo[0].effect_text, "BOXE: BÔNUS DO CLIQUE CRESCE 50%", "texto do efeito")
 	checar_igual(estilo[0].state, "buyable", "comprável com a arte e o Legado")

@@ -115,6 +115,14 @@ func _bloco_choque(v: Variant) -> Dictionary:
 	if bx.is_empty() or jj.is_empty():
 		return {}
 	r["variants"] = {"boxing": bx, "bjj": jj}
+	# 7b1: variante do Muay Thai (batida). Ausente ou inválida = só Boxe e Jiu-jitsu (o Muay Thai joga com a variante do Boxe).
+	var mt = vs.get("muay_thai", null)
+	if mt is Dictionary:
+		var mtn := _numeros(mt, {"beat_s": [0.1, 5.0], "window_s": [0.01, 1.0], "combo_kick": [2.0, 10.0], "push_on_beat": [0.001, 1.0],
+			"push_kick": [0.001, 2.0], "push_off_beat": [0.0, 1.0], "breath_cost_per_click": [0.0, 1.0], "breath_cost_kick": [0.0, 1.0],
+			"breath_recover_per_s": [0.0, 10.0], "weak_min": [0.0, 1.0]})
+		if not mtn.is_empty():
+			r["variants"]["muay_thai"] = mtn
 	var lv := _niveis(v.get("levels", null), {"base_push": [0.0, 5.0], "burst_push": [0.0, 10.0], "burst_s": [0.1, 20.0],
 		"warn_s": [0.1, 20.0], "pause_s": [0.1, 20.0], "pause_warn_s": [0.1, 20.0], "feint_pause_s": [0.1, 20.0],
 		"gap_min": [0.1, 60.0], "gap_max": [0.1, 60.0], "w_burst": [0.0, 100.0], "w_pause": [0.0, 100.0], "w_feint": [0.0, 100.0]})

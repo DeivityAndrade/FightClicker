@@ -123,7 +123,9 @@ func gen_garage(b: Dictionary, nome: String, g: Dictionary, suffix: String) -> A
 	for q in g.frames:
 		var p := gpose_do_quadro(q)
 		var dxg := float(p.get("dx", 0.0))
-		frames.append(P.garage_frame(b, p, "fighter_%s%s[%d]" % [nome, suffix, i], Vector2i(48, 72), Vector2(22.0 + dxg, 67.0)))
+		# 7b1: "frame_size" no golpe = quadro mais largo (o chute no saco comprido passa dos 48 px); o pivô continua (22,67)
+		var fsz: Array = g.get("frame_size", [48, 72])
+		frames.append(P.garage_frame(b, p, "fighter_%s%s[%d]" % [nome, suffix, i], Vector2i(int(fsz[0]), int(fsz[1])), Vector2(22.0 + dxg, 67.0)))
 		if i == int(g.hit_frame):
 			contato = p[g.hit_hand] + Vector2(dxg, 0.0)
 		i += 1
@@ -134,7 +136,7 @@ func entrada_garage(nome: String, g: Dictionary, suffix: String, contato: Vector
 	var fs: Array = g.foco_saco
 	return {
 		"file": "res://assets/sprites/characters/fighter_%s%s.png" % [nome, suffix],
-		"frame_size": [48, 72], "frames": g.frames.size(), "fps": g.fps, "pivot": g.pivot, "loop": false,
+		"frame_size": g.get("frame_size", [48, 72]), "frames": g.frames.size(), "fps": g.fps, "pivot": g.pivot, "loop": false,
 		"positions": {"foco_saco": fs}, "facing": "direita", "hit_frame": g.hit_frame,
 		"hit_point": [fs[0] + contato.x, fs[1] + contato.y],
 	}
@@ -343,6 +345,11 @@ func expandir(g: Dictionary) -> void:
 	g["hit_frame"] = mapa[int(g.hit_frame)]
 	if g.has("hit_hand"):
 		pass
+	elif g.has("hit_key") and final.size() > int(g.hit_frame) and final[int(g.hit_frame)].has(str(g.hit_key)):
+		# 7b1: contato que não é a luva (canela, joelho): o quadro traz o ponto em "hit_key" (ex.: "hc"), com o deslize do corpo
+		var fk: Dictionary = final[int(g.hit_frame)]
+		var hk: Array = fk[str(g.hit_key)]
+		g["hit_point"] = [float(hk[0]) + float(fk.get("dx", 0.0)), float(hk[1])]
 	elif final.size() > int(g.hit_frame) and final[int(g.hit_frame)].has("hf"):
 		var fq: Dictionary = final[int(g.hit_frame)]
 		g["hit_point"] = [float(fq.hf[0]) + float(fq.get("dx", 0.0)), float(fq.hf[1])]  # onde a luva está no contato (com o deslize do corpo)

@@ -123,6 +123,11 @@ const ESTADOS_TODOS := [
 	"f7a2_choque_jj_ponto", "f7a2_choque_jj_premio",
 	"f7a2_panfleto_comeco", "f7a2_panfleto_sinal", "f7a2_panfleto_aceitou", "f7a2_panfleto_erro", "f7a2_panfleto_premio",
 	"f7a2_previa_aquecido", "f7a2_hud_aquecido", "f7a2_recorte_garagem", "f7a2_recorte_academia",
+	# Fase 7b1: Muay Thai (3 cartões, prévia da Canela, marcas na perna, CHUTE RODADO!, saco de chute, Choque no compasso, árvore)
+	"f7b1_arte_3cartoes", "f7b1_previa_mt_aggressive", "f7b1_previa_mt_defensive", "f7b1_previa_mt_counter", "f7b1_previa_mt_tarde",
+	"f7b1_luta_mt_marcas", "f7b1_luta_mt_cheia", "f7b1_luta_mt_rodado_liga", "f7b1_luta_mt_rodado_borracharia",
+	"f7b1_sala_saco_foco", "f7b1_sala_saco_chute", "f7b1_sala_saco_descanso_gym", "f7b1_sala_saco_caixa",
+	"f7b1_choque_mt_comeco", "f7b1_choque_mt_combo", "f7b1_choque_mt_chute", "f7b1_choque_mt_premio", "f7b1_arvore_mt",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -148,6 +153,7 @@ var _f6d = preload("res://tools/ui/audit/estados_f6d.gd").new(self)
 var _f6d2 = preload("res://tools/ui/audit/estados_f6d2.gd").new(self)
 var _f7a1 = preload("res://tools/ui/audit/estados_f7a1.gd").new(self)
 var _f7a2 = preload("res://tools/ui/audit/estados_f7a2.gd").new(self)
+var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
 
 
 func _initialize() -> void:
@@ -376,6 +382,7 @@ func _rodar() -> void:
 	await _f6d2._rodar_fase6d2()
 	await _f7a1._rodar_fase7a1()
 	await _f7a2._rodar_fase7a2()
+	await _f7b1._rodar_fase7b1()
 	_fechar_cena()
 
 

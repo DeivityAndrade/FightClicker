@@ -136,6 +136,10 @@ func texto_hud_arte() -> String:
 		pct = int(round(100.0 * gs.bonus_arte_equipe()))
 		if gs.arte_no_teto() and gs.dados.ui.has(chave + "_max"):
 			chave += "_max"
+	elif a.rule.type == "click_crit_bonus":  # 7b1: sem chave em ui_texts, cai no texto padrão (o Roteirista pode trocar)
+		var cc: Dictionary = gs.bonus_arte_critico()
+		return gs.preencher(texto_ui(chave, "MUAY THAI: CRÍTICO {chance}%"), {"chance": int(round(100.0 * float(cc.chance))),
+			"mult": _dec(float(cc.mult), 2).rstrip("0").rstrip(",")})
 	return gs.preencher(texto_ui(chave, ""), {"pct": pct})
 
 
@@ -152,6 +156,10 @@ func texto_regra_arte(id: String) -> String:
 	elif r.type == "crew_time_bonus":
 		vars = {"pct": int(round(100.0 * float(r.start) * e)), "rate": int(round(100.0 * float(r.per_minute) * e)),
 			"cap": int(round(100.0 * float(r.cap) * e))}
+	elif r.type == "click_crit_bonus":  # 7b1: "20% DE CHANCE, x4,1" (com o nó ESTILO: x4,65)
+		var chance: float = minf(1.0, float(gs.dados.crit_chance) + float(r.chance_add))
+		var mult: float = float(gs.dados.crit_multiplier) + float(r.mult_add) * e
+		vars = {"chance": int(round(100.0 * chance)), "mult": _dec(mult, 2).rstrip("0").rstrip(",")}
 	return gs.preencher(str(a.rule_text), vars)
 
 
@@ -195,6 +203,8 @@ func passiva_da_previa(est: Dictionary, det: Dictionary, tatica_id: String) -> D
 			"share": gs.preencher(texto_ui("passive_share_boxing", "{n} EM 10 VITÓRIAS POR K.O."), {"n": n10}), "share_n": n10,
 			"state": {"streak_max": est.streak_max, "ko_max": est.ko_max, "interval": est.interval, "tired_at": est.tired_at,
 				"tired_round": est.tired_round, "tired": not descansa, "tires": not descansa, "opp_counter": est.opp_counter}}
+	if P.type == "shin":
+		return _passiva_shin(est, det, n10)
 	var linha_j := ""
 	if est.grip_in_time:
 		linha_j = gs.preencher(texto_ui("passive_bjj_line", "PEGADA CHEIA NO {r}º ROUND ({t} S). {p}% POR GOLPE PARA FINALIZAR"),
@@ -205,6 +215,32 @@ func passiva_da_previa(est: Dictionary, det: Dictionary, tatica_id: String) -> D
 		"share": gs.preencher(texto_ui("passive_share_bjj", "{n} EM 10 VITÓRIAS POR FINALIZAÇÃO"), {"n": n10}), "share_n": n10,
 		"state": {"grip_full_at": est.grip_full_at, "grip_round": est.grip_round, "grip_in_time": est.grip_in_time,
 			"sub_chance": est.sub_chance}}
+
+
+## Muay Thai (7b1): linha da Canela. `det` traz full_share e full_at (Luta.chance_detalhada). Perna que só enche em menos de
+## metade das lutas troca a linha por `passive_muay_thai_line_late`. Agressivo e Contra-ataque acrescentam o aviso deles.
+func _passiva_shin(est: Dictionary, det: Dictionary, n10: int) -> Dictionary:
+	var compasso := float(gs.lutas.combate.round_length)
+	var share := float(det.get("full_share", 0.0))
+	var full_at := float(det.get("full_at", -1.0))
+	var rodada := (int(floor(full_at / compasso + 1.0e-9)) + 1) if full_at >= 0.0 else 0
+	var tarde := share < 0.5
+	var linha := ""
+	if tarde:
+		linha = gs.preencher(texto_ui("passive_muay_thai_line_late", "A PERNA SÓ ENCHE EM {x} DE 10 LUTAS"), {"x": int(round(10.0 * share))})
+	else:
+		linha = gs.preencher(texto_ui("passive_muay_thai_line", "PERNA CHEIA NO {r}º ROUND ({k} CHUTES). RODADO {p}% POR GOLPE. ELE {s}% MAIS LENTO"),
+			{"r": rodada, "k": est.kicks_to_full, "p": int(round(100.0 * float(est.spin_chance))), "s": int(round(100.0 * float(est.slow_full)))})
+	if float(est.opp_counter) > 0.0:
+		linha += ". " + texto_ui("passive_muay_thai_counter_warn", "ELE CONTRAGOLPEIA")
+	if float(est.marks_per_counter) > 0.0:
+		linha += ". " + texto_ui("passive_muay_thai_counter_marks", "SEU CONTRAGOLPE MARCA A PERNA")
+	return {"name": texto_ui("passive_muay_thai_name", "CANELA"), "kind": "shin", "line": linha,
+		"share": gs.preencher(texto_ui("passive_share_muay_thai", "{n} EM 10 VITÓRIAS POR CHUTE RODADO"), {"n": n10}), "share_n": n10,
+		"state": {"marks_max": est.marks_max, "kicks_to_full": est.kicks_to_full, "full_at": full_at, "full_round": rodada,
+			"full_share": share, "late": tarde, "crit_now": est.crit_now, "crit_full": est.crit_full,
+			"spin_chance": est.spin_chance, "slow_full": est.slow_full, "opp_counter": est.opp_counter,
+			"marks_per_counter": est.marks_per_counter}}
 
 
 ## Nota da passiva no fim da derrota: {id, n, r, text, tip} (text/tip "" se a chave faltar). {} sem nota.

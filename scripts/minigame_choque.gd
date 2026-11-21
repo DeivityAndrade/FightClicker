@@ -4,12 +4,14 @@ extends RefCounted
 ## `apertar()` / `soltar()`. Referência das contas: jogar_choque() de tools/sim/fase7a2_sim.py; números em data/minigames.json.
 ##  Boxe: apertar = clique (empurra); segurar >= hold_is_guard_s = guarda (anula a rajada).
 ##  Jiu-jitsu: segurar = puxa; soltar = não puxa (e anula a puxada forte dele).
+##  Muay Thai (7b1): batida a cada `beat_s`; clique a até `window_s` de uma batida ainda não usada = NO TEMPO (combo +1; o 3º vira
+##  CHUTE); clique fora do tempo = empurrão fraco e o combo zera; segurar = guarda, como o Boxe. Referência: jogar_choque_mt (fase7b1_sim.py).
 ## O roteiro de padrões (rajada/pausa/finta) é sorteado inteiro na criação, com o rng recebido: com a mesma semente e as
 ## mesmas entradas o resultado é idêntico. Depois disso a lógica não sorteia nada.
 
 const PASSO := 0.02  # passo fixo da conta (igual ao simulador)
 
-var arte := "boxing"  # "boxing" | "bjj"
+var arte := "boxing"  # "boxing" | "bjj" | "muay_thai"
 var nivel := 0
 var fase := "contagem"  # "contagem" | "jogando" | "fim"
 var barra := 0.0  # -1 (ele te encostou) .. +1 (você encostou ele)
@@ -18,9 +20,14 @@ var pontos := 0
 var pontos_dele := 0
 var tempo := 0.0  # segundos de jogo decorridos (sem a contagem)
 var saiu := false  # terminou por SAIR antes do tempo
+var combo := 0  # Muay Thai: cliques no tempo seguidos (volta a 0 no chute, no clique errado e a cada ponto)
+var chutes := 0  # Muay Thai: chutes dados (3º clique no tempo)
+var no_tempo := 0
+var fora_do_tempo := 0
 
 var _c: Dictionary  # bloco spar do JSON
-var _v: Dictionary  # variante (boxing | bjj)
+var _v: Dictionary  # variante (boxing | bjj | muay_thai)
+var _usadas := {}  # Muay Thai: batidas já aproveitadas (k -> true)
 var _l: Dictionary  # linha do nível
 var _contagem := 0.0
 var _roteiro: Array = []  # [{tipo, a, i, f}]: aviso de a até i, ativo de i até f
@@ -36,7 +43,7 @@ var _eventos: Array = []
 
 func _init(spar: Dictionary, arte_id: String, nivel_jogo: int, rng: RandomNumberGenerator) -> void:
 	_c = spar
-	arte = arte_id if arte_id in ["boxing", "bjj"] else "boxing"
+	arte = arte_id if arte_id in ["boxing", "bjj", "muay_thai"] and _c.variants.has(arte_id) else "boxing"
 	_v = _c.variants[arte]
 	nivel = clampi(nivel_jogo, 0, _c.levels.size() - 1)
 	_l = _c.levels[nivel]
@@ -69,12 +76,46 @@ func apertar() -> void:
 		return
 	_seg = true
 	_seg_t = 0.0
-	if arte == "boxing" and _congelado <= 0.0:
+	if arte == "muay_thai" and _congelado <= 0.0:
+		_clique_muay_thai()
+	elif arte == "boxing" and _congelado <= 0.0:
 		var pausa := _padrao_ativo_tipo() in ["pause", "feint"]
 		barra += float(_v.push_per_click) * _forca() * (float(_c.counter_mult) if pausa else 1.0)
 		folego = maxf(0.0, folego - float(_v.breath_cost_per_click))
 		_eventos.append("contragolpe" if pausa else "clique")
 		_checar_ponto()
+
+
+## Muay Thai: um clique. A batida k cai em k x beat_s desde o fim da contagem (k >= 1); `tempo` é o relógio do jogo.
+func _clique_muay_thai() -> void:
+	var pausa := _padrao_ativo_tipo() in ["pause", "feint"]
+	var mult := float(_c.counter_mult) if pausa else 1.0
+	var forca := _forca()
+	var beat := float(_v.beat_s)
+	var k := int(round(tempo / beat))
+	if k >= 1 and absf(tempo - float(k) * beat) <= float(_v.window_s) and not _usadas.has(k):
+		_usadas[k] = true
+		combo += 1
+		no_tempo += 1
+		if combo >= int(_v.combo_kick):
+			barra += float(_v.push_kick) * forca * mult
+			folego = maxf(0.0, folego - float(_v.breath_cost_per_click) - float(_v.breath_cost_kick))
+			combo = 0
+			chutes += 1
+			_eventos.append("chute")
+		else:
+			barra += float(_v.push_on_beat) * forca * mult
+			folego = maxf(0.0, folego - float(_v.breath_cost_per_click))
+			_eventos.append("no_tempo")
+	else:
+		fora_do_tempo += 1
+		combo = 0
+		barra += float(_v.push_off_beat) * forca * mult
+		folego = maxf(0.0, folego - float(_v.breath_cost_per_click))
+		_eventos.append("fora_do_tempo")
+	if pausa:
+		_eventos.append("contragolpe")
+	_checar_ponto()
 
 
 ## Larga o botão (Boxe: fim da guarda; JJ: solta).
@@ -122,7 +163,7 @@ func _um_passo() -> void:
 		empurra = 0.0
 	if _seg:
 		_seg_t += PASSO
-	if arte == "boxing":
+	if arte != "bjj":  # Boxe e Muay Thai: clicar; a guarda anula a rajada
 		folego = minf(1.0, folego + float(_v.breath_recover_per_s) * PASSO)
 		if rajada and guardando():
 			empurra *= float(_c.read_mult)
@@ -141,6 +182,8 @@ func _um_passo() -> void:
 
 
 func _checar_ponto() -> void:
+	if barra >= 1.0 or barra <= -1.0:
+		combo = 0  # Muay Thai: ponto marcado ou sofrido zera o combo
 	if barra >= 1.0:
 		pontos += 1
 		barra = 0.0
@@ -186,9 +229,9 @@ func _forca() -> float:
 	return float(_v.weak_min) + (1.0 - float(_v.weak_min)) * folego
 
 
-## Boxe: segurando há tempo de guarda. JJ: sempre false (lá segurar é puxar).
+## Boxe e Muay Thai: segurando há tempo de guarda. JJ: sempre false (lá segurar é puxar).
 func guardando() -> bool:
-	return arte == "boxing" and _seg and _seg_t >= float(_c.hold_is_guard_s)
+	return arte != "bjj" and _seg and _seg_t >= float(_c.hold_is_guard_s)
 
 
 func _padrao_em(t: float) -> Dictionary:
@@ -227,11 +270,41 @@ func estado() -> Dictionary:
 		"barra": barra, "folego": folego, "forca": _forca(), "pontos": pontos, "pontos_dele": pontos_dele,
 		"meta": int(_c.points_goal), "congelado": _congelado > 0.0, "padrao": padrao, "momento": momento, "sinal": sinal,
 		"aviso_frac": frac, "x2": momento == "ativo" and padrao in ["pause", "feint"] and _congelado <= 0.0,
-		"guarda": guardando(), "segurando": _seg, "arte": arte, "nivel": nivel}
+		"guarda": guardando(), "segurando": _seg, "arte": arte, "nivel": nivel,
+		# Muay Thai: combo (0-2), chutes, batida (período, fração dentro da batida 0..1, próxima batida em s) e se agora vale "no tempo"
+		"combo": combo, "chutes": chutes, "beat_s": _beat(), "batida_frac": _batida_frac(), "proxima_batida_s": _proxima_batida(),
+		"na_janela": _na_janela()}
+
+
+func _beat() -> float:
+	return float(_v.get("beat_s", 0.0))
+
+
+## Fração (0..1) do tempo dentro da batida atual; 0 fora do Muay Thai ou fora do jogo.
+func _batida_frac() -> float:
+	if arte != "muay_thai" or fase != "jogando":
+		return 0.0
+	return fposmod(tempo, _beat()) / _beat()
+
+
+## Segundos até a próxima batida (a 1ª cai em beat_s). -1 fora do Muay Thai.
+func _proxima_batida() -> float:
+	if arte != "muay_thai" or fase != "jogando":
+		return -1.0
+	return _beat() - fposmod(tempo, _beat())
+
+
+## Um clique agora contaria "no tempo"? (batida ainda não usada a até window_s de distância)
+func _na_janela() -> bool:
+	if arte != "muay_thai" or fase != "jogando" or _congelado > 0.0:
+		return false
+	var k := int(round(tempo / _beat()))
+	return k >= 1 and absf(tempo - float(k) * _beat()) <= float(_v.window_s) and not _usadas.has(k)
 
 
 ## Eventos desde a última chamada (e esvazia): "clique", "contragolpe", "ponto_jogador", "ponto_dele", "aviso_burst",
 ## "aviso_pause", "aviso_feint", "finta_virou", "inicio_burst", "inicio_pause", "inicio_feint", "fim".
+## Muay Thai troca "clique" por "no_tempo", "chute" (3º no tempo) e "fora_do_tempo" ("contragolpe" também sai na pausa).
 func pegar_eventos() -> Array:
 	var e := _eventos
 	_eventos = []
@@ -254,4 +327,5 @@ func venceu() -> bool:
 
 
 func resultado() -> Dictionary:
-	return {"pontos": pontos, "pontos_dele": pontos_dele, "venceu": venceu(), "nota": nota(), "saiu": saiu, "arte": arte, "nivel": nivel}
+	return {"pontos": pontos, "pontos_dele": pontos_dele, "venceu": venceu(), "nota": nota(), "saiu": saiu, "arte": arte, "nivel": nivel,
+		"chutes": chutes, "no_tempo": no_tempo, "fora_do_tempo": fora_do_tempo}

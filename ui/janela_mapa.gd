@@ -22,7 +22,7 @@ const NIVEIS_NEBLINA := [40.0, 48.0, 56.0, 64.0]  # distância -> nível 0..3; a
 const KIND_SUFIXO := {"small": "s", "milestone": "b", "link": "l"}
 const RAIO_POR_KIND := {"small": 12.0, "milestone": 19.0, "link": 14.0}
 const METADE_ALTURA := {"small": 12.0, "milestone": 19.0, "link": 12.0}
-const ORDEM_REGIOES := ["garage", "gym", "boxing", "bjj", "campaign"]
+const ORDEM_REGIOES := ["garage", "gym", "boxing", "bjj", "muay_thai", "campaign"]  # 7b1: muay_thai
 const CENTRO := ["body", "career", "style"]
 
 var sfx: Sfx
@@ -205,7 +205,7 @@ func _imagem(nome: String) -> Image:
 # --- Fundo: células 8x8, região do nó mais perto até 44 px ---
 
 func _pintar_fundo() -> void:
-	for chave in ["center", "garage", "gym", "boxing", "bjj", "campaign", "wall"]:
+	for chave in ["center", "garage", "gym", "boxing", "bjj", "muay_thai", "campaign", "wall"]:
 		_tiles[chave] = _imagem("map_tile_" + chave)
 	var aberta := {}
 	for r in _info.regions:

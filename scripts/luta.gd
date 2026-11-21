@@ -102,6 +102,8 @@ func estado_passiva(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 			# `tires`: nesta tática o lutador cansa no 3º round (Defensivo não cansa: o intervalo fica em 1,80 s)
 			"tires": float(tp.get("tired_interval_mult", P.tired_interval_mult)) > 1.0 + 1.0e-9,
 			"opp_counter": float(tp.get("opponent_counter", 0.0))}
+	if P.type == "shin":
+		return _estado_shin(ej, ea, P, tp)
 	var tem_r: bool = ej[2] + ea[0] > 0.0
 	var fr := _clamp_fator(2.0 * ej[2] / (ej[2] + ea[0]), P.grip_endurance_min, P.grip_endurance_max) if tem_r else 1.0
 	var taxa := minf(P.grip_rate_max, P.grip_per_round * fr * float(tp.get("grip_mult", 1.0)) * (1.0 + extra_passiva))
@@ -112,6 +114,23 @@ func estado_passiva(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 		"grip_round": int(floor(t_cheia / c.round_length + 1e-9)) + 1,
 		"grip_in_time": t_cheia <= c.time_limit + 1e-9,
 		"end_factor": fr, "str_factor": ff, "sub_chance": minf(P.sub_cap, P.sub_base * ff)}
+
+
+## Muay Thai (Canela, design 7b1 §1.2): marcas por chute, crítico com a perna cheia, chute rodado e lentidão dele. Determinístico.
+func _estado_shin(ej: Array, ea: Array, P: Dictionary, tp: Dictionary) -> Dictionary:
+	var fm := _clamp_fator(2.0 * ej[0] / (ej[0] + ea[2]), P.mark_strength_min, P.mark_strength_max) if ej[0] + ea[2] > 0.0 else 1.0
+	var ganho := minf(P.mark_cap, P.mark_per_kick * fm * float(tp.get("mark_mult", 1.0)) * (1.0 + extra_passiva))
+	var mmax := int(P.marks_max)
+	var chutes := int(ceil(mmax / ganho - 1e-9)) if ganho > 0.0 else 99
+	var fa := _clamp_fator(2.0 * ej[1] / (ej[1] + ea[1]), P.crit_agility_min, P.crit_agility_max) if ej[1] + ea[1] > 0.0 else 1.0
+	var n1: float = golpe(ej, ea, NEUTRA, NEUTRA)[1]  # crítico do jogador contra ele (só depende da AGILIDADE)
+	var cpm: float = P.crit_per_mark * fa
+	var cheio := maxf(n1, minf(P.crit_cap, n1 + mmax * cpm))
+	var sko := minf(1.0, P.spin_ko * float(tp.get("spin_mult", 1.0)))
+	return {"kind": "shin", "str_factor": fm, "mark_gain": ganho, "kicks_to_full": chutes, "marks_max": mmax,
+		"agi_factor": fa, "crit_now": n1, "crit_per_mark": cpm, "crit_full": cheio,
+		"slow_full": P.slow_per_mark * float(tp.get("slow_mult", 1.0)) * mmax, "spin_ko": sko, "spin_chance": cheio * sko,
+		"opp_counter": float(tp.get("opponent_counter", 0.0)), "marks_per_counter": float(tp.get("marks_per_counter", 0.0))}
 
 
 ## Prepara tudo o que é fixo na luta (calculado uma vez, §4.1).
@@ -125,7 +144,7 @@ func preparar(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 	if not passiva.is_empty():
 		est = estado_passiva(jog, adv, tatica_id)
 		tp = passiva.tactics.get(tatica_id, {})
-		if passiva.type == "fast_hands":  # Agressivo: ele contragolpeia quando esquiva (o `counter_mult` da tática DELE)
+		if passiva.type == "fast_hands" or passiva.type == "shin":  # Agressivo: ele contragolpeia quando esquiva (o `counter_mult` da tática DELE)
 			ta = NEUTRA.duplicate()
 			ta["counter_mult"] = float(tp.get("opponent_counter", 0.0))
 	return {
@@ -156,6 +175,8 @@ func lutar_com_sorteios(jog: Array, adv: Array, tatica_id: String, sorteios: Pac
 ## Núcleo. `rng` null = usa a lista `sorteios`.
 func rodar(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
 	if not passiva.is_empty():
+		if passiva.type == "shin":
+			return _rodar_shin(cen, rng, sorteios, registro)
 		return _rodar_arte(cen, rng, sorteios, registro)
 	var limite: float = c.time_limit
 	var intervalo: float = c.attack_interval
@@ -472,6 +493,185 @@ func _rodar_arte(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 	return res
 
 
+## Laço do Muay Thai (porta de _lutar_shin, tools/sim/fase7b1_sim.py). Mesmos 4 sorteios por ataque (r_esq, r_crit, r_var, r_arte;
+## r_arte só vale no chute rodado). Só o acerto normal do jogador marca a perna; as marcas inteiras (lidas ANTES do ataque) deixam
+## o adversário mais lento e sobem o crítico do jogador. Resultado = o de sempre + finish ("damage"|"spin_kick"|"points"),
+## marks_peak, marks_full_at (-1 se não encheu), attempts, spins, opp_counter_damage. Eventos ganham marks, move ("kick"|"crit"|"spin"), finish.
+func _rodar_shin(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
+	var P := passiva
+	var est: Dictionary = cen.est
+	var tp: Dictionary = cen.tp
+	var frente: bool = float(P.need_ahead) >= 0.5
+	var limite: float = c.time_limit
+	var base: float = c.attack_interval
+	var atraso: float = c.counter_delay
+	var spread: float = c.damage_spread
+	var cm: float = c.crit_multiplier
+	var tac: Array = cen.tac
+	var vmax: Array = cen.vmax
+	var num: Array = cen.num
+	var vida := [vmax[0], vmax[1]]
+	var iv_j: float = base * float(P.interval_mult)
+	var mmax := int(P.marks_max)
+	var ganho: float = est.mark_gain
+	var por_contra := float(tp.get("marks_per_counter", 0.0))
+	var lento: float = float(P.slow_per_mark) * float(tp.get("slow_mult", 1.0))
+	var cpm: float = est.crit_per_mark
+	var ccap: float = P.crit_cap
+	var spin_vida: float = P.spin_life_max
+	var sko: float = est.spin_ko
+	var prox := [0.0, 0.0]
+	prox[cen.primeiro] = c.first_attack
+	prox[1 - cen.primeiro] = c.first_attack + base / 2.0
+	var contra_t: Array[float] = []
+	var contra_q: Array[int] = []
+	var cont := {
+		"attacks": [0, 0], "counters": [0, 0], "hits": [0, 0], "dodges": [0, 0], "crits": [0, 0],
+		"damage": [0.0, 0.0],
+	}
+	var dano_contra_dele := 0.0
+	var eventos: Array = []
+	var usados := 0
+	var perna := 0.0  # contínua, 0..mmax; as marcas inteiras são o que a tela mostra
+	var cheia_em := -1.0
+	var tentativas := 0
+	var rodados := 0
+	var finish := ""
+	var t_ko := -1.0
+	var vencedor := -1
+
+	while true:
+		var t: float = prox[0]
+		var tipo := 1
+		var quem := 0
+		if prox[1] < t:
+			t = prox[1]
+			quem = 1
+		var idx_contra := -1
+		for i in contra_t.size():
+			var tc := contra_t[i]
+			var qc := contra_q[i]
+			if tc < t or (tc == t and (tipo == 1 or qc < quem)):
+				t = tc
+				tipo = 0
+				quem = qc
+				idx_contra = i
+		var eh_contra := tipo == 0
+		if t > limite + 1e-9:
+			break
+		var marcas := mini(mmax, int(floor(perna + 1e-9)))
+		if eh_contra:
+			contra_t.remove_at(idx_contra)
+			contra_q.remove_at(idx_contra)
+		elif quem == 0:
+			prox[0] += iv_j
+		else:
+			prox[1] += base * (1.0 + lento * marcas)  # mancando: ele ataca mais devagar
+		var alvo := 1 - quem
+		var n: Array = num[quem]
+		var r_esq: float
+		var r_crit: float
+		var r_var: float
+		var r_arte: float
+		if rng != null:
+			r_esq = rng.randf()
+			r_crit = rng.randf()
+			r_var = rng.randf()
+			r_arte = rng.randf()
+		else:
+			r_esq = sorteios[usados]
+			r_crit = sorteios[usados + 1]
+			r_var = sorteios[usados + 2]
+			r_arte = sorteios[usados + 3]
+			usados += 4
+		cont.attacks[quem] += 1
+		if eh_contra:
+			cont.counters[quem] += 1
+		if not eh_contra and r_esq < n[2]:
+			cont.dodges[alvo] += 1
+			if tac[alvo].counter_mult > 0.0 and t + atraso <= limite + 1e-9:
+				contra_t.append(t + atraso)
+				contra_q.append(alvo)
+			if registro:
+				eventos.append({"t": t, "who": quem, "type": "dodge", "counter": false, "damage": 0.0,
+					"life_after": vida[alvo], "streak": 0, "grip": 0.0, "tired": false, "finish": "",
+					"marks": marcas, "move": ""})
+			continue
+		var crit_p: float = n[1]
+		if quem == 0:
+			crit_p = maxf(crit_p, minf(ccap, crit_p + marcas * cpm))  # cada marca: + crit_per_mark x fator de AGILIDADE
+		var e_crit: bool = r_crit < crit_p
+		var d: float = n[0]
+		if e_crit:
+			d *= 1.0 + (cm - 1.0) * (1.0 - tac[alvo].crit_guard)
+		if eh_contra:
+			d *= tac[quem].counter_mult
+			if quem == 1:
+				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
+		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		vida[alvo] -= d
+		cont.hits[quem] += 1
+		cont.damage[quem] += d
+		if e_crit:
+			cont.crits[quem] += 1
+		var golpe_v := ""
+		if quem == 0:
+			golpe_v = "spin" if (e_crit and marcas >= mmax) else ("crit" if e_crit else "kick")
+		var fim := ""
+		if vida[alvo] <= 1e-9 * vmax[alvo]:
+			fim = "damage"
+		elif quem == 0:
+			if golpe_v == "spin":
+				rodados += 1
+				var portao: bool = not frente or vida[1] * vmax[0] <= vida[0] * vmax[1]
+				if vida[1] <= spin_vida * vmax[1] and portao:
+					tentativas += 1
+					if r_arte < sko:
+						fim = "spin_kick"
+			elif golpe_v == "kick":
+				var g := maxf(ganho, por_contra) if eh_contra else ganho
+				perna = minf(float(mmax), perna + g)
+				if perna >= mmax - 1e-9 and cheia_em < 0.0:
+					cheia_em = t
+		if registro:
+			eventos.append({"t": t, "who": quem, "type": "crit" if e_crit else "hit", "counter": eh_contra,
+				"damage": d, "life_after": maxf(0.0, vida[alvo]), "streak": 0, "grip": 0.0, "tired": false,
+				"finish": fim if fim != "damage" else "", "marks": mini(mmax, int(floor(perna + 1e-9))), "move": golpe_v})
+		if fim != "":
+			finish = fim
+			t_ko = t
+			vencedor = quem
+			break
+
+	var p0: float = maxf(0.0, vida[0]) / vmax[0]
+	var p1: float = maxf(0.0, vida[1]) / vmax[1]
+	var ko := finish != ""
+	var venceu: bool
+	var t_fim: float
+	var round_n := 0
+	if ko:
+		venceu = vencedor == 0
+		t_fim = maxf(t_ko, c.min_ko_time)
+		round_n = int(floor(t_ko / c.round_length)) + 1
+	else:
+		venceu = p0 > p1  # empate exato: vence o adversário
+		t_fim = limite
+		finish = "points"
+	var res := {
+		"win": venceu, "ko": ko, "t_ko": t_ko, "t_end": t_fim, "round": round_n,
+		"pct_player": p0, "pct_opponent": p1,
+		"counts": {"player": _contagem(cont, 0), "opponent": _contagem(cont, 1)},
+		"life_max": vmax.duplicate(), "draws_used": usados,
+		"finish": finish, "streak_peak": 0, "attempts": tentativas,
+		"opp_counter_damage": dano_contra_dele, "grip_full_at": -1.0, "tired_at": -1.0,
+		"tires": false, "ahead_at_tired": false,
+		"marks_peak": mini(mmax, int(floor(perna + 1e-9))), "marks_full_at": cheia_em, "spins": rodados,
+	}
+	if registro:
+		res["events"] = eventos
+	return res
+
+
 ## Pegada (0..1) no instante t; 0 quando a arte não tem pegada (t_cheia < 0).
 func _pegada(t: float, t_cheia: float) -> float:
 	return minf(1.0, t / t_cheia) if t_cheia > 0.0 else 0.0
@@ -485,6 +685,8 @@ func nota_passiva(res: Dictionary, tatica_id: String) -> Dictionary:
 		return {}
 	var vmax_j: float = res.life_max[0]
 	var t_fim: float = res.t_end
+	if passiva.type == "shin":
+		return _nota_shin(res, tatica_id, vmax_j, t_fim)
 	if passiva.type == "fast_hands":
 		var pct := 100.0 * float(res.opp_counter_damage) / vmax_j
 		if tatica_id == "aggressive" and float(res.opp_counter_damage) >= 0.2 * vmax_j:
@@ -504,6 +706,18 @@ func nota_passiva(res: Dictionary, tatica_id: String) -> Dictionary:
 	return {"id": "bjj_never_hurt", "n": 0, "r": rodada}
 
 
+## Motivo da derrota do Muay Thai (design 7b1 §11), a 1ª que valer: mt_counter | mt_marks_late | mt_held | mt_never_hurt.
+func _nota_shin(res: Dictionary, tatica_id: String, vmax_j: float, t_fim: float) -> Dictionary:
+	var cheia: float = res.marks_full_at
+	if tatica_id == "aggressive" and float(res.opp_counter_damage) >= 0.2 * vmax_j:
+		return {"id": "mt_counter", "n": mini(100, int(round(100.0 * float(res.opp_counter_damage) / vmax_j))), "r": 0}
+	if cheia < 0.0 or t_fim < cheia:
+		return {"id": "mt_marks_late", "n": int(res.marks_peak), "r": 0}
+	if int(res.attempts) >= 1:
+		return {"id": "mt_held", "n": int(res.spins), "r": 0}
+	return {"id": "mt_never_hurt", "n": 0, "r": 0}
+
+
 func _contagem(cont: Dictionary, lado: int) -> Dictionary:
 	return {"attacks": cont.attacks[lado], "normal_attacks": cont.attacks[lado] - cont.counters[lado],
 		"hits": cont.hits[lado], "dodges": cont.dodges[lado], "crits": cont.crits[lado],
@@ -521,8 +735,9 @@ func chance(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> float:
 	return float(chance_detalhada(jog, adv, tatica_id, n).chance)
 
 
-## Mesma conta de chance(), contando também quantas vitórias vieram da passiva (K.O. ou finalização).
-## {chance, wins, wins_passive, n}.
+## Mesma conta de chance(), contando também quantas vitórias vieram da passiva (K.O., finalização ou chute rodado).
+## {chance, wins, wins_passive, n}; no Muay Thai também full_share (fração das lutas em que a perna encheu) e
+## full_at (mediana de marks_full_at dessas lutas; -1 se nenhuma).
 func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> Dictionary:
 	if n <= 0:
 		n = dados.risco.samples
@@ -531,15 +746,23 @@ func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> 
 	var sem := PackedFloat64Array()
 	var w := 0
 	var wp := 0
+	var cheias: Array[float] = []
 	for s in range(1, n + 1):
 		rng.seed = s
 		var r := rodar(cen, rng, sem, false)
 		if r.win:
 			w += 1
 			var f: String = r.get("finish", "")
-			if f == "knockout" or f == "submission":
+			if f == "knockout" or f == "submission" or f == "spin_kick":
 				wp += 1
-	return {"chance": float(w) / float(n), "wins": w, "wins_passive": wp, "n": n}
+		if float(r.get("marks_full_at", -1.0)) >= 0.0:
+			cheias.append(float(r.marks_full_at))
+	var res := {"chance": float(w) / float(n), "wins": w, "wins_passive": wp, "n": n}
+	if not passiva.is_empty() and passiva.type == "shin":
+		cheias.sort()
+		res["full_share"] = float(cheias.size()) / float(n)
+		res["full_at"] = cheias[cheias.size() / 2] if not cheias.is_empty() else -1.0
+	return res
 
 
 ## Mesmo resultado que chance(...) >= limiar, parando cedo quando já se sabe.

@@ -64,7 +64,7 @@ func rodar_testes() -> void:
 
 func _teste_dados() -> void:
 	var d := FightData.carregar()
-	checar_igual(d.arvore.size(), 39, "39 nós no mapa (12 antigos + 27 novos)")
+	checar_igual(d.arvore.size(), 43, "43 nós no mapa (12 antigos + 27 novos + 4 do Muay Thai, 7b1)")
 	var total := 0
 	var ramos := {}
 	var barato_por_ramo := {}
@@ -76,7 +76,7 @@ func _teste_dados() -> void:
 			barato_por_ramo[n.branch] = true
 		if int(n.cost) <= 40:
 			ate40[n.branch] = true
-	checar_igual(total, 3175 - 200 + 2400, "custo total dos 12 antigos 5.375 (5.4 baixou 2 preços em 100)")
+	checar_igual(total, 3175 - 200 + 2400 + 1200, "custo total: 5.375 dos antigos (5.4 baixou 2 preços em 100) + 1.200 do ESTILO do Muay Thai (7b1)")
 	checar_igual(ramos.keys().size(), 3, "três ramos (Corpo, Carreira, Estilo)")
 	checar(ramos.has("body") and ramos.has("career") and ramos.has("style"), "ramos body, career e style")
 	checar(not d.no_da_arvore("body_muscle_memory").is_empty() and not d.no_da_arvore("career_scouting").is_empty(),

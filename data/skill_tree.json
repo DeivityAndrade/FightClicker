@@ -14,6 +14,7 @@
 		{"id": "gym", "name": "ACADEMIA", "lock": "gym", "icon": "region_gym"},
 		{"id": "boxing", "name": "BOXE", "lock": "art:boxing", "icon": "region_boxing"},
 		{"id": "bjj", "name": "JIU-JITSU", "lock": "art:bjj", "icon": "region_bjj"},
+		{"id": "muay_thai", "name": "MUAY THAI", "lock": "art:muay_thai", "icon": "region_muay_thai"},
 		{"id": "campaign", "name": "AGENDA", "lock": "", "icon": "region_campaign"},
 		{"id": "link", "name": "", "lock": ""}
 	],
@@ -56,6 +57,10 @@
 		{"id": "link_shout", "region": "link", "kind": "link", "pos": [-6, -4], "root": false, "neighbors": ["gar_rope", "box_wraps"], "cost": 500, "effect": {"type": "crew_click_bonus", "value": 0.5}, "name": "Grito mais alto", "description": "A garagem inteira grita junto.", "effect_text": "GRITO DA EQUIPE: CADA CLIQUE VALE +{n} S", "icon": "skill_shout_loud"},
 		{"id": "link_mat", "region": "link", "kind": "link", "pos": [-6, 4], "root": false, "neighbors": ["gar_radio", "bjj_breath"], "cost": 400, "effect": {"type": "passive_bonus", "value": 0.5}, "name": "Colchão no chão", "description": "Dois colchões velhos e muita vontade.", "effect_text": "+{pct}% TREINO/S DA EQUIPE", "icon": "skill_body_crew"},
 		{"id": "link_mirror", "region": "link", "kind": "link", "pos": [4, -7], "root": false, "neighbors": ["box_footwork", "gym_mirror"], "cost": 400, "effect": {"type": "click_bonus", "value": 0.5}, "name": "Pera emprestada", "description": "A academia empresta. Você devolve suado.", "effect_text": "+{pct}% TREINO POR CLIQUE", "icon": "skill_body_jab"},
-		{"id": "link_ring", "region": "link", "kind": "link", "pos": [10, -1], "root": false, "neighbors": ["gym_league", "camp_diary"], "cost": 300, "effect": {"type": "money_bonus", "value": 0.5}, "name": "Cartaz da liga", "description": "Seu nome impresso. Com acento e tudo.", "effect_text": "+{pct}% DINHEIRO POR VITÓRIA", "icon": "skill_career_purse"}
+		{"id": "link_ring", "region": "link", "kind": "link", "pos": [10, -1], "root": false, "neighbors": ["gym_league", "camp_diary"], "cost": 300, "effect": {"type": "money_bonus", "value": 0.5}, "name": "Cartaz da liga", "description": "Seu nome impresso. Com acento e tudo.", "effect_text": "+{pct}% DINHEIRO POR VITÓRIA", "icon": "skill_career_purse"},
+		{"id": "style_muay_thai", "region": "style", "kind": "milestone", "pos": [4, 4], "root": true, "neighbors": ["mt_shin"], "lock": "art:muay_thai", "requires_art": "muay_thai", "cost": 1200, "effect": {"type": "art_rule_bonus", "value": 0.5}, "name": "Canela de ferro", "description": "O saco comprido já tem a marca da sua perna.", "effect_text": "MUAY THAI: CRÍTICO DO CLIQUE CRESCE {pct}%", "icon": "skill_style_muay_thai", "branch": "style", "requires": ""},
+		{"id": "mt_shin", "region": "muay_thai", "kind": "milestone", "pos": [6, 5], "root": true, "neighbors": ["style_muay_thai", "mt_oil", "mt_rope"], "lock": "art:muay_thai", "requires_art": "muay_thai", "cost": 200, "effect": {"type": "art_fight_bonus", "value": 0.5}, "name": "Chute na coxa", "description": "Sempre no mesmo lugar. Até ele lembrar.", "effect_text": "MUAY THAI: MARCA A PERNA {pct}% MAIS RÁPIDO", "icon": "skill_shin_kick"},
+		{"id": "mt_oil", "region": "muay_thai", "kind": "small", "pos": [8, 4], "root": false, "neighbors": ["mt_shin"], "lock": "art:muay_thai", "requires_art": "muay_thai", "cost": 400, "effect": {"type": "art_rule_bonus", "value": 0.25}, "name": "Óleo de massagem", "description": "Cheiro de cânfora. A canela agradece.", "effect_text": "MUAY THAI: CRÍTICO DO CLIQUE CRESCE {pct}%", "icon": "skill_style_muay_thai"},
+		{"id": "mt_rope", "region": "muay_thai", "kind": "small", "pos": [6, 7], "root": false, "neighbors": ["mt_shin"], "lock": "art:muay_thai", "requires_art": "muay_thai", "cost": 300, "effect": {"type": "click_bonus", "value": 0.25}, "name": "Pé de pluma", "description": "Pula leve. Chuta pesado.", "effect_text": "+{pct}% TREINO POR CLIQUE", "icon": "skill_body_jab"}
 	]
 }

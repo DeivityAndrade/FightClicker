@@ -94,8 +94,9 @@ func _teste_arte_do_jogador() -> void:
 		if not acoes.has(anim):
 			continue
 		com_arte += 1
-		# 7a1: golpes com `phase` (Jiu-jitsu) só existem para o discípulo: só a folha `_disc` é exigida.
-		var sufixos: Array = ["_disc"] if str(m.golpes[id].phase) != "" else ["", "_glove_l1", "_glove_l2", "_glove_l3"]
+		# 7a1/7b1: golpes com `phase` e os estilos de arte (Jiu-jitsu, Muay Thai) só existem para o discípulo: só a folha `_disc` é exigida.
+		var so_disc: bool = str(m.golpes[id].phase) != "" or str(m.golpes[id].style) in ["bjj", "muay_thai"]
+		var sufixos: Array = ["_disc"] if so_disc else ["", "_glove_l1", "_glove_l2", "_glove_l3"]
 		for suf in sufixos:
 			var nome: String = str(acoes[anim]) + suf
 			var e: Dictionary = man.sprites.get(nome, {})
@@ -178,8 +179,8 @@ func _teste_reacoes() -> void:
 		var r := str(m.golpes[id].defender_anim)
 		if r == "":
 			continue
-		if str(m.golpes[id].style) == "bjj":
-			# 7a1: golpes do jogador de Jiu-jitsu: quem apanha é o adversário (os 6 do rig comum)
+		if str(m.golpes[id].style) in ["bjj", "muay_thai"]:
+			# 7a1/7b1: golpes do jogador de Jiu-jitsu e de Muay Thai: quem apanha é o adversário (os 6 do rig comum)
 			for oid in ["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2"]:
 				checar(man.by_data_id[oid].actions.has(r), "o golpe %s aponta a reação %s, que existe em %s" % [id, r, oid])
 		else:

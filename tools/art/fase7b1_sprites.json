@@ -1,0 +1,379 @@
+{
+	"art_card_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			72,
+			56
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/art_card_muay_thai.png"
+	},
+	"art_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/art_muay_thai.png"
+	},
+	"art_muay_thai_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/art_muay_thai_9.png"
+	},
+	"icon_kick_bag": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_kick_bag.png"
+	},
+	"icon_kick_bag_locked": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_kick_bag_locked.png"
+	},
+	"icon_kick_bag_locked_buyable": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_kick_bag_locked_buyable.png"
+	},
+	"icon_region_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_region_muay_thai.png"
+	},
+	"icon_region_muay_thai_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_region_muay_thai_9.png"
+	},
+	"icon_shin": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_shin.png"
+	},
+	"kick_bag_l0_hit": {
+		"fps": 12.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l0_hit.png"
+	},
+	"kick_bag_l0_idle": {
+		"fps": 3.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l0_idle.png"
+	},
+	"kick_bag_l0_rest": {
+		"fps": 0.0,
+		"frame_size": [
+			80,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			40,
+			25
+		],
+		"rel": "equipment/kick_bag_l0_rest.png"
+	},
+	"kick_bag_l0_rest_gym": {
+		"fps": 0.0,
+		"frame_size": [
+			80,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			40,
+			25
+		],
+		"rel": "equipment/kick_bag_l0_rest_gym.png"
+	},
+	"kick_bag_l1_hit": {
+		"fps": 12.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l1_hit.png"
+	},
+	"kick_bag_l1_idle": {
+		"fps": 3.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l1_idle.png"
+	},
+	"kick_bag_l1_rest": {
+		"fps": 0.0,
+		"frame_size": [
+			80,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			40,
+			25
+		],
+		"rel": "equipment/kick_bag_l1_rest.png"
+	},
+	"kick_bag_l1_rest_gym": {
+		"fps": 0.0,
+		"frame_size": [
+			80,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			40,
+			25
+		],
+		"rel": "equipment/kick_bag_l1_rest_gym.png"
+	},
+	"map_node_b_owned_orange": {
+		"fps": 0.0,
+		"frame_size": [
+			38,
+			38
+		],
+		"frames": 1,
+		"pivot": [
+			19,
+			19
+		],
+		"rel": "ui/map/map_node_b_owned_orange.png"
+	},
+	"map_node_s_owned_orange": {
+		"fps": 0.0,
+		"frame_size": [
+			24,
+			24
+		],
+		"frames": 1,
+		"pivot": [
+			12,
+			12
+		],
+		"rel": "ui/map/map_node_s_owned_orange.png"
+	},
+	"map_tile_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			32,
+			32
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/map/map_tile_muay_thai.png"
+	},
+	"skill_shin_kick": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_shin_kick.png"
+	},
+	"skill_style_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_style_muay_thai.png"
+	},
+	"skill_thai_oil": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_thai_oil.png"
+	},
+	"skill_thai_rope": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_thai_rope.png"
+	},
+	"ui_art_card_header_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			14
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_art_card_header_muay_thai.png"
+	},
+	"ui_banner_marks_full": {
+		"fps": 0.0,
+		"frame_size": [
+			134,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			67,
+			14
+		],
+		"rel": "ui/ui_banner_marks_full.png"
+	},
+	"ui_banner_spin_kick": {
+		"fps": 0.0,
+		"frame_size": [
+			221,
+			40
+		],
+		"frames": 1,
+		"pivot": [
+			110,
+			20
+		],
+		"rel": "ui/ui_banner_spin_kick.png"
+	},
+	"ui_map_region_label_muay_thai": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			13
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/map/ui_map_region_label_muay_thai.png"
+	},
+	"ui_shin_mark": {
+		"fps": 0.0,
+		"frame_size": [
+			11,
+			11
+		],
+		"frames": 4,
+		"pivot": [
+			5,
+			5
+		],
+		"rel": "ui/ui_shin_mark.png"
+	}
+}
