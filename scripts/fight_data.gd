@@ -6,6 +6,8 @@ extends RefCounted
 
 const CAMINHO_LUTAS := "res://data/fights.json"
 const CAMINHO_ADVERSARIOS := "res://data/opponents.json"
+const CAMINHO_LIGA := "res://data/league_regional.json"  # 8a1: a liga regional entra na escada depois do Kid
+const TIPOS_PASSIVA_JOGADOR := ["fast_hands", "submission", "shin", "counter_punch", "top_control", "thai_clinch"]
 const CAMINHO_LOJA := "res://data/shop.json"
 const CAMINHO_CARREIRA := "res://data/career.json"
 const CAMINHO_ARVORE := "res://data/skill_tree.json"
@@ -61,6 +63,7 @@ var tatica_padrao := PADRAO_TATICA
 var risco: Dictionary = {}
 var motivo: Dictionary = {}
 var adversarios: Array[Dictionary] = []
+var liga: Dictionary = {}  # 8a1: {id, after, location, fight_arena} da liga regional ({} = sem liga)
 var geradores_pagos: Array[Dictionary] = []
 var luva_id := "glove_shop"
 var luva_base: Dictionary = {}
@@ -79,10 +82,16 @@ var crew_click: Dictionary = {}  # Fase 5.2: {id, cost, crew_share, icon, name, 
 
 
 static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios: String = CAMINHO_ADVERSARIOS,
-		caminho_loja: String = CAMINHO_LOJA, caminho_carreira: String = CAMINHO_CARREIRA, caminho_arvore: String = CAMINHO_ARVORE) -> FightData:
+		caminho_loja: String = CAMINHO_LOJA, caminho_carreira: String = CAMINHO_CARREIRA, caminho_arvore: String = CAMINHO_ARVORE,
+		caminho_liga: String = "auto") -> FightData:
 	var d := FightData.new()
 	d._ler_lutas(TrainingData._ler_json(caminho_lutas))
 	d._ler_adversarios(TrainingData._ler_json(caminho_adversarios))
+	# 8a1: a liga entra no fim da escada. "auto" = só com o arquivo de adversários de sempre (testes com outro arquivo seguem sem liga).
+	if caminho_liga == "auto":
+		caminho_liga = CAMINHO_LIGA if caminho_adversarios == CAMINHO_ADVERSARIOS else ""
+	if caminho_liga != "" and FileAccess.file_exists(caminho_liga):
+		d._ler_liga(TrainingData._ler_json(caminho_liga))
 	d._ler_loja(TrainingData._ler_json(caminho_loja))
 	d._ler_carreira(TrainingData._ler_json(caminho_carreira))
 	d._ler_arvore(TrainingData._ler_json(caminho_arvore))
@@ -109,6 +118,29 @@ func indice_cinturao() -> int:
 		if adversarios[i].belt:
 			return i
 	return -1
+
+
+## 8a1: índice do adversário que dá o cinturão regional (o 1º com `regional_belt`), -1 se não há liga.
+func indice_cinturao_regional() -> int:
+	for i in adversarios.size():
+		if adversarios[i].get("regional_belt", false):
+			return i
+	return -1
+
+
+## 8a1: indice do ultimo adversario de fora da liga (o Kid): a escada de antes da liga termina nele.
+func indice_do_kid() -> int:
+	var k := adversarios.size() - 1
+	while k > 0 and str(adversarios[k].get("league", "")) != "":
+		k -= 1
+	return k
+
+
+## 8a1: arena da liga do adversário ("" se ele não é da liga).
+func arena_da_liga(opp: Dictionary) -> String:
+	if str(opp.get("league", "")) == "" or liga.is_empty():
+		return ""
+	return str(liga.fight_arena)
 
 
 ## Índice do 1º adversário que só luta em `local_id` (ex.: "gym"), -1 se nenhum.
@@ -264,6 +296,76 @@ func _ler_adversarios(dados: Dictionary) -> void:
 		push_warning("FightData: nenhum adversário válido, usando os padrões.")
 		for item in PADRAO_ADVERSARIOS:
 			adversarios.append(_montar_adversario(item, item.id, item))
+
+
+# 8a1: liga regional. Arquivo inválido ou sem adversário bom = sem liga (a escada é a de antes). Adversário ruim sai com aviso.
+func _ler_liga(dados: Dictionary) -> void:
+	var lista = dados.get("opponents", [])
+	if not (lista is Array) or adversarios.is_empty():
+		return
+	var liga_id := TrainingData._txt(dados, "id", "regional")
+	var ids := {}
+	for a in adversarios:
+		ids[a.id] = true
+	var novos: Array[Dictionary] = []
+	for item in lista:
+		if not (item is Dictionary):
+			continue
+		var id := str(item.get("id", ""))
+		if id.is_empty() or ids.has(id):
+			push_warning("FightData: adversário da liga com id vazio ou repetido ('%s') ignorado." % id)
+			continue
+		ids[id] = true
+		var a := _montar_adversario(item, id, _padrao_adversario(id))
+		a["league"] = liga_id
+		a["regional_belt"] = item.get("regional_belt", false) == true
+		a["passive"] = _validar_passiva_adv(item.get("passive", null), id)
+		novos.append(a)
+	if novos.is_empty():
+		return
+	adversarios.append_array(novos)
+	liga = {"id": liga_id, "after": TrainingData._txt(dados, "after", ""), "location": TrainingData._txt(dados, "location", "gym"),
+		"fight_arena": TrainingData._txt(dados, "fight_arena", "arena")}
+
+
+## Passiva do adversário: {id, locks {tipo: {campo: mult 0-5}}, guard {rounds 1-3, taken_mult 0-1}}. Inválida = {} (sem passiva, com aviso).
+func _validar_passiva_adv(v: Variant, id: String) -> Dictionary:
+	if v == null:
+		return {}
+	if not (v is Dictionary) or str(v.get("id", "")).is_empty():
+		push_warning("FightData: passiva de '%s' inválida; sem passiva." % id)
+		return {}
+	var r := {"id": str(v.id)}
+	var locks = v.get("locks", {})
+	if locks is Dictionary:
+		var ok := {}
+		for tipo in locks:
+			if not (str(tipo) in TIPOS_PASSIVA_JOGADOR) or not (locks[tipo] is Dictionary):
+				push_warning("FightData: trava '%s' de '%s' ignorada." % [str(tipo), id])
+				continue
+			var campos := {}
+			for campo in locks[tipo]:
+				var m = locks[tipo][campo]
+				if (m is float or m is int) and float(m) >= 0.0 and float(m) <= 5.0:
+					campos[str(campo)] = float(m)
+				else:
+					push_warning("FightData: trava %s.%s de '%s' fora de 0-5; ignorada." % [str(tipo), str(campo), id])
+			if not campos.is_empty():
+				ok[str(tipo)] = campos
+		if not ok.is_empty():
+			r["locks"] = ok
+	var g = v.get("guard", null)
+	if g is Dictionary:
+		var rounds = g.get("rounds", null)
+		var tm = g.get("taken_mult", null)
+		if (rounds is float or rounds is int) and float(rounds) >= 1.0 and float(rounds) <= 3.0 and float(rounds) == floorf(float(rounds)) 				and (tm is float or tm is int) and float(tm) >= 0.0 and float(tm) <= 1.0:
+			r["guard"] = {"rounds": int(rounds), "taken_mult": float(tm)}
+		else:
+			push_warning("FightData: guarda de '%s' inválida; ignorada." % id)
+	if not r.has("locks") and not r.has("guard"):
+		push_warning("FightData: passiva '%s' de '%s' sem trava nem guarda; sem passiva." % [r.id, id])
+		return {}
+	return r
 
 
 # Fase 5: adversário de outro local antes de um da garagem trava a escada na garagem.

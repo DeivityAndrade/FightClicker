@@ -1,0 +1,117 @@
+{
+	"_doc": "Fase 8a1 (docs/fases/fase8a1-design.md). Liga regional: abre ao vencer o Kid (after); as 4 lutas saem da academia (location gym), na arena regional, e entram na escada DEPOIS dos 6 de opponents.json (o indice so cresce). passive.locks = multiplicadores nos campos da passiva do JOGADOR, por tipo de passiva (so na luta contra ele; prévia, risco, motivo e luta usam o mesmo). passive.guard = guarda fechada: dano NELE x taken_mult enquanto t < rounds x round_length. Nomes e textos [ROT] (docs/fases/fase8a1-textos.md).",
+	"id": "regional",
+	"after": "opp_gym_2",
+	"location": "gym",
+	"fight_arena": "arena_regional",
+	"opponents": [
+		{
+			"id": "opp_reg_1",
+			"location": "gym",
+			"league": "regional",
+			"name": "Zé Bigorna",
+			"description": "O Queixo Duro. Já tomou de tudo e nunca se queixou.",
+			"entry": "Pode bater. Eu espero.",
+			"wins_line": "Eu avisei: queixo é herança.",
+			"loses_line": "Tá. Doeu. Um pouquinho.",
+			"profile": "RESISTENTE",
+			"strength": 28000000,
+			"agility": 12000000,
+			"endurance": 80000000,
+			"prize_money": 9000,
+			"prize_fame": 260,
+			"prep_days": 16,
+			"belt": false,
+			"passive": {
+				"id": "adv_iron_chin",
+				"locks": {
+					"fast_hands": {
+						"ko_per_streak": 0.0,
+						"ko_cap": 0.0
+					}
+				}
+			}
+		},
+		{
+			"id": "opp_reg_2",
+			"location": "gym",
+			"league": "regional",
+			"name": "Tião Estaca",
+			"description": "O Pé de Cimento. Quem tenta derrubar acaba cavando.",
+			"entry": "Pode empurrar. Eu cresci aqui.",
+			"wins_line": "Plantei e ficou.",
+			"loses_line": "Arrancaram a raiz. Que feio.",
+			"profile": "FORTE",
+			"strength": 50000000,
+			"agility": 25000000,
+			"endurance": 125000000,
+			"prize_money": 12000,
+			"prize_fame": 300,
+			"prep_days": 16,
+			"belt": false,
+			"passive": {
+				"id": "adv_wide_base",
+				"locks": {
+					"top_control": {
+						"td_base": 0.25,
+						"td_cap": 0.25
+					}
+				}
+			}
+		},
+		{
+			"id": "opp_reg_3",
+			"location": "gym",
+			"league": "regional",
+			"name": "Rony Sabão",
+			"description": "O Escorrega. Sai de qualquer abraço sem deixar recibo.",
+			"entry": "Me segura, se for capaz.",
+			"wins_line": "Nem me tocou. Que pena.",
+			"loses_line": "Escorreguei na própria fama.",
+			"profile": "RÁPIDO",
+			"strength": 64000000,
+			"agility": 160000000,
+			"endurance": 96000000,
+			"prize_money": 16000,
+			"prize_fame": 340,
+			"prep_days": 16,
+			"belt": false,
+			"passive": {
+				"id": "adv_slippery",
+				"locks": {
+					"thai_clinch": {
+						"clinch_base": 0.3,
+						"clinch_cap": 0.3,
+						"escape_base": 2.0
+					}
+				}
+			}
+		},
+		{
+			"id": "opp_james",
+			"location": "gym",
+			"league": "regional",
+			"name": "James Blindado",
+			"description": "O que a bala não fura. Acha a Raízes uma piada.",
+			"entry": "Então é essa a Raízes? Fofo.",
+			"wins_line": "Academia de verdade se vê no cartaz.",
+			"loses_line": "Sorte. Escola pequena tem isso.",
+			"profile": "RESISTENTE",
+			"strength": 60000000,
+			"agility": 200000000,
+			"endurance": 300000000,
+			"prize_money": 30000,
+			"prize_fame": 500,
+			"prep_days": 20,
+			"belt": false,
+			"regional_belt": true,
+			"passive": {
+				"id": "adv_blindado",
+				"guard": {
+					"rounds": 1,
+					"taken_mult": 0.6
+				}
+			}
+		}
+	]
+}

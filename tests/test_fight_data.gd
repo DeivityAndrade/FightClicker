@@ -15,9 +15,9 @@ func rodar_testes() -> void:
 
 func _teste_dados_reais() -> void:
 	var d := FightData.carregar()
-	checar_igual(d.adversarios.size(), 6, "6 adversários (4 da garagem + 2 da academia)")
+	checar_igual(d.adversarios.size(), 10, "10 adversários (4 da garagem + 2 da academia + 4 da liga regional)")
 	checar_igual(d.adversarios.map(func(a: Dictionary) -> String: return a.id),
-		["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2"], "ordem da escada")
+		["opp_warmup", "opp_strong", "opp_fast", "opp_tank", "opp_gym_1", "opp_gym_2", "opp_reg_1", "opp_reg_2", "opp_reg_3", "opp_james"], "ordem da escada")
 	var dudu := d.adversario("opp_warmup")
 	checar_igual([dudu.strength, dudu.agility, dudu.endurance], [1200.0, 100.0, 800.0], "Dudu 1.20K / 100 / 800")
 	checar_igual([dudu.prize_money, dudu.prize_fame, dudu.belt], [50.0, 10.0, false], "Dudu: $50, 10 de fama")

@@ -413,6 +413,15 @@ func textos_fim(f: Dictionary = {}) -> Dictionary:
 		saida["passive_note"] = nota.text
 		saida["passive_note_tip"] = nota.tip
 		saida["passive_note_id"] = nota.id
+	# 8a1: a passiva DELE pesou: ocupa a linha da passiva (a nota da sua arte nao aparece nesta derrota). opp_note* tambem vao separados.
+	var nota_adv: Dictionary = gs._liga.textos_nota(r.get("opp_note", {}), semente)
+	if not nota_adv.is_empty():
+		saida["opp_note"] = nota_adv.text
+		saida["opp_note_tip"] = nota_adv.tip
+		saida["opp_note_id"] = nota_adv.id
+		saida["passive_note"] = nota_adv.text
+		saida["passive_note_tip"] = nota_adv.tip
+		saida["passive_note_id"] = nota_adv.id
 	return saida
 
 

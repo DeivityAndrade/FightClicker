@@ -21,8 +21,13 @@ func _atributos_cru() -> Array:
 	return [gs.atributos.get("strength", 0.0), gs.atributos.get("agility", 0.0), gs.atributos.get("endurance", 0.0)]
 
 
+## [F, A, R] e, com passiva dele (8a1, liga regional), a passiva como 4º item. O motor entende os dois formatos.
 func _array_adversario(opp: Dictionary) -> Array:
-	return [opp.strength, opp.agility, opp.endurance]
+	var a: Array = [opp.strength, opp.agility, opp.endurance]
+	var pv = opp.get("passive", {})
+	if pv is Dictionary and not pv.is_empty():
+		a.append(pv)
+	return a
 
 
 func definir_tatica(tatica_id: String) -> bool:
@@ -98,6 +103,7 @@ func previa() -> Dictionary:
 		r["passive_share"] = atual.get("share", "")
 		r["passive_share_n"] = atual.get("share_n", 0)
 		r["passive_tactics"] = passivas
+	r.merge(gs._liga.chaves_previa(opp))  # 8a1: a passiva do adversario (so quem tem)
 	if gs.aquecido():
 		r.merge(gs._treino.extras_previa(riscos, cru, adv, com_passiva))  # 7a2: a prévia mostra o AQUECIDO e o quanto ele pesa
 	return r
@@ -197,6 +203,7 @@ func lutar() -> Dictionary:
 	var jog := _atributos_array()
 	var semente := int(gs.rng.randi())
 	var res := gs.motor.lutar(jog, _array_adversario(opp), gs.tatica, semente, false)
+	var falas := gs._liga.falas_da_luta(bool(res.win))  # 8a1: o James: grava rival_spoke ja (o save logo abaixo leva junto)
 	gs.luta = {"opponent": opp.id, "tactic": gs.tatica, "seed": semente,
 		"player": {"strength": jog[0], "agility": jog[1], "endurance": jog[2]},
 		"result": _resultado_salvo(res)}
@@ -207,6 +214,7 @@ func lutar() -> Dictionary:
 	# vitória e na derrota); na vitória é descartado. Fica salvo antes de concluir_luta().
 	_iniciar_motivo_fundo()
 	var info := luta_atual()
+	info.merge(falas)  # 8a1: intro_lines / intro_falas / outro_line / outro_fala (so contra o James); nao muda resultado nem screen_seconds
 	gs.luta_iniciada.emit(info)
 	return info
 
@@ -245,6 +253,9 @@ func aguardar_motivo() -> void:
 func _resultado_salvo(res: Dictionary) -> Dictionary:
 	var r := {"win": res.win, "ko": res.ko, "t_ko": res.t_ko, "t_end": res.t_end, "round": res.round,
 		"pct_player": res.pct_player, "pct_opponent": res.pct_opponent}
+	if res.has("opp_blocks"):  # 8a1: contra adversario com passiva: quantos acertos a trava segurou e quanto a guarda absorveu
+		r["opp_blocks"] = res.opp_blocks
+		r["guard_absorbed"] = res.guard_absorbed
 	if res.has("finish"):  # 7a1: só lutas com arte; save sem ele = "damage" se ko, senão "points"
 		r["finish"] = res.finish
 	return r
@@ -254,6 +265,9 @@ func _resultado_salvo(res: Dictionary) -> Dictionary:
 ## "arena" = borracharia; "arena_league" = ginásio da liga da academia. A arte do cenário mora no manifest.
 func arena_da_luta(adversario_id: String) -> String:
 	var opp := gs.lutas.adversario(adversario_id)
+	var arena_liga := gs.lutas.arena_da_liga(opp)  # 8a1: a liga regional tem a arena dela
+	if arena_liga != "":
+		return arena_liga
 	var local_id := str(opp.get("location", gs.academia.local_padrao)) if not opp.is_empty() else gs.academia.local_padrao
 	return str(gs.academia.local(local_id).get("fight_arena", "arena"))
 
@@ -371,6 +385,8 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 			# do evento) e o que o jogador fez em `passive_move` (takedown | ground | clinch | knee | hit | "")
 			"charge": int(e.get("charge", 0)), "ground": bool(e.get("ground", false)), "clinch": bool(e.get("clinch", false)),
 			"passive_move": p2_golpe,
+			# 8a1: a passiva dele mudou este acerto (sinal: AGUENTOU! | NAO CAIU | ESCAPOU!) / o acerto caiu na guarda fechada dele
+			"opp_block": bool(e.get("opp_block", false)), "guard": bool(e.get("guard", false)),
 		})
 		fase = fase_depois
 	var perdedor := -1
@@ -395,6 +411,11 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 		# `tires`: o lutador cansa nesta luta (Boxe fora do Defensivo). O evento `tired` só fica true quando `tires` é true.
 		"tires": bool(res.get("tires", false)),
 	}
+	var pas_adv := gs._liga.info_luta(opp)  # 8a1: passiva dele ({} = nenhuma): id, name, icon, block_text, guard_until, guard_*_text
+	if not pas_adv.is_empty():
+		info["opp_passive"] = pas_adv
+		info["opp_blocks"] = int(res.get("opp_blocks", 0))
+		info["guard_absorbed"] = float(res.get("guard_absorbed", 0.0))
 	if eh_mt:  # 7b1: dados do HUD das marcas e do letreiro (só com Muay Thai)
 		info["marks_max"] = int(passiva.marks_max)
 		info["limp_from_marks"] = int(passiva.limp_from_marks)
@@ -442,6 +463,8 @@ func concluir_luta() -> Dictionary:
 		gs.indice_escada += 1
 		if opp.belt:
 			gs.cinturao = true
+		gs._liga.registrar_luta(opp, true)  # 8a1: placar contra o James
+		var liga := gs._liga.ao_vencer(opp)  # 8a1: abre a liga (Kid) / cinturao regional (James); marcos e falas do Osmar
 		# Fase 6a: marcos da escola, gravados no mesmo save do prêmio. A garagem só é salva por vitória AO VIVO
 		# sobre o adversário do cinturão (qualquer lutador da escola); nunca por belts_won.
 		var recorde := int(gs.permanente.best_wins) > 0 and gs.indice_escada > int(gs.permanente.best_wins)
@@ -472,6 +495,7 @@ func concluir_luta() -> Dictionary:
 			# passive2_unlocked = id da arte cuja 2ª passiva abriu AGORA ("" nas outras); passive2_line = o aviso único (texto pronto)
 			"passive_goal": meta, "passive2_unlocked": str(meta.get("art", "")) if bool(meta.get("unlocked_now", false)) else "",
 			"passive2_line": str(meta.get("text", ""))}
+		resumo.merge(liga)  # 8a1: so ao vencer o Kid (league_opened) ou o James (regional_belt, first_regional_belt); nos outros nem existe
 		gs.dinheiro_mudou.emit(gs.dinheiro)
 		gs.fama_mudou.emit(gs.fama)
 		gs.escada_mudou.emit()
@@ -486,6 +510,7 @@ func concluir_luta() -> Dictionary:
 		atualizar_risco_hud()
 	else:
 		var motivo := motivo_da_luta(snap)
+		gs._liga.registrar_luta(opp, false)  # 8a1: placar contra o James (no mesmo save do fim)
 		gs.luta = {}
 		gs._carreira._encerrar_carreira("defeat", snap, motivo)
 		resumo = {"win": false, "fim": gs.fim.duplicate(true)}
@@ -543,4 +568,7 @@ func _calcular_motivo(snap: Dictionary) -> Dictionary:
 	# 7a1: com arte, 1 linha extra quando a passiva pesou ({id, n, r} ou {}); sem arte a chave nem existe (save igual ao de antes).
 	if not gs.motor.passiva.is_empty():
 		r["passive_note"] = gs.motor.nota_passiva(res, tat)
+	# 8a1: a passiva DELE pesou ({id, n}); so contra adversario com passiva (a chave nem existe nos outros)
+	if adv.size() > 3:
+		r["opp_note"] = gs.motor.nota_adversario(res, adv)
 	return r

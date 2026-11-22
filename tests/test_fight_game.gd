@@ -472,7 +472,7 @@ func _teste_save_invalido() -> void:
 		"fame": -3, "play_seconds": "x", "paid_generators": {"gen_paid_1": -4}}, "permanent": {"career_number": 0,
 		"legacy_total": -9}})
 	checar_igual(gs.nivel_luva, gs.lutas.luvas.size(), "glove_level recortado ao máximo")
-	checar_igual(gs.indice_escada, 6, "ladder_index recortado ao nº de adversários")
+	checar_igual(gs.indice_escada, 10, "ladder_index recortado ao nº de adversários")
 	checar(gs.cinturao, "cinturão com a escada passada do Muralha")
 	checar_igual(gs.tatica, "defensive", "tática inválida = padrão")
 	checar_igual(gs.dinheiro, 0.0, "dinheiro negativo = 0")

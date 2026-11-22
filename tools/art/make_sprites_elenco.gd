@@ -36,7 +36,8 @@ var MOCK_GYM_ARENA := ROOT + "docs/arte/mockups/academia_adversarios_arena_x2.pn
 const HELPERS := ["neighbor_1", "neighbor_2", "neighbor_3", "uncle_1", "uncle_2", "coach_1"]
 const LIGHT_C := Vector2(305, 90)   # lâmpada da garagem (mesma do fundo)
 const PORTRAIT_BG := {"opp_warmup": ["gr0", "gr1"], "opp_strong": ["r0", "r1"], "opp_fast": ["b0", "b2"], "opp_tank": ["br1", "y0"],
-	"opp_gym_1": ["p0", "p1"], "opp_gym_2": ["st0", "st2"]}
+	"opp_gym_1": ["p0", "p1"], "opp_gym_2": ["st0", "st2"],
+	"opp_reg_1": ["r0", "st1"], "opp_reg_2": ["g0", "g2"], "opp_reg_3": ["b0", "b2"], "opp_james": ["d1", "y0"]}
 
 var L
 var P
@@ -147,6 +148,87 @@ const HEAD_KID := [   # degradê baixo com risco de navalha (R) no lado, topo cu
 	"....SSsssss...",
 	".....SSSs.....",
 ]
+## ---------------------------------------------------------------- Fase 8a1: liga regional (mesma geometria de rosto)
+const HEAD_BIGORNA := [   # escovinha reta (flat-top), sobrancelha grossa e baixa, nariz quebrado largo, QUEIXO quadrado enorme
+	"..HHHHHHHHH...",
+	"..HhhhhhhhhH..",
+	".HHHHHHHHHHH..",
+	".HHHHHHHHHHHl.",
+	"HHHHHHHsssll..",
+	"HHHHHHsbbbbl..",
+	"HHHEEssssesll.",
+	"HHHEsEssssslll",
+	".HHEEsssssssl.",
+	".HHSsssssssss.",
+	".SSsssssssssl.",
+	".SSSSssssmSsl.",
+	"..SSSssssssSs.",
+	"...SSSSSSSSS..",
+]
+const HEAD_ESTACA := [    # careca com brilho no alto, coroa de cabelo atrás, barba cheia e bigode (boca aparece no meio)
+	"....SSSSSS....",
+	"..SSsssllsSS..",
+	".SSssssllllsS.",
+	".Sssssssssssl.",
+	"HSssssssssll..",
+	"HHsssssbbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	".HHEEssssssll.",
+	".HHHHssssssss.",
+	"..HHHHsssHHH..",
+	"...HHHHHmmHH..",
+	"...HHHHHHHHH..",
+	"....HHHHHHH...",
+]
+const HEAD_SABAO := [     # cabelo lambido para trás com gel (faixas de brilho), rabicho na nuca; bigode fino pelo parâmetro
+	"..HHHHHHH.....",
+	".HHhhhhhHHH...",
+	"HHhHHHHhhHHH..",
+	"HHHHHHHHHHHHl.",
+	"HHHHHHHsssll..",
+	"HHHHHHssbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	"HHHEEssssssll.",
+	"HHHHsssssssss.",
+	"HHHSssssssss..",
+	"HH.SSssssmSs..",
+	".H..SSsssss...",
+	".....SSSss....",
+]
+const HEAD_JAMES := [     # topete loiro alto que avança sobre a testa, queixo forte para a frente
+	"....HhhhhhH...",
+	"..HHhhhhhhhhH.",
+	".HHHhhhHHHhhH.",
+	".HHHHHHHHHHHH.",
+	"HHHHHHHsssll..",
+	"HHHHHHssbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	".HHEEssssssll.",
+	".HHHsssssssss.",
+	"..HSssssssss..",
+	"...SSssssmSs..",
+	"...SSSsssssl..",
+	"....SSSSSSS...",
+]
+## Expressões próprias (linhas inteiras trocadas, como FACES_SIDE).
+const FACES_JAMES := {
+	"smirk": {4: "HHHHHHHsbbbl..", 5: "HHHHHHssSSsl..", 10: "..HSssssssxs.."},   # sobrancelha erguida, pálpebra, canto da boca
+	"sneer": {5: "HHHHHHsbbbbl..", 10: "..HSssssssxs..", 11: "...SSsssxxSs.."},    # sobrancelha baixa, lábio torto
+	"yawn": {6: "HHHEEsssxxsl..", 11: "...SSsssxxSs..", 12: "...SSSssxxsl.."},
+}
+const FACES_ESTACA := {"grit": {5: "HHssssbbbbsl..", 6: "HHHEEsssbesl..", 11: "...HHHHHwwHH.."}}   # força: testa franzida, dentes
+const OPPS_REG := ["opp_reg_1", "opp_reg_2", "opp_reg_3", "opp_james"]
+const REG_TEMPLATE := "opp_gym_1"   # campos extras de cada ação (hold_last, ground_frame, loop) vêm daqui
+const REG_NOTE := {
+	"opp_reg_1": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo).",
+	"opp_reg_2": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes.",
+	"opp_reg_3": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão.",
+	"opp_james": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas.",
+}
+
 ## Pé descalço (Tonhão, tatame): mesma legenda do tênis (D/M/L/w/c), cores de pele no build. Mesmo deslocamento
 ## ponta->tornozelo do tênis, para a perna ter o mesmo alcance.
 const PE_FLAT := ["..DMM......", "..DMMM.....", ".DMMMMLL...", "DMMMMMMMMLw", ".DDD..DDDDD"]
@@ -333,6 +415,55 @@ func opp_def(oid: String) -> Dictionary:
 					"up": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": -90.0}},
 				"glove": "plain", "glove_ramp": ["g2", "g3", "white"],
 				"shoulder": 0.8, "hip_w": 0.78, "arm_r": [2.4, 1.8, 2.0, 1.4], "leg_r": [3.3, 2.4, 2.2, 1.3]}}
+		# ---------------- Fase 8a1 (liga regional). fps_k = ritmo das ações do rig; hands_adj = mãos (espaço do jogador,
+		# antes da escala) somadas às do jogador nas ações do rig: [dfx, dfy, dbx, dby].
+		"opp_reg_1":    # Zé Bigorna: baixo e LARGO, sem pescoço, cabeça para a frente (oferece o queixo), guarda baixa
+			return {"s": 1.02, "am": 0.98, "lean": 1.5, "head_d": V(2, 2), "neck_k": 0.6, "shk": 1.45, "stance": [1, -2], "toes": false,
+				"fps_k": 0.85, "hands_adj": {"idle": [0, 13, -1, 12], "tired": [0, 6, 0, 6]},
+				"build": {"head_side": HEAD_BIGORNA,
+				"hair": ["ink", "d2"], "brow": "ink", "skin": ["sk1", "sk2", "y2"],
+				"top": "tank", "shirt": ["r0", "r1", "r2"], "tank_neck": 0.8,
+				"shorts": ["d1", "d2", "g0"], "band": "st2", "shorts_t": 0.5,
+				"shoes": ["d1", "d2", "g1", "g2", "g0"],
+				"glove": "worn", "glove_ramp": ["st1", "st2", "st3"],
+				"shoulder": 1.6, "hip_w": 1.2, "belly": 3.0, "arm_r": [4.4, 3.5, 3.7, 2.4], "leg_r": [5.0, 3.8, 3.4, 2.0]}}
+		"opp_reg_2":    # Tião Estaca: ALTO, pernas grossas, base sempre larga (pés plantados), tronco reto
+			return {"s": 1.08, "am": 1.0, "lean": 0.5, "head_d": V(0, 0), "neck_k": 0.95, "shk": 1.15, "stance": [4, -4], "toes": false,
+				"fps_k": 0.8,
+				"build": {"head_side": HEAD_ESTACA, "head_legend_extra": {"w": "white"},
+				"hair": ["d1", "d2"], "brow": "d1", "skin": ["br0", "br1", "br2"],
+				"top": "tshirt", "shirt": ["g1", "g2", "g3"], "sleeve_t": 0.5, "grease": true,
+				"bottom": "pants", "shorts": ["br1", "br2", "br3"], "band": "br1", "pants_add": 1.0, "pants_shin_t": 0.72,
+				"shoes": ["br0", "br1", "br2", "y0", "d1"],
+				"shoe_maps": {"flat": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": 0.0},
+					"ball": {"rows": BOTA_BALL, "toe": Vector2i(10, 6), "ankle": Vector2i(2, 1), "ang": 0.0},
+					"up": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": -90.0}},
+				"glove": "plain", "glove_ramp": ["gr0", "gr1", "gr2"],
+				"shoulder": 1.25, "hip_w": 1.3, "belly": 2.0, "arm_r": [4.0, 3.1, 3.3, 2.2], "leg_r": [6.0, 4.6, 4.2, 2.6]}}
+		"opp_reg_3":    # Rony Sabão: magro e solto, sempre na ponta do pé, tronco à frente, mãos baixas e moles
+			return {"s": 1.0, "am": 1.04, "lean": 1.0, "head_d": V(0, 0), "neck_k": 1.05, "shk": 0.9, "stance": [0, 0], "toes": true,
+				"fps_k": 1.25, "hands_adj": {"idle": [-1, 4, -1, 3]},
+				"build": {"head_side": HEAD_SABAO, "mustache": "d2",
+				"hair": ["d2", "st2"], "brow": "ink", "skin": ["sk0", "sk1", "sk2"],
+				"top": "none", "shorts": ["b1", "b2", "b3"], "band": "white", "shorts_t": 0.5,
+				"shoes": ["sk0", "sk1", "sk2", "sk2", "sk0"],
+				"shoe_maps": {"flat": {"rows": PE_FLAT, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": 0.0},
+					"ball": {"rows": PE_BALL, "toe": Vector2i(10, 5), "ankle": Vector2i(2, 0), "ang": 0.0},
+					"up": {"rows": PE_FLAT, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": -90.0}},
+				"glove": "plain", "glove_ramp": ["y0", "y1", "y2"],
+				"shoulder": 0.95, "hip_w": 0.85, "arm_r": [2.7, 2.0, 2.2, 1.5], "leg_r": [3.6, 2.6, 2.4, 1.4]}}
+		"opp_james":    # James Blindado: alto, ombros em V, peito estufado, queixo erguido (escala 1,12 como o Muralha)
+			return {"s": 1.12, "am": 1.02, "lean": -1.0, "head_d": V(0, 0), "neck_k": 1.05, "shk": 1.3, "stance": [1, -1], "toes": false,
+				"fps_k": 1.15,
+				"build": {"head_side": HEAD_JAMES, "faces_extra": FACES_JAMES,
+				"hair": ["y0", "y1"], "brow": "br2", "skin": ["sk1", "sk2", "y2"],
+				"top": "none", "shorts": ["b0", "b1", "b2"], "band": "y1", "shorts_t": 0.5,
+				"shoes": ["g2", "cream", "white", "y0", "g1"],
+				"shoe_maps": {"flat": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": 0.0},
+					"ball": {"rows": BOTA_BALL, "toe": Vector2i(10, 6), "ankle": Vector2i(2, 1), "ang": 0.0},
+					"up": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": -90.0}},
+				"glove": "marca", "glove_ramp": ["br2", "y0", "y1"],
+				"shoulder": 1.45, "hip_w": 0.92, "arm_r": [3.8, 3.0, 3.2, 2.1], "leg_r": [4.8, 3.6, 3.2, 1.9]}}
 	return {}
 
 func make_opp_build(oid: String) -> Dictionary:
@@ -345,6 +476,11 @@ func make_opp_build(oid: String) -> Dictionary:
 	o["lt"] = 17.5 * s
 	o["ls"] = 16.5 * s
 	o["faces_side"] = transfer_faces(P.HEAD_SIDE, P.FACES_SIDE, o.head_side)
+	if oid == "opp_reg_2":
+		o["faces_side"].merge(FACES_ESTACA, true)
+	for f in o.get("faces_extra", {}):   # 8a1: expressões próprias (James)
+		o["faces_side"][f] = o.faces_extra[f]
+	o.erase("faces_extra")
 	return P.build(o)
 
 # ================================================================ poses de LUTA (as do jogador, espaço do jogador)
@@ -431,6 +567,19 @@ func personality(oid: String, action: String, i: int) -> Dictionary:
 			if action == "idle":              # quica curto na ponta do pé de trás, ombro da frente sobe (queixo escondido)
 				return [{}, {"hip": V(0, -38), "top": V(2, -62), "head": V(5, -72), "sf": V(4, -60)},
 					{"hip": V(0, -36), "top": V(2, -60), "head": V(5, -70)}, {"hip": V(0, -37), "top": V(2, -61), "head": V(5, -71), "sf": V(4, -59)}][i]
+		"opp_reg_1":
+			if action == "idle":              # parado como uma bigorna: só o peito sobe 1 px; queixo sempre à mostra
+				return [{}, {"top": V(2, -62)}, {}, {"hip": V(0, -36), "top": V(2, -60), "head": V(5, -70)}][i]
+		"opp_reg_2":
+			if action == "idle":              # duro, quase parado (os pés nunca saem do lugar)
+				return [{}, {}, {"top": V(2, -60), "head": V(5, -70)}, {"top": V(2, -61), "head": V(5, -71)}][i]
+		"opp_reg_3":
+			if action == "idle":              # balança solto na ponta dos pés, o ombro gingando
+				return [{"head": V(6, -71)}, {"hip": V(1, -38), "top": V(3, -62), "head": V(7, -72), "shoef": "ball"},
+					{"hip": V(0, -36), "top": V(1, -60), "head": V(4, -70)}, {"hip": V(-1, -37), "top": V(1, -61), "head": V(4, -71)}][i]
+		"opp_james":
+			if action in ["idle", "victory", "jab", "heavy", "dodge"]:
+				return {"face": "joy" if action == "victory" else "smirk"}
 	return {}
 
 ## Transforma uma pose do jogador para o adversário (escala + personalidade). Devolve a pose virada à direita.
@@ -514,7 +663,11 @@ func hook_belt(lib, O: Vector2, ctx: Dictionary) -> void:
 	lib.joint(57, 58, knot, 2.6)
 
 # ================================================================ geração da LUTA
+var REG := {}   # 8a1: entradas sintetizadas (ainda não estão no manifest)
+
 func spr(id: String) -> Dictionary:
+	if REG.has(id):
+		return REG[id]
 	return M.sprites[id]
 
 func v2(a) -> Vector2:
@@ -1269,6 +1422,206 @@ func run_reacoes(caminho: String) -> void:
 	print("ok: %d folhas de reação" % entradas.size())
 
 
+# ================================================================ Fase 8a1: LIGA REGIONAL (modo "regional")
+## Uso: ... make_sprites_elenco.gd -- <saida> <antigos> regional <exp_golpes> <exp_7a1> <exp_7b1> <exp_8a1> <golpes_8a1_adv.json> <retrato.json>
+##   <exp_*> = reacoes_expandidas.json de make_golpes_jogador.gd (FC_GOLPES = golpes.json, golpes_7a1_adv, golpes_7b1_adv,
+##   golpes_8a1_adv; argumento "nada"). Gera os 4 regionais completos (as 9 ações do rig, as 16 reações de sempre e as poses
+##   de assinatura do golpes_8a1_adv.json, só para quem está no "who"), retratos 32x32, o retrato de diálogo do James e
+##   <saida>/fase8a1_personagens.json (entradas "sprites" e "by_data_id" para o manifest; quem registra é manifest_8a1_personagens.py).
+## As entradas das ações do rig são sintetizadas: mãos e contato = os do jogador x escala, espelhados (a regra dos outros
+## adversários), + hands_adj; fps = o do jogador x fps_k; os campos extras vêm do mesmo id do REG_TEMPLATE.
+func _hr(v: float) -> float:
+	return float(roundi(v))
+
+func reg_entry(oid: String, action: String) -> Dictionary:
+	var d := opp_def(oid)
+	var s: float = d.s
+	var t: Dictionary = (M.sprites[REG_TEMPLATE + "_" + action] as Dictionary).duplicate(true)
+	var pl: Dictionary = M.sprites["fight_player_" + action]
+	t["file"] = "res://assets/sprites/opponents/%s/%s_%s.png" % [oid, oid, action]
+	t["fps"] = roundf(float(pl.fps) * float(d.get("fps_k", 1.0)) * 2.0) / 2.0
+	var adj: Array = d.get("hands_adj", {}).get(action, [0, 0, 0, 0])
+	var maos := []
+	for h in pl.hands:
+		var f := (v2(h.hand_front) + Vector2(adj[0], adj[1])) * s
+		var b := (v2(h.hand_back) + Vector2(adj[2], adj[3])) * s
+		maos.append({"hand_front": [-_hr(f.x), _hr(f.y)], "hand_back": [-_hr(b.x), _hr(b.y)]})
+	t["hands"] = maos
+	t["frames"] = maos.size()
+	if pl.has("hit_point"):
+		var hp := v2(pl.hit_point) * s
+		t["hit_point"] = [-_hr(hp.x), _hr(hp.y)]
+		t["hit_frame"] = int(pl.hit_frame)
+	t["note"] = "%s Ação '%s' do rig comum, virado para a esquerda. Fase 8a1." % [REG_NOTE[oid], action]
+	return t
+
+## Efeitos por cima do quadro (antes do espelho): "bolha:x,y,r;poeira:x,y" no espaço do jogador (x escala).
+func draw_fx(im: Image, fx: String, gpiv: Vector2, s: float) -> void:
+	if fx == "":
+		return
+	for item in fx.split(";"):
+		var kv: PackedStringArray = item.split(":")
+		var n: PackedStringArray = kv[1].split(",")
+		var c := gpiv + Vector2(float(n[0]), float(n[1])) * s
+		var cx := int(round(c.x))
+		var cy := int(round(c.y))
+		if kv[0] == "bolha":
+			var r := int(n[2])
+			var pts := [[0, -r], [0, r], [-r, 0], [r, 0]]
+			if r >= 2:
+				pts += [[-1, -2], [1, -2], [-1, 2], [1, 2], [-2, -1], [-2, 1], [2, -1], [2, 1]]
+				pts.erase([0, -r]); pts.erase([0, r]); pts.erase([-r, 0]); pts.erase([r, 0])
+				pts += [[0, -2], [0, 2], [-2, 0], [2, 0]]
+			for q in pts:
+				_px(im, cx + q[0], cy + q[1], "b3")
+			_px(im, cx - (1 if r >= 2 else 0) , cy - (1 if r >= 2 else 1) + (0 if r >= 2 else 0), "white")
+		elif kv[0] == "poeira":
+			for q in [[0, 0, "g3"], [1, 0, "cream"], [-1, 0, "g3"], [0, -1, "cream"], [2, -1, "g3"], [-2, -1, "g2"], [1, -2, "g3"]]:
+				_px(im, cx + q[0], cy + q[1], q[2])
+
+func _px(im: Image, x: int, y: int, c: String) -> void:
+	if x >= 0 and y >= 0 and x < im.get_width() and y < im.get_height():
+		im.set_pixel(x, y, L.col(c))
+
+## Reações (lista de reacoes_expandidas.json) de um adversário regional: mesma conta do run_reacoes, + fx e peak_frame.
+func reg_reacoes(oid: String, b: Dictionary, rea: Dictionary, src: Dictionary, entradas: Dictionary, acoes: Dictionary, newf: Dictionary) -> void:
+	var base := spr(oid + "_hit")
+	var s: float = opp_def(oid).s
+	for nome in rea:
+		if src.has(nome) and not (oid in (src[nome].get("who", []) as Array)):
+			continue
+		var fr := gen_reacao(oid, b, nome, rea[nome], base)
+		var gpiv := Vector2(FW - 1 - float(base.pivot[0]), float(base.pivot[1]))
+		var k := 0
+		for q in rea[nome].frames:
+			var fxs: String = str(q.get("fx", ""))
+			if fxs != "":
+				var im: Image = fr[k]
+				im.flip_x()
+				draw_fx(im, fxs, gpiv, s)
+				im.flip_x()
+			k += 1
+		var arquivo := "res://assets/sprites/opponents/%s/%s_%s.png" % [oid, oid, nome]
+		var strip: Image = P.strip(fr)
+		DirAccess.make_dir_recursive_absolute((out_dir + res_to_rel(arquivo)).get_base_dir())
+		strip.save_png(out_dir + res_to_rel(arquivo))
+		var maos := []
+		for q in rea[nome].frames:
+			var dtr := Vector2(_desvio_trava(q, s), 0.0)
+			var hf: Vector2 = mir(vet(q.get("hf", [14, -58])) * s + dtr)
+			var hb: Vector2 = mir(vet(q.get("hb", [5, -61])) * s + dtr)
+			maos.append({"hand_front": [_hr(hf.x), _hr(hf.y)], "hand_back": [_hr(hb.x), _hr(hb.y)]})
+		var e: Dictionary = (base as Dictionary).duplicate(true)
+		e["file"] = arquivo
+		e["frames"] = fr.size()
+		e["fps"] = float(rea[nome].fps)
+		e["loop"] = false
+		e["action"] = nome
+		e["hands"] = maos
+		e.erase("hit_frame")
+		e.erase("hit_point")
+		e.erase("hold_last")
+		e.erase("ground_frame")
+		if M.sprites.has(REG_TEMPLATE + "_" + nome):   # reação de sempre: mesmos campos extras dos outros adversários
+			var tm: Dictionary = M.sprites[REG_TEMPLATE + "_" + nome]
+			for kx in ["hold_last", "ground_frame"]:
+				if tm.has(kx):
+					e[kx] = tm[kx]
+		if bool(rea[nome].get("attack", false)):
+			var qh: Dictionary = rea[nome].frames[int(rea[nome].hit_frame)]
+			var hpq: Vector2 = mir(vet(rea[nome].hit_point) * s + Vector2(_desvio_trava(qh, s), 0.0))
+			e["hit_frame"] = int(rea[nome].hit_frame)
+			e["hit_point"] = [_hr(hpq.x), _hr(hpq.y)]
+		if rea[nome].has("loop"):
+			e["loop"] = bool(rea[nome].loop)
+		if int(rea[nome].get("ground_frame", -1)) >= 0:
+			e["ground_frame"] = rea[nome].ground_frame
+		if src.has(nome):
+			if src[nome].has("peak_frame"):
+				e["peak_frame"] = int(src[nome].peak_frame)
+			e["note"] = "%s %s" % [REG_NOTE[oid], str(src[nome].get("_ideia", ""))]
+		else:
+			e["note"] = "%s Reação '%s' do rig comum (mesmas poses dos outros adversários). Fase 8a1." % [REG_NOTE[oid], nome]
+		var id: String = oid + "_" + nome
+		entradas[id] = e
+		REG[id] = e
+		acoes[nome] = id
+		newf[id] = fr
+
+func retrato_dialogo(path: String) -> Image:
+	var rj: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var w := int(rj.size[0])
+	var h := int(rj.size[1])
+	var n: int = (rj.frames as Array).size()
+	var im := Image.create(w * n, h, false, Image.FORMAT_RGBA8)
+	for f in n:
+		var rows: Array = rj.frames[f]
+		for y in h:
+			var r: String = rows[y]
+			for x in w:
+				var ch := r[x]
+				if ch != ".":
+					im.set_pixel(f * w + x, y, L.col(str(rj.legend[ch])))
+	return im
+
+const REG_EXTRA := {"opp_reg_1": {"signature": "shake_head"}, "opp_reg_2": {"signature": "plant_feet"},
+	"opp_reg_3": {"signature": "slip_clinch"}, "opp_james": {"signature": "scorn"}}
+const REG_INFO := {
+	"opp_reg_1": {"name_hint": "Zé Bigorna", "profile": "RESISTENTE", "color": "r2", "frame": "ui_portrait_frame"},
+	"opp_reg_2": {"name_hint": "Tião Estaca", "profile": "FORTE", "color": "g2", "frame": "ui_portrait_frame"},
+	"opp_reg_3": {"name_hint": "Rony Sabão", "profile": "RÁPIDO", "color": "b3", "frame": "ui_portrait_frame"},
+	"opp_james": {"name_hint": "James Blindado", "profile": "RESISTENTE", "color": "y1", "frame": "ui_portrait_frame_gold"},
+}
+
+func run_regional(args: Array) -> void:
+	var listas := []
+	for i in range(3, 7):
+		listas.append(JSON.parse_string(FileAccess.get_file_as_string(args[i])))
+	var src: Dictionary = (JSON.parse_string(FileAccess.get_file_as_string(args[7])) as Dictionary).reactions
+	var entradas := {}
+	var by := {}
+	var newf := {}
+	for oid in OPPS_REG:
+		var b := make_opp_build(oid)
+		var acoes := {}
+		for a in ACTIONS:
+			var id: String = oid + "_" + a
+			REG[id] = reg_entry(oid, a)
+			var fr := gen_fight(oid, b, a)
+			save_sheet(out_dir + res_to_rel(spr(id).file), id, fr)
+			entradas[id] = REG[id]
+			acoes[a] = id
+			newf[id] = fr
+		for li in 4:
+			reg_reacoes(oid, b, listas[li], src if li == 3 else {}, entradas, acoes, newf)
+		var por := make_portrait(oid, b)
+		por.save_png(out_dir + "opponents/portrait_%s.png" % oid)
+		var pe: Dictionary = (M.sprites["portrait_" + REG_TEMPLATE] as Dictionary).duplicate(true)
+		pe["file"] = "res://assets/sprites/opponents/portrait_%s.png" % oid
+		pe["note"] = "Retrato 32x32 (recorte do próprio sprite de luta, fundo na cor dele), virado para a DIREITA (no HUD o adversário usa flip_h). " + REG_NOTE[oid]
+		entradas["portrait_" + oid] = pe
+		var info: Dictionary = REG_INFO[oid]
+		for kx in REG_EXTRA[oid]:
+			acoes[kx] = oid + "_" + str(REG_EXTRA[oid][kx])
+		var ent := {"actions": acoes, "portrait": "portrait_" + oid, "portrait_frame": info.frame, "pos": [346, 318],
+			"facing": "esquerda", "name_hint": info.name_hint, "profile": info.profile, "color": info.color,
+			"scale": float(opp_def(oid).s),
+			"_nota": "Fase 8a1 (Artista de Personagens). Mesmo quadro 112x104 e pivô (56,98) dos outros adversários. actions.signature = pose de assinatura da passiva (docs/arte/fase8a1-personagens-manifest.md)."}
+		if oid == "opp_james":
+			acoes["guard"] = "opp_james_guard"
+			ent["portrait_dialog"] = "portrait_opp_james_dialog"
+			var rd := retrato_dialogo(args[8])
+			rd.save_png(out_dir + "opponents/portrait_opp_james_dialog.png")
+			entradas["portrait_opp_james_dialog"] = {"file": "res://assets/sprites/opponents/portrait_opp_james_dialog.png",
+				"frame_size": [48, 48], "frames": 3, "fps": 0.0, "pivot": [0, 0], "facing": "direita",
+				"faces": {"smirk": 0, "sneer": 1, "laugh": 2},
+				"note": "Retrato do James para a CAIXA DE DIÁLOGO: busto 3/4 de roupão azul-marinho com debrum e brasão dourados, 48x48, mostrar em 2x (96x96). Fundo transparente, virado para a DIREITA. Quadro = expressão (não é animação): 0 smirk (meio sorriso, fala normal), 1 sneer (desprezo pela escola), 2 laugh (deboche, quando vence). Gerado de tools/art/retrato_james_8a1.json."}
+		by[oid] = ent
+	var f := FileAccess.open(out_dir + "fase8a1_personagens.json", FileAccess.WRITE)
+	f.store_string(JSON.stringify({"sprites": entradas, "by_data_id": by}, "\t"))
+	f.close()
+	print("ok regional: %d entradas" % entradas.size())
+
 # ================================================================ main
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -1285,6 +1638,11 @@ func _init() -> void:
 		return
 	if args.size() > 2 and args[2] == "luz6d2":
 		run_luz_6d2()
+		_write_report()
+		quit()
+		return
+	if args.size() > 8 and args[2] == "regional":
+		run_regional(args)
 		_write_report()
 		quit()
 		return

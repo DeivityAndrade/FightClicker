@@ -1,0 +1,366 @@
+{
+	"adv_blindado": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_blindado.png"
+	},
+	"adv_blindado_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_blindado_9.png"
+	},
+	"adv_blindado_open": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_blindado_open.png"
+	},
+	"adv_blindado_open_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_blindado_open_9.png"
+	},
+	"adv_iron_chin": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_iron_chin.png"
+	},
+	"adv_iron_chin_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_iron_chin_9.png"
+	},
+	"adv_slippery": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_slippery.png"
+	},
+	"adv_slippery_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_slippery_9.png"
+	},
+	"adv_wide_base": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_wide_base.png"
+	},
+	"adv_wide_base_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/adv_wide_base_9.png"
+	},
+	"arena_regional_bg": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "fight/arena_regional_bg.png"
+	},
+	"arena_regional_crowd_back": {
+		"fps": 4.0,
+		"frame_size": [
+			640,
+			100
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "fight/arena_regional_crowd_back.png"
+	},
+	"arena_regional_crowd_front": {
+		"fps": 4.0,
+		"frame_size": [
+			640,
+			48
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "fight/arena_regional_crowd_front.png"
+	},
+	"arena_regional_ropes_side": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			161
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "fight/arena_regional_ropes_side.png"
+	},
+	"arena_regional_spot": {
+		"fps": 8.0,
+		"frame_size": [
+			96,
+			262
+		],
+		"frames": 2,
+		"pivot": [
+			48,
+			258
+		],
+		"rel": "fight/arena_regional_spot.png"
+	},
+	"belt_regional_big": {
+		"fps": 6.0,
+		"frame_size": [
+			120,
+			52
+		],
+		"frames": 3,
+		"pivot": [
+			60,
+			26
+		],
+		"rel": "ui/belt_regional_big.png"
+	},
+	"belt_regional_raised": {
+		"fps": 6.0,
+		"frame_size": [
+			40,
+			22
+		],
+		"frames": 3,
+		"pivot": [
+			20,
+			15
+		],
+		"rel": "fight/belt_regional_raised.png"
+	},
+	"fx_guard_clink": {
+		"fps": 18.0,
+		"frame_size": [
+			15,
+			15
+		],
+		"frames": 3,
+		"pivot": [
+			7,
+			7
+		],
+		"rel": "fight/fx_guard_clink.png"
+	},
+	"icon_belt_regional": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_belt_regional.png"
+	},
+	"icon_belt_regional_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_belt_regional_9.png"
+	},
+	"ui_balloon_tag_steel": {
+		"fps": 0.0,
+		"frame_size": [
+			8,
+			10
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_balloon_tag_steel.png"
+	},
+	"ui_banner_guard_closed": {
+		"fps": 0.0,
+		"frame_size": [
+			170,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			85,
+			14
+		],
+		"rel": "ui/ui_banner_guard_closed.png"
+	},
+	"ui_banner_guard_open": {
+		"fps": 0.0,
+		"frame_size": [
+			162,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			81,
+			14
+		],
+		"rel": "ui/ui_banner_guard_open.png"
+	},
+	"ui_banner_opp_iron_chin": {
+		"fps": 0.0,
+		"frame_size": [
+			106,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			53,
+			14
+		],
+		"rel": "ui/ui_banner_opp_iron_chin.png"
+	},
+	"ui_banner_opp_slippery": {
+		"fps": 0.0,
+		"frame_size": [
+			94,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			47,
+			14
+		],
+		"rel": "ui/ui_banner_opp_slippery.png"
+	},
+	"ui_banner_opp_wide_base": {
+		"fps": 0.0,
+		"frame_size": [
+			94,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			47,
+			14
+		],
+		"rel": "ui/ui_banner_opp_wide_base.png"
+	},
+	"ui_poster_league_regional_zoom": {
+		"fps": 0.0,
+		"frame_size": [
+			112,
+			148
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_poster_league_regional_zoom.png"
+	},
+	"wall_poster_league_regional_gym": {
+		"fps": 0.0,
+		"frame_size": [
+			38,
+			54
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_poster_league_regional_gym.png"
+	}
+}

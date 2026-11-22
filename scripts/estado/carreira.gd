@@ -144,7 +144,7 @@ func _encerrar_carreira(tipo: String, snap: Dictionary, motivo: Dictionary) -> v
 		"opponent": str(snap.get("opponent", "")), "tactic": str(snap.get("tactic", gs.tatica)),
 		"seed": int(snap.get("seed", 0)), "player": snap.get("player", {}).duplicate(),
 		"result": snap.get("result", {}).duplicate(), "reason": motivo_fim,
-		"summary": {"wins": gs.indice_escada, "belts": 1 if gs.cinturao else 0, "fame": gs.fama,
+		"summary": {"wins": gs.indice_escada, "belts": (1 if gs.cinturao else 0) + (1 if gs._liga.cinturao_regional() else 0), "fame": gs.fama,
 			"money_earned": gs.dinheiro_ganho, "play_seconds": gs.tempo_jogo, "art": gs.arte_id, "location": gs.local_id},
 	}
 	gs._sucessao._registrar_na_lista_da_escola(tipo, snap, ganho, honra_ganha)
@@ -238,6 +238,7 @@ func _zerar_carreira() -> void:
 	gs.indice_escada = 0
 	gs.fight_day = gs._calendario._data_da_proxima_luta()  # Dia 1 + folga do primeiro adversário
 	gs.cinturao = false
+	gs.rival_spoke = {"before": false, "after": false}  # 8a1: o James volta a falar na campanha nova
 	gs.tatica = gs.lutas.tatica_padrao
 	gs.tempo_jogo = 0.0
 	gs.dinheiro_ganho = 0.0

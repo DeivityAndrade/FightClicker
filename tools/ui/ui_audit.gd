@@ -135,6 +135,18 @@ const ESTADOS_TODOS := [
 	"f7b2_luta_carga_0", "f7b2_luta_carga_1", "f7b2_luta_carga_2", "f7b2_luta_carga_3", "f7b2_luta_cp_ko_liga", "f7b2_luta_cp_ko_borracharia",
 	"f7b2_luta_jj_chao", "f7b2_luta_jj_levantou", "f7b2_luta_jj_juiz", "f7b2_luta_mt_clinch", "f7b2_luta_mt_joelhada",
 	"f7b2_fim_meta", "f7b2_fim_libera",
+	# Fase 8a1: liga regional (prévia com a passiva dele, HUD da data, entrada no ringue, sinais, James, cinturão do Vale, cartaz)
+	"f8a1_previa_bigorna_aggressive", "f8a1_previa_bigorna_counter", "f8a1_previa_bigorna_defensive", "f8a1_previa_estaca_aggressive",
+	"f8a1_previa_estaca_counter", "f8a1_previa_estaca_defensive", "f8a1_previa_sabao_aggressive", "f8a1_previa_sabao_counter",
+	"f8a1_previa_sabao_defensive", "f8a1_previa_james_aggressive", "f8a1_previa_james_counter", "f8a1_previa_james_defensive",
+	"f8a1_previa_nao_atrapalha", "f8a1_previa_sem_arte", "f8a1_hud_liga_12", "f8a1_hud_liga_1", "f8a1_hud_liga_hoje", "f8a1_hud_liga_james",
+	"f8a1_hud_liga_completa", "f8a1_entrada_fora", "f8a1_entrada_cordas", "f8a1_entrada_braco", "f8a1_arena_boxe_ko", "f8a1_arena_jj_finalizou",
+	"f8a1_arena_mt_rodado", "f8a1_luta_aguentou", "f8a1_luta_bigorna_pose", "f8a1_luta_nao_caiu", "f8a1_luta_escapou", "f8a1_luta_guarda_fechada",
+	"f8a1_luta_guarda_clink", "f8a1_luta_guarda_abriu", "f8a1_james_first_1", "f8a1_james_first_2", "f8a1_james_first_3", "f8a1_james_revenge",
+	"f8a1_james_school_won", "f8a1_james_many", "f8a1_james_scorn", "f8a1_james_pular", "f8a1_james_depois_venceu", "f8a1_james_depois_ko",
+	"f8a1_james_depois_pontos", "f8a1_fim_kid_liga", "f8a1_fim_cinturao_vale", "f8a1_luta_cinturao_erguido", "f8a1_fim_retire_regional",
+	"f8a1_fim_derrota_bigorna", "f8a1_fim_derrota_estaca", "f8a1_fim_derrota_sabao", "f8a1_fim_derrota_james", "f8a1_cartaz_antes", "f8a1_cartaz",
+	"f8a1_cartaz_zoom",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -162,6 +174,7 @@ var _f7a1 = preload("res://tools/ui/audit/estados_f7a1.gd").new(self)
 var _f7a2 = preload("res://tools/ui/audit/estados_f7a2.gd").new(self)
 var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
 var _f7b2 = preload("res://tools/ui/audit/estados_f7b2.gd").new(self)
+var _f8a1 = preload("res://tools/ui/audit/estados_f8a1.gd").new(self)
 
 
 func _initialize() -> void:
@@ -392,6 +405,7 @@ func _rodar() -> void:
 	await _f7a2._rodar_fase7a2()
 	await _f7b1._rodar_fase7b1()
 	await _f7b2._rodar_fase7b2()
+	await _f8a1._rodar_fase8a1()
 	_fechar_cena()
 
 

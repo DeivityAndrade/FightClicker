@@ -536,4 +536,5 @@ func _validar_escola(v: Variant, havia_save: bool) -> Dictionary:
 		r["last_end"] = {"kind": str(gs.fim.kind), "campaign": int(gs.fim.career_number)}
 	gs._sucessao._validar_escola_6b(s, r)
 	gs._honra._validar_escola_6c2(s, r)
+	gs._liga.validar_escola(s, r)  # 8a1: placar do James
 	return r

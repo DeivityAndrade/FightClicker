@@ -45,6 +45,11 @@ var _rng := RandomNumberGenerator.new()
 var _timbre := "first"
 var _mult_voz := 1.0  # 6c2: o mentor discípulo (speaker "last") usa o timbre do discípulo, mais grave, com a voz de mentor_voice
 var _cps_voz := 0.0
+## 8a1: na tela de luta não vale a zona proibida da sala (a NO_COVER cobriria o meio da arena): quem chama passa outra (Rect2() = nenhuma).
+var zona := NO_COVER
+## 8a1: modo de cena (apresentação do James): quando a fala termina de escrever aparece a seta ui_balloon_next no canto do balão.
+var modo_cena := false
+var _seta_anim: AnimSprite
 
 
 func _ready() -> void:
@@ -72,18 +77,18 @@ func retangulo_total() -> Rect2:
 # --- Posição (balao-e-voz.md §3) ---
 
 ## Devolve {ok, corpo, ponta_x, ponta_y}. `cabeca` = ponto logo acima da cabeça.
-static func calcular(cabeca: Vector2, w: float, h: float, evitar: Array = []) -> Dictionary:
+static func calcular(cabeca: Vector2, w: float, h: float, evitar: Array = [], zona_: Rect2 = NO_COVER) -> Dictionary:
 	var by := cabeca.y - h - 9.0  # ponta do rabicho 6 px acima da cabeça; ponta = by + h + 3
 	var bx := cabeca.x - floorf(w / 2.0)
 	var r := _dentro(Rect2(bx, by, w, h))
 	var modo := "em_cima"
-	if _toca(r, evitar):
+	if _toca(r, evitar, zona_):
 		# 2: desliza para o lado de onde o personagem está até ficar 2 px fora da zona.
 		var esq := cabeca.x < 336.0
-		var rx := (NO_COVER.position.x - 2.0 - w) if esq else (NO_COVER.end.x + 2.0)
+		var rx := (zona_.position.x - 2.0 - w) if esq else (zona_.end.x + 2.0)
 		var d := _dentro(Rect2(rx, by, w, h))
 		var ponta := clampf(cabeca.x, d.position.x + 8.0, d.end.x - 8.0)
-		if absf(ponta - cabeca.x) <= TAIL_MAX_DESVIO and not _toca(d, evitar):
+		if absf(ponta - cabeca.x) <= TAIL_MAX_DESVIO and not _toca(d, evitar, zona_):
 			r = d
 			modo = "desliza"
 		else:
@@ -95,10 +100,10 @@ static func calcular(cabeca: Vector2, w: float, h: float, evitar: Array = []) ->
 			modo = "sobe"
 			# 6c2: o mentor do caixote tem a cabeça do Osmar ao lado: se ainda toca alguém, sobe mais (até 40 px) até liberar.
 			var extra := 0
-			while _toca(r, evitar) and extra < 40 and r.position.y - 7.0 >= UTIL_TOPO:
+			while _toca(r, evitar, zona_) and extra < 40 and r.position.y - 7.0 >= UTIL_TOPO:
 				r.position.y -= 1.0
 				extra += 1
-			if _toca(r, evitar) or r.position.y - 6.0 < UTIL_TOPO:
+			if _toca(r, evitar, zona_) or r.position.y - 6.0 < UTIL_TOPO:
 				return {"ok": false}
 	var ponta_x := clampf(cabeca.x, r.position.x + 8.0, r.end.x - 8.0)
 	return {"ok": true, "corpo": r, "ponta_x": ponta_x, "ponta_y": r.position.y + h + 3.0, "modo": modo}
@@ -111,9 +116,9 @@ static func _dentro(r: Rect2) -> Rect2:
 
 
 ## O balão inteiro (plaquinha em cima, rabicho embaixo) toca a zona do alvo ou a cabeça de outro personagem?
-static func _toca(r: Rect2, evitar: Array = []) -> bool:
+static func _toca(r: Rect2, evitar: Array = [], zona_: Rect2 = NO_COVER) -> bool:
 	var total := Rect2(r.position.x, r.position.y - 6.0, r.size.x, r.size.y + 10.0)
-	if total.intersects(NO_COVER):
+	if zona_.size != Vector2.ZERO and total.intersects(zona_):
 		return true
 	for e in evitar:
 		if total.intersects(e):
@@ -134,7 +139,7 @@ func mostrar(id_: String, speaker_: String, texto: String, cabeca: Vector2, faix
 		maior = maxi(maior, str(l).length())
 	var w := clampf(float(maior * AVANCO + 16), 40.0, 172.0)
 	var h := 26.0 if _linhas.size() > 1 else 17.0
-	var c := calcular(cabeca, w, h, evitar)
+	var c := calcular(cabeca, w, h, evitar, zona)
 	if not bool(c.ok) and _linhas.size() == 1 and str(_linhas[0]).contains(" "):
 		# Fase 6b1: uma linha larga não cabe sem cobrir a cabeça de outro personagem (regra §22.2): tenta em 2 linhas.
 		var l1 := str(_linhas[0])
@@ -152,7 +157,7 @@ func mostrar(id_: String, speaker_: String, texto: String, cabeca: Vector2, faix
 				maior = maxi(maior, str(l).length())
 			w = clampf(float(maior * AVANCO + 16), 40.0, 172.0)
 			h = 26.0
-			c = calcular(cabeca, w, h, evitar)
+			c = calcular(cabeca, w, h, evitar, zona)
 	if not bool(c.ok) or (faixa_base_y >= 0.0 and Rect2(c.corpo).position.y - 6.0 < faixa_base_y):
 		push_warning("Balao: a fala '%s' não cabe sem cobrir o alvo; descartada." % id_)
 		return false
@@ -195,6 +200,16 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 			HORIZONTAL_ALIGNMENT_LEFT, false)
 		_rotulos.append(l)
 		_chars_por_linha.append(str(_linhas[i]).length())
+	# 8a1: seta de "próxima" no canto de baixo à direita do corpo (só no modo de cena; acende quando a fala termina de escrever).
+	_seta_anim = null
+	if modo_cena and not UiTema.sprite("ui_balloon_next").is_empty():
+		var anim := AnimSprite.new()
+		anim.definir("ui_balloon_next")
+		anim.position = Vector2(corpo.end.x - 10.0, corpo.end.y - 7.0)
+		anim.tocar([0, 1], 2.0, true)
+		anim.visible = false
+		_raiz.add_child(anim)
+		_seta_anim = anim
 	# Plaquinha do nome na cor do personagem.
 	var p: Dictionary = GameState.dialogos.personagem(speaker)
 	var cor_nome := str(by_data.get("tag_by_speaker", {}).get(speaker, "gray"))
@@ -220,7 +235,7 @@ func _aplicar_entrada(meia: bool) -> void:
 	if _raiz == null:
 		return
 	for c in _raiz.get_children():
-		if c != _fundo:
+		if c != _fundo and c != _seta_anim:
 			(c as CanvasItem).visible = not meia
 	if meia:
 		var w := floorf(corpo.size.x / 2.0)
@@ -324,6 +339,8 @@ func _process(delta: float) -> void:
 		_atualizar_texto()
 		if _visivel >= _total_chars:
 			falando.emit(speaker, false)
+	if _seta_anim != null and is_instance_valid(_seta_anim):
+		_seta_anim.visible = _visivel >= _total_chars
 	if _t >= _total:
 		_terminou()
 
@@ -343,6 +360,8 @@ func completar() -> void:
 	_completo_por_clique = true
 	_visivel = _total_chars
 	_atualizar_texto()
+	if _seta_anim != null and is_instance_valid(_seta_anim):
+		_seta_anim.visible = true
 	falando.emit(speaker, false)
 
 
@@ -396,6 +415,18 @@ func fechar_agora(avisar: bool = true) -> void:
 func cancelar(id_: String) -> void:
 	if _ativo and id == id_:
 		fechar_agora(true)
+
+
+## 8a1: instante (s depois de começar a escrever) em que a letra `i` do texto (sem as quebras de linha) aparece.
+func tempo_letra(i: int) -> float:
+	if _tempos.is_empty():
+		return 0.0
+	return _tempos[clampi(i, 0, _tempos.size() - 1)]
+
+
+## 8a1: tempo total da fala (escrever + ler), para o gesto de desprezo cair nas últimas 0,9 s.
+func duracao() -> float:
+	return _total
 
 
 func texto_completo() -> bool:

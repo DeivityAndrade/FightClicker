@@ -15,7 +15,9 @@ func abrir_com(resumo: Dictionary, tocar_som: bool) -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	var cinturao := bool(resumo.get("belt", false))
-	if cinturao:
+	if bool(resumo.get("regional_belt", false)):
+		_montar_cinturao_regional(resumo)  # 8a1: o James caiu: Cinturão do Vale
+	elif cinturao:
 		_montar_cinturao(resumo)
 	else:
 		_montar_normal(resumo)
@@ -44,7 +46,7 @@ func _montar_normal(r: Dictionary) -> void:
 	var lj := maxf(288.0, roundf(bloco / 2.0) * 2.0 + 40.0)
 	var xj := 320.0 - lj / 2.0
 	# 7b2: uma linha a mais para a meta da 2ª passiva ("2/3 K.O. DE EMBALO") ou, quando abre, o aviso único NOVO JEITO DE LUTAR.
-	var extra := _altura_passiva(r)
+	var extra := _altura_passiva(r) + _altura_liga(r)
 	var corr := -roundf(extra / 2.0)  # a janela cresce para os dois lados (continua no meio)
 	var topo := (42.0 if revanche else 72.0) + corr
 	var dy := (32.0 if revanche else 0.0) + corr  # deslocamento do miolo (posições originais + dy)
@@ -69,6 +71,7 @@ func _montar_normal(r: Dictionary) -> void:
 		UiTema.rotulo_centro(painel, UiTema.txt("victory_next", "PRÓXIMO: {nome}", {"nome": str(r.next_name)}),
 			UiTema.WHITE, 320.0, 212.0 + dy)
 	_bloco_passiva(r, xj, lj, 228.0 + dy)
+	_bloco_liga(r, xj, lj, 228.0 + dy + _altura_passiva(r))
 	var b := botao_texto(Rect2(240, 242.0 + dy + extra, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
@@ -78,6 +81,58 @@ func _altura_passiva(r: Dictionary) -> float:
 	if str(r.get("passive2_line", "")) != "" and str(r.get("passive2_unlocked", "")) != "":
 		return 36.0
 	return 14.0 if _texto_meta(r) != "" else 0.0
+
+
+## 8a1: altura extra da janela para o convite da liga regional (só ao vencer o Kid): 40 com o título, 30 se a janela já tem o aviso da
+## 2ª passiva (a janela não passa dos 360 px mesmo com a revanche).
+func _altura_liga(r: Dictionary) -> float:
+	if not bool(r.get("league_opened", false)):
+		return 0.0
+	return 30.0 if _altura_passiva(r) >= 36.0 else 40.0
+
+
+## 8a1: "CONVITE: LIGA REGIONAL DO VALE" + a linha do convite, com o ícone do cinturão do Vale, numa caixa (a mesma do aviso da 2ª passiva).
+func _bloco_liga(r: Dictionary, xj: float, lj: float, y: float) -> void:
+	var alt := _altura_liga(r)
+	if alt <= 0.0:
+		return
+	var caixa := fundo_cor(Rect2(xj + 14.0, y - 1.0, lj - 28.0, alt), Color(UiTema.P0, 0.55))
+	caixa.set_meta("ui_align", "ignore")
+	var x_txt := xj + 14.0 + 6.0
+	var icone := "icon_belt_regional"
+	if not UiTema.sprite(icone).is_empty():
+		UiTema.textura_rect(painel, icone, x_txt, y - 1.0 + roundf((alt - 16.0) / 2.0))
+		x_txt += 22.0
+	var larg := xj + lj - 14.0 - 6.0 - x_txt
+	var linhas: Array = []
+	if alt >= 40.0:
+		linhas.append(UiTema.txt("league_regional_invite_title", "CONVITE: LIGA REGIONAL DO VALE").to_upper())
+	var frases := _quebrar(UiTema.txt("league_regional_invite_line", "O KID PERDEU. O VALE QUER CONHECER A RAÍZES").to_upper(), larg)
+	var yy := y - 1.0 + roundf((alt - 10.0 * float(linhas.size() + frases.size())) / 2.0)
+	for t in linhas:
+		var lt := UiTema.rotulo(painel, str(t), UiTema.Y2, x_txt, yy, larg, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar(lt, "left")
+		yy += 10.0
+	for t in frases:
+		var lf := UiTema.rotulo(painel, str(t), UiTema.CREAM, x_txt, yy, larg, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar(lf, "left")
+		yy += 10.0
+
+
+## Quebra por palavra em linhas de até `larg` px.
+func _quebrar(texto: String, larg: float) -> Array[String]:
+	var linhas: Array[String] = []
+	var atual := ""
+	for palavra in texto.split(" ", false):
+		var tentativa: String = palavra if atual == "" else atual + " " + palavra
+		if atual != "" and UiTema.largura_visivel(tentativa) > larg:
+			linhas.append(atual)
+			atual = palavra
+		else:
+			atual = tentativa
+	if atual != "":
+		linhas.append(atual)
+	return linhas
 
 
 ## "2/3 K.O. DE EMBALO" (de n, m e do nome do fim; o `text` do resumo só vem preenchido no aviso de liberação).
@@ -191,6 +246,35 @@ func _montar_cinturao(r: Dictionary) -> void:
 	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 188, 238 + ds, 280)
 	# 6d2: a linha "A MUDANÇA SAI DO PRÊMIO..." saiu (o aviso da reserva já diz isso depois).
 	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+	b.pressed.connect(func() -> void: continuar_pedido.emit())
+
+
+## 8a1: o James caiu. Cinturão do Vale grande (2x, brilho em 3 quadros), a frase do Roteirista, os prêmios e o aviso "CENTRO DE TREINAMENTO
+## LIBERADO" (a mudança chega na próxima versão). Mesma janela do cinturão amador, com o cinturão maior.
+func _montar_cinturao_regional(r: Dictionary) -> void:
+	moldura("ui_window", Rect2(150, 22, 340, 316))
+	faixa_titulo("victory", Rect2(156, 28, 328, 22), UiTema.txt("belt_regional_title", "CINTURÃO DO VALE"), UiTema.Y1, 2)
+	var cint := AnimSprite.new()
+	cint.definir("belt_regional_big")
+	cint.position = Vector2(320, 106)  # o pivô fica no meio do cinturão (60, 26)
+	cint.scale = Vector2(2, 2)
+	cint.tocar([0, 1, 2], 6.0, true)
+	painel.add_child(cint)
+	UiTema.rotulo_centro(painel, UiTema.txt("belt_regional_line", "O BLINDADO CAIU. A RAÍZES É DO VALE").to_upper(), UiTema.CREAM, 320.0, 164.0)
+	var larg := _largura_ganhos(r, 1)
+	var x_linhas := roundf(320.0 - larg / 2.0)
+	_linhas_ganhos(r, x_linhas, 180.0, 1, true)
+	divisor(166, 232, 308)
+	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 239)
+	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 239)
+	v.position.x = roundf(468.0 - UiTema.largura(v.text))
+	# Aviso (NÃO é botão): o centro de treinamento abre, mas a mudança só chega na próxima versão.
+	var caixa := fundo_cor(Rect2(166, 256, 308, 30), Color(UiTema.P0, 0.55))
+	caixa.set_meta("ui_align", "ignore")
+	UiTema.textura_rect(painel, "icon_belt_regional_9", 174, 262)
+	UiTema.rotulo(painel, UiTema.txt("belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 188, 262, 280)
+	UiTema.rotulo(painel, UiTema.txt("belt_regional_soon", "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO").to_upper(), UiTema.G3, 188, 273, 280)
+	var b := botao_texto(Rect2(240, 298, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
 

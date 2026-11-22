@@ -1350,3 +1350,68 @@ de Personagens ficou de fora: não seria barata sem refazer o idle do boxeador n
 **Placeholder / precisa de pixel artist:** o ícone do Clinch em 16 px é o mais fraco (os braços em volta da cabeça leem como
 capuz de longe; à mão, de perfil, com os dois corpos colados, ficaria claro); o do Por cima pede o lutador de cima visível,
 não só a seta. Cadeado, estrelas, barra e losango são peças de UI honestas e podem ficar. Tamanhos fixos para trocar só os arquivos.
+
+## 34. Fase 8a1 (Liga Regional do Vale: arena com ringue, cartaz, Cinturão do Vale, passivas dos adversários)
+Gerador: `tools/art/make_arte_fase8a1.gd` (`godot --headless --path <projeto> --script res://tools/art/make_arte_fase8a1.gd`;
+`-- --no-assets` grava só os mockups). Manifest: `python tools/art/manifest_8a1.py` (lê `tools/art/fase8a1_sprites.json`; só
+acrescenta as chaves da 8a1; rodar de novo não muda nada). Lista completa, tamanhos e onde a UI usa: `docs/arte/fase8a1-manifest.md`.
+Textos = Roteirista (`fase8a1-textos.md`): constantes `TXT_*` no topo do gerador.
+
+**Arena regional `arena_regional` = CLUBE FERROVIÁRIO, à noite.** Degrau acima do Ginásio Alvorada: de dia/tatame/bairro vira
+noite/ringue/TV. Mesmo contrato e mesma câmera das outras arenas (y 0..45 ink liso, pés em y 318, pivôs 296/346, chão livre
+x 200..440, público da frente só nos cantos, ponto de fuga 320,-28).
+- Fundo: ginásio de clube antigo de ferroviários. Tijolo, janelas altas em arco (noite lá fora), **nome do clube pintado e
+  descascado** com a roda alada dos dois lados, **relógio de estação** à esquerda, placa **AO VIVO** à direita, galeria com
+  bandeiras da torcida, arquibancada de madeira com gente sentada, treliça com 4 refletores e a **faixa LIGA REGIONAL DO VALE**
+  pendurada nela (no alto, para o letreiro do meio não cobri-la inteira), **câmera da TV VALE** num praticável à direita,
+  mesa dos juízes com sino e microfone à esquerda, banco do corner à direita.
+- **Ringue de verdade:** lona creme de y 262 (x 151..489) a y 342 (x 104..536), emblema LIGA DO VALE no meio, saia preta com
+  **AUTOPEÇAS VALE FORTE** até y 357; postes com protetores (**azul à esquerda = você, vermelho à direita = ele**, brancos na
+  frente); 3 cordas (azul embaixo, branca, vermelha em cima) **atrás e dos lados**. **Não há corda na frente**: cortaria os
+  lutadores na cintura; a câmera é a da TV, de dentro. As cordas laterais ficam fora de x 151..489 e nunca tocam os pivôs.
+- Luz de noite: o ringue claro, o resto cai em faixas com dither (−2 passos nas bordas) e 4 fachos em dither dos refletores.
+- **Público:** o do Ginásio Alvorada (as mesmas figuras), com **troca de paleta** para a torcida do Vale e a mesma luz de noite,
+  **recortado** onde o ringue, a mesa e a câmera ficam na frente (a camada do público é desenhada por cima do fundo; o recorte
+  é que põe as cordas e a lona na frente dele). Frente: as silhuetas da liga com boné/bandeira verdes e um **câmera de mão** da TV.
+- **Camadas novas, opcionais:** `arena_regional_ropes_side` (cordas laterais + postes da frente, z 40, por cima dos lutadores;
+  são os mesmos pixels do fundo, então não muda nada parado) e `arena_regional_spot` (facho em dither y2 que segue quem entra).
+  As duas existem para a **entrada no ringue** (animação principal do dono): o lutador vem da torcida à esquerda, passa entre
+  as cordas em x ~118 (a camada das cordas fica na frente dele: parece que ele entra entre elas), acena e anda até 296. Tempos e
+  caminho em `fight_layout.arenas.arena_regional.entrance`; a pose de "passar entre as cordas" é do Artista de Personagens.
+- Letreiros das 3 artes e das 6 passivas conferidos em 2x em (320,118): leem no fundo escuro (`mockups/fase8a1_letreiros_arena.png`).
+
+**Cinturão do Vale** (`belt_regional_*`): o amador é pano vermelho com caixinha de ouro; o regional é **couro preto com costura,
+placa de ouro grande com esmalte azul (dois morros e o vale, sol no meio) e VALE**, 4 plaquinhas laterais. Grande 120x52 (tela de
+fim, 3 quadros de brilho), **erguido** 40x22 em escala de corpo (refeito em 2026-11-22: o de
+80x48 cobria cabeça e tronco). Pivô (20,15) = meio de `hand_front`/`hand_back` do quadro de `fight_player_victory`; pegadas
+(15,15) e (25,15), 10 px como as luvas, com vão transparente para as luvas aparecerem na frente da tira; placa 13x14 em cima
+das luvas, tira reta caindo só nas pontas, rosto livre (`mockups/fase8a1_cinturao_erguido.png`). Ícones 16 e 9.
+
+**Cartaz da liga na academia** (`wall_poster_league_regional_gym`, 38x54, em `layout.gym_league_poster_spot` = (412,54), em cima
+da porta, a partir de `regional_league_opened`): faixa vermelha LIGA, DO VALE (fonte 3x5), **foto do James em 2 tons** (impressão
+barata, azul, tirada do `portrait_opp_james`), JAMES, fita nos cantos. Zoom 112x148 com as 3 linhas do Roteirista e CLUBE FERROVIÁRIO. A foto sai do retrato
+`portrait_opp_james` quando ele existir (o gerador procura o arquivo; até lá, busto provisório): **rodar o gerador de novo depois
+do Artista de Personagens**.
+
+**Passivas dos adversários** (`adv_*`, 16 e 9): **escudinho de borda vermelha** = é dele (as suas passivas não têm borda), e o
+desenho é material de defesa, nunca golpe: Queixo de ferro = **bigorna** com faísca; Base larga = **base aberta com os pés em
+blocos de cimento**; Ensaboado = **sabão com bolhas**; Blindado = **chapa de aço com rebites** e, depois de 5,33 s, `adv_blindado_open`
+(as duas metades afastadas, cinza).
+
+**Sinais (§3.2):** letreiros pequenos (família do PERNA CHEIA!, fonte 2x) **branco/aço com sombra vermelha r1** = a passiva dele
+segurou: AGUENTOU!, NÃO CAIU, ESCAPOU!, GUARDA FECHADA (opcional). **A GUARDA ABRIU** é boa notícia sua: ouro com sombra aço.
+Ouro continua sendo só conquista sua. `fx_guard_clink` (estalo de aço, 3 quadros) no lugar do impacto quando `guard: true`; o
+número de dano cinza e 1x é regra do UI/UX. As poses de assinatura (Bigorna sacode a cabeça etc.) são do Artista.
+
+**James no balão e no HUD (pedido do Diretor de Cutscenes):** plaquinha `ui_balloon_tag_steel` (aço escuro st0, texto branco;
+o azul é do discípulo), ligada em `speech_bubble.tag_by_speaker.rival`. Moldura do retrato = a **dourada que já existe**
+(`ui_portrait_frame_gold`, dono do cinturão, como o Seu Muralha): sem moldura nova.
+
+**Mockups:** `fase8a1_arena_regional.png` (em pé com AGUENTOU! / deitados com FINALIZOU!), `fase8a1_arena_regional_vazia.png`,
+`fase8a1_letreiros_arena.png`, `fase8a1_entrada_cinturao.png` (entrada em 4 tempos, cinturão erguido, camadas),
+`fase8a1_pecas_x4.png`, `fase8a1_cartaz_academia.png`. Nos mockups entram as folhas do Artista (Bigorna, Estaca e James, com o gesto de desprezo no canto dele).
+
+**Placeholder / precisa de pixel artist:** tijolo, arquibancada e treliça são repetição; a torcida é a mesma da liga recolorida
+(à mão: casacos, cachecóis, gente em pé na galeria); as cordas não balançam (um artista faria a corda reagir quando alguém bate
+nela e na entrada); a lona pediria manchas e marcas de uso; o cinturão erguido em 80 px é o mais fraco (as tiras caindo pedem
+curva desenhada à mão); a foto do cartaz é só o retrato em 2 tons. Tamanhos fixos para trocar só os arquivos.

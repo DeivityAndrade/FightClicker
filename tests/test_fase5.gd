@@ -107,7 +107,7 @@ func _teste_dados() -> void:
 	a.validar_aparelhos(d)
 	checar_igual([a.arte("boxing").apparatus, a.arte("bjj").apparatus], ["speed_bag", "grappling_dummy"], "artes apontam para os aparelhos")
 	var f := FightData.carregar()
-	checar_igual(f.adversarios.size(), 6, "6 adversários")
+	checar_igual(f.adversarios.size(), 10, "10 adversários (6 de antes + 4 da liga regional, 8a1)")
 	checar_igual([f.adversario("opp_gym_1").location, f.adversario("opp_gym_2").location, f.adversario("opp_tank").location],
 		["gym", "gym", "garage"], "Tonhão e Kid na academia; Muralha na garagem")
 	checar_igual([f.adversario("opp_gym_1").strength, f.adversario("opp_gym_1").agility, f.adversario("opp_gym_1").endurance,
@@ -586,8 +586,8 @@ func _teste_escada_da_academia() -> void:
 	r = gs.concluir_luta()
 	checar(r.win and r.opponent == "opp_gym_2", "vence o Kid")
 	checar_igual([gs.dinheiro, gs.fama, gs.indice_escada], [8500.0, 520, 6], "Kid paga $6.000 e 200 de Fama")
-	checar(gs.escada_completa() and gs.estado_escada() == "end" and not gs.pode_lutar(), "vencer o Kid: fim da escada")
-	checar_igual(gs.proximo_adversario(), {}, "sem próximo adversário")
+	checar(not gs.escada_completa() and gs.estado_escada() == "fight" and gs.pode_lutar(), "vencer o Kid: a liga regional abre (8a1), a escada segue")
+	checar_igual(gs.proximo_adversario().get("id", ""), "opp_reg_1", "o próximo é o Zé Bigorna")
 	checar_igual(gs.legado_em_jogo(), 1140, "pote 1.140 depois do Kid")
 	checar_igual(gs.previa_aposentar().total, 1710, "aposentar com tudo vencido leva 1.710")
 	# Derrota na academia leva metade do pote (design 7.3): no Tonhão 250, no Kid 370.

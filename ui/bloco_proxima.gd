@@ -185,8 +185,12 @@ func atualizar() -> void:
 	_verde.visible = espere
 	# Fase 5.1: o prêmio saiu do bloco (nível 3); ele aparece na dica do bloco e inteiro na prévia.
 	_premio.visible = false
+	# 8a1: na liga regional (depois do Kid) a 2ª informação é só o nome da liga (a data já está na placa: sem repetir o número).
+	if dias >= 0 and str(opp.get("league", "")) != "":
+		_premio.text = UiTema.txt("league_regional_name", "LIGA REGIONAL DO VALE").to_upper()
+		_premio.visible = true
 	_area_dica.visible = true
-	_premio.add_theme_color_override("font_color", UiTema.G3)
+	_premio.add_theme_color_override("font_color", UiTema.Y1 if _premio.visible else UiTema.G3)
 	_dica_ret.visible = texto_dica != ""
 	_dica_ret.text = texto_dica.to_upper()
 	_medir()

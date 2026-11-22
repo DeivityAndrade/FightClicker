@@ -27,6 +27,7 @@ var _percent: Label
 var _aquec: Control  # 7a2: a linha "AQUECIDO: +3% NOS ATRIBUTOS (+N NA CHANCE)" (só com AQUECIDO guardado)
 var _aquec_y := 0.0
 var _cartao: CartaoPassiva  # 7a1: a passiva da arte (só com arte), ao lado da janela
+var _cartao_adv: CartaoAdversario  # 8a1: a passiva DELE (só contra os regionais), do outro lado da janela
 var _t := 0.0
 var dia_da_luta := false  # Fase 5.3: prévia do dia (sem VOLTAR A TREINAR, sem X, sem Esc; com LUTAR e PASSAR O POSTO)
 
@@ -166,6 +167,7 @@ func _montar() -> void:
 		UiTema.rotulo_centro(painel, UiTema.txt("time_rule_tie", "EMPATE EXATO: FICA COM ELE"), UiTema.G2, 320.0, y)
 
 	_montar_cartao_passiva()
+	_montar_cartao_adversario()
 
 	# --- Botões ---
 	# Dois botões do mesmo tamanho, com 4 px entre eles, ocupando a largura útil da janela.
@@ -199,6 +201,19 @@ func _montar_cartao_passiva() -> void:
 	_cartao.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cartao.position = Vector2(X1 + 20.0, 64.0)
 	painel.add_child(_cartao)
+
+
+## 8a1: cartão da passiva dele à esquerda da janela (x 12..148): ícone, nome, o que faz e a quem atrapalha. A chance mostrada já vem com
+## a passiva (é a mesma conta do motor); o cartão não muda com a tática.
+func _montar_cartao_adversario() -> void:
+	if str(_dados.get("opp_passive_id", "")) == "":
+		return
+	_cartao_adv = CartaoAdversario.new()
+	_cartao_adv.name = "CartaoAdversario"
+	_cartao_adv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cartao_adv.position = Vector2(152.0 - 4.0 - CartaoAdversario.LARG, 64.0)
+	painel.add_child(_cartao_adv)
+	_cartao_adv.montar(_dados)
 
 
 func _atualizar_cartao(id: String, animar: bool) -> void:

@@ -103,6 +103,42 @@ var _grip_cheia := false
 var _fase_visual := "standing"  # "standing" | "ground" (as animações de chão só entram se as folhas existirem)
 var _banner_sub_img: Sprite2D
 var _bloqueio_ate := -10.0  # fim da queda (takedown + fall) em andamento: o próximo golpe espera
+# Fase 8a1: passiva DELE (ícone ao lado da vida, sinais AGUENTOU!/NÃO CAIU/ESCAPOU!/GUARDA FECHADA/A GUARDA ABRIU, guarda do Blindado),
+# entrada no ringue da arena regional, apresentação do James e fala de depois (balão), cinturão erguido. Tudo só visual.
+const ZSINAL_OPP := 1500  # dentro do mundo: acima dos números de dano (até ~1100) e abaixo dos letreiros de fim (3000)
+const PULAR_BOTAO := Rect2(570, 334, 62, 18)
+const ESPERA_ENTRE_FALAS := 0.3
+const ZONA_CABECA_JOGADOR := Rect2(282, 222, 36, 38)  # o balão nunca cobre a cabeça do jogador
+const ZONA_CORPO_JOGADOR := Rect2(262, 226, 70, 96)  # nem o corpo dele (fala de depois com o James no chão)
+var _opp_pass: Dictionary = {}  # luta.opp_passive ({} = sem passiva)
+var _opp_icone: TextureRect
+var _opp_sinais: Dictionary = {}  # block | closed | open -> Sprite2D
+var _tween_sinais: Dictionary = {}
+var _guarda_fechada := false  # James no 1º round: pose guard no lugar do idle
+var _streak_ant := 0
+var _balao: Balao
+var _pre := ""  # "" | "entrada" | "falas"  (o relógio da luta fica parado em -intro_seconds enquanto dura)
+var _pre_t := 0.0
+var _gesto_pendente := false
+var _ap_falas: Array = []  # [{id, speaker, text}] (apresentação do James antes; fala de depois no fim)
+var _ap_i := 0
+var _ap_espera := -1.0
+var _ap_tipo := ""  # "intro" | "outro"
+var _ap_t_completo := -10.0
+var _scorn_em := -1.0
+var _scorn_feito := false
+var _ap_scorn_palavra := ""
+var _outro := 0  # fala de depois do James: 0 = não começou, 1 = tocando, 2 = feita (ou não há)
+var _botao_pular: Button
+var _chip_pular: Label
+var _anel_pular: TextureRect
+var _atlas_pular: AtlasTexture
+var _esc_t := 0.0
+var _esc_segurando := false
+var _ropes_side: Sprite2D
+var _facho: AnimSprite
+var _cinturao: AnimSprite
+var _cinturao_ativo := false
 
 
 func _ready() -> void:
@@ -116,6 +152,14 @@ func _ready() -> void:
 	visible = false
 	_gesto = Gesto.new()
 	add_child(_gesto)
+	_balao = Balao.new()
+	_balao.name = "Balao"
+	_balao.modo_cena = true
+	add_child(_balao)
+	_balao.fechou.connect(_ao_balao_fechou)
+	_balao.falando.connect(func(_q: String, sim: bool) -> void:
+		if not sim:
+			_ap_t_completo = float(Time.get_ticks_msec()) / 1000.0)
 	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
 
 
@@ -123,7 +167,7 @@ func _ready() -> void:
 
 func _montar(opp_id: String) -> void:
 	for c in get_children():
-		if c != sfx and c != _gesto:
+		if c != sfx and c != _gesto and c != _balao:
 			c.queue_free()
 	_l.clear()
 	_fx.clear()
@@ -156,6 +200,30 @@ func _montar(opp_id: String) -> void:
 	_bloqueio_ate = -10.0
 	_passiva = str(luta.get("passive", ""))
 	_opp_id = opp_id
+	_balao.fechar_agora(false)
+	_opp_pass = luta.get("opp_passive", {}) if luta.get("opp_passive", {}) is Dictionary else {}
+	_opp_icone = null
+	_opp_sinais.clear()
+	_tween_sinais.clear()
+	_guarda_fechada = str(_opp_pass.get("id", "")) == "adv_blindado"
+	_streak_ant = 0
+	_pre = ""
+	_pre_t = 0.0
+	_gesto_pendente = false
+	_ap_falas = []
+	_ap_i = 0
+	_ap_espera = -1.0
+	_ap_tipo = ""
+	_scorn_em = -1.0
+	_outro = 0
+	_botao_pular = null
+	_chip_pular = null
+	_ropes_side = null
+	_facho = null
+	_cinturao = null
+	_cinturao_ativo = false
+	_esc_t = 0.0
+	_esc_segurando = false
 	var by: Dictionary = UiTema.manifest().get("by_data_id", {})
 	var lay: Dictionary = UiTema.manifest().get("fight_layout", {})
 	_escala_opp = float(by.get(opp_id, {}).get("scale", 1.0))
@@ -190,13 +258,29 @@ func _montar(opp_id: String) -> void:
 	_publico_tras.tocar([0, 1], 2.0, true)
 	_publico_frente = _anim(nome_frente, UiTema.pos(nome_frente), 50)
 	_publico_frente.tocar([0, 1], 2.0, true)
+	# 8a1: camadas opcionais da arena regional: as cordas laterais por cima dos lutadores e o facho da entrada no ringue.
+	var nome_cordas := pre + "_ropes_side"
+	if not UiTema.sprite(nome_cordas).is_empty():
+		_ropes_side = Sprite2D.new()
+		_ropes_side.centered = false
+		_ropes_side.texture = UiTema.textura(nome_cordas)
+		_ropes_side.position = UiTema.pos(nome_cordas)
+		_ropes_side.z_index = 330  # acima dos lutadores (318/320) e abaixo dos efeitos (400); 0 px no meio, então só vale na entrada
+		_ropes_side.set_meta("ui_align", "ignore")
+		_mundo.add_child(_ropes_side)
+	var nome_facho := pre + "_spot"
+	if not UiTema.sprite(nome_facho).is_empty():
+		_facho = _anim(nome_facho, Vector2.ZERO, -55)
+		_facho.visible = false
 
 	var pos_j := _vetor(lay.get("player_pos", [296, 318]))
 	var pos_o := _vetor(lay.get("opponent_pos", [346, 318]))
 	_l.append(_novo_lutador(0, pos_j, 1.0))
 	_l.append(_novo_lutador(1, pos_o, _escala_opp))
 
-	for nome in ["fx_fight_hit", "fx_fight_crit", "fx_whoosh", "fx_block", "fx_dust_fall"]:
+	for nome in ["fx_fight_hit", "fx_fight_crit", "fx_whoosh", "fx_block", "fx_dust_fall", "fx_guard_clink"]:
+		if UiTema.sprite(nome).is_empty():
+			continue
 		var lista: Array = []
 		for i in POOL_FX:
 			var a := _anim(nome, Vector2.ZERO, 400)
@@ -233,6 +317,8 @@ func _montar(opp_id: String) -> void:
 	_mundo.add_child(_banner_spin)
 
 	_montar_letreiros_2()
+	_montar_sinais_adversario()
+	_montar_cinturao_erguido(opp_id)
 
 	_banner_sub_img = Sprite2D.new()
 	_banner_sub_img.texture = UiTema.textura("ui_banner_submission")
@@ -268,6 +354,7 @@ func _montar(opp_id: String) -> void:
 	_banner_sub.visible = false
 	UiTema.alinhar(_banner_sub, "center_h")
 	_banner_sub.z_index = 1100
+	_montar_pular()
 
 
 ## Camada do cenário com o prefixo da arena; se faltar no manifest, a da borracharia.
@@ -314,6 +401,68 @@ func _montar_letreiros_2() -> void:
 		sp.set_meta("ui_align", "ignore")
 		_mundo.add_child(sp)
 		_sinais[chave] = sp
+
+
+## Nome do ícone 9x9 da passiva dele (aberta = a chapa aberta do Blindado depois dos 5,33 s).
+func _icone_passiva_adv(aberta: bool) -> String:
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("opp_passives", {}).get(str(_opp_pass.get("id", "")), {})
+	if aberta and str(info.get("icon_open_9", "")) != "":
+		return str(info.get("icon_open_9", ""))
+	return str(info.get("icon_9", ""))
+
+
+## 8a1: os sinais pequenos da passiva DELE (sprite 1x já desenhado em tamanho de letreiro; pivô no meio), sobre a cabeça dele.
+func _montar_sinais_adversario() -> void:
+	if _opp_pass.is_empty():
+		return
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("opp_passives", {}).get(str(_opp_pass.get("id", "")), {})
+	var nomes := {"block": str(info.get("signal", "")), "closed": str(info.get("signal_closed", "")), "open": str(info.get("signal_open", ""))}
+	for chave in nomes:
+		var nome := str(nomes[chave])
+		if nome == "" or UiTema.sprite(nome).is_empty():
+			continue
+		var sp := Sprite2D.new()
+		sp.texture = UiTema.textura(nome)
+		sp.z_index = ZSINAL_OPP
+		sp.visible = false
+		sp.set_meta("ui_align", "ignore")
+		_mundo.add_child(sp)
+		_opp_sinais[chave] = sp
+
+
+## 8a1: o cinturão do Vale erguido nas luvas da vitória (só contra o dono do cinturão regional, e só se o jogador vencer).
+func _montar_cinturao_erguido(opp_id: String) -> void:
+	var opp: Dictionary = GameState.lutas.adversario(opp_id)
+	if not bool(opp.get("regional_belt", false)) or UiTema.sprite("belt_regional_raised").is_empty():
+		return
+	_cinturao = AnimSprite.new()
+	_cinturao.definir("belt_regional_raised")
+	_cinturao.z_index = 405
+	_cinturao.visible = false
+	_cinturao.set_meta("ui_align", "ignore")
+	_mundo.add_child(_cinturao)
+
+
+## 8a1: botão PULAR com anel (o mesmo da cena) + a dica "SEGURE ESC: PULAR"; só aparecem na apresentação e na fala de depois.
+func _montar_pular() -> void:
+	_botao_pular = UiTema.botao(self, PULAR_BOTAO)
+	_botao_pular.z_index = 2450
+	_botao_pular.visible = false
+	_botao_pular.add_theme_color_override("font_color", UiTema.WHITE)
+	var rotulo := UiTema.botao_conteudo(_botao_pular, UiTema.txt("skip_button", "PULAR"), UiTema.WHITE, 1, "ui_skip_ring", 4.0)
+	rotulo.name = "Texto"
+	_anel_pular = _botao_pular.get_meta("icone") as TextureRect
+	_atlas_pular = AtlasTexture.new()
+	_atlas_pular.atlas = UiTema.textura("ui_skip_ring")
+	_atlas_pular.region = Rect2(0, 0, 11, 11)
+	_anel_pular.texture = _atlas_pular
+	_anel_pular.size = Vector2(11, 11)  # a folha tem 9 quadros lado a lado: o rótulo do ícone é 1 quadro (11x11), não a folha inteira
+	_botao_pular.pressed.connect(_encerrar_falas)
+	var txt := UiTema.txt("skip_chip", "SEGURE ESC: PULAR")
+	var lw := UiTema.largura_visivel(txt)
+	_chip_pular = UiTema.rotulo(self, txt, UiTema.G2, PULAR_BOTAO.position.x - 8.0 - lw, UiTema.y_texto(PULAR_BOTAO))
+	_chip_pular.z_index = 2450
+	_chip_pular.visible = false
 
 
 func _anim(nome: String, p: Vector2, z: int) -> AnimSprite:
@@ -414,6 +563,15 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	var perfil := str(opp.get("profile", "")).to_upper()
 	var l_perf := UiTema.rotulo(hud, perfil, _cor_tatica(str(info_o.get("color", "white"))), 0, float(po[1]))
 	l_perf.position.x = roundf(float(po[0]) - UiTema.largura(perfil))
+	# 8a1: ícone 9x9 da passiva DELE ao lado da vida dele (sempre); o Blindado troca para a chapa aberta aos 5,33 s.
+	if not _opp_pass.is_empty():
+		var info_p: Dictionary = by.get("opp_passives", {})
+		var ic := _icone_passiva_adv(false)
+		var posi: Array = info_p.get("hud", {}).get("icon_pos", [346, 17])
+		posi = [maxf(float(posi[0]), 348.0), posi[1]]  # fora do cartão do relógio (que termina em x 348)
+		if ic != "" and not UiTema.sprite(ic).is_empty():
+			_opp_icone = UiTema.textura_rect(hud, ic, float(posi[0]), float(posi[1]))
+			_opp_icone.name = "IconePassivaAdversario"
 
 	# Relógio
 	var tb: Array = lay.get("timer_box", [292, 4, 56, 32])
@@ -547,8 +705,15 @@ func iniciar(dados: Dictionary) -> void:
 	modulate = Color.WHITE
 	_agendar_tudo()
 	_atualizar_relogio(0.0)
-	_gesto_luta(GameState.pedir_gesto("fight_intro"))  # só o John (o discípulo recebe {}); cabe nos 1,5 s da entrada
 	_mundo.position = Vector2.ZERO
+	_iniciar_pre(dados)
+	if _pre == "":
+		_soltar_gesto()
+
+
+## O gesto do John na entrada (só ele; o discípulo recebe {}); cabe nos 1,5 s da entrada. Com a entrada no ringue, vem depois dela.
+func _soltar_gesto() -> void:
+	_gesto_luta(GameState.pedir_gesto("fight_intro"))
 
 
 func _agendar_tudo() -> void:
@@ -574,6 +739,13 @@ func _agendar_tudo() -> void:
 				sfx.sino_inicio()
 				_texto_banner(UiTema.txt("fight_round", "{n}º ROUND", {"n": r}), UiTema.WHITE, 2))
 			_cue(t_round + 0.9, func() -> void: _esconder_banner())
+
+	# 8a1: o Blindado fecha a guarda (sinal GUARDA FECHADA logo depois do LUTEM!) e abre aos 5,33 s (A GUARDA ABRIU).
+	var guarda_ate := float(_opp_pass.get("guard_until", 0.0))
+	if guarda_ate > 0.0:
+		_cue(0.25, func() -> void: _sinal_adversario("closed"))
+		if guarda_ate < fim_real - 0.3:
+			_cue(guarda_ate, func() -> void: _abrir_guarda())
 
 	# 7a1: cansaço do Boxe (só se a tática cansa: o Defensivo guarda o fôlego) e pegada cheia do Jiu-jitsu.
 	var tired_at := float(luta.get("tired_at", -1.0))
@@ -825,6 +997,7 @@ func _numero_aviso(texto: String, cor: Color) -> void:
 
 ## Vitória: se o jogador é o John, entra o gesto curto (0,15-0,59 s) e a pose de braços erguidos vem logo depois.
 func _comemorar(vencedor: int) -> void:
+	_cinturao_ativo = vencedor == 0 and bool(luta.result.get("win", false)) and _cinturao != null
 	if vencedor == 0:
 		var plano := GameState.pedir_gesto("victory")
 		if not plano.is_empty():
@@ -907,6 +1080,10 @@ func _agendar_evento(e: Dictionary) -> void:
 			if _existe_anim(alvo, c):
 				reacao = c
 				break
+	if alvo == 1 and not chao and not _opp_pass.is_empty():
+		reacao = _reacao_passiva_adv(e, reacao)
+	if quem == 0:
+		_streak_ant = int(e.get("streak", 0))
 	e["reacao_usada"] = reacao
 	var s := UiTema.sprite(_nome(quem, anim))
 	var antes := float(int(s.get("hit_frame", 1))) / maxf(float(s.get("fps", 12.0)), 1.0)
@@ -935,6 +1112,19 @@ func _agendar_evento(e: Dictionary) -> void:
 		_cue(t, func() -> void: _esquivou(e))
 	else:
 		_cue(t, func() -> void: _acertou(e))
+
+
+## 8a1: a reação dele quando a passiva dele agiu: guarda fechada do James = block; golpe que a trava segurou (AGUENTOU!/NÃO CAIU/ESCAPOU!)
+## = a pose de assinatura; Bigorna: o embalo do jogador chega a 5 = sacode a cabeça e bate no queixo (só visual).
+func _reacao_passiva_adv(e: Dictionary, reacao: String) -> String:
+	if bool(e.get("guard", false)) and _existe_anim(1, "block"):
+		return "block"
+	if bool(e.get("opp_block", false)) and _existe_anim(1, "signature"):
+		return "signature"
+	if str(_opp_pass.get("id", "")) == "adv_iron_chin" and int(e.get("streak", 0)) >= 5 and _streak_ant < 5 and int(e.who) == 0 \
+			and _existe_anim(1, "signature") and not bool(e.get("ko", false)):
+		return "signature"
+	return reacao
 
 
 ## Golpe do especial dos cliques: [animação, reação]. Boxe e sem arte: uppercut / hit_up. Jiu-jitsu nunca usa animação de boxe:
@@ -1025,12 +1215,16 @@ func _repouso(i: int) -> void:
 	var l: Dictionary = _l[i]
 	var spr: AnimSprite = l.spr
 	spr.z_index = _z_repouso(i)
+	if i == 0 and _cinturao != null and str(l.estado) != "victory":
+		_cinturao.visible = false
 	match str(l.estado):
 		"ko", "preso":
 			return
 		"victory":
 			spr.definir(_nome(i, "victory"))
 			spr.tocar([0, 1, 2, 3], float(UiTema.sprite(spr.nome_sprite).get("fps", 8.0)), true)
+			if i == 0:
+				_erguer_cinturao()
 		"tired":
 			spr.definir(_nome(i, "tired"))
 			spr.tocar([0, 1, 2, 3], float(UiTema.sprite(spr.nome_sprite).get("fps", 6.0)), true)
@@ -1055,6 +1249,8 @@ func _repouso(i: int) -> void:
 ## Pose de repouso em pé. Muay Thai (7b1): o jogador fica na guarda tailandesa (mt_idle) e o adversário manca com 2 marcas
 ## (limp) ou 3 (limp_heavy; sem ela, limp). Sem a folha nova, o idle de sempre.
 func _idle_da_arte(i: int) -> String:
+	if i == 1 and _guarda_fechada and _existe_anim(1, "guard"):
+		return "guard"  # 8a1: o Blindado no 1º round: guarda fechada no lugar do idle
 	if _passiva == "counter_punch" and i == 0 and _existe_anim(0, "block"):
 		return "block"  # 7b2: guarda alta entre os golpes (a 2ª passiva do Boxe se vê só pela pose)
 	if _passiva == "thai_clinch":
@@ -1122,6 +1318,7 @@ func _acertou(e: Dictionary) -> void:
 	var forte := tipo == "crit" or tipo == "counter"
 	_marcas = int(e.get("marks", _marcas))  # 7b1: antes da reação, para o repouso dele já mancar
 	var bloqueado := bool(e.blocked)
+	var guarda := alvo == 1 and bool(e.get("guard", false))  # 8a1: acerto na guarda fechada do James (1º round)
 	var spr_a := UiTema.sprite(_nome(quem, str(e.get("anim_usada", e.attack_anim))))
 	var hp := _vetor(spr_a.get("hit_point", [31, -61]))
 	var base_a: Vector2 = _l[quem].base
@@ -1137,6 +1334,10 @@ func _acertou(e: Dictionary) -> void:
 		var sb := UiTema.sprite(_nome(alvo, "block"))
 		var mao := _vetor((sb.get("hands", [{"hand_front": [10, -67]}]) as Array)[1].get("hand_front", [10, -67]))
 		_tocar_fx("fx_block", (_l[alvo].base as Vector2) + mao, alvo == 1)
+	elif guarda and _fx.has("fx_guard_clink") and not (str(e.get("phase", "standing")) == "ground" and _pose_chao_ok()):
+		_tocar_fx("fx_guard_clink", contato, quem == 1)  # o golpe bate na guarda: faísca de aço no lugar do impacto
+		if tipo == "crit":
+			_tocar_fx("fx_fight_crit", contato, quem == 1)
 	else:
 		_tocar_fx("fx_fight_hit", contato, quem == 1)
 		if tipo == "crit":
@@ -1149,7 +1350,9 @@ func _acertou(e: Dictionary) -> void:
 	_fase_visual = str(e.get("phase_after", _fase_visual))  # a queda leva os dois ao chão (as poses de repouso mudam)
 
 	# Número flutuante: sai do ponto de contato e sobe.
-	_numero_de_dano(float(e.damage), tipo, bloqueado, Vector2(contato.x, contato.y - 6.0))
+	_numero_de_dano(float(e.damage), tipo, bloqueado, Vector2(contato.x, contato.y - 6.0), guarda)
+	if alvo == 1 and bool(e.get("opp_block", false)):
+		_sinal_adversario("block")  # a passiva dele segurou: AGUENTOU! / NÃO CAIU / ESCAPOU!
 
 	# Barra de vida de quem apanhou.
 	var pct := clampf(float(e.life_pct_after), 0.0, 1.0)
@@ -1170,9 +1373,11 @@ func _acertou(e: Dictionary) -> void:
 		_combo = 0
 
 	# Som, tremida, flash, lâmpada e torcida: mais forte conforme o golpe.
-	if bloqueado:
+	if bloqueado or guarda:
 		sfx.bloqueio()
-	sfx.golpe_luta(forte, bloqueado)
+	sfx.golpe_luta(forte, bloqueado or guarda)
+	if alvo == 1 and bool(e.get("opp_block", false)):
+		_tremer(1, 0.1)
 	if tipo == "crit":
 		_tremer(2, 0.2)
 		_flash_tela(0.32)
@@ -1268,14 +1473,18 @@ func _mostrar_combo() -> void:
 
 ## Número de dano que sobe do ponto de contato. O mais recente fica por cima e os que estavam embaixo dele são
 ## empurrados para cima (a mesma solução da garagem), para dois golpes seguidos no mesmo ponto não se encavalarem.
-func _numero_de_dano(dano: float, tipo: String, bloqueado: bool, origem: Vector2) -> void:
+func _numero_de_dano(dano: float, tipo: String, bloqueado: bool, origem: Vector2, guarda: bool = false) -> void:
 	var forte := tipo == "crit" or tipo == "counter"
 	if _bloqueado(origem):
 		return
 	var n := _pegar_numero()
 	_ordem_numeros += 1
-	n.definir_z(900 + (50 if forte else 0) + _ordem_numeros % 40)
-	if tipo == "crit":
+	n.definir_z(900 + (50 if forte and not guarda else 0) + _ordem_numeros % 40)
+	if guarda:
+		# 8a1: contra a guarda fechada o número é cinza e pequeno (1x) mesmo no crítico: o dano que passou é menor, e se vê.
+		var txt_g := UiTema.txt("fight_crit", "{n}!", {"n": NumberFormat.fmt(dano)}) if forte else NumberFormat.fmt(dano)
+		n.iniciar(txt_g, UiTema.G2, false, "", origem, 0.6, 20.0)
+	elif tipo == "crit":
 		n.iniciar(UiTema.txt("fight_crit", "{n}!", {"n": NumberFormat.fmt(dano)}), UiTema.R3, true, "", origem + Vector2(0, -6), 0.8, 24.0)
 	elif tipo == "counter":
 		n.iniciar(UiTema.txt("fight_crit", "{n}!", {"n": NumberFormat.fmt(dano)}), UiTema.B3, true, "", origem + Vector2(0, -6), 0.8, 24.0)
@@ -1522,9 +1731,403 @@ func _sinal_pequeno(chave: String) -> void:
 	tw.tween_callback(func() -> void: sp.visible = false)
 
 
+# --- 8a1: passiva dele (sinais e guarda), cinturão erguido ---
+
+## Sinal pequeno sobre a cabeça dele (1x, pivô no meio, 10 px para cima em 0,6 s). Os números de dano que estiverem na área somem
+## (o sinal lê limpo, como os letreiros do fim). Sem a imagem, um número de aviso de texto.
+func _sinal_adversario(chave: String) -> void:
+	if _pre != "" or _outro != 0:
+		return
+	var sp: Sprite2D = _opp_sinais.get(chave)
+	if sp == null:
+		var texto := str(_opp_pass.get("block_text", "")) if chave == "block" else \
+			str(_opp_pass.get("guard_closed_text" if chave == "closed" else "guard_open_text", ""))
+		if texto != "":
+			_numero_aviso(texto, UiTema.WHITE)
+		return
+	var tam := sp.texture.get_size()
+	var p := _ponto_cabeca(1) + Vector2(0, -14)
+	var origem := Vector2(roundf(p.x), roundf(p.y))
+	sp.position = origem
+	_limpar_numeros_em(Rect2(origem - tam / 2.0 - Vector2(0, 10), tam + Vector2(0, 10)).grow(6.0))
+	sp.visible = true
+	sp.modulate = Color(1.7, 1.7, 1.7, 1.0)
+	if _tween_sinais.has(chave) and (_tween_sinais[chave] as Tween).is_valid():
+		(_tween_sinais[chave] as Tween).kill()
+	var tw := create_tween()
+	_tween_sinais[chave] = tw
+	tw.tween_property(sp, "modulate", Color.WHITE, 0.12)
+	tw.parallel().tween_property(sp, "position:y", origem.y - 10.0, 0.6)
+	tw.tween_interval(0.35)
+	tw.tween_property(sp, "modulate:a", 0.0, 0.2)
+	tw.tween_callback(func() -> void: sp.visible = false)
+
+
+## Apaga (0,15 s) os números de dano que passam pela área `area`.
+func _limpar_numeros_em(area: Rect2) -> void:
+	for n in _numeros:
+		var r: Rect2 = n.retangulo()
+		var caminho := Rect2(r.position.x, r.position.y - n._subida, r.size.x, r.size.y + n._subida)
+		if n.ativo and caminho.intersects(area):
+			var gen: int = n._gen
+			var tw := create_tween().set_ignore_time_scale(true)
+			tw.tween_method(func(p: float) -> void: n.sumir_com(p, gen), 0.0, 1.0, 0.15)
+
+
+## Aos 5,33 s a guarda do James abre: ele volta ao idle, a chapa do ícone abre e aparece A GUARDA ABRIU (ouro).
+func _abrir_guarda() -> void:
+	if not _guarda_fechada:
+		return
+	_guarda_fechada = false
+	if str(_l[1].estado) == "idle":
+		_repouso(1)
+	var aberto := _icone_passiva_adv(true)
+	if _opp_icone != null and aberto != "" and not UiTema.sprite(aberto).is_empty():
+		_opp_icone.texture = UiTema.textura(aberto)
+		_opp_icone.modulate = Color(2, 2, 2)
+		_opp_icone.create_tween().tween_property(_opp_icone, "modulate", Color.WHITE, 0.3)
+	_sinal_adversario("open")
+	_publico_cheer(false)
+	sfx.publico(-14.0)
+
+
+## O cinturão do Vale nas luvas da vitória (anim 0,1,2 a 6 fps; a torcida vibra). Segue as mãos quadro a quadro.
+func _erguer_cinturao() -> void:
+	if _cinturao == null or not _cinturao_ativo:
+		return
+	var primeira := not _cinturao.visible
+	_cinturao.visible = true
+	if primeira:
+		_cinturao.tocar([0, 1, 2], 6.0, true)
+		_publico_cheer(true)
+	_seguir_cinturao()
+
+
+## Dados da folha do jogador no quadro atual (as mãos), para o verificador conferir o cinturão nas luvas.
+func _info_folha_mao() -> Dictionary:
+	return UiTema.sprite((_l[0].spr as AnimSprite).nome_sprite)
+
+
+func _seguir_cinturao() -> void:
+	if _cinturao == null or not _cinturao.visible or _l.is_empty():
+		return
+	var spr: AnimSprite = _l[0].spr
+	var hs: Array = UiTema.sprite(spr.nome_sprite).get("hands", [])
+	var h := Vector2(4, -83)
+	if hs.size() > 0:
+		var m: Dictionary = hs[clampi(spr.frame, 0, hs.size() - 1)]
+		var a := _vetor(m.get("hand_front", [9, -83]))
+		var b := _vetor(m.get("hand_back", [-1, -82]))
+		h = (a + b) / 2.0
+	# Segurado nas LUVAS (1x): o pivô do cinturão (40,14) é o meio das duas pegadas e vai para o meio das mãos do quadro de vitória.
+	# As pegadas do cinturão ficam mais afastadas que as luvas: ele pode encostar no topo da cabeça, mas nunca flutua solto.
+	_cinturao.position = (_l[0].base as Vector2) + h
+
+
+# --- 8a1: entrada no ringue, apresentação do James e fala de depois (o relógio da luta fica parado em -intro_seconds) ---
+
+const ENTRADA_SEGMENTOS := [1.0, 0.35, 0.3, 0.35]  # s de cada trecho do caminho (soma 2,0)
+const ENTRADA_ERGUE := 0.4  # braço para a torcida
+var _entrada_fator := 1.0  # 1,0 = 2,4 s; com a apresentação do James vai a 0,5 (1,2 s) para o total ficar longe dos 15 s
+const PALAVRA_DESPREZO := {"rival_james_intro_first_2": "fofo.", "rival_james_intro_revenge_2": "nenhuma.",
+	"rival_james_intro_school_won_1": "mania.", "rival_james_intro_many_1": "cartaz."}
+static var pular_entrada := false  # só para testes: sem a entrada no ringue
+
+
+func _info_entrada() -> Dictionary:
+	return UiTema.manifest().get("fight_layout", {}).get("arenas", {}).get(str(luta.get("arena", "")), {}).get("entrance", {})
+
+
+func _iniciar_pre(dados: Dictionary) -> void:
+	var entrada := _info_entrada()
+	_ap_falas = (dados.get("intro_falas", []) as Array).duplicate() if dados.get("intro_falas", []) is Array else []
+	_entrada_fator = 0.5 if not _ap_falas.is_empty() else 1.0
+	if not entrada.is_empty() and not pular_entrada and (entrada.get("player_path", []) as Array).size() >= 2:
+		_pre = "entrada"
+		_pre_t = 0.0
+		sfx.publico(-16.0)
+		if _facho != null:
+			_facho.visible = true
+			_facho.tocar([0, 1], 8.0, true)
+		_aplicar_entrada(0.0)
+	elif not _ap_falas.is_empty():
+		_iniciar_falas("intro")
+
+
+## Posição do jogador a `t` segundos da entrada: anda pelo caminho do manifest (trechos de tempo fixo).
+func _pos_entrada(t: float) -> Vector2:
+	var caminho: Array = _info_entrada().get("player_path", [])
+	var acum := 0.0
+	for i in ENTRADA_SEGMENTOS.size():
+		var d := float(ENTRADA_SEGMENTOS[i])
+		if t <= acum + d or i == ENTRADA_SEGMENTOS.size() - 1:
+			var a := _vetor(caminho[mini(i, caminho.size() - 1)])
+			var b := _vetor(caminho[mini(i + 1, caminho.size() - 1)])
+			return a.lerp(b, clampf((t - acum) / d, 0.0, 1.0))
+		acum += d
+	return _vetor(caminho[caminho.size() - 1])
+
+
+func _aplicar_entrada(t_real: float) -> void:
+	var t := t_real / _entrada_fator
+	var p := _pos_entrada(t)
+	var rope_x := float(_info_entrada().get("rope_x", 118))
+	var balanco := 0.0 if t >= 2.0 else -roundf(absf(sin(t * 9.0)) * 2.0)  # passo: um quique de 2 px
+	var q := Vector2(roundf(p.x), roundf(p.y + balanco))
+	var l: Dictionary = _l[0]
+	l.spr.position = q
+	l.sombra.position = Vector2(roundf(p.x), roundf(p.y)) + Vector2(0, -1)
+	l.spr.z_index = 49 if p.x < rope_x else Z_LUTADOR  # atrás do público da frente até passar entre as cordas
+	if _facho != null:
+		_facho.position = Vector2(roundf(p.x), roundf(p.y))
+
+
+func _passo_pre(delta: float) -> void:
+	if _pre == "entrada":
+		_pre_t += delta
+		var dur := 0.0
+		for d in ENTRADA_SEGMENTOS:
+			dur += float(d)
+		dur *= _entrada_fator
+		_aplicar_entrada(minf(_pre_t, dur))
+		if _pre_t >= dur and str(_l[0].estado) != "victory":
+			_estado(0, "victory")  # braço para a torcida (a pose de vitória, sem cinturão)
+			_l[0].spr.z_index = Z_LUTADOR
+			_publico_cheer(false)
+			sfx.publico(-12.0)
+		if _pre_t >= dur + ENTRADA_ERGUE * _entrada_fator:
+			_finalizar_entrada()
+	elif _pre == "falas":
+		_passo_falas(delta)
+
+
+## Termina a entrada (ou pula com o clique): o jogador já está no lugar dele; segue a apresentação (James) ou a luta.
+func _finalizar_entrada() -> void:
+	if _pre != "entrada":
+		return
+	_l[0].estado = "idle"
+	_l[0].spr.position = _l[0].base
+	_l[0].sombra.position = (_l[0].base as Vector2) + Vector2(0, -1)
+	_repouso(0)
+	if _facho != null:
+		_facho.visible = false
+	_pre = ""
+	if not _ap_falas.is_empty():
+		_iniciar_falas("intro")
+	else:
+		_soltar_gesto()
+
+
+func _falando_apresentacao() -> bool:
+	return _pre == "falas" or _outro == 1
+
+
+func _iniciar_falas(tipo: String) -> void:
+	_ap_tipo = tipo
+	_ap_i = 0
+	_ap_espera = 0.0
+	_scorn_em = -1.0
+	_scorn_feito = false
+	_mostrar_pular(true)
+	if tipo == "intro":
+		_pre = "falas"
+		_guarda_fechada = false  # J1: sai da guarda para o idle e olha a plateia
+		if str(_l[1].estado) == "idle":
+			_repouso(1)
+	else:
+		_outro = 1
+
+
+func _mostrar_pular(sim: bool) -> void:
+	if _botao_pular != null:
+		_botao_pular.visible = sim
+		_chip_pular.visible = sim
+	if not sim:
+		_esc_t = 0.0
+		_esc_segurando = false
+		if _atlas_pular != null:
+			_atlas_pular.region = Rect2(0, 0, 11, 11)
+
+
+func _passo_falas(delta: float) -> void:
+	if _ap_espera >= 0.0:
+		_ap_espera -= delta
+		if _ap_espera < 0.0:
+			_ap_espera = -1.0
+			_proxima_fala()
+	if _scorn_em >= 0.0 and not _scorn_feito:
+		_scorn_em -= delta
+		if _scorn_em <= 0.0:
+			_scorn_feito = true
+			_gesto_desprezo()
+
+
+func _proxima_fala() -> void:
+	if _ap_i >= _ap_falas.size():
+		_fim_falas()
+		return
+	var f: Dictionary = _ap_falas[_ap_i]
+	_ap_i += 1
+	_balao.modo_cena = true
+	# De pé (apresentação, venceu, perdeu por pontos) o balão só evita a cabeça do jogador; com ele no chão, o corpo todo.
+	_balao.zona = ZONA_CORPO_JOGADOR if (_ap_tipo == "outro" and bool(luta.result.get("win", false)) and bool(luta.result.get("ko", false))) else ZONA_CABECA_JOGADOR
+	var texto := str(f.get("text", ""))
+	if not _balao.mostrar(str(f.get("id", "")), str(f.get("speaker", "rival")), texto, _cabeca_da_fala(), 46.0, []):
+		_ap_espera = 0.0  # não coube sem cobrir alguém: pula a fala
+		return
+	# O gesto de desprezo: 1 vez por apresentação, quando aparece a palavra-gatilho; na fala de depois, se ele venceu, nas últimas 0,9 s.
+	var palavra := str(PALAVRA_DESPREZO.get(str(f.get("id", "")), ""))
+	if _ap_tipo == "intro" and palavra != "" and not _scorn_feito:
+		var idx := texto.replace("\n", "").find(palavra)
+		_scorn_em = 0.06 + (_balao.tempo_letra(maxi(idx, 0)) if idx >= 0 else 1.0)
+	elif _ap_tipo == "outro" and not bool(luta.result.get("win", false)):
+		_scorn_em = maxf(0.3, _balao.duracao() - 0.9)
+
+
+## Onde o balão prende: a cabeça dele de pé; no chão (K.O./finalização), o ponto da cabeça caída (ko_head_point, espelhado).
+func _cabeca_da_fala() -> Vector2:
+	if _ap_tipo == "outro" and bool(luta.result.get("win", false)) and bool(luta.result.get("ko", false)):
+		var l: Dictionary = _l[1]
+		var ko_cab := _vetor(UiTema.manifest().get("fight_layout", {}).get("ko_head_point", [-36, -12]))
+		if _ko_nome == "ko_knees":
+			ko_cab = Vector2(38, -12)
+		elif _ko_nome == "ko_back":
+			ko_cab = Vector2(-42, -12)
+		var p := (l.base as Vector2) + Vector2(ko_cab.x * float(l.dir), ko_cab.y - 6.0) * float(l.escala)
+		p.x = maxf(p.x, ZONA_CORPO_JOGADOR.end.x + 22.0)  # caído de frente para o jogador: o rabicho aponta para o corpo dele, à direita do jogador
+		return p
+	return _ponto_cabeca(1)
+
+
+func _gesto_desprezo() -> void:
+	if not _existe_anim(1, "scorn") or str(_l[1].estado) == "ko":
+		return
+	_tocar(1, "scorn")
+	var s := UiTema.sprite(_nome(1, "scorn"))
+	var pico := float(int(s.get("peak_frame", 3))) / maxf(float(s.get("fps", 7.0)), 1.0)
+	get_tree().create_timer(pico).timeout.connect(func() -> void:
+		if is_instance_valid(self) and ativa:
+			sfx.tap_glove())
+
+
+func _ao_balao_fechou(id: String, _quem: String) -> void:
+	if not id.begins_with("rival_james") or not _falando_apresentacao():
+		return
+	_ap_espera = ESPERA_ENTRE_FALAS
+
+
+func _fim_falas() -> void:
+	_ap_espera = -1.0
+	_scorn_em = -1.0
+	_mostrar_pular(false)
+	if _ap_tipo == "intro":
+		_pre = ""
+		_guarda_fechada = str(_opp_pass.get("id", "")) == "adv_blindado"  # J3: volta à guarda fechada, a passiva anunciada sem texto
+		if str(_l[1].estado) == "idle":
+			_repouso(1)
+		_soltar_gesto()
+	elif _ap_tipo == "outro":
+		_outro = 2
+
+
+## PULAR (botão, ESC segurado 0,5 s): encerra a apresentação na hora. Ninguém pula a luta por aqui.
+func _encerrar_falas() -> void:
+	if not _falando_apresentacao():
+		return
+	_ap_falas = []
+	_balao.fechar_agora(false)
+	_fim_falas()
+
+
+func _clique_fala() -> void:
+	if not _balao.ativo():
+		return
+	if not _balao.texto_completo():
+		_balao.completar()  # 1º toque: completa a fala (sem blip)
+		return
+	var agora := float(Time.get_ticks_msec()) / 1000.0
+	if agora - _ap_t_completo >= float(GameState.dialogos.typing.get("click_guard", 0.15)):
+		_balao.fechar_agora(true)  # 2º toque: próxima fala
+
+
+func _iniciar_outro() -> void:
+	var f: Variant = luta.get("outro_fala", {})
+	if not (f is Dictionary) or (f as Dictionary).is_empty() or str((f as Dictionary).get("text", "")) == "":
+		_outro = 2
+		return
+	_apagar_letreiros_do_fim()
+	for sp in _opp_sinais.values():  # nada da guarda (nem sinal nenhum) por cima da fala de depois
+		(sp as Sprite2D).visible = false
+	for tw in _tween_sinais.values():
+		if (tw as Tween).is_valid():
+			(tw as Tween).kill()
+	_ap_falas = [f]
+	_iniciar_falas("outro")
+
+
+## Os letreiros do fim (K.O.!, FINALIZOU!, TEMPO!...) saem (0,2 s) quando o balão do James entra: nada cobre a fala.
+func _apagar_letreiros_do_fim() -> void:
+	var nos: Array = [_banner_ko, _banner_spin, _banner_sub_img, _banner, _banner_sub, _banner_fundo]
+	nos.append_array(_banners_fim.values())
+	for n in nos:
+		var c := n as CanvasItem
+		if c != null and is_instance_valid(c) and c.visible:
+			var tw := create_tween()
+			tw.tween_property(c, "modulate:a", 0.0, 0.2)
+			tw.tween_callback(c.hide)
+
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_clique_geral()
+		accept_event()
+
+
+func _clique_geral() -> void:
+	if _pre == "entrada":
+		_finalizar_entrada()
+	elif _falando_apresentacao():
+		_clique_fala()
+
+
+func _input(event: InputEvent) -> void:
+	if not ativa or not visible or not (event is InputEventKey):
+		return
+	var ek := event as InputEventKey
+	if ek.keycode == KEY_SPACE and ek.pressed and not ek.echo and (_pre != "" or _falando_apresentacao()):
+		_clique_geral()
+		get_viewport().set_input_as_handled()
+	elif ek.keycode == KEY_ESCAPE and (_pre != "" or _falando_apresentacao()):
+		if ek.pressed and not ek.echo:
+			_esc_segurando = true
+			_esc_t = 0.0
+		elif not ek.pressed:
+			_esc_segurando = false
+			_esc_t = 0.0
+			if _atlas_pular != null:
+				_atlas_pular.region = Rect2(0, 0, 11, 11)
+		get_viewport().set_input_as_handled()
+
+
+func _tick_esc(delta: float) -> void:
+	if not _esc_segurando:
+		return
+	_esc_t += delta
+	var alvo := 0.5
+	if _atlas_pular != null:
+		_atlas_pular.region = Rect2(11.0 * float(clampi(int(round(8.0 * _esc_t / alvo)), 0, 8)), 0, 11, 11)
+	if _esc_t >= alvo:
+		_esc_segurando = false
+		_esc_t = 0.0
+		if _pre == "entrada":
+			_finalizar_entrada()
+		_encerrar_falas()
+
 # --- Efeitos ---
 
 func _tocar_fx(nome: String, p: Vector2, espelhar: bool) -> void:
+	if not _fx.has(nome):
+		return
 	var lista: Array = _fx[nome]
 	var i: int = int(_fx_i[nome])
 	_fx_i[nome] = (i + 1) % lista.size()
@@ -1639,6 +2242,14 @@ func _process(delta: float) -> void:
 	if _l.size() > 0 and _l[0].get("spr", null) != null:
 		UiTema.aplicar_visual_disc(_l[0].spr)  # Fase 6b1: o visual escolhido do discípulo
 	_t += delta
+	_tick_esc(delta)
+	if _pre != "":
+		# 8a1: entrada no ringue / apresentação do James: o relógio da luta espera (a tela segue viva: barras, números, tremida).
+		_passo_pre(delta)
+		_seguir_cinturao()
+		for b in _barras:
+			b.passo(_t)
+		return
 	_clock += delta
 	while _idx < _cues.size() and float(_cues[_idx].t) <= _clock:
 		var fn: Callable = _cues[_idx].fn
@@ -1668,8 +2279,15 @@ func _process(delta: float) -> void:
 	for b in _barras:
 		b.passo(_t)
 
+	_seguir_cinturao()
 	if _clock >= _fim_total and not finalizada:
-		_finalizar()
+		# 8a1: a fala de depois do James toca aqui, antes da janela de fim (o balão some quando uma janela abre).
+		if _outro == 0:
+			_iniciar_outro()
+		if _outro == 1:
+			_passo_falas(delta)
+		if _outro == 2:
+			_finalizar()
 
 
 ## Barra de pegada (Jiu-jitsu): enche com o tempo da luta até grip_full_at; cheia, pisca entre os dois quadros.
@@ -1691,19 +2309,23 @@ func _atualizar_pegada() -> void:
 func _finalizar() -> void:
 	finalizada = true
 	ativa = false
+	_mostrar_pular(false)
 	var resumo := GameState.concluir_luta()  # aplica o resultado UMA vez e salva
 	terminou.emit(resumo)
 
 
 ## Esconde a arena e libera os recursos (chamado pelo Fluxo ao voltar para a garagem).
 func encerrar() -> void:
+	_balao.fechar_agora(false)
+	_pre = ""
+	_outro = 2
 	_gesto.cancelar()
 	_gesto_nome = ""
 	Engine.time_scale = 1.0
 	ativa = false
 	visible = false
 	for c in get_children():
-		if c != sfx and c != _gesto:
+		if c != sfx and c != _gesto and c != _balao:
 			c.queue_free()
 
 
