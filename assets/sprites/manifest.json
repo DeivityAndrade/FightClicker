@@ -369,6 +369,31 @@
 			"esteira": "treadmill_lN_side em lado_direito",
 			"saco_comprido": "kick_bag_lN_idle/hit em centro (336,190)",
 			"lutador": "fighter_idle em foco_saco (303,272); clique = fighter_low_kick (64x72, mesmo pivô)"
+		},
+		"gym_league_poster_spot": [
+			412,
+			54
+		],
+		"gym_league_poster_spot_info": {
+			"anchor": "canto de cima à esquerda",
+			"size": [
+				38,
+				54
+			],
+			"layer": "wall",
+			"z": -45,
+			"object_text": "regional_poster",
+			"location": "gym",
+			"sprite": "wall_poster_league_regional_gym",
+			"click_rect": [
+				412,
+				54,
+				38,
+				54
+			],
+			"requires_milestone": "regional_league_opened",
+			"zoom": "ui_poster_league_regional_zoom",
+			"_nota": "Fase 8a1: em cima da porta da academia, entre o relógio de rounds (até x 395) e o pilar (x 468); abaixo do tubo (até y 44), acima do batente da porta (y 117). Só parede lisa embaixo (conferido no gerador: 0 px de outra coisa). Longe do recorte do vulto (340,60) e das luvas penduradas."
 		}
 	},
 	"by_data_id": {
@@ -2722,7 +2747,8 @@
 				"blue": "ui_balloon_tag_blue",
 				"green": "ui_balloon_tag_green",
 				"purple": "ui_balloon_tag_purple",
-				"gray": "ui_balloon_tag_gray"
+				"gray": "ui_balloon_tag_gray",
+				"steel": "ui_balloon_tag_steel"
 			},
 			"tag_text_color": {
 				"red": "white",
@@ -2730,12 +2756,14 @@
 				"blue": "ink",
 				"green": "ink",
 				"purple": "ink",
-				"gray": "ink"
+				"gray": "ink",
+				"steel": "white"
 			},
 			"tag_by_speaker": {
 				"first": "red",
 				"coach": "gold",
-				"disciple": "blue"
+				"disciple": "blue",
+				"rival": "steel"
 			},
 			"size": {
 				"w": "maior linha x 6 + 16 (mín 40, máx 172)",
@@ -3988,7 +4016,231 @@
 			"banner_scale": 2,
 			"note": "Fase 7b2: o letreiro do fim pelo finish (counter_ko/ground_stop/knee_ko); mesma entrada do K.O.!. Pivô no meio do PNG."
 		},
-		"_nota_fase7b2_arte": "Fase 7b2 (Diretor de Arte): passive_2_card, counter_hud, passive_2_banners, boxing/bjj/muay_thai.passive_2_icon*. direcao-visual.md §33, docs/arte/fase7b2-manifest.md."
+		"_nota_fase7b2_arte": "Fase 7b2 (Diretor de Arte): passive_2_card, counter_hud, passive_2_banners, boxing/bjj/muay_thai.passive_2_icon*. direcao-visual.md §33, docs/arte/fase7b2-manifest.md.",
+		"belt_regional": {
+			"icon": "icon_belt_regional",
+			"icon_9": "icon_belt_regional_9",
+			"big": "belt_regional_big",
+			"raised": "belt_regional_raised"
+		},
+		"opp_passives": {
+			"adv_iron_chin": {
+				"icon": "adv_iron_chin",
+				"icon_9": "adv_iron_chin_9",
+				"signal": "ui_banner_opp_iron_chin"
+			},
+			"adv_wide_base": {
+				"icon": "adv_wide_base",
+				"icon_9": "adv_wide_base_9",
+				"signal": "ui_banner_opp_wide_base"
+			},
+			"adv_slippery": {
+				"icon": "adv_slippery",
+				"icon_9": "adv_slippery_9",
+				"signal": "ui_banner_opp_slippery"
+			},
+			"adv_blindado": {
+				"icon": "adv_blindado",
+				"icon_9": "adv_blindado_9",
+				"icon_open": "adv_blindado_open",
+				"icon_open_9": "adv_blindado_open_9",
+				"signal_closed": "ui_banner_guard_closed",
+				"signal_open": "ui_banner_guard_open",
+				"hit_fx": "fx_guard_clink"
+			},
+			"hud": {
+				"icon_pos": [
+					346,
+					17
+				],
+				"note": "Ícone 9x9 dentro da ponta esquerda da vida dele (x 346, y 17), sempre. Posição final: UI/UX."
+			},
+			"signal_pos": "acima da cabeça dele (head_point do adversário, -14 px), 2x, sobe 10 px em 0,6 s como o número de dano",
+			"note": "Fase 8a1: escudinho de borda vermelha = passiva DELE (as suas não têm borda). Sinais em branco/aço com sombra r1; A GUARDA ABRIU em ouro. Blindado: número de dano cinza (g2) e 1x enquanto guard = true (regra do UI/UX)."
+		},
+		"opp_james_portrait_frame": {
+			"frame": "ui_portrait_frame_gold",
+			"note": "Fase 8a1 (Diretor de Arte): o James usa a moldura DOURADA de sempre (dono do cinturão, como o Seu Muralha); sem moldura nova. O retrato é portrait_opp_james (Artista de Personagens)."
+		},
+		"_nota_fase8a1_arte": "Fase 8a1 (Diretor de Arte): fight_layout.arenas.arena_regional, layout.gym_league_poster_spot, belt_regional, opp_passives, speech_bubble steel, opp_james_portrait_frame. direcao-visual.md §34, docs/arte/fase8a1-manifest.md.",
+		"opp_reg_1": {
+			"_nota": "Fase 8a1 (Artista de Personagens). Mesmo quadro 112x104 e pivô (56,98) dos outros adversários. actions.signature = pose de assinatura da passiva (docs/arte/fase8a1-personagens-manifest.md).",
+			"actions": {
+				"block": "opp_reg_1_block",
+				"dodge": "opp_reg_1_dodge",
+				"fall": "opp_reg_1_fall",
+				"fall_spin": "opp_reg_1_fall_spin",
+				"ground_bottom_idle": "opp_reg_1_ground_bottom_idle",
+				"ground_hit": "opp_reg_1_ground_hit",
+				"ground_punch": "opp_reg_1_ground_punch",
+				"heavy": "opp_reg_1_heavy",
+				"held_clinch": "opp_reg_1_held_clinch",
+				"hit": "opp_reg_1_hit",
+				"hit_body": "opp_reg_1_hit_body",
+				"hit_clinch": "opp_reg_1_hit_clinch",
+				"hit_head": "opp_reg_1_hit_head",
+				"hit_leg": "opp_reg_1_hit_leg",
+				"hit_spin": "opp_reg_1_hit_spin",
+				"hit_up": "opp_reg_1_hit_up",
+				"idle": "opp_reg_1_idle",
+				"jab": "opp_reg_1_jab",
+				"ko": "opp_reg_1_ko",
+				"ko_back": "opp_reg_1_ko_back",
+				"ko_knees": "opp_reg_1_ko_knees",
+				"limp": "opp_reg_1_limp",
+				"limp_heavy": "opp_reg_1_limp_heavy",
+				"shake_head": "opp_reg_1_shake_head",
+				"signature": "opp_reg_1_shake_head",
+				"tap_out": "opp_reg_1_tap_out",
+				"tired": "opp_reg_1_tired",
+				"victory": "opp_reg_1_victory"
+			},
+			"color": "r2",
+			"facing": "esquerda",
+			"name_hint": "Zé Bigorna",
+			"portrait": "portrait_opp_reg_1",
+			"portrait_frame": "ui_portrait_frame",
+			"pos": [
+				346,
+				318
+			],
+			"profile": "RESISTENTE",
+			"scale": 1.02
+		},
+		"opp_reg_2": {
+			"_nota": "Fase 8a1 (Artista de Personagens). Mesmo quadro 112x104 e pivô (56,98) dos outros adversários. actions.signature = pose de assinatura da passiva (docs/arte/fase8a1-personagens-manifest.md).",
+			"actions": {
+				"block": "opp_reg_2_block",
+				"dodge": "opp_reg_2_dodge",
+				"fall": "opp_reg_2_fall",
+				"fall_spin": "opp_reg_2_fall_spin",
+				"ground_bottom_idle": "opp_reg_2_ground_bottom_idle",
+				"ground_hit": "opp_reg_2_ground_hit",
+				"ground_punch": "opp_reg_2_ground_punch",
+				"heavy": "opp_reg_2_heavy",
+				"held_clinch": "opp_reg_2_held_clinch",
+				"hit": "opp_reg_2_hit",
+				"hit_body": "opp_reg_2_hit_body",
+				"hit_clinch": "opp_reg_2_hit_clinch",
+				"hit_head": "opp_reg_2_hit_head",
+				"hit_leg": "opp_reg_2_hit_leg",
+				"hit_spin": "opp_reg_2_hit_spin",
+				"hit_up": "opp_reg_2_hit_up",
+				"idle": "opp_reg_2_idle",
+				"jab": "opp_reg_2_jab",
+				"ko": "opp_reg_2_ko",
+				"ko_back": "opp_reg_2_ko_back",
+				"ko_knees": "opp_reg_2_ko_knees",
+				"limp": "opp_reg_2_limp",
+				"limp_heavy": "opp_reg_2_limp_heavy",
+				"plant_feet": "opp_reg_2_plant_feet",
+				"signature": "opp_reg_2_plant_feet",
+				"tap_out": "opp_reg_2_tap_out",
+				"tired": "opp_reg_2_tired",
+				"victory": "opp_reg_2_victory"
+			},
+			"color": "g2",
+			"facing": "esquerda",
+			"name_hint": "Tião Estaca",
+			"portrait": "portrait_opp_reg_2",
+			"portrait_frame": "ui_portrait_frame",
+			"pos": [
+				346,
+				318
+			],
+			"profile": "FORTE",
+			"scale": 1.08
+		},
+		"opp_reg_3": {
+			"_nota": "Fase 8a1 (Artista de Personagens). Mesmo quadro 112x104 e pivô (56,98) dos outros adversários. actions.signature = pose de assinatura da passiva (docs/arte/fase8a1-personagens-manifest.md).",
+			"actions": {
+				"block": "opp_reg_3_block",
+				"dodge": "opp_reg_3_dodge",
+				"fall": "opp_reg_3_fall",
+				"fall_spin": "opp_reg_3_fall_spin",
+				"ground_bottom_idle": "opp_reg_3_ground_bottom_idle",
+				"ground_hit": "opp_reg_3_ground_hit",
+				"ground_punch": "opp_reg_3_ground_punch",
+				"heavy": "opp_reg_3_heavy",
+				"held_clinch": "opp_reg_3_held_clinch",
+				"hit": "opp_reg_3_hit",
+				"hit_body": "opp_reg_3_hit_body",
+				"hit_clinch": "opp_reg_3_hit_clinch",
+				"hit_head": "opp_reg_3_hit_head",
+				"hit_leg": "opp_reg_3_hit_leg",
+				"hit_spin": "opp_reg_3_hit_spin",
+				"hit_up": "opp_reg_3_hit_up",
+				"idle": "opp_reg_3_idle",
+				"jab": "opp_reg_3_jab",
+				"ko": "opp_reg_3_ko",
+				"ko_back": "opp_reg_3_ko_back",
+				"ko_knees": "opp_reg_3_ko_knees",
+				"limp": "opp_reg_3_limp",
+				"limp_heavy": "opp_reg_3_limp_heavy",
+				"signature": "opp_reg_3_slip_clinch",
+				"slip_clinch": "opp_reg_3_slip_clinch",
+				"tap_out": "opp_reg_3_tap_out",
+				"tired": "opp_reg_3_tired",
+				"victory": "opp_reg_3_victory"
+			},
+			"color": "b3",
+			"facing": "esquerda",
+			"name_hint": "Rony Sabão",
+			"portrait": "portrait_opp_reg_3",
+			"portrait_frame": "ui_portrait_frame",
+			"pos": [
+				346,
+				318
+			],
+			"profile": "RÁPIDO",
+			"scale": 1
+		},
+		"opp_james": {
+			"_nota": "Fase 8a1 (Artista de Personagens). Mesmo quadro 112x104 e pivô (56,98) dos outros adversários. actions.signature = pose de assinatura da passiva (docs/arte/fase8a1-personagens-manifest.md).",
+			"actions": {
+				"block": "opp_james_block",
+				"dodge": "opp_james_dodge",
+				"fall": "opp_james_fall",
+				"fall_spin": "opp_james_fall_spin",
+				"ground_bottom_idle": "opp_james_ground_bottom_idle",
+				"ground_hit": "opp_james_ground_hit",
+				"ground_punch": "opp_james_ground_punch",
+				"guard": "opp_james_guard",
+				"heavy": "opp_james_heavy",
+				"held_clinch": "opp_james_held_clinch",
+				"hit": "opp_james_hit",
+				"hit_body": "opp_james_hit_body",
+				"hit_clinch": "opp_james_hit_clinch",
+				"hit_head": "opp_james_hit_head",
+				"hit_leg": "opp_james_hit_leg",
+				"hit_spin": "opp_james_hit_spin",
+				"hit_up": "opp_james_hit_up",
+				"idle": "opp_james_idle",
+				"jab": "opp_james_jab",
+				"ko": "opp_james_ko",
+				"ko_back": "opp_james_ko_back",
+				"ko_knees": "opp_james_ko_knees",
+				"limp": "opp_james_limp",
+				"limp_heavy": "opp_james_limp_heavy",
+				"scorn": "opp_james_scorn",
+				"signature": "opp_james_scorn",
+				"tap_out": "opp_james_tap_out",
+				"tired": "opp_james_tired",
+				"victory": "opp_james_victory"
+			},
+			"color": "y1",
+			"facing": "esquerda",
+			"name_hint": "James Blindado",
+			"portrait": "portrait_opp_james",
+			"portrait_dialog": "portrait_opp_james_dialog",
+			"portrait_frame": "ui_portrait_frame_gold",
+			"pos": [
+				346,
+				318
+			],
+			"profile": "RESISTENTE",
+			"scale": 1.12
+		}
 	},
 	"palette_swap_glove": {
 		"r0": "#5a1a22",
@@ -133770,6 +134022,9229 @@
 				0
 			],
 			"note": "Divisória 1x4 (ink) em cada 1/m da barra (m = unlock.count; hoje 3 → 2 divisórias). Gerador: tools/art/make_arte_fase7b2.gd (+ manifest_7b2.py). direcao-visual.md §33."
+		},
+		"adv_blindado": {
+			"file": "res://assets/sprites/ui/adv_blindado.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: passiva do adversário BLINDADO (16x16): chapa de aço com rebites e faixa vermelha (guarda fechada no 1º round). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_blindado_9": {
+			"file": "res://assets/sprites/ui/adv_blindado_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: BLINDADO 9x9 (aceso ao lado da vida dele enquanto t < 5,33 s). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_blindado_open": {
+			"file": "res://assets/sprites/ui/adv_blindado_open.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: BLINDADO depois da guarda abrir (16x16): as 2 metades da chapa afastadas, cinza. Trocar junto com A GUARDA ABRIU. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_blindado_open_9": {
+			"file": "res://assets/sprites/ui/adv_blindado_open_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: BLINDADO aberto 9x9 (ao lado da vida dele depois de 5,33 s). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_iron_chin": {
+			"file": "res://assets/sprites/ui/adv_iron_chin.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: passiva do adversário QUEIXO DE FERRO (16x16): bigorna de aço com faísca, no escudinho de borda vermelha (= dele). Prévia. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_iron_chin_9": {
+			"file": "res://assets/sprites/ui/adv_iron_chin_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: QUEIXO DE FERRO 9x9 (ao lado da vida dele, prévia, motivo). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_slippery": {
+			"file": "res://assets/sprites/ui/adv_slippery.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: passiva do adversário ENSABOADO (16x16): barra de sabão com bolhas. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_slippery_9": {
+			"file": "res://assets/sprites/ui/adv_slippery_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: ENSABOADO 9x9. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_wide_base": {
+			"file": "res://assets/sprites/ui/adv_wide_base.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: passiva do adversário BASE LARGA (16x16): base aberta com os pés em 2 blocos de cimento. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"adv_wide_base_9": {
+			"file": "res://assets/sprites/ui/adv_wide_base_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: BASE LARGA 9x9. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"arena_regional_bg": {
+			"file": "res://assets/sprites/fight/arena_regional_bg.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -100,
+			"note": "Fase 8a1: arena da LIGA REGIONAL DO VALE, CLUBE FERROVIÁRIO à noite. Tijolo, janelas em arco, nome do clube pintado, relógio de estação, placa AO VIVO, arquibancada de madeira com torcida, treliça com 4 refletores e a faixa da liga, câmera da TV VALE à direita, mesa dos juízes à esquerda e o RINGUE: lona de y 262 (x 151..489) a y 342 (x 104..536), saia com AUTOPEÇAS VALE FORTE até y 357, postes (azul à esquerda = você, vermelho à direita = ele, brancos na frente), 3 cordas (azul/branca/vermelha) atrás e dos lados; sem corda na frente (a câmera é a da TV). Pés em y 318, chão livre x 200..440, y 0..45 ink liso. Luz já aplicada. Sem lâmpada (não existe arena_regional_lamp). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"arena_regional_crowd_back": {
+			"file": "res://assets/sprites/fight/arena_regional_crowd_back.png",
+			"frame_size": [
+				640,
+				100
+			],
+			"frames": 2,
+			"fps": 4.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				0,
+				180
+			],
+			"layer": "fundo",
+			"z": -60,
+			"loop": true,
+			"anim": {
+				"idle": [
+					0
+				],
+				"cheer": [
+					1,
+					0,
+					1,
+					0
+				]
+			},
+			"note": "Fase 8a1: o público do Ginásio Alvorada (mesmas figuras) com paleta de noite da torcida do Vale, já recortado onde o ringue, a mesa e a câmera ficam na frente. 0 parado, 1 vibrando. Mesmo pos e anim das outras arenas. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"arena_regional_crowd_front": {
+			"file": "res://assets/sprites/fight/arena_regional_crowd_front.png",
+			"frame_size": [
+				640,
+				48
+			],
+			"frames": 2,
+			"fps": 4.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				0,
+				312
+			],
+			"layer": "frente",
+			"z": 50,
+			"loop": true,
+			"anim": {
+				"idle": [
+					0
+				],
+				"cheer": [
+					1,
+					0,
+					1,
+					0
+				]
+			},
+			"note": "Fase 8a1: silhuetas da frente nos cantos (boné e bandeira verdes) e um câmera de mão da TV no canto direito (luz vermelha pisca entre os quadros). Nunca cobre x 138..502. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"arena_regional_ropes_side": {
+			"file": "res://assets/sprites/fight/arena_regional_ropes_side.png",
+			"frame_size": [
+				640,
+				161
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				0,
+				196
+			],
+			"layer": "frente",
+			"z": 40,
+			"note": "Fase 8a1 (opcional): as cordas LATERAIS e os 2 postes da frente, por cima dos lutadores (z 40, abaixo do público da frente). Os mesmos pixels do fundo: ligada ou não, a luta parada fica igual; na ENTRADA NO RINGUE o lutador passa por trás delas (parece entrar entre as cordas). 0 px em x 200..440 (conferido no gerador). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"arena_regional_spot": {
+			"file": "res://assets/sprites/fight/arena_regional_spot.png",
+			"frame_size": [
+				96,
+				262
+			],
+			"frames": 2,
+			"fps": 8.0,
+			"pivot": [
+				48,
+				258
+			],
+			"layer": "frente_do_fundo",
+			"z": -55,
+			"loop": true,
+			"note": "Fase 8a1 (opcional): facho de luz em dither (y2) que segue quem entra no ringue. Pivô nos pés (48,258): position = pés do lutador. z -55 (acima do público de trás, atrás dos lutadores). 2 quadros a 8 fps (tremida de refletor). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"belt_regional_big": {
+			"file": "res://assets/sprites/ui/belt_regional_big.png",
+			"frame_size": [
+				120,
+				52
+			],
+			"frames": 3,
+			"fps": 6.0,
+			"pivot": [
+				60,
+				26
+			],
+			"loop": true,
+			"note": "Fase 8a1: Cinturão do Vale grande para a tela de fim/conquista (como o belt_amateur_big). Couro preto com costura, placa de ouro com esmalte azul (dois morros e o vale) e VALE, 4 plaquinhas laterais. 0 parado, 1-2 brilho (loop). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"belt_regional_raised": {
+			"file": "res://assets/sprites/fight/belt_regional_raised.png",
+			"frame_size": [
+				40,
+				22
+			],
+			"frames": 3,
+			"fps": 6.0,
+			"pivot": [
+				20,
+				15
+			],
+			"loop": true,
+			"grips": [
+				[
+					15,
+					15
+				],
+				[
+					25,
+					15
+				]
+			],
+			"note": "Fase 8a1: o Cinturão do Vale ERGUIDO acima da cabeça, em escala de corpo (40x22). Pivô (20,15) = meio das mãos: position = base do lutador + (hand_front + hand_back)/2 do quadro de fight_player_victory. Pegadas (15,15) e (25,15), 10 px como as luvas. A placa (13x14) fica EM CIMA das luvas e a tira passa reta entre elas, caindo só nas pontas: não cobre o rosto. 3 quadros: 0 parado, 1 e 2 o brilho passa (6 fps, loop). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"fx_guard_clink": {
+			"file": "res://assets/sprites/fight/fx_guard_clink.png",
+			"frame_size": [
+				15,
+				15
+			],
+			"frames": 3,
+			"fps": 18.0,
+			"pivot": [
+				7,
+				7
+			],
+			"loop": false,
+			"note": "Fase 8a1: golpe batendo na GUARDA FECHADA do James no 1º round (evento guard: true): estalo de aço no hit_point, no lugar do fx_fight_hit. 3 quadros a 18 fps, sem loop, pivô no meio. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"icon_belt_regional": {
+			"file": "res://assets/sprites/ui/icon_belt_regional.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: Cinturão do Vale 16x16 (resumo, carreira com cinturão, summary.belts). Tira preta + placa de ouro. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"icon_belt_regional_9": {
+			"file": "res://assets/sprites/ui/icon_belt_regional_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: Cinturão do Vale 9x9 (prévia 'SE VENCER', mural, HUD). Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_balloon_tag_steel": {
+			"file": "res://assets/sprites/ui/ui_balloon_tag_steel.png",
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"nine_slice": {
+				"left": 2,
+				"top": 2,
+				"right": 2,
+				"bottom": 2
+			},
+			"text_color": "white",
+			"note": "Fase 8a1: plaquinha do nome do JAMES no balão (aço escuro st0, texto branco). Mesmo 9-slice das outras; o azul é do discípulo. by_data_id.speech_bubble.tag_by_speaker.rival = steel. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_banner_guard_closed": {
+			"file": "res://assets/sprites/ui/ui_banner_guard_closed.png",
+			"frame_size": [
+				170,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				85,
+				14
+			],
+			"note": "Fase 8a1 (opcional): GUARDA FECHADA no começo da luta contra o James. Pode ser texto. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_banner_guard_open": {
+			"file": "res://assets/sprites/ui/ui_banner_guard_open.png",
+			"frame_size": [
+				162,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				81,
+				14
+			],
+			"note": "Fase 8a1: A GUARDA ABRIU (fight_guard_open) aos 5,33 s. Ouro com sombra aço (boa notícia sua). Pequeno, 1x ou 2x sobre ele. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_banner_opp_iron_chin": {
+			"file": "res://assets/sprites/ui/ui_banner_opp_iron_chin.png",
+			"frame_size": [
+				106,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				53,
+				14
+			],
+			"note": "Fase 8a1: sinal AGUENTOU! (fight_opp_block_adv_iron_chin). Letreiro pequeno, branco/aço com sombra r1 (dele). 2x sobre a cabeça dele. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_banner_opp_slippery": {
+			"file": "res://assets/sprites/ui/ui_banner_opp_slippery.png",
+			"frame_size": [
+				94,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				47,
+				14
+			],
+			"note": "Fase 8a1: sinal ESCAPOU! (fight_opp_block_adv_slippery). 2x sobre a cabeça dele. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_banner_opp_wide_base": {
+			"file": "res://assets/sprites/ui/ui_banner_opp_wide_base.png",
+			"frame_size": [
+				94,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				47,
+				14
+			],
+			"note": "Fase 8a1: sinal NÃO CAIU (fight_opp_block_adv_wide_base). 2x sobre a cabeça dele. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"ui_poster_league_regional_zoom": {
+			"file": "res://assets/sprites/ui/ui_poster_league_regional_zoom.png",
+			"frame_size": [
+				112,
+				148
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1 (opcional): o cartaz grande para a dica/janela (112x148): LIGA REGIONAL DO VALE, foto, CAMPEÃO: JAMES BLINDADO, \"O QUE A BALA NÃO FURA\", CLUBE FERROVIÁRIO. Pode ampliar 2x inteiro. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"wall_poster_league_regional_gym": {
+			"file": "res://assets/sprites/gym/wall_poster_league_regional_gym.png",
+			"frame_size": [
+				38,
+				54
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a1: cartaz da LIGA REGIONAL DO VALE na parede da academia, em cima da porta (layout.gym_league_poster_spot), a partir do marco regional_league_opened. 38x54. LIGA / DO VALE / foto do James em 2 tons / JAMES. Texto inteiro no hover (objects.regional_poster) ou no zoom. Gerador: tools/art/make_arte_fase8a1.gd (+ manifest_8a1.py). direcao-visual.md §34, docs/arte/fase8a1-manifest.md."
+		},
+		"opp_james_block": {
+			"action": "block",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_block.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-72
+					],
+					"hand_front": [
+						-13,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-72
+					],
+					"hand_front": [
+						-10,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-72
+					],
+					"hand_front": [
+						-12,
+						-69
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Blindado: o soco bate na guarda fechada e ele recua 2 px sem abrir as luvas (mesmos 3 quadros do block do rig). Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_dodge": {
+			"action": "dodge",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_dodge.png",
+			"fps": 16,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-66
+					],
+					"hand_front": [
+						-13,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-63
+					],
+					"hand_front": [
+						-9,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-64
+					],
+					"hand_front": [
+						-10,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-67
+					],
+					"hand_front": [
+						-15,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Ação 'dodge' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_fall": {
+			"action": "fall",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_fall.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-18,
+						-52
+					],
+					"hand_front": [
+						-22,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-60
+					],
+					"hand_front": [
+						-20,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-67
+					],
+					"hand_front": [
+						7,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						26,
+						-40
+					],
+					"hand_front": [
+						19,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-4
+					],
+					"hand_front": [
+						12,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						8,
+						-11
+					],
+					"hand_front": [
+						5,
+						-13
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-14
+					],
+					"hand_front": [
+						4,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-19
+					],
+					"hand_front": [
+						1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-20
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'fall' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_fall_spin": {
+			"action": "fall_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_fall_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 10,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-69
+					],
+					"hand_front": [
+						-4,
+						-73
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						2,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						13,
+						-49
+					],
+					"hand_front": [
+						0,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						20,
+						-34
+					],
+					"hand_front": [
+						7,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						36,
+						-13
+					],
+					"hand_front": [
+						16,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-7
+					],
+					"hand_front": [
+						18,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-9
+					],
+					"hand_front": [
+						18,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-7
+					],
+					"hand_front": [
+						18,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-7
+					],
+					"hand_front": [
+						18,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-7
+					],
+					"hand_front": [
+						18,
+						-12
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'fall_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_ground_bottom_idle": {
+			"action": "ground_bottom_idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_ground_bottom_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-24
+					],
+					"hand_front": [
+						0,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-24
+					],
+					"hand_front": [
+						0,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-20
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'ground_bottom_idle' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_ground_hit": {
+			"action": "ground_hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_ground_hit.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-27
+					],
+					"hand_front": [
+						-5,
+						-25
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-26
+					],
+					"hand_front": [
+						-4,
+						-24
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-25
+					],
+					"hand_front": [
+						-3,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-24
+					],
+					"hand_front": [
+						-2,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-23
+					],
+					"hand_front": [
+						-1,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-20
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'ground_hit' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_ground_punch": {
+			"action": "ground_punch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_ground_punch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						-13,
+						-13
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						-15,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-20
+					],
+					"hand_front": [
+						-15,
+						-38
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-20
+					],
+					"hand_front": [
+						-15,
+						-39
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-21
+					],
+					"hand_front": [
+						-12,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-20
+					]
+				}
+			],
+			"hit_frame": 3,
+			"hit_point": [
+				-15,
+				-38
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'ground_punch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_guard": {
+			"action": "guard",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_guard.png",
+			"fps": 6,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-12,
+						-72
+					],
+					"hand_front": [
+						-15,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-73
+					],
+					"hand_front": [
+						-15,
+						-71
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-72
+					],
+					"hand_front": [
+						-15,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-71
+					],
+					"hand_front": [
+						-15,
+						-68
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Blindado (1º round): guarda fechada em repouso, no lugar do idle enquanto a guarda vale (t < 5,33 s); também J0 e fim da apresentação. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_heavy": {
+			"action": "heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_heavy.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-69
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-17,
+						-69
+					],
+					"hand_front": [
+						-13,
+						-71
+					]
+				},
+				{
+					"hand_back": [
+						-40,
+						-69
+					],
+					"hand_front": [
+						-19,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						-37,
+						-69
+					],
+					"hand_front": [
+						-18,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						-18,
+						-72
+					],
+					"hand_front": [
+						-20,
+						-66
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				-40,
+				-69
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Ação 'heavy' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_held_clinch": {
+			"action": "held_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_held_clinch.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-65
+					],
+					"hand_front": [
+						-16,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-58
+					],
+					"hand_front": [
+						-17,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-55
+					],
+					"hand_front": [
+						-17,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-53
+					],
+					"hand_front": [
+						-12,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-53
+					],
+					"hand_front": [
+						-12,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-55
+					],
+					"hand_front": [
+						-17,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-62
+					],
+					"hand_front": [
+						-12,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-64
+					],
+					"hand_front": [
+						-14,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'held_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit": {
+			"action": "hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-68
+					],
+					"hand_front": [
+						-8,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-67
+					],
+					"hand_front": [
+						-10,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-68
+					],
+					"hand_front": [
+						-17,
+						-66
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Ação 'hit' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit_body.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-48
+					],
+					"hand_front": [
+						-9,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-43
+					],
+					"hand_front": [
+						-6,
+						-38
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-43
+					],
+					"hand_front": [
+						-6,
+						-38
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-50
+					],
+					"hand_front": [
+						-10,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-59
+					],
+					"hand_front": [
+						-15,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'hit_body' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit_clinch": {
+			"action": "hit_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit_clinch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-64
+					],
+					"hand_front": [
+						-8,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-63
+					],
+					"hand_front": [
+						-4,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-65
+					],
+					"hand_front": [
+						-8,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-67
+					],
+					"hand_front": [
+						-11,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-68
+					],
+					"hand_front": [
+						-13,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'hit_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit_head.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-68
+					],
+					"hand_front": [
+						-7,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-67
+					],
+					"hand_front": [
+						-4,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-67
+					],
+					"hand_front": [
+						-7,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-68
+					],
+					"hand_front": [
+						-12,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-68
+					],
+					"hand_front": [
+						-13,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'hit_head' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit_leg": {
+			"action": "hit_leg",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit_leg.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-58
+					],
+					"hand_front": [
+						-12,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-54
+					],
+					"hand_front": [
+						-11,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-54
+					],
+					"hand_front": [
+						-11,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-57
+					],
+					"hand_front": [
+						-12,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-62
+					],
+					"hand_front": [
+						-13,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'hit_leg' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit_spin": {
+			"action": "hit_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						7,
+						-69
+					],
+					"hand_front": [
+						-4,
+						-73
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						2,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						2,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-63
+					],
+					"hand_front": [
+						2,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-62
+					],
+					"hand_front": [
+						-6,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-62
+					],
+					"hand_front": [
+						-13,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-65
+					],
+					"hand_front": [
+						-15,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'hit_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_hit_up.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-67
+					],
+					"hand_front": [
+						-9,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-65
+					],
+					"hand_front": [
+						-6,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-64
+					],
+					"hand_front": [
+						-4,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-65
+					],
+					"hand_front": [
+						-7,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-67
+					],
+					"hand_front": [
+						-11,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-68
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'hit_up' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_idle": {
+			"action": "idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-7,
+						-52
+					],
+					"hand_front": [
+						-13,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-53
+					],
+					"hand_front": [
+						-13,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-52
+					],
+					"hand_front": [
+						-13,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-50
+					],
+					"hand_front": [
+						-13,
+						-48
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. James (substitui o idle do rig): peito estufado, queixo erguido, mãos baixas. Na luta, depois do 1º round (antes dele: guard). Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_jab": {
+			"action": "jab",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_jab.png",
+			"fps": 16,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-12,
+						-68
+					],
+					"hand_front": [
+						-13,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						-17,
+						-68
+					],
+					"hand_front": [
+						-35,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						-16,
+						-68
+					],
+					"hand_front": [
+						-28,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-68
+					],
+					"hand_front": [
+						-19,
+						-66
+					]
+				}
+			],
+			"hit_frame": 1,
+			"hit_point": [
+				-35,
+				-68
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Ação 'jab' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_ko": {
+			"action": "ko",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_ko.png",
+			"fps": 11.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-45
+					],
+					"hand_front": [
+						-7,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-37
+					],
+					"hand_front": [
+						-7,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						39,
+						-53
+					],
+					"hand_front": [
+						9,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-18
+					],
+					"hand_front": [
+						6,
+						-3
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-17
+					],
+					"hand_front": [
+						6,
+						-2
+					]
+				}
+			],
+			"hold_last": true,
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Ação 'ko' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_ko_back": {
+			"action": "ko_back",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_ko_back.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-71
+					],
+					"hand_front": [
+						-3,
+						-71
+					]
+				},
+				{
+					"hand_back": [
+						17,
+						-72
+					],
+					"hand_front": [
+						8,
+						-73
+					]
+				},
+				{
+					"hand_back": [
+						32,
+						-61
+					],
+					"hand_front": [
+						25,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						43,
+						-39
+					],
+					"hand_front": [
+						40,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-7
+					],
+					"hand_front": [
+						18,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-10
+					],
+					"hand_front": [
+						18,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						49,
+						-5
+					],
+					"hand_front": [
+						18,
+						-10
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'ko_back' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_ko_knees": {
+			"action": "ko_knees",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_ko_knees.png",
+			"fps": 9,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-2,
+						-45
+					],
+					"hand_front": [
+						-7,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-36
+					],
+					"hand_front": [
+						-7,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-22
+					],
+					"hand_front": [
+						-7,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-21
+					],
+					"hand_front": [
+						-8,
+						-17
+					]
+				},
+				{
+					"hand_back": [
+						-35,
+						-22
+					],
+					"hand_front": [
+						-39,
+						-17
+					]
+				},
+				{
+					"hand_back": [
+						-45,
+						-11
+					],
+					"hand_front": [
+						-16,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-45,
+						-10
+					],
+					"hand_front": [
+						-16,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'ko_knees' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_limp": {
+			"action": "limp",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_limp.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-3,
+						-62
+					],
+					"hand_front": [
+						-13,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-62
+					],
+					"hand_front": [
+						-13,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-60
+					],
+					"hand_front": [
+						-13,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-60
+					],
+					"hand_front": [
+						-13,
+						-52
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'limp' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_limp_heavy": {
+			"action": "limp_heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_limp_heavy.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-57
+					],
+					"hand_front": [
+						-9,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-57
+					],
+					"hand_front": [
+						-9,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-56
+					],
+					"hand_front": [
+						-9,
+						-31
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-56
+					],
+					"hand_front": [
+						-9,
+						-31
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'limp_heavy' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_scorn": {
+			"action": "scorn",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_scorn.png",
+			"fps": 7,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-7,
+						-52
+					],
+					"hand_front": [
+						-13,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-52
+					],
+					"hand_front": [
+						-15,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-62
+					],
+					"hand_front": [
+						-15,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						10,
+						-53
+					],
+					"hand_front": [
+						-15,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						7,
+						-47
+					],
+					"hand_front": [
+						-13,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-52
+					],
+					"hand_front": [
+						-13,
+						-49
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Gesto de desprezo: olha a própria luva, tira um fiapo e dá um peteleco para trás (para longe do adversário, nunca para ele). 6 quadros a 7 fps; pico (tap_glove) no quadro 3 (o 4º). Nada de dedo apontado. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"peak_frame": 3,
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_tap_out": {
+			"action": "tap_out",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_tap_out.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						8,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						12,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						10,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						12,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						10,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						12,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						12,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-17
+					],
+					"hand_front": [
+						12,
+						-6
+					]
+				}
+			],
+			"loop": false,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Reação 'tap_out' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_tired": {
+			"action": "tired",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_tired.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-3,
+						-41
+					],
+					"hand_front": [
+						-10,
+						-39
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-43
+					],
+					"hand_front": [
+						-10,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-43
+					],
+					"hand_front": [
+						-10,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-41
+					],
+					"hand_front": [
+						-10,
+						-39
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. James cansado (substitui o tired do rig): ombros caídos, guarda baixa, peito arfando 2 px, queixo ainda empinado. Loop. Usado quando ele perde por pontos e fala depois da luta. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_james_victory": {
+			"action": "victory",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_james/opp_james_victory.png",
+			"fps": 9,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						1,
+						-92
+					],
+					"hand_front": [
+						-10,
+						-93
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-92
+					],
+					"hand_front": [
+						-10,
+						-93
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-92
+					],
+					"hand_front": [
+						-15,
+						-83
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-92
+					],
+					"hand_front": [
+						-10,
+						-93
+					]
+				}
+			],
+			"loop": true,
+			"note": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Ação 'victory' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_block": {
+			"action": "block",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_block.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-71
+					],
+					"hand_front": [
+						-11,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-70
+					],
+					"hand_front": [
+						-9,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-71
+					],
+					"hand_front": [
+						-10,
+						-68
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'block' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_dodge": {
+			"action": "dodge",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_dodge.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-60
+					],
+					"hand_front": [
+						-12,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-57
+					],
+					"hand_front": [
+						-8,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-58
+					],
+					"hand_front": [
+						-9,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-61
+					],
+					"hand_front": [
+						-13,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'dodge' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_fall": {
+			"action": "fall",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_fall.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-16,
+						-47
+					],
+					"hand_front": [
+						-20,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-55
+					],
+					"hand_front": [
+						-18,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						12,
+						-61
+					],
+					"hand_front": [
+						6,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						23,
+						-37
+					],
+					"hand_front": [
+						16,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						13,
+						-4
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-10
+					],
+					"hand_front": [
+						4,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-13
+					],
+					"hand_front": [
+						3,
+						-14
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-18
+					],
+					"hand_front": [
+						0,
+						-17
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'fall' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_fall_spin": {
+			"action": "fall_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_fall_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 10,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-63
+					],
+					"hand_front": [
+						-4,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-57
+					],
+					"hand_front": [
+						2,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						12,
+						-45
+					],
+					"hand_front": [
+						0,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						18,
+						-31
+					],
+					"hand_front": [
+						6,
+						-34
+					]
+				},
+				{
+					"hand_back": [
+						33,
+						-12
+					],
+					"hand_front": [
+						14,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-8
+					],
+					"hand_front": [
+						16,
+						-13
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'fall_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_ground_bottom_idle": {
+			"action": "ground_bottom_idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_ground_bottom_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-21
+					],
+					"hand_front": [
+						-1,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-21
+					],
+					"hand_front": [
+						-1,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"loop": true,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'ground_bottom_idle' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_ground_hit": {
+			"action": "ground_hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_ground_hit.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-24
+					],
+					"hand_front": [
+						-5,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-23
+					],
+					"hand_front": [
+						-4,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-23
+					],
+					"hand_front": [
+						-3,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-22
+					],
+					"hand_front": [
+						-2,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-21
+					],
+					"hand_front": [
+						-1,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'ground_hit' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_ground_punch": {
+			"action": "ground_punch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_ground_punch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-12,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-14,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-18
+					],
+					"hand_front": [
+						-14,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-18
+					],
+					"hand_front": [
+						-14,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-19
+					],
+					"hand_front": [
+						-11,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"hit_frame": 3,
+			"hit_point": [
+				-14,
+				-35
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'ground_punch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_heavy": {
+			"action": "heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_heavy.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-63
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-63
+					],
+					"hand_front": [
+						-12,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-37,
+						-63
+					],
+					"hand_front": [
+						-17,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-34,
+						-63
+					],
+					"hand_front": [
+						-16,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						-16,
+						-65
+					],
+					"hand_front": [
+						-18,
+						-60
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				-37,
+				-63
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'heavy' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_held_clinch": {
+			"action": "held_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_held_clinch.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-59
+					],
+					"hand_front": [
+						-14,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-53
+					],
+					"hand_front": [
+						-15,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-50
+					],
+					"hand_front": [
+						-15,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-48
+					],
+					"hand_front": [
+						-11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-48
+					],
+					"hand_front": [
+						-11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-50
+					],
+					"hand_front": [
+						-15,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-56
+					],
+					"hand_front": [
+						-11,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-59
+					],
+					"hand_front": [
+						-12,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'held_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit": {
+			"action": "hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-62
+					],
+					"hand_front": [
+						-7,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-61
+					],
+					"hand_front": [
+						-9,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-62
+					],
+					"hand_front": [
+						-15,
+						-60
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'hit' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit_body.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-43
+					],
+					"hand_front": [
+						-8,
+						-39
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-39
+					],
+					"hand_front": [
+						-6,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-39
+					],
+					"hand_front": [
+						-6,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-45
+					],
+					"hand_front": [
+						-9,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-54
+					],
+					"hand_front": [
+						-14,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'hit_body' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit_clinch": {
+			"action": "hit_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit_clinch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-58
+					],
+					"hand_front": [
+						-7,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-57
+					],
+					"hand_front": [
+						-4,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-59
+					],
+					"hand_front": [
+						-7,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-61
+					],
+					"hand_front": [
+						-10,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-62
+					],
+					"hand_front": [
+						-12,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'hit_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit_head.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-62
+					],
+					"hand_front": [
+						-6,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-61
+					],
+					"hand_front": [
+						-4,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-61
+					],
+					"hand_front": [
+						-7,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-62
+					],
+					"hand_front": [
+						-11,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-62
+					],
+					"hand_front": [
+						-12,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'hit_head' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit_leg": {
+			"action": "hit_leg",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit_leg.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-53
+					],
+					"hand_front": [
+						-11,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-49
+					],
+					"hand_front": [
+						-10,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-49
+					],
+					"hand_front": [
+						-10,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-52
+					],
+					"hand_front": [
+						-11,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-56
+					],
+					"hand_front": [
+						-12,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'hit_leg' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit_spin": {
+			"action": "hit_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-63
+					],
+					"hand_front": [
+						-4,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-57
+					],
+					"hand_front": [
+						2,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-57
+					],
+					"hand_front": [
+						2,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-57
+					],
+					"hand_front": [
+						2,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-57
+					],
+					"hand_front": [
+						-5,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-56
+					],
+					"hand_front": [
+						-12,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-59
+					],
+					"hand_front": [
+						-13,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'hit_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_hit_up.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-61
+					],
+					"hand_front": [
+						-9,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-59
+					],
+					"hand_front": [
+						-5,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-58
+					],
+					"hand_front": [
+						-4,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-59
+					],
+					"hand_front": [
+						-6,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-61
+					],
+					"hand_front": [
+						-10,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'hit_up' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_idle": {
+			"action": "idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-48
+					],
+					"hand_front": [
+						-16,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-48
+					],
+					"hand_front": [
+						-16,
+						-45
+					]
+				}
+			],
+			"loop": true,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'idle' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_jab": {
+			"action": "jab",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_jab.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-62
+					],
+					"hand_front": [
+						-12,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-62
+					],
+					"hand_front": [
+						-32,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-62
+					],
+					"hand_front": [
+						-26,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-62
+					],
+					"hand_front": [
+						-17,
+						-60
+					]
+				}
+			],
+			"hit_frame": 1,
+			"hit_point": [
+				-32,
+				-62
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'jab' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_ko": {
+			"action": "ko",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_ko.png",
+			"fps": 8.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-41
+					],
+					"hand_front": [
+						-6,
+						-42
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-34
+					],
+					"hand_front": [
+						-6,
+						-34
+					]
+				},
+				{
+					"hand_back": [
+						36,
+						-48
+					],
+					"hand_front": [
+						8,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						40,
+						-16
+					],
+					"hand_front": [
+						5,
+						-3
+					]
+				},
+				{
+					"hand_back": [
+						40,
+						-15
+					],
+					"hand_front": [
+						5,
+						-2
+					]
+				}
+			],
+			"hold_last": true,
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'ko' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_ko_back": {
+			"action": "ko_back",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_ko_back.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-65
+					],
+					"hand_front": [
+						-3,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-65
+					],
+					"hand_front": [
+						8,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						30,
+						-56
+					],
+					"hand_front": [
+						23,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						39,
+						-35
+					],
+					"hand_front": [
+						36,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-9
+					],
+					"hand_front": [
+						17,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						45,
+						-5
+					],
+					"hand_front": [
+						16,
+						-9
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'ko_back' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_ko_knees": {
+			"action": "ko_knees",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_ko_knees.png",
+			"fps": 9,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-2,
+						-41
+					],
+					"hand_front": [
+						-6,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-33
+					],
+					"hand_front": [
+						-7,
+						-29
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-20
+					],
+					"hand_front": [
+						-6,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-19
+					],
+					"hand_front": [
+						-7,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						-32,
+						-20
+					],
+					"hand_front": [
+						-36,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						-41,
+						-10
+					],
+					"hand_front": [
+						-14,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-41,
+						-9
+					],
+					"hand_front": [
+						-14,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'ko_knees' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_limp": {
+			"action": "limp",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_limp.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-3,
+						-56
+					],
+					"hand_front": [
+						-12,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-56
+					],
+					"hand_front": [
+						-12,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-47
+					]
+				}
+			],
+			"loop": true,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'limp' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_limp_heavy": {
+			"action": "limp_heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_limp_heavy.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-52
+					],
+					"hand_front": [
+						-8,
+						-30
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-52
+					],
+					"hand_front": [
+						-8,
+						-30
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-51
+					],
+					"hand_front": [
+						-8,
+						-29
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-51
+					],
+					"hand_front": [
+						-8,
+						-29
+					]
+				}
+			],
+			"loop": true,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'limp_heavy' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_shake_head": {
+			"action": "shake_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_shake_head.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 11,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-49
+					],
+					"hand_front": [
+						-14,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-48
+					],
+					"hand_front": [
+						-13,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-13,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-13,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-15,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-50
+					],
+					"hand_front": [
+						-16,
+						-47
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Queixo de ferro: leva no queixo, a cabeça vai para trás e volta, sacode duas vezes e bate a luva no queixo, rindo. Toca no lugar do K.O. de embalo que não entrou (AGUENTOU!) e quando o embalo do jogador chega a 5. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_tap_out": {
+			"action": "tap_out",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_tap_out.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						6,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						8,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						8,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Reação 'tap_out' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_tired": {
+			"action": "tired",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_tired.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-45
+					],
+					"hand_front": [
+						-15,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-43
+					],
+					"hand_front": [
+						-15,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-43
+					],
+					"hand_front": [
+						-15,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-45
+					],
+					"hand_front": [
+						-15,
+						-47
+					]
+				}
+			],
+			"loop": true,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'tired' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_1_victory": {
+			"action": "victory",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_1/opp_reg_1_victory.png",
+			"fps": 7,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						1,
+						-84
+					],
+					"hand_front": [
+						-9,
+						-85
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-84
+					],
+					"hand_front": [
+						-9,
+						-85
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-84
+					],
+					"hand_front": [
+						-13,
+						-75
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-84
+					],
+					"hand_front": [
+						-9,
+						-85
+					]
+				}
+			],
+			"loop": true,
+			"note": "Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Ação 'victory' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_block": {
+			"action": "block",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_block.png",
+			"fps": 9.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-76
+					],
+					"hand_front": [
+						-12,
+						-72
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-75
+					],
+					"hand_front": [
+						-10,
+						-71
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-76
+					],
+					"hand_front": [
+						-11,
+						-72
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'block' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_dodge": {
+			"action": "dodge",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_dodge.png",
+			"fps": 11,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-64
+					],
+					"hand_front": [
+						-13,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-60
+					],
+					"hand_front": [
+						-9,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-10,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-65
+					],
+					"hand_front": [
+						-14,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'dodge' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_fall": {
+			"action": "fall",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_fall.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-17,
+						-50
+					],
+					"hand_front": [
+						-22,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-58
+					],
+					"hand_front": [
+						-19,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						13,
+						-65
+					],
+					"hand_front": [
+						7,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						24,
+						-39
+					],
+					"hand_front": [
+						18,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-4
+					],
+					"hand_front": [
+						11,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						7,
+						-11
+					],
+					"hand_front": [
+						5,
+						-13
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-14
+					],
+					"hand_front": [
+						4,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-19
+					],
+					"hand_front": [
+						1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-19
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'fall' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_fall_spin": {
+			"action": "fall_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_fall_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 10,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-67
+					],
+					"hand_front": [
+						-4,
+						-70
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-60
+					],
+					"hand_front": [
+						2,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						13,
+						-48
+					],
+					"hand_front": [
+						0,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						19,
+						-32
+					],
+					"hand_front": [
+						6,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						35,
+						-13
+					],
+					"hand_front": [
+						15,
+						-17
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-6
+					],
+					"hand_front": [
+						17,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-9
+					],
+					"hand_front": [
+						17,
+						-14
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-6
+					],
+					"hand_front": [
+						17,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-6
+					],
+					"hand_front": [
+						17,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-6
+					],
+					"hand_front": [
+						17,
+						-11
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'fall_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_ground_bottom_idle": {
+			"action": "ground_bottom_idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_ground_bottom_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-23
+					],
+					"hand_front": [
+						0,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-23
+					],
+					"hand_front": [
+						0,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-19
+					]
+				}
+			],
+			"loop": true,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'ground_bottom_idle' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_ground_hit": {
+			"action": "ground_hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_ground_hit.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-26
+					],
+					"hand_front": [
+						-5,
+						-24
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-25
+					],
+					"hand_front": [
+						-4,
+						-23
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-24
+					],
+					"hand_front": [
+						-3,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-23
+					],
+					"hand_front": [
+						-2,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						-1,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-19
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'ground_hit' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_ground_punch": {
+			"action": "ground_punch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_ground_punch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						-13,
+						-13
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						-14,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-19
+					],
+					"hand_front": [
+						-14,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-19
+					],
+					"hand_front": [
+						-14,
+						-38
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-21
+					],
+					"hand_front": [
+						-12,
+						-34
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-22
+					],
+					"hand_front": [
+						0,
+						-19
+					]
+				}
+			],
+			"hit_frame": 3,
+			"hit_point": [
+				-14,
+				-37
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'ground_punch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_heavy": {
+			"action": "heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_heavy.png",
+			"fps": 9.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-67
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-16,
+						-67
+					],
+					"hand_front": [
+						-13,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						-39,
+						-67
+					],
+					"hand_front": [
+						-18,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						-36,
+						-67
+					],
+					"hand_front": [
+						-17,
+						-69
+					]
+				},
+				{
+					"hand_back": [
+						-17,
+						-69
+					],
+					"hand_front": [
+						-19,
+						-64
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				-39,
+				-67
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'heavy' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_held_clinch": {
+			"action": "held_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_held_clinch.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-63
+					],
+					"hand_front": [
+						-15,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-56
+					],
+					"hand_front": [
+						-16,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-53
+					],
+					"hand_front": [
+						-16,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-51
+					],
+					"hand_front": [
+						-12,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-51
+					],
+					"hand_front": [
+						-12,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-53
+					],
+					"hand_front": [
+						-16,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-59
+					],
+					"hand_front": [
+						-12,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-62
+					],
+					"hand_front": [
+						-13,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'held_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit": {
+			"action": "hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit.png",
+			"fps": 9.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-66
+					],
+					"hand_front": [
+						-8,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-65
+					],
+					"hand_front": [
+						-10,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-66
+					],
+					"hand_front": [
+						-16,
+						-64
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'hit' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit_body.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-46
+					],
+					"hand_front": [
+						-9,
+						-42
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-41
+					],
+					"hand_front": [
+						-6,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-41
+					],
+					"hand_front": [
+						-6,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-48
+					],
+					"hand_front": [
+						-9,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-57
+					],
+					"hand_front": [
+						-14,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'hit_body' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit_clinch": {
+			"action": "hit_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit_clinch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-62
+					],
+					"hand_front": [
+						-8,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-60
+					],
+					"hand_front": [
+						-4,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-63
+					],
+					"hand_front": [
+						-8,
+						-60
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-65
+					],
+					"hand_front": [
+						-11,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-65
+					],
+					"hand_front": [
+						-13,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'hit_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit_head.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-65
+					],
+					"hand_front": [
+						-7,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-64
+					],
+					"hand_front": [
+						-4,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-65
+					],
+					"hand_front": [
+						-7,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-66
+					],
+					"hand_front": [
+						-11,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-66
+					],
+					"hand_front": [
+						-13,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'hit_head' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit_leg": {
+			"action": "hit_leg",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit_leg.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-56
+					],
+					"hand_front": [
+						-12,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-52
+					],
+					"hand_front": [
+						-11,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-52
+					],
+					"hand_front": [
+						-11,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-49
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-59
+					],
+					"hand_front": [
+						-13,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'hit_leg' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit_spin": {
+			"action": "hit_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-67
+					],
+					"hand_front": [
+						-4,
+						-70
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-60
+					],
+					"hand_front": [
+						2,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-60
+					],
+					"hand_front": [
+						2,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-60
+					],
+					"hand_front": [
+						2,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-60
+					],
+					"hand_front": [
+						-5,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-59
+					],
+					"hand_front": [
+						-13,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-63
+					],
+					"hand_front": [
+						-14,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'hit_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_hit_up.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-65
+					],
+					"hand_front": [
+						-9,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-63
+					],
+					"hand_front": [
+						-5,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-62
+					],
+					"hand_front": [
+						-4,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-63
+					],
+					"hand_front": [
+						-7,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-64
+					],
+					"hand_front": [
+						-11,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-66
+					],
+					"hand_front": [
+						-15,
+						-63
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'hit_up' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_idle": {
+			"action": "idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-13,
+						-66
+					],
+					"hand_front": [
+						-17,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-66
+					],
+					"hand_front": [
+						-17,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-64
+					],
+					"hand_front": [
+						-17,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-64
+					],
+					"hand_front": [
+						-17,
+						-62
+					]
+				}
+			],
+			"loop": true,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'idle' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_jab": {
+			"action": "jab",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_jab.png",
+			"fps": 11,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-12,
+						-66
+					],
+					"hand_front": [
+						-13,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-16,
+						-66
+					],
+					"hand_front": [
+						-33,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-66
+					],
+					"hand_front": [
+						-27,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-66
+					],
+					"hand_front": [
+						-18,
+						-64
+					]
+				}
+			],
+			"hit_frame": 1,
+			"hit_point": [
+				-33,
+				-66
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'jab' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_ko": {
+			"action": "ko",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_ko.png",
+			"fps": 8,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-43
+					],
+					"hand_front": [
+						-6,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-36
+					],
+					"hand_front": [
+						-6,
+						-36
+					]
+				},
+				{
+					"hand_back": [
+						38,
+						-51
+					],
+					"hand_front": [
+						9,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						42,
+						-17
+					],
+					"hand_front": [
+						5,
+						-3
+					]
+				},
+				{
+					"hand_back": [
+						42,
+						-16
+					],
+					"hand_front": [
+						5,
+						-2
+					]
+				}
+			],
+			"hold_last": true,
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'ko' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_ko_back": {
+			"action": "ko_back",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_ko_back.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-68
+					],
+					"hand_front": [
+						-3,
+						-68
+					]
+				},
+				{
+					"hand_back": [
+						16,
+						-69
+					],
+					"hand_front": [
+						8,
+						-71
+					]
+				},
+				{
+					"hand_back": [
+						31,
+						-59
+					],
+					"hand_front": [
+						25,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						42,
+						-37
+					],
+					"hand_front": [
+						38,
+						-43
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-6
+					],
+					"hand_front": [
+						17,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-9
+					],
+					"hand_front": [
+						17,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						48,
+						-5
+					],
+					"hand_front": [
+						17,
+						-10
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'ko_back' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_ko_knees": {
+			"action": "ko_knees",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_ko_knees.png",
+			"fps": 9,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-2,
+						-44
+					],
+					"hand_front": [
+						-7,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-35
+					],
+					"hand_front": [
+						-7,
+						-31
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-22
+					],
+					"hand_front": [
+						-7,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-21
+					],
+					"hand_front": [
+						-8,
+						-17
+					]
+				},
+				{
+					"hand_back": [
+						-34,
+						-21
+					],
+					"hand_front": [
+						-38,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						-43,
+						-10
+					],
+					"hand_front": [
+						-15,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-43,
+						-9
+					],
+					"hand_front": [
+						-15,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'ko_knees' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_limp": {
+			"action": "limp",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_limp.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-3,
+						-59
+					],
+					"hand_front": [
+						-13,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-59
+					],
+					"hand_front": [
+						-13,
+						-51
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-58
+					],
+					"hand_front": [
+						-13,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-58
+					],
+					"hand_front": [
+						-13,
+						-50
+					]
+				}
+			],
+			"loop": true,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'limp' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_limp_heavy": {
+			"action": "limp_heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_limp_heavy.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-55
+					],
+					"hand_front": [
+						-9,
+						-31
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-55
+					],
+					"hand_front": [
+						-9,
+						-31
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-54
+					],
+					"hand_front": [
+						-9,
+						-30
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-54
+					],
+					"hand_front": [
+						-9,
+						-30
+					]
+				}
+			],
+			"loop": true,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'limp_heavy' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_plant_feet": {
+			"action": "plant_feet",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_plant_feet.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"hands": [
+				{
+					"hand_back": [
+						-13,
+						-66
+					],
+					"hand_front": [
+						-17,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-21,
+						-49
+					],
+					"hand_front": [
+						-25,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-21,
+						-49
+					],
+					"hand_front": [
+						-25,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-21,
+						-49
+					],
+					"hand_front": [
+						-25,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-21,
+						-49
+					],
+					"hand_front": [
+						-25,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-18,
+						-55
+					],
+					"hand_front": [
+						-23,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-60
+					],
+					"hand_front": [
+						-21,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-63
+					],
+					"hand_front": [
+						-19,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-66
+					],
+					"hand_front": [
+						-17,
+						-64
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Base larga: a queda trava no meio. Os pés ficam exatamente no mesmo lugar do 1º ao último quadro; o quadril afunda, ele pesa por cima e empurra quem tentou. Toca no lugar do fall quando a queda não entrou (NÃO CAIU). Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_tap_out": {
+			"action": "tap_out",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_tap_out.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						7,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						11,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						9,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						11,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						9,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						11,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						11,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-16
+					],
+					"hand_front": [
+						11,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Reação 'tap_out' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_tired": {
+			"action": "tired",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_tired.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-54
+					],
+					"hand_front": [
+						-16,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-52
+					],
+					"hand_front": [
+						-16,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-52
+					],
+					"hand_front": [
+						-16,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-54
+					],
+					"hand_front": [
+						-16,
+						-56
+					]
+				}
+			],
+			"loop": true,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'tired' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_2_victory": {
+			"action": "victory",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_2/opp_reg_2_victory.png",
+			"fps": 6.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						1,
+						-89
+					],
+					"hand_front": [
+						-10,
+						-90
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-89
+					],
+					"hand_front": [
+						-10,
+						-90
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-89
+					],
+					"hand_front": [
+						-14,
+						-80
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-89
+					],
+					"hand_front": [
+						-10,
+						-90
+					]
+				}
+			],
+			"loop": true,
+			"note": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Ação 'victory' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_block": {
+			"action": "block",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_block.png",
+			"fps": 15,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-70
+					],
+					"hand_front": [
+						-11,
+						-67
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-69
+					],
+					"hand_front": [
+						-9,
+						-66
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-70
+					],
+					"hand_front": [
+						-10,
+						-67
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'block' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_dodge": {
+			"action": "dodge",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_dodge.png",
+			"fps": 17.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-59
+					],
+					"hand_front": [
+						-12,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-56
+					],
+					"hand_front": [
+						-8,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-57
+					],
+					"hand_front": [
+						-9,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-60
+					],
+					"hand_front": [
+						-13,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'dodge' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_fall": {
+			"action": "fall",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_fall.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-16,
+						-46
+					],
+					"hand_front": [
+						-20,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-54
+					],
+					"hand_front": [
+						-18,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						12,
+						-60
+					],
+					"hand_front": [
+						6,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						22,
+						-36
+					],
+					"hand_front": [
+						16,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						13,
+						-4
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-10
+					],
+					"hand_front": [
+						4,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-13
+					],
+					"hand_front": [
+						3,
+						-14
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-17
+					],
+					"hand_front": [
+						0,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'fall' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_fall_spin": {
+			"action": "fall_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_fall_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 10,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-62
+					],
+					"hand_front": [
+						-4,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-56
+					],
+					"hand_front": [
+						2,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						12,
+						-44
+					],
+					"hand_front": [
+						0,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						18,
+						-30
+					],
+					"hand_front": [
+						6,
+						-33
+					]
+				},
+				{
+					"hand_back": [
+						32,
+						-12
+					],
+					"hand_front": [
+						14,
+						-16
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-8
+					],
+					"hand_front": [
+						16,
+						-13
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'fall_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_ground_bottom_idle": {
+			"action": "ground_bottom_idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_ground_bottom_idle.png",
+			"fps": 5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-21
+					],
+					"hand_front": [
+						-1,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-21
+					],
+					"hand_front": [
+						-1,
+						-19
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"loop": true,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'ground_bottom_idle' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_ground_hit": {
+			"action": "ground_hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_ground_hit.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-9,
+						-24
+					],
+					"hand_front": [
+						-5,
+						-22
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-23
+					],
+					"hand_front": [
+						-4,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-23
+					],
+					"hand_front": [
+						-4,
+						-21
+					]
+				},
+				{
+					"hand_back": [
+						-7,
+						-22
+					],
+					"hand_front": [
+						-3,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'ground_hit' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_ground_punch": {
+			"action": "ground_punch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_ground_punch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-12,
+						-12
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-14,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-18
+					],
+					"hand_front": [
+						-14,
+						-34
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-18
+					],
+					"hand_front": [
+						-14,
+						-35
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-19
+					],
+					"hand_front": [
+						-11,
+						-32
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-20
+					],
+					"hand_front": [
+						-1,
+						-18
+					]
+				}
+			],
+			"hit_frame": 3,
+			"hit_point": [
+				-14,
+				-34
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'ground_punch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_heavy": {
+			"action": "heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_heavy.png",
+			"fps": 15,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-62
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-62
+					],
+					"hand_front": [
+						-12,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						-36,
+						-62
+					],
+					"hand_front": [
+						-17,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-33,
+						-62
+					],
+					"hand_front": [
+						-16,
+						-64
+					]
+				},
+				{
+					"hand_back": [
+						-16,
+						-64
+					],
+					"hand_front": [
+						-18,
+						-59
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				-36,
+				-62
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'heavy' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_held_clinch": {
+			"action": "held_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_held_clinch.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 9,
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-58
+					],
+					"hand_front": [
+						-14,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-52
+					],
+					"hand_front": [
+						-15,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-49
+					],
+					"hand_front": [
+						-15,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-47
+					],
+					"hand_front": [
+						-11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-47
+					],
+					"hand_front": [
+						-11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-49
+					],
+					"hand_front": [
+						-15,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-55
+					],
+					"hand_front": [
+						-11,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-57
+					],
+					"hand_front": [
+						-12,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'held_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit": {
+			"action": "hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit.png",
+			"fps": 15,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-61
+					],
+					"hand_front": [
+						-7,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-9,
+						-60
+					],
+					"hand_front": [
+						-9,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-61
+					],
+					"hand_front": [
+						-15,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'hit' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit_body.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-43
+					],
+					"hand_front": [
+						-8,
+						-39
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-38
+					],
+					"hand_front": [
+						-5,
+						-34
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-38
+					],
+					"hand_front": [
+						-5,
+						-34
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-44
+					],
+					"hand_front": [
+						-9,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						-6,
+						-53
+					],
+					"hand_front": [
+						-13,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'hit_body' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit_clinch": {
+			"action": "hit_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit_clinch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-57
+					],
+					"hand_front": [
+						-7,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-56
+					],
+					"hand_front": [
+						-4,
+						-54
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-58
+					],
+					"hand_front": [
+						-7,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-60
+					],
+					"hand_front": [
+						-10,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-61
+					],
+					"hand_front": [
+						-12,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'hit_clinch' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit_head.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-60
+					],
+					"hand_front": [
+						-6,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-60
+					],
+					"hand_front": [
+						-4,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						2,
+						-60
+					],
+					"hand_front": [
+						-6,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-61
+					],
+					"hand_front": [
+						-10,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-61
+					],
+					"hand_front": [
+						-12,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'hit_head' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit_leg": {
+			"action": "hit_leg",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit_leg.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-52
+					],
+					"hand_front": [
+						-11,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-48
+					],
+					"hand_front": [
+						-10,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-48
+					],
+					"hand_front": [
+						-10,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-51
+					],
+					"hand_front": [
+						-11,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'hit_leg' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit_spin": {
+			"action": "hit_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit_spin.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						6,
+						-62
+					],
+					"hand_front": [
+						-4,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-56
+					],
+					"hand_front": [
+						2,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-56
+					],
+					"hand_front": [
+						2,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						14,
+						-56
+					],
+					"hand_front": [
+						2,
+						-62
+					]
+				},
+				{
+					"hand_back": [
+						6,
+						-56
+					],
+					"hand_front": [
+						-5,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-58
+					],
+					"hand_front": [
+						-13,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'hit_spin' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_hit_up.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						0,
+						-60
+					],
+					"hand_front": [
+						-8,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-58
+					],
+					"hand_front": [
+						-5,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-57
+					],
+					"hand_front": [
+						-4,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						3,
+						-58
+					],
+					"hand_front": [
+						-6,
+						-57
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-60
+					],
+					"hand_front": [
+						-10,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-58
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'hit_up' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_idle": {
+			"action": "idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_idle.png",
+			"fps": 7.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-58
+					],
+					"hand_front": [
+						-15,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-58
+					],
+					"hand_front": [
+						-15,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-56
+					],
+					"hand_front": [
+						-15,
+						-53
+					]
+				},
+				{
+					"hand_back": [
+						-11,
+						-56
+					],
+					"hand_front": [
+						-15,
+						-53
+					]
+				}
+			],
+			"loop": true,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'idle' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_jab": {
+			"action": "jab",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_jab.png",
+			"fps": 17.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-11,
+						-61
+					],
+					"hand_front": [
+						-12,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-15,
+						-61
+					],
+					"hand_front": [
+						-31,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-14,
+						-61
+					],
+					"hand_front": [
+						-25,
+						-61
+					]
+				},
+				{
+					"hand_back": [
+						-13,
+						-61
+					],
+					"hand_front": [
+						-17,
+						-59
+					]
+				}
+			],
+			"hit_frame": 1,
+			"hit_point": [
+				-31,
+				-61
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'jab' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_ko": {
+			"action": "ko",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_ko.png",
+			"fps": 12.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						0,
+						-40
+					],
+					"hand_front": [
+						-6,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-33
+					],
+					"hand_front": [
+						-6,
+						-33
+					]
+				},
+				{
+					"hand_back": [
+						35,
+						-47
+					],
+					"hand_front": [
+						8,
+						-48
+					]
+				},
+				{
+					"hand_back": [
+						39,
+						-16
+					],
+					"hand_front": [
+						5,
+						-3
+					]
+				},
+				{
+					"hand_back": [
+						39,
+						-15
+					],
+					"hand_front": [
+						5,
+						-2
+					]
+				}
+			],
+			"hold_last": true,
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'ko' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_ko_back": {
+			"action": "ko_back",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_ko_back.png",
+			"fps": 12,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 4,
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-63
+					],
+					"hand_front": [
+						-3,
+						-63
+					]
+				},
+				{
+					"hand_back": [
+						15,
+						-64
+					],
+					"hand_front": [
+						8,
+						-65
+					]
+				},
+				{
+					"hand_back": [
+						29,
+						-55
+					],
+					"hand_front": [
+						23,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						39,
+						-35
+					],
+					"hand_front": [
+						36,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-6
+					],
+					"hand_front": [
+						16,
+						-11
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-9
+					],
+					"hand_front": [
+						16,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						44,
+						-5
+					],
+					"hand_front": [
+						16,
+						-9
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'ko_back' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_ko_knees": {
+			"action": "ko_knees",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_ko_knees.png",
+			"fps": 9,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 7,
+			"ground_frame": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-2,
+						-41
+					],
+					"hand_front": [
+						-6,
+						-37
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-32
+					],
+					"hand_front": [
+						-6,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-1,
+						-20
+					],
+					"hand_front": [
+						-6,
+						-17
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-19
+					],
+					"hand_front": [
+						-7,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						-31,
+						-19
+					],
+					"hand_front": [
+						-35,
+						-15
+					]
+				},
+				{
+					"hand_back": [
+						-40,
+						-10
+					],
+					"hand_front": [
+						-14,
+						-6
+					]
+				},
+				{
+					"hand_back": [
+						-40,
+						-9
+					],
+					"hand_front": [
+						-14,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'ko_knees' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_limp": {
+			"action": "limp",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_limp.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-55
+					],
+					"hand_front": [
+						-12,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-54
+					],
+					"hand_front": [
+						-12,
+						-46
+					]
+				},
+				{
+					"hand_back": [
+						-3,
+						-54
+					],
+					"hand_front": [
+						-12,
+						-46
+					]
+				}
+			],
+			"loop": true,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'limp' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_limp_heavy": {
+			"action": "limp_heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_limp_heavy.png",
+			"fps": 4,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-4,
+						-51
+					],
+					"hand_front": [
+						-8,
+						-29
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-51
+					],
+					"hand_front": [
+						-8,
+						-29
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-50
+					],
+					"hand_front": [
+						-8,
+						-28
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-50
+					],
+					"hand_front": [
+						-8,
+						-28
+					]
+				}
+			],
+			"loop": true,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'limp_heavy' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_slip_clinch": {
+			"action": "slip_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_slip_clinch.png",
+			"fps": 14,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 10,
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-58
+					],
+					"hand_front": [
+						-14,
+						-56
+					]
+				},
+				{
+					"hand_back": [
+						-16,
+						-61
+					],
+					"hand_front": [
+						-19,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-17,
+						-57
+					],
+					"hand_front": [
+						-21,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						-4,
+						-57
+					],
+					"hand_front": [
+						-8,
+						-55
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-60
+					],
+					"hand_front": [
+						-4,
+						-58
+					]
+				},
+				{
+					"hand_back": [
+						-2,
+						-61
+					],
+					"hand_front": [
+						-6,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-5,
+						-61
+					],
+					"hand_front": [
+						-9,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-61
+					],
+					"hand_front": [
+						-12,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-61
+					],
+					"hand_front": [
+						-14,
+						-59
+					]
+				},
+				{
+					"hand_back": [
+						-12,
+						-61
+					],
+					"hand_front": [
+						-16,
+						-59
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ensaboado: o clinch começa (pego pela nuca), ele afunda, gira e escorrega 10 px para trás com bolhas saindo da nuca, e volta para a guarda. Toca no lugar do held_clinch quando o clinch não pegou (ESCAPOU!). Termina no pivô de sempre. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_tap_out": {
+			"action": "tap_out",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_tap_out.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						6,
+						-20
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						8,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						8,
+						-18
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				},
+				{
+					"hand_back": [
+						-8,
+						-15
+					],
+					"hand_front": [
+						10,
+						-5
+					]
+				}
+			],
+			"loop": false,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Reação 'tap_out' do rig comum (mesmas poses dos outros adversários). Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_tired": {
+			"action": "tired",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_tired.png",
+			"fps": 7.5,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-10,
+						-50
+					],
+					"hand_front": [
+						-15,
+						-52
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-48
+					],
+					"hand_front": [
+						-15,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-48
+					],
+					"hand_front": [
+						-15,
+						-50
+					]
+				},
+				{
+					"hand_back": [
+						-10,
+						-50
+					],
+					"hand_front": [
+						-15,
+						-52
+					]
+				}
+			],
+			"loop": true,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'tired' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"opp_reg_3_victory": {
+			"action": "victory",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_reg_3/opp_reg_3_victory.png",
+			"fps": 10,
+			"frame_size": [
+				112,
+				104
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						1,
+						-82
+					],
+					"hand_front": [
+						-9,
+						-83
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-82
+					],
+					"hand_front": [
+						-9,
+						-83
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-82
+					],
+					"hand_front": [
+						-13,
+						-74
+					]
+				},
+				{
+					"hand_back": [
+						1,
+						-82
+					],
+					"hand_front": [
+						-9,
+						-83
+					]
+				}
+			],
+			"loop": true,
+			"note": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Ação 'victory' do rig comum, virado para a esquerda. Fase 8a1. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				56,
+				98
+			]
+		},
+		"portrait_opp_james": {
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_james.png",
+			"fps": 0,
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"note": "Retrato 32x32 (recorte do próprio sprite de luta, fundo na cor dele), virado para a DIREITA (no HUD o adversário usa flip_h). James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"portrait_opp_james_dialog": {
+			"faces": {
+				"laugh": 2,
+				"smirk": 0,
+				"sneer": 1
+			},
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_james_dialog.png",
+			"fps": 0,
+			"frame_size": [
+				48,
+				48
+			],
+			"frames": 3,
+			"note": "Retrato do James para a CAIXA DE DIÁLOGO: busto 3/4 de roupão azul-marinho com debrum e brasão dourados, 48x48, mostrar em 2x (96x96). Fundo transparente, virado para a DIREITA. Quadro = expressão (não é animação): 0 smirk (meio sorriso, fala normal), 1 sneer (desprezo pela escola), 2 laugh (deboche, quando vence). Gerado de tools/art/retrato_james_8a1.json. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"portrait_opp_reg_1": {
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_reg_1.png",
+			"fps": 0,
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"note": "Retrato 32x32 (recorte do próprio sprite de luta, fundo na cor dele), virado para a DIREITA (no HUD o adversário usa flip_h). Zé Bigorna 'Queixo Duro' (resistente, liga regional): baixo e largo, sem pescoço, queixo quadrado enorme, escovinha, regata vinho, calção preto com cós de aço, luvas cor de aço gastas. Guarda baixa (confia no queixo). Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"portrait_opp_reg_2": {
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_reg_2.png",
+			"fps": 0,
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"note": "Retrato 32x32 (recorte do próprio sprite de luta, fundo na cor dele), virado para a DIREITA (no HUD o adversário usa flip_h). Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"portrait_opp_reg_3": {
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_reg_3.png",
+			"fps": 0,
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"note": "Retrato 32x32 (recorte do próprio sprite de luta, fundo na cor dele), virado para a DIREITA (no HUD o adversário usa flip_h). Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão. Gerador: tools/art/make_sprites_elenco.gd (modo regional) + poses_8a1.py; registro: manifest_8a1_personagens.py.",
+			"pivot": [
+				0,
+				0
+			]
 		}
 	},
 	"fight_layout": {
@@ -133861,6 +143336,60 @@
 					200,
 					440
 				]
+			},
+			"arena_regional": {
+				"lugar": "Liga Regional do Vale, Clube Ferroviário (noite, ringue)",
+				"lamp": false,
+				"ring_canvas": {
+					"top_y": 262,
+					"top_x": [
+						151,
+						489
+					],
+					"bottom_y": 342,
+					"bottom_x": [
+						104,
+						536
+					],
+					"skirt_bottom_y": 357
+				},
+				"ground_free_x": [
+					200,
+					440
+				],
+				"ropes_overlay": "arena_regional_ropes_side",
+				"entrance": {
+					"spot": "arena_regional_spot",
+					"player_path": [
+						[
+							-30,
+							318
+						],
+						[
+							90,
+							318
+						],
+						[
+							122,
+							318
+						],
+						[
+							190,
+							318
+						],
+						[
+							296,
+							318
+						]
+					],
+					"rope_x": 118,
+					"note": "Sugestão (UI/UX + Artista, a 'entrada no ringue' do dono): o lutador vem da esquerda pela torcida (pés atrás do público da frente), o facho segue os pés; em x ~118 passa entre as cordas (pose curta do Artista: tronco abaixado; a camada ropes_side por cima dá o efeito sem recorte); dentro, braço para a torcida (gesture/victory 1 quadro) e anda até 296. O adversário já espera em 346 (o James pode fazer o gesto de desprezo ali). ~2,5 s, pulável com clique."
+				},
+				"belt_raise": {
+					"sprite": "belt_regional_raised",
+					"pose": "victory",
+					"note": "Pivô do cinturão (20,15) no meio de hand_front/hand_back do quadro de vitória; pisca o brilho (anim 0,1,2) e o público toca cheer."
+				}
 			}
 		}
 	},

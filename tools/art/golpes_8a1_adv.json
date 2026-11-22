@@ -1,0 +1,2606 @@
+{
+ "_sobre": "Fase 8a1: poses de assinatura dos adversários da liga regional (rig comum; make_golpes_jogador.gd só expande, make_sprites_elenco.gd regional desenha). Gerado por tools/art/poses_8a1.py.",
+ "moves": {},
+ "reactions": {
+  "shake_head": {
+   "_ideia": "Queixo de ferro: leva no queixo, a cabeça vai para trás e volta, sacode duas vezes e bate a luva no queixo, rindo. Toca no lugar do K.O. de embalo que não entrou (AGUENTOU!) e quando o embalo do jogador chega a 5.",
+   "who": [
+    "opp_reg_1"
+   ],
+   "n": 10,
+   "fps": 12.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      -1,
+      -37
+     ],
+     "top": [
+      -2,
+      -60
+     ],
+     "head": [
+      -2,
+      -70
+     ],
+     "hrot": -14.0,
+     "tw": 0.3,
+     "hf": [
+      14,
+      -45
+     ],
+     "hb": [
+      9,
+      -48
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "pain",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -2,
+      -37
+     ],
+     "top": [
+      -3,
+      -60
+     ],
+     "head": [
+      -4,
+      -69
+     ],
+     "hrot": -18.0,
+     "tw": 0.3,
+     "hf": [
+      13,
+      -44
+     ],
+     "hb": [
+      8,
+      -47
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "pain",
+     "fx": "",
+     "at": 1,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      -1,
+      -37
+     ],
+     "top": [
+      1,
+      -61
+     ],
+     "head": [
+      4,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -46
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "ko",
+     "fx": "",
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      3,
+      -61
+     ],
+     "head": [
+      8,
+      -71
+     ],
+     "hrot": 14.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -46
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "ko",
+     "fx": "",
+     "at": 3,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -61
+     ],
+     "head": [
+      2,
+      -71
+     ],
+     "hrot": -14.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -46
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "tired",
+     "fx": "",
+     "at": 4,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      3,
+      -61
+     ],
+     "head": [
+      7,
+      -71
+     ],
+     "hrot": 9.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -46
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 5,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -61
+     ],
+     "head": [
+      5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      13,
+      -63
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.6,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "joy",
+     "fx": "",
+     "at": 6,
+     "ease": "out",
+     "hold": 1
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -61
+     ],
+     "head": [
+      5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -46
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "joy",
+     "fx": "",
+     "at": 8,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -61
+     ],
+     "head": [
+      5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -46
+     ],
+     "hb": [
+      11,
+      -49
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 9,
+     "ease": "inout"
+    }
+   ]
+  },
+  "plant_feet": {
+   "_ideia": "Base larga: a queda trava no meio. Os pés ficam exatamente no mesmo lugar do 1º ao último quadro; o quadril afunda, ele pesa por cima e empurra quem tentou. Toca no lugar do fall quando a queda não entrou (NÃO CAIU).",
+   "who": [
+    "opp_reg_2"
+   ],
+   "n": 9,
+   "fps": 10.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -61
+     ],
+     "head": [
+      5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -59
+     ],
+     "hb": [
+      12,
+      -61
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -2,
+      -30
+     ],
+     "top": [
+      7,
+      -53
+     ],
+     "head": [
+      11,
+      -63
+     ],
+     "hrot": 18.0,
+     "tw": 0.3,
+     "hf": [
+      23,
+      -43
+     ],
+     "hb": [
+      19,
+      -45
+     ],
+     "pf": [
+      0.6,
+      1
+     ],
+     "pb": [
+      0.6,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      -0.3
+     ],
+     "kb": [
+      1,
+      -0.3
+     ],
+     "face": "grit",
+     "fx": "poeira:16,-1;poeira:-4,-1",
+     "at": 1,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      -2,
+      -31
+     ],
+     "top": [
+      7,
+      -53
+     ],
+     "head": [
+      11,
+      -63
+     ],
+     "hrot": 18.0,
+     "tw": 0.3,
+     "hf": [
+      23,
+      -43
+     ],
+     "hb": [
+      19,
+      -45
+     ],
+     "pf": [
+      0.6,
+      1
+     ],
+     "pb": [
+      0.6,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      -0.3
+     ],
+     "kb": [
+      1,
+      -0.3
+     ],
+     "face": "grit",
+     "fx": "poeira:18,-2;poeira:-6,-2",
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -2,
+      -31
+     ],
+     "top": [
+      6,
+      -54
+     ],
+     "head": [
+      10,
+      -64
+     ],
+     "hrot": 18.0,
+     "tw": 0.3,
+     "hf": [
+      23,
+      -43
+     ],
+     "hb": [
+      19,
+      -45
+     ],
+     "pf": [
+      0.6,
+      1
+     ],
+     "pb": [
+      0.6,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      -0.3
+     ],
+     "kb": [
+      1,
+      -0.3
+     ],
+     "face": "grit",
+     "fx": "",
+     "at": 3,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -2,
+      -31
+     ],
+     "top": [
+      6,
+      -54
+     ],
+     "head": [
+      10,
+      -64
+     ],
+     "hrot": 18.0,
+     "tw": 0.3,
+     "hf": [
+      23,
+      -43
+     ],
+     "hb": [
+      19,
+      -45
+     ],
+     "pf": [
+      0.6,
+      1
+     ],
+     "pb": [
+      0.6,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      -0.3
+     ],
+     "kb": [
+      1,
+      -0.3
+     ],
+     "face": "grit",
+     "fx": "",
+     "at": 4,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -1,
+      -34
+     ],
+     "top": [
+      4,
+      -58
+     ],
+     "head": [
+      8,
+      -68
+     ],
+     "hrot": 8.0,
+     "tw": 0.3,
+     "hf": [
+      19,
+      -54
+     ],
+     "hb": [
+      14,
+      -56
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 6,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -61
+     ],
+     "head": [
+      5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -59
+     ],
+     "hb": [
+      12,
+      -61
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 8,
+     "ease": "inout"
+    }
+   ]
+  },
+  "slip_clinch": {
+   "_ideia": "Ensaboado: o clinch começa (pego pela nuca), ele afunda, gira e escorrega 10 px para trás com bolhas saindo da nuca, e volta para a guarda. Toca no lugar do held_clinch quando o clinch não pegou (ESCAPOU!). Termina no pivô de sempre.",
+   "who": [
+    "opp_reg_3"
+   ],
+   "n": 10,
+   "fps": 14.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      4,
+      -60
+     ],
+     "head": [
+      8,
+      -70
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      14,
+      -56
+     ],
+     "hb": [
+      10,
+      -58
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "ball",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "pain",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -1,
+      -36
+     ],
+     "top": [
+      8,
+      -56
+     ],
+     "head": [
+      14,
+      -63
+     ],
+     "hrot": 25.0,
+     "tw": 0.3,
+     "hf": [
+      19,
+      -59
+     ],
+     "hb": [
+      16,
+      -61
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "ball",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "pain",
+     "fx": "",
+     "at": 1,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      -3,
+      -33
+     ],
+     "top": [
+      3,
+      -54
+     ],
+     "head": [
+      9,
+      -61
+     ],
+     "hrot": 12.0,
+     "tw": 0.3,
+     "hf": [
+      21,
+      -55
+     ],
+     "hb": [
+      17,
+      -57
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "ball",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "bolha:16,-64,2;bolha:12,-69,1;bolha:20,-60,1",
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -9,
+      -34
+     ],
+     "top": [
+      -5,
+      -55
+     ],
+     "head": [
+      0,
+      -63
+     ],
+     "hrot": 4.0,
+     "tw": 0.3,
+     "hf": [
+      8,
+      -55
+     ],
+     "hb": [
+      4,
+      -57
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "ball",
+     "toef": [
+      9,
+      -1
+     ],
+     "toeb": [
+      -9,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "joy",
+     "fx": "bolha:15,-62,2;bolha:9,-70,2;bolha:21,-66,1",
+     "at": 3,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      -12,
+      -35
+     ],
+     "top": [
+      -9,
+      -58
+     ],
+     "head": [
+      -5,
+      -67
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      4,
+      -58
+     ],
+     "hb": [
+      -1,
+      -60
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      5,
+      -1
+     ],
+     "toeb": [
+      -13,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "joy",
+     "fx": "bolha:13,-66,1;bolha:7,-73,2;bolha:19,-71,1",
+     "at": 4,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      -10,
+      -37
+     ],
+     "top": [
+      -8,
+      -61
+     ],
+     "head": [
+      -5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      6,
+      -59
+     ],
+     "hb": [
+      2,
+      -61
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      5,
+      -1
+     ],
+     "toeb": [
+      -13,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "joy",
+     "fx": "bolha:6,-77,1;bolha:12,-72,1",
+     "at": 5,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -4,
+      -37
+     ],
+     "top": [
+      -2,
+      -61
+     ],
+     "head": [
+      1,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      12,
+      -59
+     ],
+     "hb": [
+      8,
+      -61
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      11,
+      -1
+     ],
+     "toeb": [
+      -7,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 7,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -61
+     ],
+     "head": [
+      5,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.3,
+     "hf": [
+      16,
+      -59
+     ],
+     "hb": [
+      12,
+      -61
+     ],
+     "pf": [
+      -0.4,
+      1
+     ],
+     "pb": [
+      -0.3,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 9,
+     "ease": "inout"
+    }
+   ]
+  },
+  "guard": {
+   "_ideia": "Blindado (1º round): guarda fechada em repouso, no lugar do idle enquanto a guarda vale (t < 5,33 s); também J0 e fim da apresentação.",
+   "who": [
+    "opp_james"
+   ],
+   "n": 4,
+   "fps": 6.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      -1,
+      -37
+     ],
+     "top": [
+      1,
+      -61
+     ],
+     "head": [
+      4,
+      -70
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      13,
+      -62
+     ],
+     "hb": [
+      11,
+      -64
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -1,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      4,
+      -71
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      13,
+      -63
+     ],
+     "hb": [
+      11,
+      -65
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 1,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -1,
+      -37
+     ],
+     "top": [
+      1,
+      -61
+     ],
+     "head": [
+      4,
+      -70
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      13,
+      -62
+     ],
+     "hb": [
+      11,
+      -64
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -1,
+      -36
+     ],
+     "top": [
+      1,
+      -60
+     ],
+     "head": [
+      4,
+      -69
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      13,
+      -61
+     ],
+     "hb": [
+      11,
+      -63
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 3,
+     "ease": "inout"
+    }
+   ],
+   "loop": true
+  },
+  "block": {
+   "_ideia": "Blindado: o soco bate na guarda fechada e ele recua 2 px sem abrir as luvas (mesmos 3 quadros do block do rig).",
+   "who": [
+    "opp_james"
+   ],
+   "n": 3,
+   "fps": 14.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      -1,
+      -37
+     ],
+     "top": [
+      1,
+      -61
+     ],
+     "head": [
+      4,
+      -70
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      12,
+      -62
+     ],
+     "hb": [
+      10,
+      -64
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      -3,
+      -37
+     ],
+     "top": [
+      -2,
+      -61
+     ],
+     "head": [
+      1,
+      -70
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      9,
+      -62
+     ],
+     "hb": [
+      7,
+      -64
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "pain",
+     "fx": "",
+     "at": 1,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      -2,
+      -37
+     ],
+     "top": [
+      0,
+      -61
+     ],
+     "head": [
+      3,
+      -70
+     ],
+     "hrot": 0.0,
+     "tw": 0.5,
+     "hf": [
+      11,
+      -62
+     ],
+     "hb": [
+      9,
+      -64
+     ],
+     "pf": [
+      -0.1,
+      1
+     ],
+     "pb": [
+      -0.1,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "normal",
+     "fx": "",
+     "at": 2,
+     "ease": "inout"
+    }
+   ]
+  },
+  "idle": {
+   "_ideia": "James (substitui o idle do rig): peito estufado, queixo erguido, mãos baixas. Na luta, depois do 1º round (antes dele: guard).",
+   "who": [
+    "opp_james"
+   ],
+   "n": 4,
+   "fps": 5.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      3,
+      -73
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -44
+     ],
+     "hb": [
+      6,
+      -46
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -63
+     ],
+     "head": [
+      3,
+      -74
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -45
+     ],
+     "hb": [
+      6,
+      -47
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "at": 1,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      3,
+      -73
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -44
+     ],
+     "hb": [
+      6,
+      -46
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -36
+     ],
+     "top": [
+      1,
+      -61
+     ],
+     "head": [
+      3,
+      -72
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -43
+     ],
+     "hb": [
+      6,
+      -45
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "at": 3,
+     "ease": "inout"
+    }
+   ],
+   "loop": true
+  },
+  "scorn": {
+   "_ideia": "Gesto de desprezo: olha a própria luva, tira um fiapo e dá um peteleco para trás (para longe do adversário, nunca para ele). 6 quadros a 7 fps; pico (tap_glove) no quadro 3 (o 4º). Nada de dedo apontado.",
+   "who": [
+    "opp_james"
+   ],
+   "n": 6,
+   "fps": 7.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      3,
+      -73
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -44
+     ],
+     "hb": [
+      6,
+      -46
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      4,
+      -71
+     ],
+     "hrot": 10.0,
+     "tw": 0.2,
+     "hf": [
+      13,
+      -53
+     ],
+     "hb": [
+      6,
+      -46
+     ],
+     "pf": [
+      -0.5,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "sneer",
+     "fx": "",
+     "at": 1,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      4,
+      -71
+     ],
+     "hrot": 10.0,
+     "tw": 0.2,
+     "hf": [
+      13,
+      -53
+     ],
+     "hb": [
+      11,
+      -55
+     ],
+     "pf": [
+      -0.5,
+      1
+     ],
+     "pb": [
+      0.3,
+      1
+     ],
+     "far_glove_front": true,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "sneer",
+     "fx": "",
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      3,
+      -73
+     ],
+     "hrot": -8.0,
+     "tw": 0.2,
+     "hf": [
+      13,
+      -50
+     ],
+     "hb": [
+      -9,
+      -47
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.6,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "poeira:-14,-50;poeira:-17,-46",
+     "at": 3,
+     "ease": "out"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      3,
+      -73
+     ],
+     "hrot": -8.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -46
+     ],
+     "hb": [
+      -6,
+      -42
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.6,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "poeira:-19,-47",
+     "at": 4,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      1,
+      -62
+     ],
+     "head": [
+      3,
+      -73
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      12,
+      -44
+     ],
+     "hb": [
+      6,
+      -46
+     ],
+     "pf": [
+      -0.2,
+      1
+     ],
+     "pb": [
+      -0.2,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "at": 5,
+     "ease": "inout"
+    }
+   ],
+   "peak_frame": 3
+  },
+  "tired": {
+   "_ideia": "James cansado (substitui o tired do rig): ombros caídos, guarda baixa, peito arfando 2 px, queixo ainda empinado. Loop. Usado quando ele perde por pontos e fala depois da luta.",
+   "who": [
+    "opp_james"
+   ],
+   "n": 4,
+   "fps": 5.0,
+   "hit_frame": 0,
+   "keys": [
+    {
+     "hip": [
+      0,
+      -36
+     ],
+     "top": [
+      2,
+      -58
+     ],
+     "head": [
+      5,
+      -68
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      9,
+      -35
+     ],
+     "hb": [
+      3,
+      -37
+     ],
+     "pf": [
+      -0.7,
+      1
+     ],
+     "pb": [
+      -0.7,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "tired",
+     "fx": "",
+     "sf": [
+      4,
+      -53
+     ],
+     "sb": [
+      0,
+      -52
+     ],
+     "at": 0,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -60
+     ],
+     "head": [
+      5,
+      -70
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      9,
+      -36
+     ],
+     "hb": [
+      3,
+      -38
+     ],
+     "pf": [
+      -0.7,
+      1
+     ],
+     "pb": [
+      -0.7,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "tired",
+     "fx": "",
+     "sf": [
+      4,
+      -55
+     ],
+     "sb": [
+      0,
+      -54
+     ],
+     "at": 1,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -37
+     ],
+     "top": [
+      2,
+      -59
+     ],
+     "head": [
+      5,
+      -69
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      9,
+      -36
+     ],
+     "hb": [
+      3,
+      -38
+     ],
+     "pf": [
+      -0.7,
+      1
+     ],
+     "pb": [
+      -0.7,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "smirk",
+     "fx": "",
+     "sf": [
+      4,
+      -54
+     ],
+     "sb": [
+      0,
+      -53
+     ],
+     "at": 2,
+     "ease": "inout"
+    },
+    {
+     "hip": [
+      0,
+      -36
+     ],
+     "top": [
+      2,
+      -58
+     ],
+     "head": [
+      5,
+      -68
+     ],
+     "hrot": -6.0,
+     "tw": 0.2,
+     "hf": [
+      9,
+      -35
+     ],
+     "hb": [
+      3,
+      -37
+     ],
+     "pf": [
+      -0.7,
+      1
+     ],
+     "pb": [
+      -0.7,
+      1
+     ],
+     "far_glove_front": false,
+     "shoef": "flat",
+     "shoeb": "flat",
+     "toef": [
+      15,
+      -1
+     ],
+     "toeb": [
+      -3,
+      -1
+     ],
+     "kf": [
+      1,
+      0.15
+     ],
+     "kb": [
+      1,
+      0.15
+     ],
+     "face": "tired",
+     "fx": "",
+     "sf": [
+      4,
+      -53
+     ],
+     "sb": [
+      0,
+      -52
+     ],
+     "at": 3,
+     "ease": "inout"
+    }
+   ],
+   "loop": true
+  }
+ }
+}

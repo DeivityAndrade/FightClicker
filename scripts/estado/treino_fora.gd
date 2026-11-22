@@ -258,7 +258,7 @@ func _premio_spar(j: ChoqueLogica) -> Dictionary:
 
 
 func _premio_panfleto(j: PanfletoLogica) -> Dictionary:
-	var i := mini(gs.indice_escada, gs.lutas.adversarios.size() - 1)
+	var i := mini(gs.indice_escada, gs.lutas.indice_do_kid())  # 8a1: a liga nao muda o premio da Panfletagem
 	var f := j.fama(float(gs.lutas.adversarios[i].prize_fame))
 	gs.fama = clampi(gs.fama + f, 0, int(1.0e15))
 	gs.fama_mudou.emit(gs.fama)

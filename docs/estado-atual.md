@@ -2,7 +2,19 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-21, tarde)
+## Situação agora (2026-11-22)
+- **Fase 8a1 fechada** (Liga Regional do Vale): depois do Kid a carreira segue com 4 lutas no Clube Ferroviário (arena regional com
+  ringue): Zé Bigorna (Queixo de ferro trava o K.O. de embalo), Tião Estaca (Base larga trava o Por cima), Rony Sabão (Ensaboado trava
+  o Clinch) e o rival **James Blindado** (guarda fechada no 1º round; apresentação pulável ≤ 15 s e fala depois da luta conforme o
+  placar da escola; continua arrogante ao perder). Campanha completa só depois do James; **Cinturão do Vale** na linhagem. Save v13.
+- Dono aceitou 16,3% de diferença a 4/s (Finalização a mais lenta) e Queixo de ferro ×0. Personagens regionais ficaram no rig comum
+  (dono reprovou corpos exagerados como "bizarro"); personalidade via rosto/roupa/pose é tarefa futura (E9).
+- Save de teste: `tools/teste/jogar_teste_8a1.ps1` (2 dias antes do Kid; `-Contragolpista` para a 2ª passiva do Boxe).
+- Docs: `fase8a-escopo.md` (8 decisões do dono), `fase8a1-design.md`, `-textos.md`, `-cutscene-james.md`, `-qa.md`, `-revisao.md`
+  (aprovada com ressalvas; roteiro do dono lá).
+- **Próximo: 8a2** (centro de treinamento, patrocínio pequeno, região CENTRO) — escopo já aprovado; esperar o dono testar ou mandar seguir.
+
+## Situação anterior (2026-11-21, tarde)
 - **Fase 7b2 fechada** (2ª passiva das 3 artes): Boxe **CONTRAGOLPISTA** (guarda alta, esquiva enche carga 0–3, contragolpe pode
   derrubar no 3º round; pede Contra-ataque), Jiu-jitsu **POR CIMA** (derruba e castiga no chão até o juiz parar; FORÇA + Agressivo),
   Muay Thai **CLINCH** (prende, joelhada crítica pode derrubar; FORÇA+RESISTÊNCIA + Defensivo). Escolhida no começo da carreira,

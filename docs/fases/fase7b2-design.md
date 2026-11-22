@@ -249,14 +249,16 @@ medida da 7a1 (§7.4, pior 1,0) e da 7b1 (§6.3, pior 1,2).
 Cartão da arte: "{n}/3 K.O. DE EMBALO" / "{n}/3 FINALIZAÇÕES" / "{n}/3 CHUTES RODADOS" **[ROT]** sob a 2ª opção com cadeado;
 `n = min(passive_wins[arte], count)`. Teste com lutas montadas: 2 vitórias por `knockout` + 2 por dano = "2/3" e cadeado; a 3ª por
 `knockout` libera.
-### 9.3 Quanto tempo leva (simulado com N = 5; o dono escolheu **N = 3**; campanhas **com a arte**, contando a da chegada à academia, que só tem Muralha/Tonhão/Kid)
-| | Vitórias pela 1ª passiva por campanha (4/s · 3/s) | Robô padrão (maior chance): mediana; p90; nunca em 10 | Robô que **busca a meta** (tática da passiva se a chance cair ≤ 5 pontos) |
-|---|---|---|---|
-| Boxe (K.O. de embalo) | 1,48 · 1,41 | 4; 5 · 4; 6 — 0 | **3; 5 · 4; 5** — 0 |
-| Jiu-jitsu (finalização) | 1,48 · 1,59 | 3; 5 · 3; 5 — 0 | **3; 4 · 3; 4** — 0 |
-| Muay Thai (chute rodado) | 1,02 · 0,89 | 5; 8 · 6; 8 — 10 e 8 de 200 | **4; 6 · 4; 6** — 0 |
-O escopo pedia "cerca de 2 campanhas com a arte"; com **N = 5** (decisão do dono) dá **3–4** para quem joga a passiva e 3–6 para quem só
-olha a chance. Buscar a meta **não custa tempo**: o tempo até o Kid desse robô ficou igual (Boxe 44:40, JJ 45:56, MT 46:48 a 4/s).
+### 9.3 Quanto tempo leva (meta **N = 3**, decisão do dono de 2026-11-21; campanhas **com a arte**, contando a da chegada à academia)
+Medido de novo com N = 3 na Fase 8a1 (tarefa D4; `SIM_META_TAT=1 fase7b2_sim.py campanha`, 100 jogadores × 8 campanhas):
+| | Vitórias pela 1ª passiva por campanha (4/s · 3/s) | Robô que **busca a meta** (tática da passiva se a chance cair ≤ 5 pontos): mediana; p90; nunca em 8 (4/s · 3/s) |
+|---|---|---|
+| Boxe (K.O. de embalo) | 1,66 · 1,55 | **3; 4; 0 · 3; 4; 1** |
+| Jiu-jitsu (finalização) | 2,09 · 2,11 | **2; 3; 0 · 2; 3; 0** |
+| Muay Thai (chute rodado) | 1,35 · 1,24 | **3; 4; 0 · 3; 5; 1** |
+Com N = 3 dá **2–3 campanhas com a arte** para quem joga a passiva (o Muay Thai fica em 3 na mediana: não precisa de meta por arte).
+O robô padrão, que só olha a chance, leva cerca de 1 campanha a mais (revisão da 7b2, R4). Buscar a meta **não custa tempo**: o tempo
+até o Kid desse robô fica a 2,1% entre as artes na mediana (4/s) e 1,1% (3/s).
 O `count` está no dado (`passive_2.unlock.count`). **Decisão do dono (2026-11-21): N = 3** → cerca de 2 campanhas com a arte.
 
 ## 10. Save

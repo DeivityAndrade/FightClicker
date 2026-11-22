@@ -48,10 +48,19 @@ func abrir_com(fim: Dictionary, tocar_som: bool, reabrindo: bool = false) -> voi
 
 # --- Derrota ---
 
-func _montar_derrota(f: Dictionary, t: Dictionary) -> void:
+func _montar_derrota(f: Dictionary, t_: Dictionary) -> void:
+	var t := t_
+	# 8a1 (B3 do QA): "A GUARDA SEGUROU 0% ..." não diz nada: sem a nota do Blindado (e sem a dica dela) quando o número é 0.
+	if str(t.get("opp_note_id", "")) == "adv_blindado" and not RegEx.create_from_string("(^|[^0-9])[1-9][0-9]*%").search(str(t.get("opp_note", ""))):
+		t = t_.duplicate()
+		for k in ["opp_note", "opp_note_tip", "opp_note_id", "passive_note", "passive_note_tip", "passive_note_id"]:
+			t.erase(k)
 	moldura("ui_end_frame_defeat", Rect2(110, 10, 420, 326))
 	faixa_titulo("defeat", Rect2(150, 20, 340, 22), str(t.title).to_upper(), UiTema.WHITE, 2)
-	UiTema.rotulo_centro(painel, str(t.support).to_upper(), UiTema.G2, 320.0, 48.0)
+	var apoio := str(t.support)
+	if bool(GameState.lutas.adversario(str(f.get("opponent", ""))).get("regional_belt", false)):
+		apoio = UiTema.txt("belt_regional_lost", apoio)  # 8a1: perdeu para o dono do Cinturão do Vale
+	UiTema.rotulo_centro(painel, apoio.to_upper(), UiTema.G2, 320.0, 48.0)
 	UiTema.rotulo_centro(painel, UiTema.singular(str(t.who).to_upper()), UiTema.WHITE, 320.0, 62.0)
 
 	# Motivo principal com número + estatística + dica (a dica sempre bate com o atributo decisivo).
@@ -115,29 +124,47 @@ func _montar_retire(f: Dictionary, t: Dictionary) -> void:
 	moldura("ui_end_frame_retire", Rect2(110, 10, 420, 326))
 	faixa_titulo("retire", Rect2(150, 20, 340, 22), str(t.title).to_upper(), UiTema.WHITE, 2)
 	UiTema.rotulo_centro(painel, str(t.support).to_upper(), UiTema.P2, 320.0, 48.0)
-	var cinturao := int(f.summary.get("belts", 0)) > 0
+	var belts := int(f.summary.get("belts", 0))
+	var cinturao := belts > 0
+	var regional := GameState.cinturao_regional()
+	var amador := belts - (1 if regional else 0) > 0
 	var luvas := UiTema.nome_luvas_penduradas()
 	if GameState.campanha_completa():
 		# Passou o posto depois de vencer o Kid: o selo da campanha completa fica preso no canto da moldura (como a folhinha do dia).
 		var selo := UiTema.textura_rect(painel, "seal_campaign_complete", 108.0, 4.0)
 		selo.name = "SeloCampanha"
-	if cinturao:
-		# Luvas e cinturão lado a lado, o par centralizado na janela (o AnimSprite é desenhado a partir do pivô).
-		var larg_luvas := UiTema.tamanho_quadro(luvas).x
-		var larg_cint := UiTema.tamanho_quadro("belt_amateur_big").x
-		var x_luvas := roundf(320.0 - (larg_luvas + 24.0 + larg_cint) / 2.0)
-		UiTema.textura_rect(painel, luvas, x_luvas, 62)
-		var cint := AnimSprite.new()
-		cint.definir("belt_amateur_big")
-		cint.position = Vector2(x_luvas + larg_luvas + 24.0 + UiTema.pivo("belt_amateur_big").x, 62 + 24)
-		cint.tocar([0, 1, 2], 6.0, true)
-		painel.add_child(cint)
+	if amador or regional:
+		# Luvas e cinturões lado a lado (8a1: o Cinturão do Vale também), o grupo centralizado na janela (o AnimSprite é desenhado a partir do pivô).
+		var itens: Array = [{"nome": luvas, "anim": false}]
+		if amador:
+			itens.append({"nome": "belt_amateur_big", "anim": true})
+		if regional:
+			itens.append({"nome": "belt_regional_big", "anim": true})
+		var folga := 24.0 if itens.size() < 3 else 16.0
+		var total := folga * float(itens.size() - 1)
+		for it in itens:
+			total += UiTema.tamanho_quadro(str(it.nome)).x
+		var x := roundf(320.0 - total / 2.0)
+		for it in itens:
+			var nome_it := str(it.nome)
+			var q := UiTema.tamanho_quadro(nome_it)
+			if bool(it.anim):
+				var cint := AnimSprite.new()
+				cint.definir(nome_it)
+				cint.position = Vector2(x + UiTema.pivo(nome_it).x, 62.0 + 24.0 + (UiTema.pivo(nome_it).y - 24.0))
+				cint.tocar([0, 1, 2], 6.0, true)
+				painel.add_child(cint)
+			else:
+				UiTema.textura_rect(painel, nome_it, x, 62)
+			x += q.x + folga
+		if regional:
+			UiTema.rotulo_centro(painel, UiTema.txt("belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 320.0, 115.0)
 	else:
 		# Luvas no meio da janela.
 		var luvas_rect := UiTema.textura_rect(painel, luvas, roundf(320.0 - UiTema.tamanho_quadro(luvas).x / 2.0), 62)
 		luvas_rect.set_meta("ui_pos", "center_h")
 	var mais_r := _resumo(f, 126.0, false)
-	_rodape(f, 126.0 + 78.0 + mais_r, cinturao, str(t.get("tip_extra", "")))
+	_rodape(f, 126.0 + 78.0 + mais_r, cinturao, str(t.get("tip_extra", "")), regional)
 
 
 # --- Partes comuns ---
@@ -173,7 +200,7 @@ func _resumo(f: Dictionary, y: float, com_retrato: bool) -> float:
 	return 0.0
 
 
-func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> void:
+func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String, regional: bool = false) -> void:
 	divisor(126, y, 388)
 	UiTema.textura_rect(painel, "icon_legacy_16", 130, y + 6)
 	UiTema.rotulo(painel, UiTema.txt("sum_legacy_gain", "LEGADO GANHO"), UiTema.P2, 152, y + 10)
@@ -198,6 +225,9 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String) -> voi
 			yy += 11.0
 	if dica_extra != "":
 		UiTema.rotulo(painel, dica_extra.to_upper(), UiTema.Y1, 152, yy)
+		yy += 11.0
+	if regional:
+		UiTema.rotulo(painel, UiTema.txt("belt_regional_soon", "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO").to_upper(), UiTema.G3, 152, yy)  # 8a1
 		yy += 11.0
 	var retire := str(f.kind) == "retire"
 	if retire:

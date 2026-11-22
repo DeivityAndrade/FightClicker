@@ -128,6 +128,7 @@ var nivel_metronomo := 0  # Fase 4: 0 = sem Metrônomo (career.metronome_level)
 var local_id := ""  # Fase 5: career.location ("garage" | "gym")
 var arte_id := ""  # Fase 5: career.art ("" = sem arte)
 var passiva_carreira := 1  # 7b2: career.art_passive (1 = 1ª passiva da arte, 2 = a 2ª; vale a carreira inteira)
+var rival_spoke := {"before": false, "after": false}  # 8a1: career.rival_spoke (o James já falou antes / depois nesta campanha)
 var arte_segundos := 0.0  # Fase 5: career.art_seconds, tempo de carreira desde a escolha da arte
 # Bloco `permanent` do save
 var permanente: Dictionary = {}
@@ -270,6 +271,8 @@ const _Carreira := preload("res://scripts/estado/carreira.gd")
 const _LutaEstado := preload("res://scripts/estado/luta.gd")
 const _SaveValidacao := preload("res://scripts/estado/save_validacao.gd")
 const _TreinoFora := preload("res://scripts/estado/treino_fora.gd")
+const _LigaRegional := preload("res://scripts/estado/liga_regional.gd")
+var _liga := _LigaRegional.new(self)
 var _treino := _TreinoFora.new(self)
 var _depur := _Depuracao.new(self)
 var _textos := _Textos.new(self)
@@ -1080,3 +1083,18 @@ func aquecido() -> bool: return _treino.aquecido()
 func mult_aquecido() -> float: return _treino.mult_aquecido()
 ## O recorte de jornal do local atual: {spot, object_text} ou {} (Gato Preto, 7a2).
 func recorte_gato_preto() -> Dictionary: return _treino.recorte_gato_preto()
+## 8a1: a escada já passou do Kid (a liga regional está aberta).
+func liga_aberta() -> bool: return _liga.liga_aberta()
+## 8a1: cinturão regional (a escada passou do James).
+func cinturao_regional() -> bool: return _liga.cinturao_regional()
+## 8a1: placar da escola contra o James: {met, school_wins, james_wins}.
+func rival() -> Dictionary: return _liga.rival()
+## 8a1: a apresentação do James vale agora (próximo é ele e ainda não passou nesta campanha)? Sem efeito colateral.
+func james_intro_pendente() -> bool: return _liga.james_intro_pendente()
+## 8a1: ids da apresentacao do James em ordem ([] se nao e ele ou se ja falou nesta campanha). Sem efeito colateral.
+## (lutar() ja traz `intro_lines` / `outro_line` no dicionario da luta e grava `rival_spoke`.)
+func fala_previa_james() -> Array: return _liga.fala_previa_james()
+## 8a1: id da fala do James DEPOIS da luta ("" se nao vale); `ganhou` = o jogador venceu. Sem efeito colateral.
+func fala_depois_james(ganhou: bool) -> String: return _liga.fala_depois_james(ganhou)
+## 8a1: dados da passiva dele para a tela de luta ({} sem passiva).
+func info_passiva_adversario(opp: Dictionary) -> Dictionary: return _liga.info_luta(opp)

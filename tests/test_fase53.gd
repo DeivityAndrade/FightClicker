@@ -63,7 +63,8 @@ func _teste_dados() -> void:
 	var preps := []
 	for o in gs.lutas.adversarios:
 		preps.append(o.prep_days)
-	checar_igual(preps, [12, 13, 10, 16, 24, 16], "prep_days dos 6 adversários")
+	checar_igual(preps.slice(0, 6), [12, 13, 10, 16, 24, 16], "prep_days dos 6 adversários de antes")
+	checar_igual(preps.slice(6), [16, 16, 16, 20], "prep_days da liga regional (8a1)")
 	checar_igual([gs.dia_campanha(), gs.fight_day, gs.dias_para_luta()], [1, 13, 12], "campanha nova: Dia 1, data = 1 + 12")
 	checar(not gs.no_dia_da_luta() and gs.sala_ativa(), "começa com a sala ativa")
 	_liberar(gs)
@@ -415,5 +416,5 @@ func _teste_migracao_8_para_9() -> void:
 		"career": {"ladder_index": 6, "belt": true, "location": "gym"}, "permanent": {}, "ending": null}}
 	escrever(p2 + "save.json", JSON.stringify(v8b))
 	var g2 := _reabrir(p2)
-	checar_igual([g2.fight_day, g2.campanha_completa()], [-1, true], "Kid vencido: fight_day -1")
+	checar_igual([g2.fight_day - g2.dia_campanha(), g2.campanha_completa()], [16, false], "Kid vencido (save antigo): liga aberta com folga cheia de 16 dias (8a1)")
 	_liberar(g2)

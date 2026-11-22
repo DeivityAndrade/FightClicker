@@ -63,6 +63,9 @@ func _initialize() -> void:
 	_salvar("nail_knock", _batida_na_madeira())
 	_salvar("frame_scrape", _moldura_raspando())
 	_salvar("tube_start", _tubo_acendendo())
+	# Fase 8a1 (DEPOIS de todos os outros, pelo mesmo motivo): a voz do James Blindado (timbre "rival", 240 Hz base; serrilhada e nasal).
+	for k in vogais.size():
+		_salvar("voice_rival_%s" % vogais[k], _voz("rival", 240.0 * pow(2.0, passos[k] / 12.0)))
 	print("sfx gerados em ", PASTA)
 	quit(0)
 
@@ -350,6 +353,12 @@ func _voz(timbre: String, f0: float) -> PackedFloat32Array:
 		queda = 26.0
 		soltura = 0.006
 		pico = 0.90
+	elif timbre == "rival":
+		dur = 0.036
+		ataque = 0.002
+		queda = 40.0
+		soltura = 0.004
+		pico = 0.75
 	elif timbre == "disciple":
 		dur = 0.034
 		ataque = 0.002
@@ -365,7 +374,9 @@ func _voz(timbre: String, f0: float) -> PackedFloat32Array:
 	for i in n:
 		var t := float(i) / TAXA
 		var f := f0
-		if timbre == "first":
+		if timbre == "rival":
+			f = f0 * (1.0 + 0.02 * sin(TAU * 30.0 * t))  # o tremidinho curto: o "serrilhado"
+		elif timbre == "first":
 			f = f0 * (1.0 + 0.10 * exp(-t * 90.0))  # o "bup": começa 10% acima e cai
 		elif timbre == "coach":
 			f = f0 * (1.0 - 0.05 * t / dur)
@@ -374,7 +385,12 @@ func _voz(timbre: String, f0: float) -> PackedFloat32Array:
 		fase += TAU * f / TAXA
 		var seno := sin(fase)
 		var v := 0.0
-		if timbre == "first":
+		if timbre == "rival":
+			# dente de serra, passa-alta de 1 polo (tira o peito da voz = nasal) e passa-baixa x0,45 (lixa o agudo)
+			var x := 2.0 * fmod(fase / TAU, 1.0) - 1.0
+			lp += (x - lp) * 0.10
+			v = (x - lp) * 0.45
+		elif timbre == "first":
 			lp += (signf(seno) - lp) * 0.30
 			v = lp + 0.15 * seno
 		elif timbre == "coach":

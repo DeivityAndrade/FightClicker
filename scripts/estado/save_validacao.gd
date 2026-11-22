@@ -80,6 +80,7 @@ func para_save() -> Dictionary:
 			"mentor_greeted": gs.mentor_cumprimentou,
 			"money_earned": gs.dinheiro_ganho,
 			"fight": gs.luta.duplicate(true) if not gs.luta.is_empty() else null,
+			"rival_spoke": gs.rival_spoke.duplicate(),  # 8a1, opcional (ausente = o James ainda nao falou)
 			"training_invite": gs.convite.duplicate(),  # 7a2, opcional (save antigo sem ele = padrão)
 		},
 		"permanent": gs.permanente.duplicate(),
@@ -174,6 +175,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	gs._treino_jogo = null
 	gs._treino_premio = {}
 	gs.convite = gs._treino.validar(c.get("training_invite", null))
+	gs.rival_spoke = gs._liga.validar_falou(c.get("rival_spoke", null))
 	gs._convite_local = gs.local_id
 	gs._convite_vis = ""
 	for b in gs.caixas_lista:  # 6c2: o hall pode ter baixado os cliques da caixa
@@ -184,6 +186,7 @@ func aplicar_save(estado: Dictionary) -> void:
 	var greeted = c.get("mentor_greeted", true)  # ausente = true: save sem o campo não dispara toques no meio da campanha
 	gs.mentor_cumprimentou = typeof(greeted) != TYPE_BOOL or greeted
 	gs._escola._reiniciar_falas()
+	gs._liga.ao_carregar()  # 8a1: save antigo que ja passou do Kid abre a liga (fala do Osmar, uma vez)
 	for arte_def in gs.academia.artes:  # 7b1: arte liberada cuja fala do Osmar ainda não passou (save antigo ou fechou antes de ver)
 		if gs._academia.fala_de_liberacao_pendente(str(arte_def.id)):
 			gs._escola._gravar_marco(str(arte_def.id) + "_unlocked", {}, false)
@@ -249,6 +252,7 @@ func _validar_permanente(v: Variant) -> Dictionary:
 		"arts_unlocked": _validar_artes_liberadas(p.get("arts_unlocked", [])),
 		"last_art": _validar_arte_id(p.get("last_art", "")),
 	}
+	gs._liga.validar_permanente(p, r)  # 8a1: cinturoes regionais (opcionais)
 	_validar_passivas2(p, r)
 	r["tree_last_node"] = _validar_ultimo_no(p.get("tree_last_node", ""), r.skill_nodes)  # Fase 5.4
 	return r

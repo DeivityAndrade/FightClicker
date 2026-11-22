@@ -105,6 +105,9 @@ var _parede: Dictionary = {}  # objeto -> {sprite, rect, dica}
 var _recorte: AnimSprite  # 7a2: recorte de jornal do vulto (garagem e academia, campanha 2 em diante)
 var _recorte_rect := Rect2()  # área do hover (vazio = não desenhado)
 var _recorte_zoom: TextureRect  # dica de zoom: o recorte grande, só com o mouse em cima
+var _cartaz: AnimSprite  # 8a1: cartaz da Liga Regional do Vale (academia, depois de abrir a liga)
+var _cartaz_rect := Rect2()
+var _cartaz_zoom: TextureRect
 
 # 6d2: aparelho que não foi comprado é invisível (sem fita, silhueta nem cadeado): comprou = só a caixa; abriu = o aparelho.
 var _caixas: Dictionary = {}  # item -> CaixaSala
@@ -1226,6 +1229,7 @@ func _hover_em(p: Vector2) -> void:
 		tip = _texto_parede(p)
 	_ancorar_dica_mentor2(sobre_mentor2)
 	_zoom_recorte(_recorte != null and _recorte.visible and _recorte_rect.has_point(p) and cx == "")
+	_zoom_cartaz(_cartaz != null and _cartaz.visible and _cartaz_rect.has_point(p) and cx == "")
 	if tip != "":
 		Dica.pedir(tip)
 	else:
@@ -1246,6 +1250,7 @@ func _ancorar_dica_mentor2(sobre: bool) -> void:
 
 func _sair_hover() -> void:
 	_zoom_recorte(false)
+	_zoom_cartaz(false)
 	_ancorar_dica_mentor2(false)
 	Dica.limpar()
 
@@ -1749,6 +1754,11 @@ func _montar_parede() -> void:
 	_mural.visible = false
 	_mural.z_index = -45 + ordem.find("photo_old")
 	_mundo.add_child(_mural)
+	# 8a1: cartaz da liga regional, em cima da porta da academia (o ponto e o sprite vêm do manifest; só aparece a partir do marco).
+	_cartaz = AnimSprite.new()
+	_cartaz.visible = false
+	_cartaz.z_index = -45 + ordem.find("photo_old")
+	_mundo.add_child(_cartaz)
 	_atualizar_parede()
 
 
@@ -1821,7 +1831,47 @@ func _zoom_recorte(sobre: bool) -> void:
 	_recorte_zoom.visible = true
 
 
+## 8a1: o cartaz da liga regional na academia, a partir do marco `regional_league_opened` (a fala do Osmar abre junto).
+func _atualizar_cartaz() -> void:
+	if _cartaz == null:
+		return
+	var info: Dictionary = UiTema.manifest().get("layout", {}).get("gym_league_poster_spot_info", {})
+	var spot: Array = UiTema.manifest().get("layout", {}).get("gym_league_poster_spot", [])
+	var nome := str(info.get("sprite", "wall_poster_league_regional_gym"))
+	var ver := GameState.local_id == "gym" and GameState.marco(str(info.get("requires_milestone", "regional_league_opened"))) 		and not ("wall_objects" in _cena_oculta) and spot.size() == 2 and not UiTema.sprite(nome).is_empty()
+	_cartaz.visible = ver
+	if not ver:
+		_cartaz_rect = Rect2()
+		return
+	_cartaz.definir(nome)
+	_cartaz.position = Vector2(float(spot[0]), float(spot[1]))
+	_cartaz.parar(0)
+	var cr: Array = info.get("click_rect", [spot[0], spot[1], 38, 54])
+	_cartaz_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
+
+
+## Dica de zoom do cartaz: a imagem grande ao lado dele, só com o mouse em cima (nunca cobre a zona do alvo: y máximo 178).
+func _zoom_cartaz(sobre: bool) -> void:
+	var nome := str(UiTema.manifest().get("layout", {}).get("gym_league_poster_spot_info", {}).get("zoom", "ui_poster_league_regional_zoom"))
+	if not sobre or _cartaz_rect.size == Vector2.ZERO or UiTema.sprite(nome).is_empty():
+		if _cartaz_zoom != null:
+			_cartaz_zoom.visible = false
+		return
+	if _cartaz_zoom == null:
+		_cartaz_zoom = UiTema.textura_rect(self, nome, 0, 0)
+		_cartaz_zoom.z_index = 3000
+		UiTema.alinhar(_cartaz_zoom, "ignore")
+	var q := UiTema.tamanho_quadro(nome)
+	var x := _cartaz_rect.end.x + 6.0
+	var y := clampf(_cartaz_rect.position.y - 8.0, 22.0, 178.0 - q.y)
+	if x + q.x > 500.0:
+		x = _cartaz_rect.position.x - 6.0 - q.x
+	_cartaz_zoom.position = Vector2(x, y) - position  # o Sala não está na origem (room_rect começa em y 18)
+	_cartaz_zoom.visible = true
+
+
 func _atualizar_parede() -> void:
+	_atualizar_cartaz()
 	_atualizar_mural()
 	_atualizar_recorte()
 	if _parede.is_empty():
@@ -1855,6 +1905,10 @@ func _atualizar_parede() -> void:
 
 ## Texto da dica de um objeto da parede sob o ponto (coordenadas da tela base), ou "".
 func _texto_parede(p: Vector2) -> String:
+	if _cartaz != null and _cartaz.visible and _cartaz_rect.has_point(p):
+		var dc: DialogosData = GameState.dialogos
+		return "%s
+%s" % [dc.texto_objeto("regional_poster", "title"), dc.texto_objeto("regional_poster")]
 	if _recorte != null and _recorte.visible and _recorte_rect.has_point(p):
 		return GameState.texto_ui(str(GameState.recorte_gato_preto().get("object_text", "black_cat_clipping")), "")
 	if _mural != null and _mural.visible and _mural_rect.has_point(p):

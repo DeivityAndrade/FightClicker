@@ -391,7 +391,8 @@ func _validar_entrada_da_lista(e: Variant) -> Dictionary:
 		"belt": typeof(e.get("belt", false)) == TYPE_BOOL and e.get("belt", false),
 		"art": str(e.get("art", "")), "opponent": str(e.get("opponent", "")),
 		"legacy_gained": gs._inteiro_valido(e.get("legacy_gained", 0), 1.0e15),
-		"honor": gs._inteiro_valido(e.get("honor", 0), 1.0e15) if fim_tipo == "retire" else 0}
+		"honor": gs._inteiro_valido(e.get("honor", 0), 1.0e15) if fim_tipo == "retire" else 0}.merged(
+			{"regional_belt": true} if e.get("regional_belt", false) == true else {})
 
 
 # Uma entrada na lista da escola para a campanha que acabou de encerrar (no mesmo salvar() do Legado).
@@ -403,7 +404,7 @@ func _registrar_na_lista_da_escola(tipo: String, snap: Dictionary, ganho: int, h
 	gs.escola.roster.append({"campaign": gs.numero_carreira(), "kind": "first" if e_john else "disciple", "name": nome_lutador(),
 		"look": null if e_john else visual_lutador(), "end": tipo, "wins": gs.indice_escada, "belt": gs.cinturao, "art": gs.arte_id,
 		"opponent": str(snap.get("opponent", "")) if tipo == "defeat" else "", "legacy_gained": ganho,
-		"honor": honra_ganha})
+		"honor": honra_ganha}.merged({"regional_belt": true} if gs._liga.cinturao_regional() else {}))
 
 
 # 1º clique da campanha: grava mentor_greeted na hora e pede os toques (se o intervalo de 60 s deixar).

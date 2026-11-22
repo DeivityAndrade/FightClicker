@@ -691,5 +691,62 @@
 		"VOU PASSAR LÁ"
 	],
 	"black_cat_clipping": "VULTO MASCARADO ASSUSTA LADRÃO PERTO DA BORRACHARIA",
-	"black_cat_rumor": "dizem que um vulto de capuz\nronda o bairro de noite."
+	"black_cat_rumor": "dizem que um vulto de capuz\nronda o bairro de noite.",
+
+	"league_regional_name": "LIGA REGIONAL DO VALE",
+	"league_regional_next": "PRÓXIMA LUTA REGIONAL: {d} DIAS",
+	"league_regional_invite_title": "CONVITE: LIGA REGIONAL DO VALE",
+	"league_regional_invite_line": "O KID PERDEU. O VALE QUER CONHECER A RAÍZES",
+	"arena_regional_name": "CLUBE FERROVIÁRIO",
+
+	"opp_passive_hits": "ATRAPALHA: {jeito}",
+	"opp_passive_misses": "NÃO ATRAPALHA O SEU JEITO",
+	"opp_passive_guard_hits": "ATRAPALHA: TODOS NO 1º ROUND",
+
+	"opp_passive_adv_iron_chin_name": "QUEIXO DE FERRO",
+	"opp_passive_adv_iron_chin_line": "NÃO CAI NO EMBALO: SEGURA O K.O. DE EMBALO",
+	"opp_passive_adv_iron_chin_jeito": "K.O. DE EMBALO",
+	"opp_passive_adv_wide_base_name": "BASE LARGA",
+	"opp_passive_adv_wide_base_line": "PLANTA OS PÉS: A QUEDA DO POR CIMA NÃO ENTRA",
+	"opp_passive_adv_wide_base_jeito": "POR CIMA",
+	"opp_passive_adv_slippery_name": "ENSABOADO",
+	"opp_passive_adv_slippery_line": "ESCORREGA DO ABRAÇO: O CLINCH PRENDE POUCO E SOLTA FÁCIL",
+	"opp_passive_adv_slippery_jeito": "CLINCH",
+	"opp_passive_adv_blindado_name": "BLINDADO",
+	"opp_passive_adv_blindado_line": "GUARDA FECHADA NO 1º ROUND: CORTA QUALQUER JEITO. PACIÊNCIA",
+	"opp_passive_adv_blindado_jeito": "TODOS NO 1º ROUND",
+
+	"fight_opp_block_adv_iron_chin": "AGUENTOU!",
+	"fight_opp_block_adv_wide_base": "NÃO CAIU",
+	"fight_opp_block_adv_slippery": "ESCAPOU!",
+	"fight_guard_closed": "GUARDA FECHADA",
+	"fight_guard_open": "A GUARDA ABRIU",
+
+	"reason_opp_adv_iron_chin": "ELE NÃO CAIU NO EMBALO",
+	"reason_opp_adv_wide_base": "A QUEDA NÃO ENTROU: ELE PLANTOU OS PÉS",
+	"reason_opp_adv_slippery": "VOCÊ NÃO PRENDEU: ELE ESCORREGOU",
+	"reason_opp_adv_blindado": "A GUARDA SEGUROU {n}% DA VIDA DELE NO 1º ROUND",
+	"tip_opp_adv_iron_chin": [
+		"TENTE OUTRO JEITO: ESPERE O CONTRAGOLPE",
+		"O QUEIXO DELE NÃO ACEITA EMBALO. ACEITA PACIÊNCIA"
+	],
+	"tip_opp_adv_wide_base": [
+		"A FINALIZAÇÃO AINDA PEGA. OU TREINE MAIS FORÇA",
+		"ELE PLANTA OS PÉS. FINALIZAÇÃO NÃO PRECISA DE QUEDA"
+	],
+	"tip_opp_adv_slippery": [
+		"O CHUTE RODADO NÃO PRECISA DE ABRAÇO",
+		"PRENDER SÓ COM FORÇA E O DEFENSIVO. OU CHUTE DE LONGE"
+	],
+	"tip_opp_adv_blindado": [
+		"SEGURE O FÔLEGO E ESPERE A GUARDA ABRIR",
+		"CONTRAGOLPE, FINALIZAÇÃO E CANELA SOFREM MENOS COM ELA"
+	],
+
+	"belt_regional_title": "CINTURÃO DO VALE",
+	"belt_regional_line": "O BLINDADO CAIU. A RAÍZES É DO VALE",
+	"belt_regional_unlock": "CENTRO DE TREINAMENTO LIBERADO",
+	"belt_regional_soon": "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO",
+	"belt_regional_lost": "O BLINDADO FICA COM O CINTURÃO. VOLTE MAIS FORTE",
+	"belt_regional_label": "CINTURÃO DO VALE"
 }

@@ -79,12 +79,51 @@ func _clamp_fator(x: float, minimo: float, maximo: float) -> float:
 	return minf(maxf(x, minimo), maximo)
 
 
-## Números da passiva que a prévia mostra e a luta usa (determinístico). {} sem arte.
-## Boxe: fator de agilidade, K.O. máximo por golpe, quando cansa. Jiu-jitsu: quando a pegada enche e chance de finalizar.
-func estado_passiva(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
+## 8a1: passiva do adversário = 4º item do array dele ([F, A, R, passiva]); ausente = nenhuma (os 6 de antes).
+## Assim prévia, risco, robô, motivo e luta recebem a passiva junto com o adversário (sem estado no motor, seguro com threads).
+func _pas_adv(adv: Array) -> Dictionary:
+	if adv.size() > 3 and adv[3] is Dictionary:
+		return adv[3]
+	return {}
+
+
+## 8a1: as travas dele (`locks[tipo da sua passiva]`) valem só se existirem para o seu jeito de lutar.
+func _travas_do_adv(adv: Array) -> Dictionary:
 	if passiva.is_empty():
 		return {}
-	var P := passiva
+	var locks = _pas_adv(adv).get("locks", {})
+	if locks is Dictionary and locks.get(str(passiva.type), null) is Dictionary:
+		return locks[str(passiva.type)]
+	return {}
+
+
+## 8a1: cópia da sua passiva com `campo x mult` das travas dele (a original não muda). Sem trava: a mesma.
+func _passiva_ef(adv: Array) -> Dictionary:
+	var l := _travas_do_adv(adv)
+	if l.is_empty():
+		return passiva
+	var P := passiva.duplicate()
+	for campo in l:
+		if P.has(campo):
+			P[campo] = float(P[campo]) * float(l[campo])
+	return P
+
+
+## Números da passiva que a prévia mostra e a luta usa (determinístico). {} sem arte.
+## Boxe: fator de agilidade, K.O. máximo por golpe, quando cansa. Jiu-jitsu: quando a pegada enche e chance de finalizar.
+## Já vem com a trava do adversário (8a1); `estado_passiva_sem_adv` é a mesma conta sem ela.
+func estado_passiva(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
+	return _estado(jog, adv, tatica_id, true)
+
+
+func estado_passiva_sem_adv(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
+	return _estado(jog, adv, tatica_id, false)
+
+
+func _estado(jog: Array, adv: Array, tatica_id: String, com_adv: bool) -> Dictionary:
+	if passiva.is_empty():
+		return {}
+	var P := _passiva_ef(adv) if com_adv else passiva
 	var ej := efetivos(jog)
 	var ea := efetivos(adv)
 	var tp: Dictionary = P.tactics.get(tatica_id, {})
@@ -196,7 +235,7 @@ func preparar(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 		num[1][2] = est.dodge
 		tj = tj.duplicate()
 		tj["counter_mult"] = est.counter_mult
-	return {
+	var cen := {
 		"tac": [tj, ta],
 		"vmax": [vida_max(ef_j), vida_max(ef_a)],
 		"num": num,
@@ -204,6 +243,16 @@ func preparar(jog: Array, adv: Array, tatica_id: String) -> Dictionary:
 		"primeiro": 0 if ef_j[1] >= ef_a[1] else 1,
 		"est": est, "tp": tp,
 	}
+	# 8a1: passiva do adversário (só quem tem; os 6 de antes ficam com o cenário de sempre).
+	var pv := _pas_adv(adv)
+	if not pv.is_empty():
+		cen["adv_pas"] = true
+		cen["est_sem"] = _estado(jog, adv, tatica_id, false) if not _travas_do_adv(adv).is_empty() else {}
+		var g = pv.get("guard", null)
+		if g is Dictionary:
+			cen["guard_t"] = float(g.rounds) * float(c.round_length)
+			cen["guard_m"] = float(g.taken_mult)
+	return cen
 
 
 # --- A luta ---
@@ -222,7 +271,43 @@ func lutar_com_sorteios(jog: Array, adv: Array, tatica_id: String, sorteios: Pac
 
 
 ## Núcleo. `rng` null = usa a lista `sorteios`.
+## 8a1: contra adversário com passiva a luta ganha o estado dela (cópia rasa do cenário, para não acumular entre lutas) e os
+## campos opp_blocks / guard_absorbed (+ opp_block / guard nos eventos). Sem passiva dele: exatamente o laço de sempre.
 func rodar(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
+	if not cen.has("adv_pas"):
+		return _rodar_base(cen, rng, sorteios, registro)
+	var st := {"blk": 0, "guard_abs": 0.0, "ev_blk": [], "ev_guard": []}
+	var c2 := cen.duplicate()
+	c2["st"] = st
+	var res := _rodar_base(c2, rng, sorteios, registro)
+	res["opp_blocks"] = int(st.blk)
+	res["guard_absorbed"] = minf(1.0, float(st.guard_abs) / float(cen.vmax[1]))
+	if registro:
+		for e in res.events:
+			e["opp_block"] = false
+			e["guard"] = false
+		for i in st.ev_blk:
+			res.events[i]["opp_block"] = true
+		for i in st.ev_guard:
+			res.events[i]["guard"] = true
+	return res
+
+
+## Guarda fechada dele (8a1): o dano nele sai x taken_mult. Soma o que a guarda segurou e marca o evento (índice do que vem).
+func _guarda(st: Dictionary, d: float, mult: float, indice: int) -> float:
+	var novo := d * mult
+	st["guard_abs"] = float(st.guard_abs) + (d - novo)
+	st.ev_guard.append(indice)
+	return novo
+
+
+## A passiva dele mudou o resultado deste acerto (o mesmo sorteio daria certo sem a trava): só o sinal da tela.
+func _bloqueio(st: Dictionary, indice: int) -> void:
+	st["blk"] = int(st.blk) + 1
+	st.ev_blk.append(indice)
+
+
+func _rodar_base(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64Array, registro: bool) -> Dictionary:
 	if not passiva.is_empty():
 		match str(passiva.type):
 			"shin":
@@ -238,6 +323,9 @@ func rodar(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64A
 	var intervalo: float = c.attack_interval
 	var atraso: float = c.counter_delay
 	var spread: float = c.damage_spread
+	var st: Dictionary = cen.get("st", {})  # 8a1: estado da passiva dele (vazio = nenhuma)
+	var guard_t: float = float(cen.get("guard_t", -1.0))
+	var guard_m: float = float(cen.get("guard_m", 1.0))
 	var cm: float = c.crit_multiplier
 	var tac: Array = cen.tac
 	var vmax: Array = cen.vmax
@@ -316,6 +404,8 @@ func rodar(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFloat64A
 		if eh_contra:
 			d *= tac[quem].counter_mult
 		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		if alvo == 1 and t < guard_t:  # 8a1: guarda fechada dele
+			d = _guarda(st, d, guard_m, eventos.size())
 		vida[alvo] -= d
 		cont.hits[quem] += 1
 		cont.damage[quem] += d
@@ -362,11 +452,15 @@ func _rodar_arte(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 	var est: Dictionary = cen.est
 	var tp: Dictionary = cen.tp
 	var box: bool = P.type == "fast_hands"
+	var ko_sem := float(cen.get("est_sem", {}).get("ko_per_streak", 0.0))  # 8a1: o K.O. de embalo sem a trava dele
 	var frente: bool = float(P.need_ahead) >= 0.5
 	var limite: float = c.time_limit
 	var base: float = c.attack_interval
 	var atraso: float = c.counter_delay
 	var spread: float = c.damage_spread
+	var st: Dictionary = cen.get("st", {})  # 8a1: estado da passiva dele (vazio = nenhuma)
+	var guard_t: float = float(cen.get("guard_t", -1.0))
+	var guard_m: float = float(cen.get("guard_m", 1.0))
 	var cm: float = c.crit_multiplier
 	var tac: Array = cen.tac
 	var vmax: Array = cen.vmax
@@ -490,6 +584,8 @@ func _rodar_arte(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 			if quem == 1:
 				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
 		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		if alvo == 1 and t < guard_t:  # 8a1: guarda fechada dele
+			d = _guarda(st, d, guard_m, eventos.size())
 		vida[alvo] -= d
 		cont.hits[quem] += 1
 		cont.damage[quem] += d
@@ -507,6 +603,8 @@ func _rodar_arte(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 					tentativas += 1
 					if r_arte < embalo * ko_passo:
 						fim = "knockout"
+					elif r_arte < embalo * ko_sem:
+						_bloqueio(st, eventos.size())  # 8a1: queixo de ferro: sem a trava este K.O. teria saído
 			elif t >= t_cheia - 1e-9 and vida[1] <= sub_vida * vmax[1] and portao:
 				tentativas += 1
 				if r_arte < p_fin:
@@ -562,6 +660,9 @@ func _rodar_shin(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 	var base: float = c.attack_interval
 	var atraso: float = c.counter_delay
 	var spread: float = c.damage_spread
+	var st: Dictionary = cen.get("st", {})  # 8a1: estado da passiva dele (vazio = nenhuma)
+	var guard_t: float = float(cen.get("guard_t", -1.0))
+	var guard_m: float = float(cen.get("guard_m", 1.0))
 	var cm: float = c.crit_multiplier
 	var tac: Array = cen.tac
 	var vmax: Array = cen.vmax
@@ -665,6 +766,8 @@ func _rodar_shin(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 			if quem == 1:
 				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
 		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		if alvo == 1 and t < guard_t:  # 8a1: guarda fechada dele
+			d = _guarda(st, d, guard_m, eventos.size())
 		vida[alvo] -= d
 		cont.hits[quem] += 1
 		cont.damage[quem] += d
@@ -811,6 +914,9 @@ func _rodar_contra(cen: Dictionary, rng: RandomNumberGenerator, sorteios: Packed
 	var base: float = c.attack_interval
 	var atraso: float = c.counter_delay
 	var spread: float = c.damage_spread
+	var st: Dictionary = cen.get("st", {})  # 8a1: estado da passiva dele (vazio = nenhuma)
+	var guard_t: float = float(cen.get("guard_t", -1.0))
+	var guard_m: float = float(cen.get("guard_m", 1.0))
 	var cm: float = c.crit_multiplier
 	var tac: Array = cen.tac
 	var vmax: Array = cen.vmax
@@ -890,6 +996,8 @@ func _rodar_contra(cen: Dictionary, rng: RandomNumberGenerator, sorteios: Packed
 		if eh_contra:
 			d *= tac[quem].counter_mult * (pot if quem == 0 else 1.0)
 		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		if alvo == 1 and t < guard_t:  # 8a1: guarda fechada dele
+			d = _guarda(st, d, guard_m, eventos.size())
 		vida[alvo] -= d
 		cont.hits[quem] += 1
 		cont.damage[quem] += d
@@ -924,6 +1032,9 @@ func _rodar_cima(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 	var base: float = c.attack_interval
 	var atraso: float = c.counter_delay
 	var spread: float = c.damage_spread
+	var st: Dictionary = cen.get("st", {})  # 8a1: estado da passiva dele (vazio = nenhuma)
+	var guard_t: float = float(cen.get("guard_t", -1.0))
+	var guard_m: float = float(cen.get("guard_m", 1.0))
 	var cm: float = c.crit_multiplier
 	var tac: Array = cen.tac
 	var vmax: Array = cen.vmax
@@ -932,6 +1043,7 @@ func _rodar_cima(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 	var iv_pe: float = base * float(P.interval_mult)
 	var iv_chao: float = iv_pe * float(P.top_interval_mult)
 	var td: float = est.td_chance
+	var td_sem := float(cen.get("est_sem", {}).get("td_chance", 0.0))  # 8a1: a queda sem a trava dele
 	var esc: float = est.escape
 	var top_d: float = P.top_damage_mult
 	var bot_d: float = P.bottom_damage_mult
@@ -1011,6 +1123,8 @@ func _rodar_cima(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 			if quem == 1:
 				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
 		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		if alvo == 1 and t < guard_t:  # 8a1: guarda fechada dele
+			d = _guarda(st, d, guard_m, eventos.size())
 		vida[alvo] -= d
 		cont.hits[quem] += 1
 		cont.damage[quem] += d
@@ -1033,6 +1147,8 @@ func _rodar_cima(cen: Dictionary, rng: RandomNumberGenerator, sorteios: PackedFl
 				quedas += 1
 				if queda_em < 0.0:
 					queda_em = t
+			elif r_arte < td_sem:
+				_bloqueio(st, eventos.size())  # 8a1: base larga: sem a trava a queda teria entrado
 		if registro:
 			eventos.append(_evento2(t, quem, "crit" if e_crit else "hit", eh_contra, d, maxf(0.0, vida[alvo]),
 				fim if fim != "damage" else "", {"ground": chao, "move": golpe_v}))
@@ -1057,6 +1173,9 @@ func _rodar_clinch(cen: Dictionary, rng: RandomNumberGenerator, sorteios: Packed
 	var base: float = c.attack_interval
 	var atraso: float = c.counter_delay
 	var spread: float = c.damage_spread
+	var st: Dictionary = cen.get("st", {})  # 8a1: estado da passiva dele (vazio = nenhuma)
+	var guard_t: float = float(cen.get("guard_t", -1.0))
+	var guard_m: float = float(cen.get("guard_m", 1.0))
 	var cm: float = c.crit_multiplier
 	var tac: Array = cen.tac
 	var vmax: Array = cen.vmax
@@ -1065,6 +1184,7 @@ func _rodar_clinch(cen: Dictionary, rng: RandomNumberGenerator, sorteios: Packed
 	var iv_j: float = base * float(P.interval_mult)
 	var iv_cl: float = iv_j * float(P.clinch_interval_mult)
 	var ent: float = est.clinch_chance
+	var ent_sem := float(cen.get("est_sem", {}).get("clinch_chance", 0.0))  # 8a1: o clinch sem a trava dele
 	var esc: float = est.escape
 	var cl_s: float = P.clinch_s
 	var cl_vida: float = P.clinch_life_max
@@ -1150,6 +1270,8 @@ func _rodar_clinch(cen: Dictionary, rng: RandomNumberGenerator, sorteios: Packed
 			if quem == 1:
 				dano_contra_dele += d * (1.0 + spread * (2.0 * r_var - 1.0))
 		d *= 1.0 + spread * (2.0 * r_var - 1.0)
+		if alvo == 1 and t < guard_t:  # 8a1: guarda fechada dele
+			d = _guarda(st, d, guard_m, eventos.size())
 		vida[alvo] -= d
 		cont.hits[quem] += 1
 		cont.damage[quem] += d
@@ -1175,6 +1297,8 @@ func _rodar_clinch(cen: Dictionary, rng: RandomNumberGenerator, sorteios: Packed
 				clinches += 1
 				if clinch_em < 0.0:
 					clinch_em = t
+			elif vida[1] <= cl_vida * vmax[1] and r_arte < ent_sem:
+				_bloqueio(st, eventos.size())  # 8a1: ensaboado: sem a trava o clinch teria prendido
 		if registro:
 			eventos.append(_evento2(t, quem, "crit" if e_crit else "hit", eh_contra, d, maxf(0.0, vida[alvo]),
 				fim if fim != "damage" else "", {"clinch": t < preso_ate - 1e-9, "move": golpe_v}))
@@ -1222,6 +1346,21 @@ func nota_passiva(res: Dictionary, tatica_id: String) -> Dictionary:
 	if int(res.attempts) >= 1:
 		return {"id": "bjj_escaped", "n": int(res.attempts), "r": rodada}
 	return {"id": "bjj_never_hurt", "n": 0, "r": rodada}
+
+
+## Motivo da derrota pela passiva DELE (8a1 §3.3): {id, n} ou {}. Sem simulação nova: lê os campos da luta já feita.
+## Queixo de ferro / Base larga: perdeu e a trava segurou ao menos 1 acerto (n = quantos). Ensaboado: também se ele soltou 2+ vezes.
+## Blindado: sempre pesa (n = % da vida dele que a guarda segurou).
+func nota_adversario(res: Dictionary, adv: Array) -> Dictionary:
+	var id := str(_pas_adv(adv).get("id", ""))
+	if id == "" or bool(res.win):
+		return {}
+	if id == "adv_blindado":
+		return {"id": id, "n": int(round(100.0 * float(res.get("guard_absorbed", 0.0))))}
+	var blocos := int(res.get("opp_blocks", 0))
+	if blocos >= 1 or (id == "adv_slippery" and int(res.get("released", 0)) >= 2):
+		return {"id": id, "n": blocos}
+	return {}
 
 
 ## Motivo da derrota das 2ªs passivas (design 7b2 §12), a 1ª que valer, na ordem da tabela. {} se nenhuma.
