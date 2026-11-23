@@ -239,6 +239,8 @@ func _zerar_carreira() -> void:
 	gs.fight_day = gs._calendario._data_da_proxima_luta()  # Dia 1 + folga do primeiro adversário
 	gs.cinturao = false
 	gs.rival_spoke = {"before": false, "after": false}  # 8a1: o James volta a falar na campanha nova
+	gs.patrocinio_estado = ""  # 8a2: o patrocínio é 1 por campanha
+	gs.patrocinio_mudou.emit("")
 	gs.tatica = gs.lutas.tatica_padrao
 	gs.tempo_jogo = 0.0
 	gs.dinheiro_ganho = 0.0

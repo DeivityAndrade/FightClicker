@@ -176,7 +176,7 @@ func _teste_mudanca() -> void:
 	checar_igual(gs.dinheiro, 500.0, "segundo MUDAR não gasta")
 	checar_igual(gs.local_id, "gym", "agora na academia")
 	checar_igual(locais, ["gym"], "sinal local_mudou")
-	checar_igual(gs.mudanca(), {}, "depois de mudar não há mais o que comprar")
+	checar(gs.mudanca().is_empty() or gs.estado_mudanca() == "locked", "depois de mudar não há mais o que comprar (8a2: o próximo local, o centro, segue trancado sem o Cinturão do Vale)")
 	checar_igual([gs.treino, gs.atributos, gs.quantidade_gerador("neighbor_kid"), gs.quantidade_gerador("gen_paid_1"), gs.nivel_luva,
 		gs.nivel_metronomo, gs.nivel_melhoria("punching_bag"), gs.aparelhos_montados(), gs.foco],
 		[777.0, {"strength": 50.0, "agility": 30.0, "endurance": 10.0}, 5, 2, 1, 2, 1, ["punching_bag", "treadmill"], "treadmill"],

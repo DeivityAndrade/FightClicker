@@ -56,6 +56,7 @@ signal aviso_data(dias: int)  # faixa de aviso: dias que faltam (uma vez ao pass
 signal dia_da_luta_chegou()  # o relógio travou no dia da luta: abrir a prévia do dia
 signal campanha_completa_mudou()  # venceu o último adversário (ou carga/nova carreira mudou o estado)
 signal sala_ativa_mudou(ativa: bool)  # a condição única de tick mudou
+signal patrocinio_mudou(estado: String)  # 8a2: "" | "offered" (envelope na sala) | "signed" (contrato assinado), também na carga e na NOVA CAMPANHA
 
 # Fase 6a: falas, abertura, marcos da escola e gesto (contrato da UI em docs/fases/fase6a-api.md)
 signal fala_pedida(speaker: String, text: String, id: String)  # mostrar o balão (speaker = "first" | "coach")
@@ -130,6 +131,8 @@ var arte_id := ""  # Fase 5: career.art ("" = sem arte)
 var passiva_carreira := 1  # 7b2: career.art_passive (1 = 1ª passiva da arte, 2 = a 2ª; vale a carreira inteira)
 var rival_spoke := {"before": false, "after": false}  # 8a1: career.rival_spoke (o James já falou antes / depois nesta campanha)
 var arte_segundos := 0.0  # Fase 5: career.art_seconds, tempo de carreira desde a escolha da arte
+var patrocinio_estado := ""  # 8a2: career.sponsor ("" | "offered" | "signed"); só é gravado quando != ""
+var centro := CentroData.new()  # 8a2: data/center.json (alunos, 5ª melhoria, patrocínio); vazio/ausente = jogo da 8a1
 # Bloco `permanent` do save
 var permanente: Dictionary = {}
 # `ending` do save: tela de fim pendente ({} = nenhuma)
@@ -272,6 +275,8 @@ const _LutaEstado := preload("res://scripts/estado/luta.gd")
 const _SaveValidacao := preload("res://scripts/estado/save_validacao.gd")
 const _TreinoFora := preload("res://scripts/estado/treino_fora.gd")
 const _LigaRegional := preload("res://scripts/estado/liga_regional.gd")
+const _Centro := preload("res://scripts/estado/centro.gd")
+var _centro := _Centro.new(self)
 var _liga := _LigaRegional.new(self)
 var _treino := _TreinoFora.new(self)
 var _depur := _Depuracao.new(self)
@@ -335,6 +340,8 @@ func inicializar(pasta_save: String, caminho_config: String,
 	EVENTO_ESPERA_MAX = dados.golden_wait_max
 	academia = dados_academia if dados_academia != null else GymData.carregar()
 	academia.validar_aparelhos(dados)
+	centro = CentroData.carregar()  # 8a2
+	centro.validar(dados, academia)
 	local_id = academia.local_padrao
 	lutas = dados_lutas if dados_lutas != null else FightData.carregar()
 	motor = Luta.new(lutas)
@@ -1098,3 +1105,17 @@ func fala_previa_james() -> Array: return _liga.fala_previa_james()
 func fala_depois_james(ganhou: bool) -> String: return _liga.fala_depois_james(ganhou)
 ## 8a1: dados da passiva dele para a tela de luta ({} sem passiva).
 func info_passiva_adversario(opp: Dictionary) -> Dictionary: return _liga.info_luta(opp)
+
+# ===== 8a2: repasses para scripts/estado/centro.gd =====
+## O jogador está no centro de treinamento?
+func no_centro() -> bool: return _centro.no_centro()
+## Geradores de Treino da sala atual (os de sempre + os Alunos da Raízes no centro). Use no lugar de `dados.geradores` na aba EQUIPE.
+func geradores_do_local() -> Array: return _centro.geradores_do_local()
+## Melhorias do aparelho que valem AGORA (4 de sempre; no centro, mais a 5ª). Use no lugar de `dados.aparelho(id).upgrades`.
+func melhorias_do_aparelho(aparelho_id: String) -> Array: return _centro.melhorias_do_aparelho(aparelho_id)
+## Patrocínio: {state, name, short_name, brand, win_line, bonus_line, offer_title, offer_line, accept, close, envelope, signed_text} ou {}.
+func patrocinio() -> Dictionary: return _centro.patrocinio()
+## ASSINAR o contrato ("offered" -> "signed"). AGORA NÃO é só a UI fechar a janela: o envelope continua.
+func assinar_patrocinio() -> bool: return _centro.assinar_patrocinio()
+## Cartaz vencido e recorte do Cinturão do Vale ({} antes do 1º da linhagem): {campaign, name, poster, clipping, brand, text}.
+func recorte_do_vale() -> Dictionary: return _centro.recorte_do_vale()

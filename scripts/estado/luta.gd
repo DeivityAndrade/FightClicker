@@ -457,9 +457,11 @@ func concluir_luta() -> Dictionary:
 		gs.luta = {}
 		var premio := premio_dinheiro(opp)
 		var premio_f := premio_fama(opp)
-		gs.dinheiro = clampf(gs.dinheiro + premio, 0.0, gs.VALOR_MAXIMO)
-		gs.dinheiro_ganho += premio
+		var bonus_patro: int = gs._centro.bonus_vitoria(opp)  # 8a2: só com contrato assinado (0 nos outros casos)
+		gs.dinheiro = clampf(gs.dinheiro + premio + float(bonus_patro), 0.0, gs.VALOR_MAXIMO)
+		gs.dinheiro_ganho += premio + float(bonus_patro)
 		gs.fama += premio_f
+		gs._centro.avaliar_oferta()  # 8a2: fama >= mínimo e linhagem com o cinturão do Vale: o envelope aparece (mesmo save)
 		gs.indice_escada += 1
 		if opp.belt:
 			gs.cinturao = true
@@ -495,6 +497,8 @@ func concluir_luta() -> Dictionary:
 			# passive2_unlocked = id da arte cuja 2ª passiva abriu AGORA ("" nas outras); passive2_line = o aviso único (texto pronto)
 			"passive_goal": meta, "passive2_unlocked": str(meta.get("art", "")) if bool(meta.get("unlocked_now", false)) else "",
 			"passive2_line": str(meta.get("text", ""))}
+		if bonus_patro > 0:
+			resumo["sponsor_money"] = bonus_patro  # 8a2: a UI mostra "PATROCÍNIO {marca}: +${n}" (gs.patrocinio().win_line)
 		resumo.merge(liga)  # 8a1: so ao vencer o Kid (league_opened) ou o James (regional_belt, first_regional_belt); nos outros nem existe
 		gs.dinheiro_mudou.emit(gs.dinheiro)
 		gs.fama_mudou.emit(gs.fama)

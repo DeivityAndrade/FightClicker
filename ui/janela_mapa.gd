@@ -22,7 +22,7 @@ const NIVEIS_NEBLINA := [40.0, 48.0, 56.0, 64.0]  # distância -> nível 0..3; a
 const KIND_SUFIXO := {"small": "s", "milestone": "b", "link": "l"}
 const RAIO_POR_KIND := {"small": 12.0, "milestone": 19.0, "link": 14.0}
 const METADE_ALTURA := {"small": 12.0, "milestone": 19.0, "link": 12.0}
-const ORDEM_REGIOES := ["garage", "gym", "boxing", "bjj", "muay_thai", "campaign"]  # 7b1: muay_thai
+const ORDEM_REGIOES := ["garage", "gym", "boxing", "bjj", "muay_thai", "campaign", "center"]  # 7b1: muay_thai; 8a2: center (a região CENTRO)
 const CENTRO := ["body", "career", "style"]
 
 var sfx: Sfx
@@ -205,8 +205,12 @@ func _imagem(nome: String) -> Image:
 # --- Fundo: células 8x8, região do nó mais perto até 44 px ---
 
 func _pintar_fundo() -> void:
-	for chave in ["center", "garage", "gym", "boxing", "bjj", "muay_thai", "campaign", "wall"]:
+	# 8a2: "miolo" = a cortiça do centro do mapa (body/career/style, map_tile_center); "center" = a região CENTRO (map_tile_center_region).
+	# Chaves separadas: aberta["center"] é o estado da região e nunca pode pintar o miolo como parede.
+	for chave in ["garage", "gym", "boxing", "bjj", "muay_thai", "campaign", "wall"]:
 		_tiles[chave] = _imagem("map_tile_" + chave)
+	_tiles["miolo"] = _imagem("map_tile_center")
+	_tiles["center"] = _imagem("map_tile_center_region")
 	var aberta := {}
 	for r in _info.regions:
 		aberta[str(r.id)] = bool(r.open)
@@ -240,7 +244,7 @@ func _pintar_fundo() -> void:
 					if not aberta.get(chave, true):
 						chave = str(par[(cx + cy + 1) % 2])
 				elif reg in CENTRO:
-					chave = "center"
+					chave = "miolo"
 				if chave != "wall" and not aberta.get(chave, true):
 					chave = "wall"
 				chave_cel[i] = chave

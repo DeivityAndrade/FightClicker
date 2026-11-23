@@ -282,7 +282,9 @@ func _resolver_gatilhos(delta: float) -> void:
 	# Prioridade 9 ou mais (garagem salva, 1ª derrota): só precisa de espaço livre, sem o intervalo de 60 s.
 	if gs.dialogos.prioridade(l) < 9 and gs._t_real - gs._ultimo_comentario < intervalo:
 		# 6c1: o comentário da arte (uma vez por campanha) nunca se perde só pelo intervalo: espera na vaga até poder falar.
-		if not g_ganho.has("vaga") and str(g_ganho.id) == str(gs.escola_cfg.get("art_comment", {}).get("trigger", "art_choice")):
+		# 8a2: a fala única de um gatilho `defer` (chegada ao centro) também espera na vaga, e não se perde pelo intervalo.
+		var unica_adiada: bool = str(l.repeat) == "once" and bool(gs.dialogos.gatilho(str(g_ganho.id)).get("defer", false))
+		if not g_ganho.has("vaga") and (unica_adiada or str(g_ganho.id) == str(gs.escola_cfg.get("art_comment", {}).get("trigger", "art_choice"))):
 			_guardar_vaga(g_ganho, gs.dialogos.prioridade(l), true)
 		return  # sem intervalo: o novo some; a vaga (se for ela) segue esperando até vencer o tempo dela
 	if g_ganho.has("vaga"):
@@ -331,7 +333,7 @@ func _fala_caixa_criada(item: String, tipo: String) -> void:
 
 func _fala_melhoria(aparelho: String, _melhoria: String, nivel: int) -> void:
 	var total: int = gs.dados.aparelho(aparelho).get("upgrades", []).size()
-	if total > 0 and nivel >= total:
+	if total > 0 and nivel == total:  # 8a2: só na última de sempre (a 5ª do centro não repete a fala)
 		disparar_gatilho("big_purchase", {"what": "upgrade_max", "item": aparelho})
 
 

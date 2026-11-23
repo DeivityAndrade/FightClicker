@@ -35,6 +35,7 @@ func _ready() -> void:
 	# a caixa de informação do painel de atributos fica só para a dica de cada atributo.
 	# Botão de foco trancado (aparelho não comprado): não treina nem troca o foco, só abre o painel no cartão dele.
 	_sala.mural_clicado.connect(func() -> void: _fluxo.abrir_mural())  # 6c2: o mural da parede abre a janela do mural
+	_sala.envelope_clicado.connect(func() -> void: _fluxo.abrir_patrocinio())  # 8a2: o envelope PROPOSTA abre o contrato
 	_barra.compra_pedida.connect(_apontar_compra)
 
 	GameState.treino_mudou.connect(func(_v: float) -> void: _sujo = true)

@@ -372,6 +372,30 @@ func abrir_criar_discipulo() -> void:
 			janela_mudou.emit(ocupado()))
 
 
+# --- 8a2: contrato do patrocinador (o envelope PROPOSTA no chão da sala) ---
+
+## Abre o contrato. Só com a sala livre e a oferta em aberto ("offered"). ASSINAR grava o contrato (GameState); AGORA NÃO só fecha:
+## o envelope continua no chão até o fim da campanha.
+func abrir_patrocinio() -> void:
+	if ocupado() or GameState.patrocinio_estado != "offered" or GameState.acoes_bloqueadas():
+		return
+	var p: Dictionary = GameState.patrocinio()
+	if p.is_empty():
+		return
+	var j := JanelaPatrocinio.new()
+	_abrir(j)
+	Dica.limpar()
+	j.abrir_com(p)
+	j.fechou.connect(func() -> void:
+		if janela == j:
+			_fechar())
+	j.assinou.connect(func() -> void:
+		if GameState.assinar_patrocinio():
+			j.mostrar_assinado()
+		else:
+			_fechar())
+
+
 # --- Aposentar ---
 
 func abrir_aposentar() -> void:
@@ -462,6 +486,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif janela is JanelaAposentar:
 			_fechar()
+			get_viewport().set_input_as_handled()
+		elif janela is JanelaPatrocinio:
+			_fechar()  # Esc = AGORA NÃO
 			get_viewport().set_input_as_handled()
 		elif janela is JanelaMural:
 			_fechar_mural()

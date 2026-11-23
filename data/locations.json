@@ -9,6 +9,12 @@
 		  "name": "Academia Boa Esquina",
 		  "ambience": "Pôster desbotado, mensalidade atrasada e um espelho que trinca onde você bate.",
 		  "move_button": "MUDAR",
-		  "move_description": "Sai da garagem. Mais treino e 2 lutas novas." }
+		  "move_description": "Sai da garagem. Mais treino e 2 lutas novas." },
+		{ "id": "center", "training_mult": 4.0, "apparatus_suffix": "_center", "fight_arena": "arena_regional",
+		  "move": { "id": "move_center", "cost": 25000, "currency": "money", "requires": "regional_belt" },
+		  "name": "Centro de Treinamento Raízes",
+		  "ambience": "Pé-direito alto, piso de borracha e a foto da garagem pendurada torta, de propósito.",
+		  "move_button": "MUDAR",
+		  "move_description": "Sai da academia. Mais treino, alunos novos e aparelhos de verdade." }
 	]
 }
