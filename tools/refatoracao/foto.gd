@@ -49,9 +49,10 @@ func _save_sem_convite(gs: Node) -> Dictionary:
 		e["career"].erase("training_invite")
 		e["career"].erase("art_passive")
 		e["career"].erase("sponsor")  # 8a2
+		e["career"].erase("black_cat_hood")  # Ronda
 		e["career"].erase("rival_spoke")  # 8a1: campos opcionais novos  # 7b2: campos opcionais novos (a foto sem 2ª passiva tem de dar a da main)
 	if e.get("permanent") is Dictionary:
-		for chave in ["passive_wins", "passives_unlocked", "last_passive", "regional_belts", "first_regional_belt_campaign", "center_reached"]:
+		for chave in ["passive_wins", "passives_unlocked", "last_passive", "regional_belts", "first_regional_belt_campaign", "center_reached", "black_cat"]:
 			e["permanent"].erase(chave)
 	if e.get("school") is Dictionary:
 		e["school"].erase("rival")  # 8a1
@@ -249,7 +250,8 @@ func _roteiro() -> void:
 	txt = RegEx.create_from_string("\\s*\"training_invite\":\\s*\\{[^{}]*\\},?").sub(txt, "", true)
 	# 8a1: campos opcionais novos (rival_spoke, rival, regional_belts, first_regional_belt_campaign) saem do texto, com a virgula
 	for padrao in ["\\s*\"rival_spoke\":\\s*\\{[^{}]*\\},?", "\\s*\"rival\":\\s*\\{[^{}]*\\},?", "\\s*\"regional_belts\":\\s*[0-9]+,?",
-			"\\s*\"first_regional_belt_campaign\":\\s*[0-9]+,?", "\\s*\"sponsor\":\\s*\"[a-z]*\",?", "\\s*\"center_reached\":\\s*true,?"]:  # 8a2
+			"\\s*\"first_regional_belt_campaign\":\\s*[0-9]+,?", "\\s*\"sponsor\":\\s*\"[a-z]*\",?", "\\s*\"center_reached\":\\s*true,?",
+			"\\s*\"black_cat_hood\":\\s*\\{[^{}]*\\},?", "\\s*\"black_cat\":\\s*\\{[^{}]*\\},?"]:  # 8a2 + Ronda
 		txt = RegEx.create_from_string(padrao).sub(txt, "", true)
 	_out.append("SAVE " + rx.sub(txt, "\"saved_at_unix\": 0", true))
 	_fim(gs)

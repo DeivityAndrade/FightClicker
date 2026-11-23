@@ -87,6 +87,8 @@ func para_save() -> Dictionary:
 		"ending": gs.fim.duplicate(true) if not gs.fim.is_empty() else null,
 		"school": gs.escola.duplicate(true),
 	}
+	if gs._ronda.ronda_aberta():
+		salvo["career"]["black_cat_hood"] = gs.capuz.duplicate()  # Ronda, opcional: só com a Ronda aberta na linhagem
 	if gs.patrocinio_estado != "":
 		salvo["career"]["sponsor"] = gs.patrocinio_estado  # 8a2, opcional: só quando há envelope ou contrato
 	return salvo
@@ -192,6 +194,11 @@ func aplicar_save(estado: Dictionary) -> void:
 	gs._treino_jogo = null
 	gs._treino_premio = {}
 	gs.convite = gs._treino.validar(c.get("training_invite", null))
+	gs.ronda_ativa = ""
+	gs._ronda_jogo = null
+	gs._ronda_premio = {}
+	gs.capuz = gs._ronda.validar(c.get("black_cat_hood", null))  # Ronda (depende do marco e da campanha, já validados)
+	gs._capuz_vis = ""
 	gs.rival_spoke = gs._liga.validar_falou(c.get("rival_spoke", null))
 	gs.patrocinio_estado = gs._centro.validar_estado(c.get("sponsor", null))  # 8a2 (depende de permanent.regional_belts, já validado)
 	gs._centro.avaliar_oferta()  # a fama já bateu e o save ainda não tinha o envelope (save antigo parado depois do cinturão)
@@ -273,6 +280,7 @@ func _validar_permanente(v: Variant) -> Dictionary:
 	}
 	gs._liga.validar_permanente(p, r)  # 8a1: cinturoes regionais (opcionais)
 	gs._centro.validar_permanente(p, r)  # 8a2: center_reached (só entra quando verdadeiro)
+	gs._ronda.validar_permanente(p, r)  # Ronda: black_cat (lenda; só entra com ronda feita ou abertura)
 	_validar_passivas2(p, r)
 	r["tree_last_node"] = _validar_ultimo_no(p.get("tree_last_node", ""), r.skill_nodes)  # Fase 5.4
 	return r

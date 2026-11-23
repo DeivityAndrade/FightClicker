@@ -1,8 +1,49 @@
-# Onde paramos (atualizado em 2026-11-21)
+# Onde paramos (atualizado em 2026-11-23)
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-22, noite)
+## Situação agora (2026-11-23) — PAUSADO NO MEIO DA RONDA NOTURNA
+O dono pediu para parar tudo. Trabalho em andamento está no branch **`ronda-noturna`** (commit WIP, NÃO integrado na main;
+a main tem tudo até a 8a2, PR #30). Para retomar: `git switch ronda-noturna` (ou abrir o worktree) e seguir a lista abaixo.
+
+### O que foi feito nos últimos dias (todos na main)
+- **7b2** (PR #27): 2ª passiva das 3 artes (Contragolpista, Por cima, Clinch), meta de 3 vitórias.
+- **8a1** (PR #29): Liga Regional do Vale depois do Kid, 3 regionais com passiva + James Blindado, Cinturão do Vale.
+- **8a2** (PR #30): Centro Raízes (mudança $25k, treino x4, Alunos da Raízes, 5ª melhoria, patrocínio, região CENTRO).
+  Feita com o dono fora: ele ainda precisa CONFIRMAR as decisões D1–D12 (`docs/fases/fase8a2-revisao.md`).
+- Saves de teste: `tools/teste/jogar_teste_7b2.ps1`, `jogar_teste_8a1.ps1`, `jogar_teste_8a2.ps1 -Vale | -Patrocinio`.
+
+### Ronda Noturna do Gato Preto (em andamento, branch ronda-noturna)
+- **Escopo aprovado** (`docs/fases/ronda-escopo.md`, com "Decisões do dono": lenda abre região GATO PRETO na árvore; futuro tipo de
+  noite com luta contra bandidos — só o gancho de dados agora).
+- **Design aprovado** (`docs/fases/ronda-design.md`: minigame "Estátua no telhado", lenda 5 níveis, região GATO PRETO 2 Tios /
+  +2 dias liga / equipe +40%, rede da campanha 5). Simulador `tools/sim/ronda_sim.py`, casos `tests/data/ronda_casos.json`.
+- **Textos prontos** (`docs/fases/ronda-textos.md`; gravados em `data/ronda.json`, `ui_texts.json`, `dialogos.json`).
+- **Lógica pronta** (Programador): `scripts/ronda_data.gd`, `scripts/minigame_ronda.gd`, `scripts/estado/ronda.gd`,
+  `tests/test_ronda.gd` 178/178. Tela provisória `ui/tela_ronda_minima.gd` (não ligada). API documentada em `docs/codigo/mapa.md`.
+- **Cenário pronto** (Diretor de Arte): rua noturna, 5 camadas da lenda, capuz no prego (352,95) nos 3 locais, recortes por nível,
+  HUD, região no mapa. `docs/arte/ronda-manifest.md`, direcao-visual §36, mockups `docs/arte/mockups/ronda_*.png`.
+- **Amostra do vulto pronta** (`docs/arte/mockups/ronda_amostra_vulto.png`) — **o dono ainda NÃO aprovou** (estava dirigindo e mandou
+  seguir; ele vai olhar depois). Faixa do vulto vermelha (troca fácil para azul: constante BAND no gerador).
+
+### O que estava acontecendo no exato momento da pausa (os dois pararam no limite de uso, trabalho parcial no WIP)
+1. **Artista de Personagens** (`tools/art/make_sprites_ronda_vulto.gd`, `tools/art/ronda_personagens.json`,
+   `manifest_ronda_personagens.py`): fazendo o ELENCO completo — vulto em camadas por discípulo (+ espreitar, avançar agachado,
+   congelar, visto) e os 3 ladrões (mexer no objeto, olhar/olhar falso, cair de bunda e fugir). Ele tinha acabado de começar
+   (estava lendo tamanhos de pedestres do DA). Pedidos de melhoria: garras do SUSTO, capuz lendo como capuz em 1x, dobras da capa.
+   Saída esperada: `docs/arte/mockups/ronda_elenco.png` e `docs/arte/ronda-personagens-manifest.md`.
+2. **UI/UX**: montando a tela da Ronda, capuz na sala, prêmio, recortes por nível e a região GATO PRETO no mapa (estava nas edições
+   do `ui/janela_mapa.gd`: estado `sealed` e região `black_cat` em ORDEM_REGIOES). Falta `tools/ui/audit/estados_ronda.gd` e o
+   `alinhamento-ui` até 0 problemas.
+
+### Próximos passos depois de retomar
+1. Mostrar ao dono a amostra do vulto (e as imagens da Ronda) e pegar a aprovação.
+2. Terminar elenco (Artista) e telas (UI/UX) — ligar personagens na tela.
+3. QA (`docs/fases/ronda-qa.md`): suíte inteira `tools/run_tests.ps1`, foto contra a main, "quem não joga = igual", teto 10%.
+4. Revisão do Diretor (`ronda-revisao.md`), PR e merge.
+5. Depois: escopo da **8b** (Nacional). Primeira coisa: destino do Legado que sobra (recado da 8a2, em parte resolvido pela região GATO PRETO).
+
+## Situação anterior (2026-11-22, noite)
 - **Fase 8a2 fechada** (Centro Raízes), feita com o dono FORA ("siga até onde der"): depois do Cinturão do Vale, MUDAR para o centro
   ($25 mil), treino x4, gerador **Alunos da Raízes** (só no centro), 5ª melhoria dos aparelhos (só no centro), patrocínio
   **Autopeças Vale Forte** (só a partir da campanha seguinte ao 1º Cinturão do Vale, fama >= 200; +50% do prêmio por vitória, marca no

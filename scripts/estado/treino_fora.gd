@@ -350,7 +350,8 @@ func recorte_gato_preto() -> Dictionary:
 	var p: Array = gs._casa._cena_dados_pontos().ponto_caminho(nome)
 	if p.is_empty():
 		return {}
-	return {"spot": p, "object_text": str(s.get("object_text", "black_cat_clipping"))}
+	var chave := gs._ronda.chave_recorte()  # Ronda: a manchete muda a cada nível da lenda (nível 0 = a de sempre)
+	return {"spot": p, "object_text": chave if chave != "" else str(s.get("object_text", "black_cat_clipping"))}
 
 
 func _rumor_devido() -> bool:

@@ -1454,3 +1454,79 @@ comprados. Nós usam os ícones que já existem (data). Atenção ao conflito da
 **Placeholder / precisa de pixel artist:** o fundo é montagem por código (blocos, reflexos em diagonal, vitrine plana); os aparelhos
 são troca de material, não forma nova; a silhueta do recorte tem 7 px; o remendo do calção só lê como marca no contexto. Tamanhos e
 pivôs fixos: trocar a arte é trocar o arquivo.
+
+## 36. Ronda Noturna do Gato Preto (a rua da borracharia, o capuz no prego, a lenda no jornal e no bairro)
+Gerador: `tools/art/make_arte_ronda.gd` (headless, de uma pasta com `project.godot` vazio, `-- --root <worktree>`; `--no-assets` só
+mockups; `--caps <pasta>` cola o capuz nas capturas do `ui_audit`). Manifest: `python tools/art/manifest_ronda.py` (idempotente;
+não mexe nas chaves do Artista). Lista, pontos e pedidos ao código: `docs/arte/ronda-manifest.md`. Mockups: `mockups/ronda_*.png`.
+Textos das manchetes e do recorte = provisórios [ROT] (`TXT_*` no topo do gerador).
+
+### 36.1 A cor da Ronda: NOITE
+- **Azul-marinho `b0/b1` + o creme da lua.** É a cor da LENDA (ícone, bolinhas do nível, anel `night` do mapa, plaquinha da região).
+- **Ouro só no PERTO e no SUSTO!** (é conquista sua, como no resto do jogo). **Nunca** o roxo do Legado (a lenda não é Legado) nem o
+  azul vivo `b2/b3` do Jiu-jitsu em peça grande.
+- Letreiro SUSTO! = receita do K.O.! com a **sombra de fonte `b0`**. ESCAPOU = cinza (`g3/g2`, sombra `d2`), menor e sem tremida.
+
+### 36.2 O traje (regra de cor para o Artista e para todo objeto do vulto)
+Capuz e capa: `d1` base, `d2` luz, `ink` contorno; luz da lua por trás = 1 passo (`g0`) só na borda de cima. Orelhas **largas e
+baixas**, com 2 pontos de costura `g1`. **Faixa vermelha `r2`** (luz `r3`, sombra `r1`), a mesma da amostra do Artista (`mockups/ronda_amostra_vulto.png`), nó atrás e as duas pontas voando para trás. No gerador é uma constante só (`BAND`): se o dono pedir a faixa azul da escola, troca em tudo de uma vez.
+Pele só na boca/queixo. Capa de lona com remendo `g0`, **caindo reta** (nunca aberta em asa). Sem símbolo no peito, sem cinto.
+O dublê do gerador (52x50, agachado ~46 px) só mede o cenário: a folha é do Artista de Personagens (skill `padrao-personagem`).
+
+### 36.3 A rua (`ronda_bg`, 640x360)
+- **Vista de lado, na altura da rua**, como a Panfletagem: o vulto anda **em cima** do que separa as casas da calçada, o ladrão
+  trabalha **na calçada**, logo depois do fim do trecho. Um cenário, **3 trechos na mesma altura (pés y 196)**, da esquerda para a
+  direita: **capa do muro do terreno baldio** (tire, x 26→146), **marquise de concreto da borracharia** (bike, 256→346), **capa do muro
+  verde da casa 15** (gate, 494→546). A ronda anda pela tela inteira e acaba perto da lua.
+- **Borracharia = a da arena da fase 3** (chapa ondulada, letreiro laranja BORRACHARIA, 24H aceso, porta de enrolar 07): o jogador
+  reconhece o bairro. Do lado: o sobrado ocre (janela de cima acesa, bicicleta encostada embaixo da janela, presa com corrente na
+  grade) e a casa 15 (muro verde, pilar com luminária, portão de chapa com grade, caixa d'água azul no telhado).
+- **Regra de luz (é a regra do jogo virando imagem):** cada ladrão fica numa **poça de luz** (poste, arandela, luminária do pilar);
+  o vulto anda **na sombra do alto**. Atrás do caminho do vulto, **só meio-tom** (parede da casa de fundos `st1`, chapa `st1/st2`,
+  fachada `g3`), nunca `ink/d1/b0` chapado: o vulto preto com contorno `ink` precisa ler. Conferido no gerador (% escuro atrás de
+  cada trecho e chão aceso embaixo de cada ladrão).
+- Céu só em y 0..35 (HUD); asfalto em y 336..359 (SAIR e a instrução). O poste fica entre o trecho 1 e o 2 e **nunca corta o vulto**.
+- **Lua cheia** em (552,70) r 24, com halo em dither; **pose no telhado**: pés em (552,114) na cumeeira da casa 15, a silhueta cobre
+  a lua (o quadro do top 3 do dono).
+
+### 36.4 As camadas da lenda (640x360 em 0,0, cumulativas, `street_layers_by_level`)
+| Nível | Camada | O quê | Onde |
+|---|---|---|---|
+| 2 | `graffiti` | o gato do bairro a estêncil creme (capuz com orelhas largas, faixa nos olhos com as pontas, sorrisinho) + GP vermelho | muro do terreno, embaixo da barra |
+| 3 | `banner` | faixa de pano VALEU, GATO PRETO pintada à mão, com cordinhas e uma dobra | chapa da borracharia, entre o letreiro e a marquise (atrás do trecho 2: pano claro, o vulto lê por cima) |
+| 4 | `kid_ears` | criança na janela de cima do sobrado com orelhinhas de papelão e a faixa vermelha, acenando; desenho do gato colado no vidro | janela acesa do sobrado |
+| 5 | `whole_street` | bandeirinhas com o capuz, gatos de giz na calçada, adesivo no poste, gato na caixa d'água, orelhas na janela da casa 15, GP no portão | a rua toda, fora dos pés dos ladrões e da lua |
+O nível 1 não muda a rua (só o jornal dá o nome). Corte (escopo §9): as camadas viram só recortes.
+
+### 36.5 O capuz no prego (sala)
+- `hood_on_nail` (garagem) / `hood_on_nail_gym` (academia e centro), 16x22, **pivô (8,1) na cabeça do prego**, ponto **(352,95) nos 3
+  locais**: parede lisa entre a corrente do saco (x 335) e a porta da garagem / o relógio de rounds, logo **ao lado do recorte do
+  vulto** (garagem: o recorte à esquerda da corrente; academia/centro: o recorte logo acima). O capuz e o jornal contam a mesma
+  história na mesma parede.
+- Capuz preto pendurado pela nuca (orelhas costuradas nas quinas, abertura do rosto escura) e a **faixa vermelha enrolada no prego** com
+  as pontas caindo: a faixa vermelha é a única cor do objeto, para ele ser achado sem piscar. Parado: sem brilho, sem som, sem anim. Quadro 1 = hover
+  (contorno creme, como os outros objetos de parede).
+- Conferido: fora da zona do alvo (y < 150), dos cards da esquerda e do painel fixado; 0 sobreposição com o manifest e com a
+  ocupação conhecida das 3 salas; colado nas capturas do `ui_audit` com a sala cheia (ninguém da equipe chega a y 117).
+
+### 36.6 O jornal que exagera (recortes por nível)
+- Pequeno 23x28 no **mesmo ponto** do recorte da 7a2 (o nível 0 não muda). Em 1x a escalada se lê pela **foto** (11x8: o vulto e a
+  lua; o gato pichado e um ladrão fugindo; a faixa e o povo; a janela com a criança de orelha; o ônibus erguido) e pela **tinta**:
+  manchete preta nos níveis 1–3 (sublinhada no 3), **vermelha no 4**, **tarja vermelha de EXTRA no 5**. Manchete 3x5 de 2 linhas
+  (GATO/PRETO, GATO/VOLTA, VALEU/GATO, GATO/MANIA, UMA/MÃO!) [ROT].
+- Zoom 128x96 (hover e prêmio, "o jornal do dia seguinte"): CORREIO DA ESQUINA (no 5, faixa vermelha EDIÇÃO EXTRA), chamada 1x +
+  título 2x, foto 56x42 em tons de cinza com a piada do nível, colunas. É a 1ª peça a cortar.
+
+### 36.7 HUD e mapa
+- HUD (sugestão; a final é do UI/UX): LENDA (ícone 16 + 5 bolinhas) em cima à esquerda, OCORRÊNCIA n DE 3 com os sustos no meio,
+  tempo à direita; a **barra de distância fica no muro**, embaixo da capa (y 206), só do trecho atual, com a zona do SUSTO de 0,8 ao
+  fim (pisca em ouro com o PERTO). O aviso do ladrão fica **em cima da cabeça dele** (? cinza → ? branco → ! no balão vermelho:
+  forma e cor mudam juntas).
+- Região GATO PRETO: ícone (telhado de telha, lua e o vulto na cumeeira), plaquinha com a faixa da noite, ladrilho de **telha
+  capa-canal azul-marinho**, anel `night`, **nó lacrado** (o "faltando" com um lacre cinza do capuz). Os 3 nós usam o desenho de
+  hoje do mesmo efeito (`skill_crew_regulars`, `skill_prep_day` com **+2**, `skill_body_crew`) com o **carimbo do gato** no canto.
+
+### 36.8 Placeholder / precisa de pixel artist
+A rua é montagem por código (blocos, chapa em listras, luz em faixas com dither, poças de luz redondas); à mão: chapa amassada,
+reboco com textura, folhagem, lua com relevo, fios, gente nas janelas. As camadas são desenhos simples (a criança tem 30 px). O capuz
+tem 16x22 (à mão: volume do pano, costura legível). Os recortes contam o nível pela foto de 11x8. Tamanhos, pivôs e pontos fixos.

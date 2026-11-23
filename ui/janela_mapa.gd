@@ -22,7 +22,7 @@ const NIVEIS_NEBLINA := [40.0, 48.0, 56.0, 64.0]  # distância -> nível 0..3; a
 const KIND_SUFIXO := {"small": "s", "milestone": "b", "link": "l"}
 const RAIO_POR_KIND := {"small": 12.0, "milestone": 19.0, "link": 14.0}
 const METADE_ALTURA := {"small": 12.0, "milestone": 19.0, "link": 12.0}
-const ORDEM_REGIOES := ["garage", "gym", "boxing", "bjj", "muay_thai", "campaign", "center"]  # 7b1: muay_thai; 8a2: center (a região CENTRO)
+const ORDEM_REGIOES := ["garage", "gym", "boxing", "bjj", "muay_thai", "campaign", "center", "black_cat"]  # 7b1: muay_thai; 8a2: center (a região CENTRO); Ronda: black_cat (GATO PRETO)
 const CENTRO := ["body", "career", "style"]
 
 var sfx: Sfx
@@ -211,6 +211,7 @@ func _pintar_fundo() -> void:
 		_tiles[chave] = _imagem("map_tile_" + chave)
 	_tiles["miolo"] = _imagem("map_tile_center")
 	_tiles["center"] = _imagem("map_tile_center_region")
+	_tiles["black_cat"] = _imagem("map_tile_black_cat_region")  # Ronda: telhado de telha à noite
 	var aberta := {}
 	for r in _info.regions:
 		aberta[str(r.id)] = bool(r.open)
@@ -222,8 +223,8 @@ func _pintar_fundo() -> void:
 	chave_cel.resize(n)
 	chave_cel.fill("wall")
 	for it in _nos:
-		if not GameState.trava_aberta(str(it.lock)):
-			continue  # região trancada conta como parede
+		if not GameState.trava_aberta(str(it.lock)) and str(it.state) != "sealed":
+			continue  # região trancada conta como parede (o nó lacrado do GATO PRETO fica sobre o chão da região, aberta pelo nível 1)
 		var c: Vector2 = it.wp
 		var reg := str(it.region)
 		var x0 := maxi(0, int(floor((c.x - RAIO_REGIAO) / CELULA)))
@@ -528,6 +529,8 @@ func _icone(it: Dictionary) -> String:
 func _quadro_do_no(it: Dictionary, estado: String) -> String:
 	var k: String = KIND_SUFIXO.get(str(it.kind), "s")
 	match estado:
+		"sealed":
+			return "map_node_%s_sealed" % ("b" if k == "b" else "s")  # Ronda (D7): silhueta lacrada, sem ícone e sem preço
 		"owned":
 			if k == "l":
 				return "map_node_link_owned_%s_%s" % [str(it.par[0]), str(it.par[1])]
@@ -581,11 +584,12 @@ func _montar_no(it: Dictionary, estado: String) -> void:
 	no.add_child(frame)
 	if UiTema.sprite(quadro).get("frames", 1) > 1:
 		frame.tocar([0, 1], float(UiTema.sprite(quadro).get("fps", 2.0)), true)
-	var icone_nome := _icone(it)
-	var icone := AnimSprite.new()
-	icone.definir(icone_nome)
-	icone.position = _topo_esq(icone_nome, Vector2(-8, -8))
-	no.add_child(icone)
+	if estado != "sealed":
+		var icone_nome := _icone(it)
+		var icone := AnimSprite.new()
+		icone.definir(icone_nome)
+		icone.position = _topo_esq(icone_nome, Vector2(-8, -8))
+		no.add_child(icone)
 	if estado == "visible" and not bool(it.affordable):
 		var veu := AnimSprite.new()
 		veu.definir("map_node_veil")
@@ -805,8 +809,22 @@ func _clicar(id: String) -> void:
 	var it: Dictionary = _por_id[id]
 	if str(it.state) == "owned":
 		return
+	if str(it.state) == "sealed":
+		_recusar_lacrado(id)  # Ronda: a lenda ainda não chegou; o cartão já diz o nível que falta
+		return
 	if not GameState.comprar_no(id):
 		_recusar(id)
+
+
+## Nó lacrado: o nó inteiro treme de leve (sem preço para tremer).
+func _recusar_lacrado(id: String) -> void:
+	if not _vis.has(id):
+		return
+	var no: Control = _vis[id].no
+	var x0 := no.position.x
+	var tw := create_tween()
+	for d in [2.0, -2.0, 1.0, 0.0]:
+		tw.tween_property(no, "position:x", x0 + d, 0.035)
 
 
 ## Nó que não dá para comprar (falta Legado): a etiqueta treme de leve e pisca.
@@ -845,14 +863,17 @@ func mostrar_cartao(id: String) -> void:
 	var estado := _estado(it)
 	var fonte := UiTema.fonte()
 	var larg_txt := CARTAO_L - 14.0
+	var lacrado := estado == "sealed"  # Ronda: só o nome ("???") e o nível da lenda que falta; nada do efeito, nada de preço
 	var linhas: Array = [
 		{"texto": str(it.name).to_upper(), "cor": UiTema.COL_TEXT_1},
 		{"texto": str(it.description).to_upper(), "cor": UiTema.G3},
 		{"texto": str(it.effect_text).to_upper(), "cor": _cor_efeito(str(it.effect_type))},
 	]
-	if str(it.art_only_text) != "":
+	if lacrado:
+		linhas = [{"texto": str(it.sealed_name).to_upper(), "cor": UiTema.COL_TEXT_1}, {"texto": str(it.sealed_text).to_upper(), "cor": UiTema.Y1}]
+	if str(it.art_only_text) != "" and not lacrado:
 		linhas.append({"texto": str(it.art_only_text).to_upper(), "cor": UiTema.COL_TEXT_2})
-	if bool(it.needs_shout):
+	if bool(it.needs_shout) and not lacrado:
 		linhas.append({"texto": UiTema.txt("map_needs_shout", "PEDE O GRITO DA EQUIPE (LOJA)"), "cor": UiTema.Y0})
 	var altura := 5.0
 	for l in linhas:
@@ -861,7 +882,9 @@ func mostrar_cartao(id: String) -> void:
 		altura += 9.0 * float(l.n) + 3.0
 	var y_preco := altura + 1.0
 	altura = y_preco + 9.0 + 5.0
-	var com_faixa := estado != "owned" or bool(it.next_campaign)
+	if lacrado:
+		altura = y_preco + 2.0
+	var com_faixa := (estado != "owned" or bool(it.next_campaign)) and not lacrado
 	var y_faixa := altura
 	if com_faixa:
 		altura += 13.0 + 2.0
@@ -892,7 +915,9 @@ func mostrar_cartao(id: String) -> void:
 		r.size.y = 9.0 * float(l.n)
 		yy += 9.0 * float(l.n) + 3.0
 	# Preço (ou APRENDIDO) com o ícone do Legado.
-	if estado == "owned":
+	if lacrado:
+		pass
+	elif estado == "owned":
 		UiTema.rotulo(c, UiTema.txt("tree_owned", "APRENDIDO"), UiTema.GR3, 7, y_preco - 1.0)
 	else:
 		UiTema.textura_rect(c, "icon_legacy", 7, y_preco)

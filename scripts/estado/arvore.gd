@@ -83,7 +83,7 @@ func estado_no(id: String) -> String:
 	var e := estado_mapa(id)
 	if e == "" or e == "owned":
 		return e
-	if e == "hidden":
+	if e == "hidden" or e == "sealed":  # "sealed" (nó do GATO PRETO sem a lenda) é só do mapa: na aba antiga fica trancado
 		return "locked"
 	return "buyable" if legado_disponivel() >= int(gs.lutas.no_da_arvore(id).cost) else "missing"
 
@@ -97,6 +97,13 @@ func estado_mapa(id: String) -> String:
 	if tem_no(id):
 		return "owned"
 	if not trava_aberta(str(n.lock)):
+		# Ronda: nó do GATO PRETO ao alcance mas sem a lenda no nível aparece LACRADO (silhueta, sem preço). Só para `black_cat:N`.
+		if str(n.lock).begins_with("black_cat:") and trava_aberta(str(gs.lutas.regiao(n.region).get("lock", ""))):
+			if n.root:
+				return "sealed"
+			for v in n.neighbors:
+				if tem_no(str(v)):
+					return "sealed"
 		return "hidden"
 	if n.root:
 		return "visible"
@@ -114,6 +121,8 @@ func trava_aberta(trava: String) -> bool:
 		return not gs.permanente.get("arts_unlocked", []).is_empty()
 	if trava == "center":  # 8a2: aberta na 1ª mudança da linhagem para o centro
 		return bool(gs.permanente.get("center_reached", false))
+	if trava.begins_with("black_cat:"):  # Ronda: nível da lenda do Gato Preto >= N
+		return gs._ronda.nivel_lenda() >= int(trava.substr(10))
 	if trava.begins_with("art:"):
 		return trava.substr(4) in gs.permanente.get("arts_unlocked", [])
 	return false
@@ -252,6 +261,8 @@ func arvore_mapa() -> Array:
 		item["missing"] = maxi(0, int(n.cost) - legado_disponivel()) if estado == "visible" else 0
 		item["active"] = n.id in gs.nos_ativos_ids
 		item["next_campaign"] = estado == "owned" and not (n.id in gs.nos_ativos_ids)  # etiqueta VALE NA PRÓXIMA CAMPANHA
+		item["sealed_name"] = gs.texto_ui("node_sealed_name", "???") if estado == "sealed" else ""
+		item["sealed_text"] = gs.preencher(gs.texto_ui("node_sealed", "PRECISA DA LENDA NÍVEL {n}"), {"n": str(n.lock).substr(10)}) if estado == "sealed" else ""
 		item["needs_shout"] = n.effect_type == "crew_click_bonus" and not gs.crew_click_comprado
 		item["art_only_text"] = gs.preencher(gs.texto_ui("tree_style_art_only", "SÓ VALE JOGANDO DE {nome}"),
 			{"nome": str(gs.academia.arte(n.requires_art).get("name", "")).to_upper()}) if n.requires_art != "" else ""

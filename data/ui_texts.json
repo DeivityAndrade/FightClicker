@@ -759,5 +759,56 @@
 	"map_region_center": "CENTRO",
 	"sponsor_envelope": "PROPOSTA",
 	"sponsor_signed": "CONTRATO ASSINADO",
-	"sponsor_arrived": "CHEGOU UMA PROPOSTA PARA A RAÍZES"
+	"sponsor_arrived": "CHEGOU UMA PROPOSTA PARA A RAÍZES",
+
+	"hood_hover": "SAIR DE NOITE?",
+	"night_scare_name": "RONDA NOTURNA",
+	"night_scare_name_cat": "RONDA DO GATO PRETO",
+	"night_scare_tip": "SEGURE PARA ANDAR. SOLTE QUANDO ELE OLHAR. PERTO, CLIQUE!",
+	"ronda_occ_tire": "LADRÃO DE ESTEPE",
+	"ronda_occ_bike": "MOLEQUE NA BICICLETA",
+	"ronda_occ_gate": "SUJEITO NO PORTÃO",
+	"ronda_occ_count": "{n} DE 3",
+	"ronda_warn_mark": "?",
+	"ronda_warn_text": "SOLTE!",
+	"ronda_looking_text": "ELE OLHOU!",
+	"ronda_still_hint": "ESTÁTUA",
+	"scare_banner": "SUSTO!",
+	"seen_banner": "ESCAPOU!",
+	"near_hint": "PERTO!",
+	"ronda_reward_title": "RONDA FEITA",
+	"ronda_reward_legend": "+{n} LENDA",
+	"ronda_reward_clean": "RONDA LIMPA",
+	"ronda_reward_scares": "SUSTOS: {a} DE 3",
+	"ronda_reward_line": [
+		"A NOITE PASSOU EM SILÊNCIO. A LENDA ANOTOU.",
+		"UM LADRÃO ASSUSTADO. BOM COMEÇO.",
+		"DOIS LADRÕES ASSUSTADOS. O BAIRRO RONCA.",
+		"TRÊS SUSTOS. O BAIRRO DORME EM PAZ."
+	],
+	"ronda_left_line": "VOLTOU CEDO. O CAPUZ VOLTA PARA O PREGO.",
+	"ronda_dawn_line": "AMANHECEU. O RESTO FICA PARA OUTRA NOITE.",
+	"ronda_level_up": "A LENDA CRESCEU",
+	"ronda_level_up_line": [
+		"O JORNAL BATIZOU O VULTO.",
+		"O BAIRRO JÁ CONTA A HISTÓRIA.",
+		"TEM FAIXA NA RUA. NINGUÉM ASSUME.",
+		"CRIANÇA DE ORELHINHA NA JANELA.",
+		"O BAIRRO INTEIRO TEM O GATO NA PAREDE."
+	],
+	"ronda_count": "OCORRÊNCIAS: {n}",
+	"ronda_level_label": "NÍVEL {n}",
+	"legend_label": "LENDA",
+	"ronda_banner_text": "VALEU, GATO PRETO",
+
+	"black_cat_clipping_1": "É O GATO PRETO! VULTO DA BORRACHARIA GANHA NOME",
+	"black_cat_clipping_2": "GATO PRETO ASSUSTA LADRÕES DE ESTEPE, BICICLETA E PORTÃO",
+	"black_cat_clipping_3": "GATO PRETO SALTA MURO DE 3 METROS. TESTEMUNHA JURA: 8",
+	"black_cat_clipping_4": "LADRÕES EVITAM O BAIRRO. ESTEPES VOLTAM SOZINHOS",
+	"black_cat_clipping_5": "GATO PRETO PARA ÔNIBUS COM UMA MÃO. MOTORISTA AGRADECE",
+
+	"region_black_cat": "GATO PRETO",
+	"map_region_black_cat": "GATO PRETO",
+	"node_sealed": "PRECISA DA LENDA NÍVEL {n}",
+	"node_sealed_name": "???"
 }

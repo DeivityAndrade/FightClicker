@@ -12,11 +12,14 @@ const CAMINHO_LOJA := "res://data/shop.json"
 const CAMINHO_CARREIRA := "res://data/career.json"
 const CAMINHO_ARVORE := "res://data/skill_tree.json"
 const CAMINHO_CENTRO := "res://data/center.json"  # 8a2: região CENTRO e nós da árvore
+const CAMINHO_RONDA := "res://data/ronda.json"  # Ronda: região GATO PRETO e nós da árvore
 
 # Tipos de efeito da árvore (Fase 4). Tipo desconhecido: nó ignorado.
 const TIPOS_EFEITO := ["click_bonus", "passive_bonus", "money_bonus", "fame_bonus", "defeat_share_bonus", "metronome_start", "preview_percent", "art_rule_bonus",
 		# Fase 5.4
-		"rope_installed", "start_generator", "prep_days_bonus", "crew_click_bonus", "gym_training_bonus", "art_fight_bonus", "legacy_bonus"]
+		"rope_installed", "start_generator", "prep_days_bonus", "crew_click_bonus", "gym_training_bonus", "art_fight_bonus", "legacy_bonus",
+			# Ronda Noturna: dias de preparo só nas lutas da liga regional
+			"league_prep_days_bonus"]
 # Intervalo mínimo do Metrônomo (garante <= 1,5 soco/s mesmo com dado errado) e máximo.
 const METRONOMO_INTERVALO_MIN := 0.3
 const METRONOMO_INTERVALO_MAX := 60.0
@@ -84,7 +87,7 @@ var crew_click: Dictionary = {}  # Fase 5.2: {id, cost, crew_share, icon, name, 
 
 static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios: String = CAMINHO_ADVERSARIOS,
 		caminho_loja: String = CAMINHO_LOJA, caminho_carreira: String = CAMINHO_CARREIRA, caminho_arvore: String = CAMINHO_ARVORE,
-		caminho_liga: String = "auto", caminho_centro: String = "auto") -> FightData:
+		caminho_liga: String = "auto", caminho_centro: String = "auto", caminho_ronda: String = "auto") -> FightData:
 	var d := FightData.new()
 	d._ler_lutas(TrainingData._ler_json(caminho_lutas))
 	d._ler_adversarios(TrainingData._ler_json(caminho_adversarios))
@@ -98,7 +101,10 @@ static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios:
 	# 8a2: a região CENTRO e os 3 nós vêm de data/center.json (só com a árvore de sempre; arquivo ausente = árvore da 8a1).
 	if caminho_centro == "auto":
 		caminho_centro = CAMINHO_CENTRO if caminho_arvore == CAMINHO_ARVORE else ""
-	d._ler_arvore(_arvore_com_centro(TrainingData._ler_json(caminho_arvore), caminho_centro))
+	# Ronda: a região GATO PRETO e os 3 nós vêm de data/ronda.json (mesma regra; arquivo ausente = árvore da 8a2).
+	if caminho_ronda == "auto":
+		caminho_ronda = CAMINHO_RONDA if caminho_arvore == CAMINHO_ARVORE else ""
+	d._ler_arvore(_arvore_com_centro(_arvore_com_centro(TrainingData._ler_json(caminho_arvore), caminho_centro), caminho_ronda))
 	return d
 
 

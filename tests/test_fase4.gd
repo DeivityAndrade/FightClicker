@@ -64,7 +64,7 @@ func rodar_testes() -> void:
 
 func _teste_dados() -> void:
 	var d := FightData.carregar()
-	checar_igual(d.arvore.size(), 46, "46 nós no mapa (12 antigos + 27 novos + 4 do Muay Thai, 7b1 + 3 do CENTRO, 8a2)")
+	checar_igual(d.arvore.size(), 49, "49 nós no mapa (12 antigos + 27 novos + 4 do Muay Thai, 7b1 + 3 do CENTRO, 8a2 + 3 do GATO PRETO, Ronda)")
 	var total := 0
 	var ramos := {}
 	var barato_por_ramo := {}
