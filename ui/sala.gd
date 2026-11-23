@@ -31,6 +31,9 @@ signal clique_vazio
 ## Clique no mural da parede (Fase 6c2): o Fluxo abre a janela do mural.
 signal mural_clicado
 
+## 8a2: clique no envelope PROPOSTA no chão: o Fluxo abre a janela do contrato.
+signal envelope_clicado
+
 ## 7a2: clique no Osmar com o balão do convite aberto (o Garagem decide se vai).
 signal osmar_convite
 
@@ -108,6 +111,13 @@ var _recorte_zoom: TextureRect  # dica de zoom: o recorte grande, só com o mous
 var _cartaz: AnimSprite  # 8a1: cartaz da Liga Regional do Vale (academia, depois de abrir a liga)
 var _cartaz_rect := Rect2()
 var _cartaz_zoom: TextureRect
+var _clipvale: AnimSprite  # 8a2: o recorte do Vale emoldurado (parede do centro)
+var _clipvale_rect := Rect2()
+var _clipvale_zoom: TextureRect
+var _envelope: AnimSprite  # 8a2: envelope PROPOSTA no chão (garagem, academia e centro) enquanto o patrocínio está "offered"
+var _envelope_rect := Rect2()
+var _prox_brilho_envelope := 3.0
+var _patro_anterior := ""
 
 # 6d2: aparelho que não foi comprado é invisível (sem fita, silhueta nem cadeado): comprou = só a caixa; abriu = o aparelho.
 var _caixas: Dictionary = {}  # item -> CaixaSala
@@ -184,6 +194,8 @@ func _ready() -> void:
 	GameState.economia_mudou.connect(func() -> void:
 		_sincronizar_caixas())
 	GameState.local_mudou.connect(_ao_local)
+	_patro_anterior = GameState.patrocinio_estado
+	GameState.patrocinio_mudou.connect(_ao_patrocinio)  # 8a2: envelope, cartaz com a marca, aviso da proposta
 	GameState.arte_mudou.connect(_ao_arte)
 	GameState.gesto_pedido.connect(_ao_gesto_pedido)
 	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
@@ -428,7 +440,7 @@ func _aplicar_local() -> void:
 		_bg.texture = UiTema.textura(nome)
 		_bg.position = UiTema.pos(nome)
 	var tubos := str(info.get("light", "lamp")) == "gym_tube"
-	_lampada.visible = not tubos
+	_lampada.visible = not tubos and not bool(info.get("no_lamp", false))  # 8a2: no centro o fundo já tem os painéis de LED (sem lâmpada)
 	for t in _tubos:
 		t.visible = tubos
 	_atualizar_osmar()
@@ -448,7 +460,7 @@ func _aplicar_arte(id: String, foco: String) -> void:
 		return
 	var n := GameState.nivel_visual(id)
 	if foco == id:
-		var nome := "%s_l%d_idle" % [base, n]
+		var nome := _n("%s_l%d_idle" % [base, n])  # 8a2: o centro tem a versão _center também no foco
 		a.definir(nome)
 		a.position = UiTema.pos(nome, "centro")
 		a.z_index = int(UiTema.sprite(nome).get("sort_y", a.position.y))
@@ -532,6 +544,12 @@ func _clique_em(p: Vector2) -> void:
 	if ALVO.has_point(p):
 		_pos_clique = p
 		GameState.clicar()
+		return
+	# 8a2: o envelope PROPOSTA no chão abre o contrato (qualquer hora com a sala livre; fechar a janela não tira o envelope).
+	if _envelope != null and _envelope.visible and _envelope_rect.has_point(p):
+		if caixa_liberada():
+			sfx.foco()
+			envelope_clicado.emit()
 		return
 	# 6c2: o mural da parede abre a janela do mural (qualquer hora com a sala livre).
 	if _mural != null and _mural.visible and _mural_rect.has_point(p):
@@ -807,7 +825,7 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			var np_ := GameState.nivel_visual(PERA)
 			_lutador.definir(_f("fighter_punch"))
 			_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
-			_pera.definir("speed_bag_l%d_hit" % np_)
+			_pera.definir(_n("speed_bag_l%d_hit" % np_))
 			_pera.tocar([0, 1, 2, 3, 4], 18.0, false, _pera_repouso)
 			_impacto(_ponto_impacto(_pera.nome_sprite, "speed_bag", Vector2(325, 218)), critico)
 		SACO_CHUTE:
@@ -822,7 +840,7 @@ func _reagir(aparelho: String, critico: bool) -> void:
 				_lutador.definir(chute)
 				_lutador.tocar([0, 1, 2, 3, 4, 5], 18.0, false, _pose_repouso)
 			var nk := GameState.nivel_visual(SACO_CHUTE)
-			_chute.definir("kick_bag_l%d_hit" % nk)
+			_chute.definir(_n("kick_bag_l%d_hit" % nk))
 			_chute.tocar([0, 1, 2, 3], 12.0, false, _chute_repouso)
 			var hc: Array = UiTema.sprite(chute).get("hit_point", [326, 250])
 			_impacto(Vector2(float(hc[0]), float(hc[1])), critico)
@@ -831,7 +849,7 @@ func _reagir(aparelho: String, critico: bool) -> void:
 			var nd_ := GameState.nivel_visual(BONECO)
 			_lutador.definir(_f("fighter_punch"))
 			_lutador.tocar([1, 2, 3], 18.0, false, _pose_repouso)
-			_boneco.definir("grappling_dummy_l%d_hit" % nd_)
+			_boneco.definir(_n("grappling_dummy_l%d_hit" % nd_))
 			_boneco.tocar([0, 1, 2], 12.0, false, _boneco_repouso)
 			_impacto(_ponto_impacto(_boneco.nome_sprite, "grappling_dummy", Vector2(330, 232)), critico)
 		CORDA:
@@ -1032,17 +1050,17 @@ func _saco_repouso() -> void:
 
 
 func _pera_repouso() -> void:
-	_pera.definir("speed_bag_l%d_idle" % GameState.nivel_visual(PERA))
+	_pera.definir(_n("speed_bag_l%d_idle" % GameState.nivel_visual(PERA)))
 	_pera.tocar([0, 1], 2.0, true)
 
 
 func _chute_repouso() -> void:
-	_chute.definir("kick_bag_l%d_idle" % GameState.nivel_visual(SACO_CHUTE))
+	_chute.definir(_n("kick_bag_l%d_idle" % GameState.nivel_visual(SACO_CHUTE)))
 	_chute.tocar([0, 1, 2, 3], 3.0, true)
 
 
 func _boneco_repouso() -> void:
-	_boneco.definir("grappling_dummy_l%d_idle" % GameState.nivel_visual(BONECO))
+	_boneco.definir(_n("grappling_dummy_l%d_idle" % GameState.nivel_visual(BONECO)))
 	_boneco.parar(0)
 
 
@@ -1148,6 +1166,8 @@ func _ids_geradores() -> Array:
 		ids.append(g.id)
 	for g in GameState.lutas.geradores_pagos:
 		ids.append(g.id)
+	for g in GameState.centro.geradores:  # 8a2: Alunos da Raízes (só desenhados no centro: pessoas_desenhadas() fora dele é 0)
+		ids.append(g.id)
 	return ids
 
 
@@ -1163,6 +1183,8 @@ func _ao_carreira() -> void:
 
 ## Luz da sala: lâmpada da garagem (crítico: balança; de vez em quando pisca) ou tubo da direita da academia (falha).
 func _piscar_luz(forte: bool) -> void:
+	if GameState.local_id == "center":
+		return  # 8a2: o centro não tem lâmpada nem tubo (a falha do LED é opcional e não foi feita)
 	if GameState.local_id != "gym" or _tubos.is_empty():
 		if not _lampada.esta_tocando():
 			_lampada.tocar([1, 0, 1, 0] if forte else [2, 0], 10.0 if forte else 12.0)
@@ -1184,6 +1206,9 @@ func _ao_local(local: String) -> void:
 		return
 	_aplicar_layout()
 	_atualizar_pessoas(false)
+	if antes == "gym" and local == "center" and GameState.cena_sala == "":  # 8a2: o centro não tem cena: corte seco, poeira e o letreiro
+		_festa_academia("move_arrived_center", "BEM-VINDO AO CENTRO RAÍZES!")
+		return
 	if antes != "gym" and local == "gym" and GameState.cena_sala == "":  # 6c1: a cena da 1ª chegada já é a festa da academia
 		_chegada_pendente = true
 		if not GameState.escolha_arte_pendente():
@@ -1198,7 +1223,7 @@ func _ao_arte(arte: String) -> void:
 		_festa_academia()
 
 
-func _festa_academia() -> void:
+func _festa_academia(chave_texto: String = "move_arrived", padrao: String = "BEM-VINDO À BOA ESQUINA!") -> void:
 	_chegada_pendente = false
 	_mundo.modulate = Color(2.4, 2.4, 2.4)
 	_mundo.create_tween().tween_property(_mundo, "modulate", Color.WHITE, 0.4)
@@ -1208,7 +1233,7 @@ func _festa_academia() -> void:
 	var n := _pegar_numero()
 	_ordem += 1
 	n.definir_z(Z_NUMEROS + 1000 + _ordem % 900)
-	n.iniciar(UiTema.txt("move_arrived", "BEM-VINDO À BOA ESQUINA!"), UiTema.Y1, true, "", Vector2(336, 140), 2.0, 12.0)
+	n.iniciar(UiTema.txt(chave_texto, padrao), UiTema.Y1, true, "", Vector2(336, 140), 2.0, 12.0)
 
 
 # --- Fase 5.1: dicas de hover e a caixa da escola ---
@@ -1222,6 +1247,8 @@ func _hover_em(p: Vector2) -> void:
 		tip = _texto_bolsa()
 	elif cx != "":
 		tip = _texto_caixa(cx)
+	elif _envelope != null and _envelope.visible and _envelope_rect.has_point(p):
+		tip = str(GameState.patrocinio().get("envelope", "PROPOSTA"))  # 8a2
 	elif _mentor2_visivel and _cam_escala == 1 and _area_mentor2().has_point(p):
 		tip = UiTema.txt("disc_mentor2_hint", "{nome}: já passou o posto.", {"nome": _mentor2_nome})
 		sobre_mentor2 = true
@@ -1230,6 +1257,7 @@ func _hover_em(p: Vector2) -> void:
 	_ancorar_dica_mentor2(sobre_mentor2)
 	_zoom_recorte(_recorte != null and _recorte.visible and _recorte_rect.has_point(p) and cx == "")
 	_zoom_cartaz(_cartaz != null and _cartaz.visible and _cartaz_rect.has_point(p) and cx == "")
+	_zoom_clipvale(_clipvale != null and _clipvale.visible and _clipvale_rect.has_point(p) and cx == "")
 	if tip != "":
 		Dica.pedir(tip)
 	else:
@@ -1251,6 +1279,7 @@ func _ancorar_dica_mentor2(sobre: bool) -> void:
 func _sair_hover() -> void:
 	_zoom_recorte(false)
 	_zoom_cartaz(false)
+	_zoom_clipvale(false)
 	_ancorar_dica_mentor2(false)
 	Dica.limpar()
 
@@ -1759,6 +1788,15 @@ func _montar_parede() -> void:
 	_cartaz.visible = false
 	_cartaz.z_index = -45 + ordem.find("photo_old")
 	_mundo.add_child(_cartaz)
+	# 8a2: recorte do Vale emoldurado (centro) e o envelope PROPOSTA (camada do chão, abaixo de quem passa).
+	_clipvale = AnimSprite.new()
+	_clipvale.visible = false
+	_clipvale.z_index = -45 + ordem.find("photo_old")
+	_mundo.add_child(_clipvale)
+	_envelope = AnimSprite.new()
+	_envelope.visible = false
+	_envelope.z_index = -10
+	_mundo.add_child(_envelope)
 	_atualizar_parede()
 
 
@@ -1773,8 +1811,8 @@ func _atualizar_mural() -> void:
 		_mural_rect = Rect2()
 		_mural_chave = ""
 		return
-	var gym := str(m.get("spot_name", "")) == "gym_mural_spot"
-	var nome := "wall_mural_gym" if gym else "wall_mural"
+	var gym := str(m.get("spot_name", "")) != "mural_spot"  # 8a2: academia e centro usam o mural largo (wall_mural_gym / wall_mural_center)
+	var nome := UiTema.com_local("wall_mural") if gym else "wall_mural"
 	var info: Dictionary = UiTema.manifest().get("layout", {}).get("gym_mural_spot_info" if gym else "mural_spot_info", {})
 	var minimos: Array = info.get("frame_by_roster", {}).get("min_entries", [1, 2, 4, 8])
 	var n := GameState.escola_lista().size()
@@ -1800,7 +1838,7 @@ func _atualizar_recorte() -> void:
 		return
 	var r: Dictionary = GameState.recorte_gato_preto() if not ("wall_objects" in _cena_oculta) else {}
 	var spot: Array = r.get("spot", [])
-	var nome := "wall_clipping_black_cat_gym" if GameState.local_id == "gym" else "wall_clipping_black_cat"
+	var nome := UiTema.com_local("wall_clipping_black_cat")  # garagem, academia (_gym) ou centro (_center)
 	if r.is_empty() or spot.size() != 2 or UiTema.sprite(nome).is_empty():
 		_recorte.visible = false
 		_recorte_rect = Rect2()
@@ -1832,36 +1870,59 @@ func _zoom_recorte(sobre: bool) -> void:
 
 
 ## 8a1: o cartaz da liga regional na academia, a partir do marco `regional_league_opened` (a fala do Osmar abre junto).
+## 8a2: a partir do 1º Cinturão do Vale da linhagem (recorte_do_vale() não vazio) o cartaz troca para a versão VENCIDA (42x58: adesivo do R,
+## recorte preso com fita); o quadro 1 traz a marca do patrocinador (contrato assinado).
 func _atualizar_cartaz() -> void:
 	if _cartaz == null:
 		return
 	var info: Dictionary = UiTema.manifest().get("layout", {}).get("gym_league_poster_spot_info", {})
 	var spot: Array = UiTema.manifest().get("layout", {}).get("gym_league_poster_spot", [])
-	var nome := str(info.get("sprite", "wall_poster_league_regional_gym"))
-	var ver := GameState.local_id == "gym" and GameState.marco(str(info.get("requires_milestone", "regional_league_opened"))) 		and not ("wall_objects" in _cena_oculta) and spot.size() == 2 and not UiTema.sprite(nome).is_empty()
+	var vale: Dictionary = GameState.recorte_do_vale()
+	var vencido := not vale.is_empty() and not UiTema.sprite(str(info.get("sprite_won", ""))).is_empty()
+	var nome := str(info.get("sprite_won", "")) if vencido else str(info.get("sprite", "wall_poster_league_regional_gym"))
+	var ver := GameState.local_id == "gym" and (vencido or GameState.marco(str(info.get("requires_milestone", "regional_league_opened")))) 		and not ("wall_objects" in _cena_oculta) and spot.size() == 2 and not UiTema.sprite(nome).is_empty()
 	_cartaz.visible = ver
 	if not ver:
 		_cartaz_rect = Rect2()
 		return
 	_cartaz.definir(nome)
 	_cartaz.position = Vector2(float(spot[0]), float(spot[1]))
-	_cartaz.parar(0)
-	var cr: Array = info.get("click_rect", [spot[0], spot[1], 38, 54])
-	_cartaz_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
+	_cartaz.parar(1 if vencido and str(vale.get("brand", "")) != "" else 0)
+	_cartaz_rect = Rect2(_cartaz.position, UiTema.tamanho_quadro(nome))
+
+
+## Um quadro de uma folha como textura (o TextureRect de folha mostraria os quadros lado a lado).
+func _textura_quadro(nome: String, quadro: int) -> Texture2D:
+	var a := AtlasTexture.new()
+	a.atlas = UiTema.textura(nome)
+	var q := UiTema.tamanho_quadro(nome)
+	a.region = Rect2(q.x * quadro, 0, q.x, q.y)
+	return a
 
 
 ## Dica de zoom do cartaz: a imagem grande ao lado dele, só com o mouse em cima (nunca cobre a zona do alvo: y máximo 178).
 func _zoom_cartaz(sobre: bool) -> void:
-	var nome := str(UiTema.manifest().get("layout", {}).get("gym_league_poster_spot_info", {}).get("zoom", "ui_poster_league_regional_zoom"))
+	var info: Dictionary = UiTema.manifest().get("layout", {}).get("gym_league_poster_spot_info", {})
+	var vale: Dictionary = GameState.recorte_do_vale()
+	var nome := str(info.get("zoom", "ui_poster_league_regional_zoom"))
+	var quadro := 0
+	if not vale.is_empty() and not UiTema.sprite("ui_poster_league_regional_won_zoom").is_empty():
+		nome = "ui_poster_league_regional_won_zoom"
+		quadro = 1 if str(vale.get("brand", "")) != "" else 0
 	if not sobre or _cartaz_rect.size == Vector2.ZERO or UiTema.sprite(nome).is_empty():
 		if _cartaz_zoom != null:
 			_cartaz_zoom.visible = false
 		return
 	if _cartaz_zoom == null:
-		_cartaz_zoom = UiTema.textura_rect(self, nome, 0, 0)
+		_cartaz_zoom = TextureRect.new()
+		_cartaz_zoom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_cartaz_zoom.stretch_mode = TextureRect.STRETCH_KEEP
 		_cartaz_zoom.z_index = 3000
+		add_child(_cartaz_zoom)
 		UiTema.alinhar(_cartaz_zoom, "ignore")
 	var q := UiTema.tamanho_quadro(nome)
+	_cartaz_zoom.texture = _textura_quadro(nome, quadro)
+	_cartaz_zoom.size = q
 	var x := _cartaz_rect.end.x + 6.0
 	var y := clampf(_cartaz_rect.position.y - 8.0, 22.0, 178.0 - q.y)
 	if x + q.x > 500.0:
@@ -1870,8 +1931,90 @@ func _zoom_cartaz(sobre: bool) -> void:
 	_cartaz_zoom.visible = true
 
 
+## 8a2: o recorte do jornal do Vale emoldurado na parede do centro (D10), no ponto center_clipping_spot; só depois do 1º Cinturão do Vale.
+func _atualizar_clipvale() -> void:
+	if _clipvale == null:
+		return
+	var info: Dictionary = UiTema.manifest().get("layout", {}).get("center_clipping_spot_info", {})
+	var spot: Array = UiTema.manifest().get("layout", {}).get("center_clipping_spot", [])
+	var nome := str(info.get("sprite", "wall_clipping_regional_framed"))
+	var ver := GameState.local_id == "center" and not GameState.recorte_do_vale().is_empty() and not ("wall_objects" in _cena_oculta) 		and spot.size() == 2 and not UiTema.sprite(nome).is_empty()
+	_clipvale.visible = ver
+	if not ver:
+		_clipvale_rect = Rect2()
+		return
+	_clipvale.definir(nome)
+	_clipvale.position = Vector2(float(spot[0]), float(spot[1]))
+	_clipvale.parar(0)
+	_clipvale_rect = Rect2(_clipvale.position, UiTema.tamanho_quadro(nome))
+
+
+## Zoom do recorte do Vale (ui_clipping_regional_zoom, 124x92) ao lado dele, só com o mouse em cima.
+func _zoom_clipvale(sobre: bool) -> void:
+	var nome := "ui_clipping_regional_zoom"
+	if not sobre or _clipvale_rect.size == Vector2.ZERO or UiTema.sprite(nome).is_empty():
+		if _clipvale_zoom != null:
+			_clipvale_zoom.visible = false
+		return
+	if _clipvale_zoom == null:
+		_clipvale_zoom = TextureRect.new()
+		_clipvale_zoom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_clipvale_zoom.stretch_mode = TextureRect.STRETCH_KEEP
+		_clipvale_zoom.texture = UiTema.textura(nome)
+		_clipvale_zoom.size = UiTema.tamanho_quadro(nome)
+		_clipvale_zoom.z_index = 3000
+		add_child(_clipvale_zoom)
+		UiTema.alinhar(_clipvale_zoom, "ignore")
+	var q := UiTema.tamanho_quadro(nome)
+	var x := _clipvale_rect.end.x + 6.0
+	var y := clampf(_clipvale_rect.position.y - 8.0, 22.0, 178.0 - q.y)
+	if x + q.x > 500.0:
+		x = _clipvale_rect.position.x - 6.0 - q.x
+	_clipvale_zoom.position = Vector2(x, y) - position
+	_clipvale_zoom.visible = true
+
+
+## 8a2: o patrocínio mudou. Quando a proposta chega (de "" para "offered", jogando) sai um aviso curto sobre o alvo, 1 vez, sem travar o
+## treino, e o envelope já nasce brilhando.
+func _ao_patrocinio(estado: String) -> void:
+	var chegou := estado == "offered" and _patro_anterior != "offered"
+	_patro_anterior = estado
+	_atualizar_parede()
+	if not chegou or not _montado or _envelope == null or not _envelope.visible:
+		return
+	_prox_brilho_envelope = 6.0
+	_envelope.tocar([0, 1, 2, 1, 0, 1, 2, 1, 0, 0], 6.0, false, func() -> void: _envelope.parar(0))
+	var n := _pegar_numero()
+	_ordem += 1
+	n.definir_z(Z_NUMEROS + 1000 + _ordem % 900)
+	n.iniciar(UiTema.txt("sponsor_arrived", "CHEGOU UMA PROPOSTA PARA A RAÍZES"), UiTema.Y1, true, "", Vector2(336, 120), 2.5, 12.0)
+	sfx.compra()
+
+
+## 8a2: o envelope PROPOSTA no chão (mesmo ponto nos 3 locais) enquanto o patrocínio está "offered" (a oferta não some ao fechar a janela).
+func _atualizar_envelope() -> void:
+	if _envelope == null:
+		return
+	var info: Dictionary = UiTema.manifest().get("layout", {}).get("sponsor_envelope_spot_info", {})
+	var spot: Array = UiTema.manifest().get("layout", {}).get("sponsor_envelope_spot", [])
+	var nome := str(info.get("sprite", "sponsor_envelope"))
+	var ver := GameState.patrocinio_estado == "offered" and not _cena_ativa and spot.size() == 2 and not UiTema.sprite(nome).is_empty()
+	_envelope.visible = ver
+	if not ver:
+		_envelope_rect = Rect2()
+		return
+	if _envelope.nome_sprite != nome:
+		_envelope.definir(nome)
+		_envelope.parar(0)
+	_envelope.position = Vector2(float(spot[0]), float(spot[1]))
+	var cr: Array = info.get("click_rect", [spot[0] - 10, spot[1] - 13, 20, 15])
+	_envelope_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
+
+
 func _atualizar_parede() -> void:
 	_atualizar_cartaz()
+	_atualizar_clipvale()
+	_atualizar_envelope()
 	_atualizar_mural()
 	_atualizar_recorte()
 	if _parede.is_empty():
@@ -1889,7 +2032,7 @@ func _atualizar_parede() -> void:
 			if not foto.is_empty():
 				var fp: Array = foto.spot
 				s.position = Vector2(float(fp[0]), float(fp[1]))
-				s.parar(1 if bool(foto.get("tilted", true)) else 0)
+				s.parar(1 if (bool(foto.get("tilted", true)) or GameState.local_id == "center") else 0)  # 8a2: no centro ela está sempre torta, de propósito
 			continue
 		match k:
 			"notice_debt":
@@ -1907,8 +2050,22 @@ func _atualizar_parede() -> void:
 func _texto_parede(p: Vector2) -> String:
 	if _cartaz != null and _cartaz.visible and _cartaz_rect.has_point(p):
 		var dc: DialogosData = GameState.dialogos
+		var vale: Dictionary = GameState.recorte_do_vale()
+		if not vale.is_empty():  # 8a2: cartaz vencido: título, "RAÍZES LEVA O CINTURÃO DO VALE COM {NOME}" e, assinado, "APOIO: {MARCA}"
+			var linhas := "%s
+%s" % [str(vale.poster.title), str(vale.poster.text)]
+			if str(vale.poster.sponsor_line) != "":
+				linhas += "
+" + str(vale.poster.sponsor_line)
+			return linhas
 		return "%s
 %s" % [dc.texto_objeto("regional_poster", "title"), dc.texto_objeto("regional_poster")]
+	if _clipvale != null and _clipvale.visible and _clipvale_rect.has_point(p):
+		var rv: Dictionary = GameState.recorte_do_vale()
+		if not rv.is_empty():
+			return "%s
+%s
+%s" % [str(rv.clipping.title), str(rv.clipping.text), str(rv.clipping.footer)]
 	if _recorte != null and _recorte.visible and _recorte_rect.has_point(p):
 		return GameState.texto_ui(str(GameState.recorte_gato_preto().get("object_text", "black_cat_clipping")), "")
 	if _mural != null and _mural.visible and _mural_rect.has_point(p):
@@ -1973,6 +2130,14 @@ func _process(delta: float) -> void:
 		_corrida -= delta
 		if _corrida <= 0.0 and GameState.foco == ESTEIRA:
 			_pose_repouso()
+
+	# 8a2: o envelope brilha de vez em quando (chama atenção sem pedir nada).
+	if _envelope != null and _envelope.visible:
+		_prox_brilho_envelope -= delta
+		if _prox_brilho_envelope <= 0.0:
+			_prox_brilho_envelope = _rng.randf_range(4.0, 7.0)
+			if not _envelope.esta_tocando():
+				_envelope.tocar([0, 0, 0, 1, 2, 1], 4.0, false, func() -> void: _envelope.parar(0))
 
 	# Lâmpada pisca de vez em quando.
 	_proxima_piscada -= delta
@@ -2391,6 +2556,9 @@ func _atualizar_mentor() -> void:
 		_caixote.visible = caixote
 	if caixote and _caixote.texture != UiTema.textura(tex_caixote):
 		_caixote.texture = UiTema.textura(tex_caixote)
+	if caixote and UiTema.sprite(tex_caixote).has("pos"):  # 8a2: o caixote vai para o ponto do local (garagem 216,250; academia e centro 116,234)
+		_caixote.position = UiTema.pos(tex_caixote)
+		_caixote.z_index = int(UiTema.sprite(tex_caixote).get("sort_y", 250))
 	var deve := not seat.is_empty()
 	var chave := ""
 	if deve:

@@ -105,7 +105,10 @@ func _ready() -> void:
 	UiTema.rotulo(_aba_treino, str(ui.get("panel_team", "EQUIPE")).to_upper(), UiTema.COL_TEXT_1, 8, 0)  # txt_title
 	_divisor(_aba_treino, 9, UiTema.G0)
 	var y := 12.0
-	for g in GameState.dados.geradores:
+	# 8a2: os geradores do centro (Alunos da Raízes) têm cartão próprio; só aparecem no local deles (_reposicionar_treino).
+	var todos_geradores: Array = GameState.dados.geradores.duplicate()
+	todos_geradores.append_array(GameState.centro.geradores)
+	for g in todos_geradores:
 		_gens[g.id] = _montar_gerador(g, y)
 		y += PASSO
 	_rot_melhorias = UiTema.rotulo(_aba_treino, str(ui.get("panel_upgrades", "MELHORIAS")).to_upper(), UiTema.COL_TEXT_1, 8, y)
@@ -356,7 +359,7 @@ func contagem_compraveis() -> Array:
 	var d := 0
 	if not GameState.acoes_bloqueadas():
 		for it in _gens.values():
-			t += 1 if bool(it.pode) else 0
+			t += 1 if it.cartao.visible and bool(it.pode) else 0
 		for id in _ups:
 			t += 1 if _ups[id].cartao.visible and bool(_ups[id].pode) else 0
 		for id in _unl:
@@ -704,6 +707,14 @@ func _emitir(info: Dictionary) -> void:
 	Dica.pedir_linhas(linhas, alvo)
 
 
+## Definição do gerador (os de sempre ou, no centro, os Alunos da Raízes).
+func _def_gerador(id: String) -> Dictionary:
+	for g in GameState.geradores_do_local():
+		if str(g.id) == id:
+			return g
+	return GameState.dados.gerador(id)
+
+
 func _emitir_info() -> void:
 	if _hover == "":
 		_emitir({})
@@ -746,7 +757,7 @@ func _emitir_info() -> void:
 		_emitir({"titulo": gp.get("name", id), "texto": gp.get("description", ""),
 			"extra": GameState.texto_efeito_loja(gp)})
 	elif _hover.begins_with("g:"):
-		var g: Dictionary = GameState.dados.gerador(id)
+		var g: Dictionary = _def_gerador(id)
 		_emitir({"titulo": g.get("name", id), "texto": g.get("description", ""),
 			"extra": "+%s/S CADA" % NumberFormat.fmt(float(g.get("production", 0.0)))})
 	elif _hover.begins_with("a:") or not GameState.aparelho_montado(id):
@@ -763,7 +774,7 @@ func _emitir_info() -> void:
 		if m.is_empty():
 			var ap: Dictionary = GameState.dados.aparelho(id)
 			# No máximo, mostra o aparelho do nível atual (última melhoria), não o do nível 0.
-			var ups: Array = ap.get("upgrades", [])
+			var ups: Array = GameState.melhorias_do_aparelho(id)
 			var atual: Dictionary = ups[ups.size() - 1] if not ups.is_empty() else {}
 			_emitir({"titulo": atual.get("name", ap.get("name", id)), "texto": "", "extra": str(GameState.dados.ui.get("maxed", "MÁXIMO"))})
 		else:
@@ -787,7 +798,7 @@ func _piscar(item: Dictionary, forte: bool = true) -> void:
 
 func atualizar() -> void:
 	var bloqueado := GameState.acoes_bloqueadas()
-	for g in GameState.dados.geradores:
+	for g in GameState.geradores_do_local():
 		var item: Dictionary = _gens[g.id]
 		item.qtd.text = "X%d" % GameState.quantidade_gerador(g.id)
 		item.prod.text = "+%s/S CADA" % NumberFormat.fmt(float(g.production) * (1.0 + GameState.bonus_ativos().passive_bonus))
@@ -809,17 +820,18 @@ func atualizar() -> void:
 		if not montado:
 			continue  # as melhorias dele só aparecem depois da compra
 		var m: Dictionary = GameState.proxima_melhoria(ap.id)
-		var total: int = ap.upgrades.size()
+		var lista_ups: Array = GameState.melhorias_do_aparelho(ap.id)  # 8a2: 4 de sempre; no centro, 5
+		var total: int = lista_ups.size()
 		var nivel := GameState.nivel_melhoria(ap.id)
-		var tecnica: Dictionary = m if not m.is_empty() else ap.upgrades[total - 1]
+		var tecnica: Dictionary = m if not m.is_empty() else lista_ups[total - 1]
 		if item.tecnica != null:
-			item.tecnica.text = str(tecnica.get("name", "")).to_upper()
+			item.tecnica.text = _nome_que_cabe(str(tecnica.get("name", "")).to_upper(), 92.0)
 			var icone_tecnica: Dictionary = UiTema.manifest().get("by_data_id", {}).get(str(tecnica.get("id", "")), {})
 			if not icone_tecnica.is_empty() and not UiTema.sprite(str(icone_tecnica.get("icon", ""))).is_empty():
 				item.icone_ap.texture = UiTema.textura(str(icone_tecnica.icon))
 		if m.is_empty():
 			item.nivel.text = "%d/%d" % [nivel, total]
-			var efeito := {"id": ap.upgrades[total - 1].id, "multiplier": GameState.multiplicador_aparelho(ap.id)}
+			var efeito := {"id": lista_ups[total - 1].id, "multiplier": GameState.multiplicador_aparelho(ap.id)}
 			item.efeito.text = _efeito_curto(item, GameState.texto_efeito_melhoria(efeito).to_upper())
 			_maximo(item)
 		else:
@@ -867,6 +879,23 @@ func _fechar_no_dia() -> void:
 	_janela_loja.modulate = cor
 	if dia and _aba == ABA_LOJA:
 		_trocar_aba(ABA_TREINO)
+
+
+## 8a2: nome de técnica que cabe na linha do cartão (92 px, sem quebrar): tira "DE/DA/DO" e, se ainda passar, corta com ponto.
+## O nome inteiro continua na dica de hover. (Os nomes da 5ª melhoria do centro são mais longos que os das 4 de sempre.)
+func _nome_que_cabe(nome: String, largura: float) -> String:
+	if UiTema.largura_visivel(nome) <= largura:
+		return nome
+	var palavras: Array = []
+	for p in nome.split(" ", false):
+		if not (p in ["DE", "DA", "DO", "DAS", "DOS"]):
+			palavras.append(p)
+	var curto := " ".join(palavras)
+	while UiTema.largura_visivel(curto) > largura and curto.length() > 3:
+		curto = curto.left(curto.length() - 1).strip_edges()
+		if UiTema.largura_visivel(curto + ".") <= largura:
+			return curto + "."
+	return curto
 
 
 ## Cartão de técnica da arte: a linha do efeito perde o "...: PERA" (113 px não cabem em 92; o nome do aparelho está no ícone e no hover).
@@ -967,7 +996,21 @@ func _texto_recolhido(id: String) -> String:
 
 ## Empilha os cartões da aba TREINO na ordem do jogo: equipe, depois um cartão por aparelho (inteiro ou recolhido).
 func _reposicionar_treino() -> void:
-	var y := _y_melhorias + 12.0
+	# 8a2: a equipe do local (no centro, o 5º cartão: Alunos da Raízes), depois o título MELHORIAS e os aparelhos.
+	var y := 12.0
+	var do_local := {}
+	for g in GameState.geradores_do_local():
+		do_local[g.id] = true
+	for id in _gens:
+		var cg: Control = _gens[id].cartao
+		cg.visible = do_local.has(id)
+		if cg.visible:
+			cg.position.y = y
+			y += PASSO
+	_rot_melhorias.position.y = y
+	_div_melhorias.position.y = y + 9.0
+	y += 12.0
+	_y_melhorias = y - 12.0
 	for ap in GameState.dados.todos_aparelhos():
 		var estado := GameState.estado_aparelho(ap.id)
 		var cartao: Control = null
@@ -985,7 +1028,9 @@ func _reposicionar_treino() -> void:
 ## O item comprável mais barato de cada aba ganha o contorno col_buyable (os outros, não).
 func _destacar_mais_barato() -> void:
 	var treino: Array = []
-	treino.append_array(_gens.values())
+	for it in _gens.values():
+		if it.cartao.visible:
+			treino.append(it)
 	for id in _ups:
 		if _ups[id].cartao.visible:
 			treino.append(_ups[id])

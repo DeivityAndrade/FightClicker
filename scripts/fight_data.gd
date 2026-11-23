@@ -11,6 +11,7 @@ const TIPOS_PASSIVA_JOGADOR := ["fast_hands", "submission", "shin", "counter_pun
 const CAMINHO_LOJA := "res://data/shop.json"
 const CAMINHO_CARREIRA := "res://data/career.json"
 const CAMINHO_ARVORE := "res://data/skill_tree.json"
+const CAMINHO_CENTRO := "res://data/center.json"  # 8a2: região CENTRO e nós da árvore
 
 # Tipos de efeito da árvore (Fase 4). Tipo desconhecido: nó ignorado.
 const TIPOS_EFEITO := ["click_bonus", "passive_bonus", "money_bonus", "fame_bonus", "defeat_share_bonus", "metronome_start", "preview_percent", "art_rule_bonus",
@@ -83,7 +84,7 @@ var crew_click: Dictionary = {}  # Fase 5.2: {id, cost, crew_share, icon, name, 
 
 static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios: String = CAMINHO_ADVERSARIOS,
 		caminho_loja: String = CAMINHO_LOJA, caminho_carreira: String = CAMINHO_CARREIRA, caminho_arvore: String = CAMINHO_ARVORE,
-		caminho_liga: String = "auto") -> FightData:
+		caminho_liga: String = "auto", caminho_centro: String = "auto") -> FightData:
 	var d := FightData.new()
 	d._ler_lutas(TrainingData._ler_json(caminho_lutas))
 	d._ler_adversarios(TrainingData._ler_json(caminho_adversarios))
@@ -94,8 +95,41 @@ static func carregar(caminho_lutas: String = CAMINHO_LUTAS, caminho_adversarios:
 		d._ler_liga(TrainingData._ler_json(caminho_liga))
 	d._ler_loja(TrainingData._ler_json(caminho_loja))
 	d._ler_carreira(TrainingData._ler_json(caminho_carreira))
-	d._ler_arvore(TrainingData._ler_json(caminho_arvore))
+	# 8a2: a região CENTRO e os 3 nós vêm de data/center.json (só com a árvore de sempre; arquivo ausente = árvore da 8a1).
+	if caminho_centro == "auto":
+		caminho_centro = CAMINHO_CENTRO if caminho_arvore == CAMINHO_ARVORE else ""
+	d._ler_arvore(_arvore_com_centro(TrainingData._ler_json(caminho_arvore), caminho_centro))
 	return d
+
+
+## 8a2: junta `skill_tree.region` e `skill_tree.nodes` do center.json à árvore lida (a região no fim das regiões, os nós no fim da lista).
+static func _arvore_com_centro(arvore_json: Dictionary, caminho_centro: String) -> Dictionary:
+	if caminho_centro == "" or not FileAccess.file_exists(caminho_centro) or arvore_json.is_empty():
+		return arvore_json
+	var st = TrainingData._ler_json(caminho_centro).get("skill_tree", null)
+	if not (st is Dictionary):
+		return arvore_json
+	var r: Dictionary = arvore_json.duplicate(true)
+	var regs = r.get("regions", [])
+	var nos = r.get("nodes", [])
+	if not (regs is Array) or not (nos is Array):
+		return arvore_json
+	if st.get("region", null) is Dictionary:
+		regs.append(st.region)
+	if st.get("nodes", null) is Array:
+		# vizinho de um nó antigo ganha a volta no dado (a árvore de antes não é editada em disco)
+		for novo in st.nodes:
+			if not (novo is Dictionary) or not (novo.get("neighbors", null) is Array):
+				continue
+			for v in novo.neighbors:
+				for antigo in nos:
+					if antigo is Dictionary and str(antigo.get("id", "")) == str(v) and antigo.get("neighbors", null) is Array \
+							and not (str(novo.get("id", "")) in antigo.neighbors):
+						antigo.neighbors.append(str(novo.get("id", "")))
+		nos.append_array(st.nodes)
+	r["regions"] = regs
+	r["nodes"] = nos
+	return r
 
 
 func tatica(id: String) -> Dictionary:

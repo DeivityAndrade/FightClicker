@@ -1,0 +1,99 @@
+{
+	"by_data_id": {
+		"center_students": {
+			"_nota": "pessoa i aparece se GameState.pessoas_desenhadas('center_students') > i (draw_thresholds 1, 5, 12, 25). Cada uma com floor_shadow nos pés. pos = proposta do Artista de Personagens; o Diretor de Arte confirma no layout do centro (a luz pintada não depende do ponto). O ícone (icon) fica com o Diretor de Arte.",
+			"people": [
+				"student_1",
+				"student_2",
+				"student_3",
+				"student_4"
+			]
+		}
+	},
+	"sprites": {
+		"student_1": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/student_1_idle.png",
+			"fps": 7.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluno da Raízes (1ª pessoa, com 1): sombra (jab, pêndulo, direto), degradê, calção cinza.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				390,
+				250
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"student_2": {
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/student_2_idle.png",
+			"fps": 8.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluna da Raízes (2ª pessoa, com 5): pula corda (a corda passa por cima, na frente, embaixo do pé e atrás), rabo de cavalo, calção azul-marinho.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				436,
+				257
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"student_3": {
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/student_3_idle.png",
+			"fps": 8.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluno da Raízes (3ª pessoa, com 12): corrida no lugar com joelho alto, cabelo raspado, calção preto.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				530,
+				316
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"student_4": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/student_4_idle.png",
+			"fps": 6.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluna da Raízes (4ª pessoa, com 25): joelhada de Muay Thai puxando a nuca imaginária, coque afro, calção vinho.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				24,
+				300
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		}
+	}
+}

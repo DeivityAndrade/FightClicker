@@ -371,7 +371,7 @@
 			"lutador": "fighter_idle em foco_saco (303,272); clique = fighter_low_kick (64x72, mesmo pivô)"
 		},
 		"gym_league_poster_spot": [
-			412,
+			394,
 			54
 		],
 		"gym_league_poster_spot_info": {
@@ -386,14 +386,107 @@
 			"location": "gym",
 			"sprite": "wall_poster_league_regional_gym",
 			"click_rect": [
-				412,
+				394,
 				54,
 				38,
 				54
 			],
 			"requires_milestone": "regional_league_opened",
 			"zoom": "ui_poster_league_regional_zoom",
-			"_nota": "Fase 8a1: em cima da porta da academia, entre o relógio de rounds (até x 395) e o pilar (x 468); abaixo do tubo (até y 44), acima do batente da porta (y 117). Só parede lisa embaixo (conferido no gerador: 0 px de outra coisa). Longe do recorte do vulto (340,60) e das luvas penduradas."
+			"_nota": "Fase 8a1: em cima da porta da academia, entre o relógio de rounds (até x 395) e o pilar (x 468); abaixo do tubo (até y 44), acima do batente da porta (y 117). Só parede lisa embaixo (conferido no gerador: 0 px de outra coisa). Longe do recorte do vulto (340,60) e das luvas penduradas.",
+			"sprite_won": "wall_poster_league_regional_won_gym",
+			"won_rule": "Fase 8a2: com permanent.first_regional_belt_campaign > 0, trocar pelo wall_poster_league_regional_won_gym (42x58, mesmo canto; quadro 1 com career.sponsor == 'signed'), object_text regional_poster_won (+ regional_poster_sponsor), zoom ui_poster_league_regional_won_zoom, click_rect [412,54,42,58]."
+		},
+		"center_coach_spot": [
+			196,
+			236
+		],
+		"center_mentor_spot": [
+			132,
+			254
+		],
+		"center_mentor_2_spot": [
+			62,
+			256
+		],
+		"center_mural_spot": [
+			176,
+			128
+		],
+		"center_clipping_black_cat_spot": [
+			340,
+			60
+		],
+		"center_photo_spot": [
+			130,
+			128
+		],
+		"center_photo_spot_info": {
+			"location": "center",
+			"sprite": "wall_photo_old_center",
+			"frame_in_game": 1,
+			"anchor": "canto de cima à esquerda",
+			"size": [
+				18,
+				21
+			],
+			"layer": "wall",
+			"z": -45,
+			"object_text": "old_photo_center",
+			"click_rect": [
+				130,
+				128,
+				18,
+				21
+			],
+			"_nota": "Fase 8a2: a foto da garagem pendurada TORTA de propósito (quadro 1) no canto da memória da ala esquerda, ao lado do recorte emoldurado. Desde a 1ª chegada, sem condição. Parede lisa embaixo (conferido). Fora do balão do Osmar."
+		},
+		"center_clipping_spot": [
+			128,
+			90
+		],
+		"center_clipping_spot_info": {
+			"location": "center",
+			"sprite": "wall_clipping_regional_framed",
+			"anchor": "canto de cima à esquerda",
+			"size": [
+				36,
+				36
+			],
+			"layer": "wall",
+			"z": -45,
+			"object_text": "regional_clipping",
+			"click_rect": [
+				128,
+				90,
+				36,
+				36
+			],
+			"zoom": "ui_clipping_regional_zoom",
+			"when": "permanent.first_regional_belt_campaign > 0 (sempre verdade no centro)",
+			"_nota": "Fase 8a2 (D10): o recorte emoldurado, à esquerda da foto torta, embaixo do janelão da ala esquerda. Parede lisa embaixo."
+		},
+		"sponsor_envelope_spot": [
+			250,
+			302
+		],
+		"sponsor_envelope_spot_info": {
+			"locations": [
+				"garage",
+				"gym",
+				"center"
+			],
+			"sprite": "sponsor_envelope",
+			"pivot": "meio da base",
+			"click_rect": [
+				240,
+				289,
+				20,
+				15
+			],
+			"sort_y": 272,
+			"when": "career.sponsor == 'offered'",
+			"_nota": "Fase 8a2: mesmo ponto nos 3 locais; chão livre conferido na garagem (7b), na academia e no centro; 0 px de pessoa, caixa ou aparelho em cima no centro cheio. Desenhar na camada do chão (sort_y baixo): quem passa fica por cima."
 		}
 	},
 	"by_data_id": {
@@ -2423,7 +2516,8 @@
 						"chalk": "map_node_s_owned_chalk",
 						"green": "map_node_s_owned_green",
 						"blue": "map_node_s_owned_blue",
-						"orange": "map_node_s_owned_orange"
+						"orange": "map_node_s_owned_orange",
+						"steel": "map_node_s_owned_steel"
 					},
 					"buyable": "map_node_s_buyable",
 					"missing": "map_node_s_missing",
@@ -2493,7 +2587,8 @@
 					"boxing": "red",
 					"bjj": "blue",
 					"campaign": "gold",
-					"muay_thai": "orange"
+					"muay_thai": "orange",
+					"center": "steel"
 				},
 				"veil": "map_node_veil",
 				"veil_offset": [
@@ -2561,7 +2656,8 @@
 					"boxing": "ui_map_region_label_boxing",
 					"bjj": "ui_map_region_label_bjj",
 					"campaign": "ui_map_region_label_campaign",
-					"muay_thai": "ui_map_region_label_muay_thai"
+					"muay_thai": "ui_map_region_label_muay_thai",
+					"center": "ui_map_region_label_center"
 				},
 				"height": 13,
 				"icon": "icon_region_<região>_9",
@@ -2582,7 +2678,8 @@
 				"boxing": "icon_region_boxing",
 				"bjj": "icon_region_bjj",
 				"campaign": "icon_region_campaign",
-				"muay_thai": "icon_region_muay_thai"
+				"muay_thai": "icon_region_muay_thai",
+				"center": "icon_region_center"
 			},
 			"card": {
 				"panel": "ui_map_card",
@@ -2731,7 +2828,11 @@
 				}
 			},
 			"_nota": "Fase 5.4 (Diretor de Arte), direcao-visual.md §21. Posições em 1x (base 640x360). Posições, vizinhos e ids são do Designer (data/skill_tree.json, map.unit_px). Mockups: fase54_mapa_x2.png (peças) e fase54_mapa_real_x2.png (mapa real, 2ª passada).",
-			"_nota_7b1": "Fase 7b1: região MUAY THAI = corda trançada (map_tile_muay_thai), anel laranja. A lista de ladrilhos de ui/janela_mapa.gd (_pintar_fundo) precisa ganhar 'muay_thai' (UI/UX/Programador)."
+			"_nota_7b1": "Fase 7b1: região MUAY THAI = corda trançada (map_tile_muay_thai), anel laranja. A lista de ladrilhos de ui/janela_mapa.gd (_pintar_fundo) precisa ganhar 'muay_thai' (UI/UX/Programador).",
+			"region_tiles": {
+				"center": "map_tile_center_region",
+				"_nota": "Fase 8a2: a região nova se chama 'center', mas em janela_mapa.gd a chave de ladrilho 'center' já é o miolo (body/career/style). Usar map_tile_center_region para a região CENTRO, e não deixar o miolo virar parede quando a região CENTRO está fechada (aberta.get('center') hoje confunde os dois). Ver fase8a2-manifest.md."
+			}
 		},
 		"_nota_fase54_arte": "Fase 5.4 (Diretor de Arte): skill_map (mapa da árvore grande). direcao-visual.md §21.",
 		"speech_bubble": {
@@ -4240,7 +4341,146 @@
 			],
 			"profile": "RESISTENTE",
 			"scale": 1.12
-		}
+		},
+		"center_students": {
+			"people": [
+				"student_1",
+				"student_2",
+				"student_3",
+				"student_4"
+			],
+			"_nota_personagens": "pessoa i aparece se GameState.pessoas_desenhadas('center_students') > i (draw_thresholds 1, 5, 12, 25). Cada uma com floor_shadow nos pés. pos = proposta do Artista de Personagens; o Diretor de Arte confirma no layout do centro (a luz pintada não depende do ponto). O ícone (icon) fica com o Diretor de Arte.",
+			"icon": "icon_students"
+		},
+		"center": {
+			"bg": "center_bg",
+			"light": "center_led",
+			"light_positions": {
+				"led_1": [
+					118,
+					46
+				],
+				"led_2": [
+					230,
+					40
+				],
+				"led_3": [
+					392,
+					40
+				],
+				"led_4": [
+					522,
+					46
+				]
+			},
+			"no_lamp": true,
+			"icon": "icon_location_center",
+			"suffix": "_center",
+			"sprite_rule": "nome do sprite + _center (bag_l1_idle -> bag_l1_idle_center); sem _center no manifest = usa o da garagem. Os 6 aparelhos têm _center em TODAS as folhas (inclusive pera/boneco/saco comprido no foco: idle e hit, que hoje a sala chama sem sufixo; passar por UiTema.com_local também ali). Osmar, caixote, mural, foto e recorte do vulto têm entradas _center que apontam para os arquivos da academia.",
+			"fighter": {
+				"foco_saco": [
+					303,
+					272
+				],
+				"foco_corda": [
+					336,
+					272
+				],
+				"foco_esteira": [
+					339,
+					269
+				],
+				"foco_pera": [
+					303,
+					272
+				],
+				"foco_boneco": [
+					303,
+					272
+				],
+				"note": "O lutador fica nos MESMOS pontos da garagem. Com a pera ou o boneco em foco, usa o fighter_idle/punch no ponto do saco (303,272)."
+			},
+			"metronome": {
+				"pos": [
+					240,
+					118
+				],
+				"note": "Mesmo ponto: a prateleira de aço do centro foi desenhada para ele."
+			},
+			"people_pos": {
+				"neighbor_1": [
+					72,
+					322
+				],
+				"neighbor_2": [
+					126,
+					322
+				],
+				"neighbor_3": [
+					590,
+					322
+				],
+				"uncle_1": [
+					400,
+					324
+				],
+				"uncle_2": [
+					484,
+					262
+				],
+				"coach_1": [
+					548,
+					250
+				],
+				"note": "Fase 6d2: os mesmos pontos da garagem (sala larga). Vizinhos 1 e 2 na frente à esquerda, tio 1 na frente à direita do alvo, tio 2 no fundo à direita da porta; vizinho 3 e Prof. Nelson no canto direito (x >= 506), atrás do painel quando ele está fixado (aprovado pelo dono)."
+			},
+			"students_pos": {
+				"student_1": [
+					390,
+					250
+				],
+				"student_2": [
+					436,
+					257
+				],
+				"student_3": [
+					530,
+					316
+				],
+				"student_4": [
+					24,
+					300
+				]
+			},
+			"points": {
+				"coach": "center_coach_spot",
+				"mentor": "center_mentor_spot",
+				"mentor_2": "center_mentor_2_spot",
+				"mural": "center_mural_spot",
+				"photo": "center_photo_spot",
+				"clipping": "center_clipping_spot",
+				"black_cat_clipping": "center_clipping_black_cat_spot",
+				"envelope": "sponsor_envelope_spot",
+				"rope_hook": "layout.rope_hook (igual)",
+				"box_slots": "layout.box_slots (iguais)"
+			},
+			"chain": "bag_chain_tile (o mesmo): os ganchos da viga do centro estão em x 336 e 258, a corrente começa em y 33.",
+			"no_scenes": "Sem cena no centro (design §1.2): a porta existe, mas nenhum caminho de cena precisa ficar livre.",
+			"move_arrive": "Ao mudar: corte seco para center_bg + sprites _center (como a academia). Nenhuma caixa nova.",
+			"note": "Fase 8a2 (Diretor de Arte): os mesmos pontos da academia (6d2) para Osmar, mentores, equipe antiga, aparelhos, caixas, corda no gancho, pera na parede e Metrônomo. Novos: alunos, canto da memória (recorte emoldurado + foto torta), envelope. Conferência pixel a pixel no gerador: 0 problemas. direcao-visual.md §35."
+		},
+		"sponsor_vale": {
+			"logo": "sponsor_vale",
+			"wide": "sponsor_vale_wide",
+			"icon_9": "sponsor_vale_9",
+			"shorts_patch": "sponsor_vale_patch",
+			"envelope": "sponsor_envelope",
+			"envelope_spot": "sponsor_envelope_spot",
+			"poster_frame": 1,
+			"shorts_rule": "anchors[q].hip + (-2,+3) com o pivô do patch (2,0); espelhar o x quando a folha está virada; desenhar por cima do calção e embaixo do front_mask (luva/braço da frente). Só com career.sponsor == 'signed'.",
+			"note": "Fase 8a2: Autopeças Vale Forte (short_name VALE FORTE), a mesma marca da saia do ringue da 8a1."
+		},
+		"_nota_fase8a2_arte": "Fase 8a2 (Diretor de Arte): by_data_id.center, center_students.icon, sponsor_vale, skill_map (steel, região CENTRO), layout center_*, sponsor_envelope_spot, cartaz vencido. direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
 	},
 	"palette_swap_glove": {
 		"r0": "#5a1a22",
@@ -26353,7 +26593,7 @@
 			],
 			"positions": {
 				"parede": [
-					436,
+					461,
 					46
 				]
 			},
@@ -26445,7 +26685,7 @@
 			],
 			"positions": {
 				"parede": [
-					436,
+					461,
 					46
 				]
 			},
@@ -26491,7 +26731,7 @@
 			"loop": false,
 			"positions": {
 				"parede": [
-					436,
+					461,
 					46
 				]
 			},
@@ -143245,6 +143485,1550 @@
 				0,
 				0
 			]
+		},
+		"student_1": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/student_1_idle.png",
+			"fps": 7,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluno da Raízes (1ª pessoa, com 1): sombra (jab, pêndulo, direto), degradê, calção cinza. Gerador: tools/art/make_sprites_fase8a2.gd; registro: manifest_8a2_personagens.py.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				390,
+				250
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"student_2": {
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/student_2_idle.png",
+			"fps": 8,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluna da Raízes (2ª pessoa, com 5): pula corda (a corda passa por cima, na frente, embaixo do pé e atrás), rabo de cavalo, calção azul-marinho. Gerador: tools/art/make_sprites_fase8a2.gd; registro: manifest_8a2_personagens.py.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				436,
+				257
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"student_3": {
+			"facing": "esquerda",
+			"file": "res://assets/sprites/characters/student_3_idle.png",
+			"fps": 8,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluno da Raízes (3ª pessoa, com 12): corrida no lugar com joelho alto, cabelo raspado, calção preto. Gerador: tools/art/make_sprites_fase8a2.gd; registro: manifest_8a2_personagens.py.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				530,
+				316
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"student_4": {
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/student_4_idle.png",
+			"fps": 6,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "Aluna da Raízes (4ª pessoa, com 25): joelhada de Muay Thai puxando a nuca imaginária, coque afro, calção vinho. Gerador: tools/art/make_sprites_fase8a2.gd; registro: manifest_8a2_personagens.py.",
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				24,
+				300
+			],
+			"pos_note": "Fase 8a2 (Diretor de Arte): ponto na sala do centro, conferido pixel a pixel com todos os quadros (0 sobreposição, fora da zona do alvo). student_3 fica atrás do painel fixado (como o vizinho 3 e o Nelson)."
+		},
+		"bag_l0_hit_center": {
+			"file": "res://assets/sprites/equipment/bag_l0_hit_center.png",
+			"frame_size": [
+				40,
+				76
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				20,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					183
+				]
+			},
+			"loop": false,
+			"sort_y_offset": 70,
+			"note": "Fase 8a2: versão do CENTRO de bag_l0_hit_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de competição: couro azul-marinho da escola com faixas brancas (l1); couro vinho (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"bag_l0_idle_center": {
+			"file": "res://assets/sprites/equipment/bag_l0_idle_center.png",
+			"frame_size": [
+				40,
+				76
+			],
+			"frames": 4,
+			"fps": 3.0,
+			"pivot": [
+				20,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					183
+				],
+				"lado_esquerdo": [
+					258,
+					160
+				]
+			},
+			"loop": true,
+			"sort_y_offset": 70,
+			"note": "Fase 8a2: versão do CENTRO de bag_l0_idle_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de competição: couro azul-marinho da escola com faixas brancas (l1); couro vinho (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"bag_l0_side_center": {
+			"file": "res://assets/sprites/equipment/bag_l0_side_center.png",
+			"frame_size": [
+				40,
+				76
+			],
+			"frames": 4,
+			"fps": 3.0,
+			"pivot": [
+				20,
+				0
+			],
+			"positions": {
+				"lado_esquerdo": [
+					258,
+					160
+				]
+			},
+			"loop": true,
+			"sort_y_offset": 70,
+			"note": "Fase 8a2: versão do CENTRO de bag_l0_side_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de competição: couro azul-marinho da escola com faixas brancas (l1); couro vinho (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"bag_l1_hit_center": {
+			"file": "res://assets/sprites/equipment/bag_l1_hit_center.png",
+			"frame_size": [
+				40,
+				76
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				20,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					183
+				]
+			},
+			"loop": false,
+			"sort_y_offset": 70,
+			"note": "Fase 8a2: versão do CENTRO de bag_l1_hit_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de competição: couro azul-marinho da escola com faixas brancas (l1); couro vinho (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"bag_l1_idle_center": {
+			"file": "res://assets/sprites/equipment/bag_l1_idle_center.png",
+			"frame_size": [
+				40,
+				76
+			],
+			"frames": 4,
+			"fps": 3.0,
+			"pivot": [
+				20,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					183
+				],
+				"lado_esquerdo": [
+					258,
+					160
+				]
+			},
+			"loop": true,
+			"sort_y_offset": 70,
+			"note": "Fase 8a2: versão do CENTRO de bag_l1_idle_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de competição: couro azul-marinho da escola com faixas brancas (l1); couro vinho (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"bag_l1_side_center": {
+			"file": "res://assets/sprites/equipment/bag_l1_side_center.png",
+			"frame_size": [
+				40,
+				76
+			],
+			"frames": 4,
+			"fps": 3.0,
+			"pivot": [
+				20,
+				0
+			],
+			"positions": {
+				"lado_esquerdo": [
+					258,
+					160
+				]
+			},
+			"loop": true,
+			"sort_y_offset": 70,
+			"note": "Fase 8a2: versão do CENTRO de bag_l1_side_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de competição: couro azul-marinho da escola com faixas brancas (l1); couro vinho (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"center_bg": {
+			"file": "res://assets/sprites/center/center_bg.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: CENTRO DE TREINAMENTO RAÍZES, sala larga no padrão da 6d2 (640x360 em 0,0; parede do fundo x 70..569 até y 220; chão até y 329; pilares de aço x 164..174 e 468..478; ponto de fuga 320,-28; viga y 26..33 com os ganchos em x 258 e 336). Concreto pintado de branco em blocos, barrado azul da escola (y 150..219), treliça e pé-direito alto, 2 janelões no fundo e 2 nas paredes laterais (dia), R da escola pintado, prateleira do Metrônomo (240,118), cortiça do mural (176,128), espelho inteiro, relógio de round, porta de vidro dupla (401,116,60,104), vitrine de troféus com os 2 cinturões, bebedouro, caixotes de pliometria, piso de borracha com placas, tatame vermelho na frente à esquerda e fita de área de treino em volta do alvo. Os 4 painéis de LED já estão acesos no fundo. Luz já aplicada. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -100
+		},
+		"center_led": {
+			"file": "res://assets/sprites/center/center_led.png",
+			"frame_size": [
+				40,
+				8
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				20,
+				0
+			],
+			"note": "Fase 8a2: painel de LED pendurado (40x8). O fundo já tem os 4 acesos: o sprite só serve para a falha opcional (quadro 1 = apagado), como o gym_tube. Pivô = meio de cima. by_data_id.center.light_positions. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"positions": {
+				"led_1": [
+					118,
+					46
+				],
+				"led_2": [
+					230,
+					40
+				],
+				"led_3": [
+					392,
+					40
+				],
+				"led_4": [
+					522,
+					46
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -50,
+			"anim": {
+				"idle": [
+					0
+				],
+				"flicker": [
+					1,
+					0,
+					1,
+					0
+				]
+			}
+		},
+		"grappling_dummy_l0_hit_center": {
+			"file": "res://assets/sprites/equipment/grappling_dummy_l0_hit_center.png",
+			"frame_size": [
+				66,
+				60
+			],
+			"frames": 3,
+			"fps": 12.0,
+			"pivot": [
+				32,
+				57
+			],
+			"positions": {
+				"centro": [
+					338,
+					279
+				]
+			},
+			"loop": false,
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de grappling_dummy_l0_hit (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (boneco de competição: couro vermelho com alças pretas e tatame vermelho (l1); lona grafite (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"grappling_dummy_l0_idle_center": {
+			"file": "res://assets/sprites/equipment/grappling_dummy_l0_idle_center.png",
+			"frame_size": [
+				66,
+				60
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				32,
+				57
+			],
+			"positions": {
+				"centro": [
+					338,
+					279
+				]
+			},
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de grappling_dummy_l0_idle (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (boneco de competição: couro vermelho com alças pretas e tatame vermelho (l1); lona grafite (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"grappling_dummy_l0_rest_center": {
+			"file": "res://assets/sprites/equipment/grappling_dummy_l0_rest_center.png",
+			"frame_size": [
+				66,
+				30
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				32,
+				27
+			],
+			"positions": {
+				"canto": [
+					192,
+					318
+				]
+			},
+			"sort_y": 270,
+			"note": "Fase 8a2: versão do CENTRO de grappling_dummy_l0_rest_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (boneco de competição: couro vermelho com alças pretas e tatame vermelho (l1); lona grafite (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"grappling_dummy_l1_hit_center": {
+			"file": "res://assets/sprites/equipment/grappling_dummy_l1_hit_center.png",
+			"frame_size": [
+				66,
+				60
+			],
+			"frames": 3,
+			"fps": 12.0,
+			"pivot": [
+				32,
+				57
+			],
+			"positions": {
+				"centro": [
+					338,
+					279
+				]
+			},
+			"loop": false,
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de grappling_dummy_l1_hit (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (boneco de competição: couro vermelho com alças pretas e tatame vermelho (l1); lona grafite (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"grappling_dummy_l1_idle_center": {
+			"file": "res://assets/sprites/equipment/grappling_dummy_l1_idle_center.png",
+			"frame_size": [
+				66,
+				60
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				32,
+				57
+			],
+			"positions": {
+				"centro": [
+					338,
+					279
+				]
+			},
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de grappling_dummy_l1_idle (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (boneco de competição: couro vermelho com alças pretas e tatame vermelho (l1); lona grafite (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"grappling_dummy_l1_rest_center": {
+			"file": "res://assets/sprites/equipment/grappling_dummy_l1_rest_center.png",
+			"frame_size": [
+				66,
+				30
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				32,
+				27
+			],
+			"positions": {
+				"canto": [
+					192,
+					318
+				]
+			},
+			"sort_y": 270,
+			"note": "Fase 8a2: versão do CENTRO de grappling_dummy_l1_rest_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (boneco de competição: couro vermelho com alças pretas e tatame vermelho (l1); lona grafite (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"icon_region_center": {
+			"file": "res://assets/sprites/ui/icon_region_center.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: ícone 16x16 da região CENTRO do mapa da árvore (fachada do centro com o R na empena). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"icon_region_center_9": {
+			"file": "res://assets/sprites/ui/icon_region_center_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: ícone 9x9 da região CENTRO (plaquinha do nome da região). Também é o icon_location_center do HUD. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"icon_students": {
+			"file": "res://assets/sprites/ui/icon_students.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: retrato 16x16 dos ALUNOS DA RAÍZES para o painel EQUIPE (recorte do student_1, como o icon_neighbor). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"kick_bag_l0_hit_center": {
+			"file": "res://assets/sprites/equipment/kick_bag_l0_hit_center.png",
+			"frame_size": [
+				34,
+				80
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				17,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					190
+				]
+			},
+			"loop": false,
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de kick_bag_l0_hit (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de lona dupla: lona crua com alças de couro (l1); lona verde-oliva (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"kick_bag_l0_idle_center": {
+			"file": "res://assets/sprites/equipment/kick_bag_l0_idle_center.png",
+			"frame_size": [
+				34,
+				80
+			],
+			"frames": 4,
+			"fps": 3.0,
+			"pivot": [
+				17,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					190
+				]
+			},
+			"loop": true,
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de kick_bag_l0_idle (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de lona dupla: lona crua com alças de couro (l1); lona verde-oliva (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"kick_bag_l0_rest_center": {
+			"file": "res://assets/sprites/equipment/kick_bag_l0_rest_center.png",
+			"frame_size": [
+				80,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				40,
+				25
+			],
+			"positions": {
+				"canto": [
+					192,
+					318
+				]
+			},
+			"sort_y": 306,
+			"note": "Fase 8a2: versão do CENTRO de kick_bag_l0_rest_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de lona dupla: lona crua com alças de couro (l1); lona verde-oliva (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"kick_bag_l1_hit_center": {
+			"file": "res://assets/sprites/equipment/kick_bag_l1_hit_center.png",
+			"frame_size": [
+				34,
+				80
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				17,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					190
+				]
+			},
+			"loop": false,
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de kick_bag_l1_hit (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de lona dupla: lona crua com alças de couro (l1); lona verde-oliva (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"kick_bag_l1_idle_center": {
+			"file": "res://assets/sprites/equipment/kick_bag_l1_idle_center.png",
+			"frame_size": [
+				34,
+				80
+			],
+			"frames": 4,
+			"fps": 3.0,
+			"pivot": [
+				17,
+				0
+			],
+			"positions": {
+				"centro": [
+					336,
+					190
+				]
+			},
+			"loop": true,
+			"sort_y": 266,
+			"note": "Fase 8a2: versão do CENTRO de kick_bag_l1_idle (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de lona dupla: lona crua com alças de couro (l1); lona verde-oliva (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"kick_bag_l1_rest_center": {
+			"file": "res://assets/sprites/equipment/kick_bag_l1_rest_center.png",
+			"frame_size": [
+				80,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				40,
+				25
+			],
+			"positions": {
+				"canto": [
+					192,
+					318
+				]
+			},
+			"sort_y": 306,
+			"note": "Fase 8a2: versão do CENTRO de kick_bag_l1_rest_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (saco de lona dupla: lona crua com alças de couro (l1); lona verde-oliva (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"map_node_b_owned_steel": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_steel.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "Fase 8a2: anel 'aço' do marco comprado da região CENTRO (troca de cor do anel azul). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"map_node_s_owned_steel": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_steel.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Fase 8a2: anel 'aço' do nó pequeno comprado da região CENTRO (troca de cor do anel azul). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"map_tile_center_region": {
+			"file": "res://assets/sprites/ui/map/map_tile_center_region.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: ladrilho 32x32 da região CENTRO (piso de borracha). Chave própria: 'map_tile_center' já é a cortiça do miolo (body/career/style) em janela_mapa.gd. Ver by_data_id.skill_map.region_tiles. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"rope_l0_idle_center": {
+			"file": "res://assets/sprites/equipment/rope_l0_idle_center.png",
+			"frame_size": [
+				18,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				9,
+				0
+			],
+			"positions": {
+				"prego": [
+					296,
+					166
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 8a2: versão do CENTRO de rope_l0_idle_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (corda de rolamento: cabo azul com punhos pretos (l1); cabo preto com punhos amarelos (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"rope_l0_swing_back_center": {
+			"file": "res://assets/sprites/equipment/rope_l0_swing_back_center.png",
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"fps": 24.0,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			},
+			"loop": false,
+			"hit_frame": 3,
+			"facing": "direita",
+			"frames_note": "Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.",
+			"note": "Fase 8a2: versão do CENTRO de rope_l0_swing_back_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (corda de rolamento: cabo azul com punhos pretos (l1); cabo preto com punhos amarelos (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"rope_l0_swing_center": {
+			"file": "res://assets/sprites/equipment/rope_l0_swing_center.png",
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"fps": 24.0,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			},
+			"loop": false,
+			"hit_frame": 3,
+			"facing": "direita",
+			"frames_note": "Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.",
+			"note": "Fase 8a2: versão do CENTRO de rope_l0_swing_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (corda de rolamento: cabo azul com punhos pretos (l1); cabo preto com punhos amarelos (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"rope_l1_idle_center": {
+			"file": "res://assets/sprites/equipment/rope_l1_idle_center.png",
+			"frame_size": [
+				18,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				9,
+				0
+			],
+			"positions": {
+				"prego": [
+					296,
+					166
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 8a2: versão do CENTRO de rope_l1_idle_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (corda de rolamento: cabo azul com punhos pretos (l1); cabo preto com punhos amarelos (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"rope_l1_swing_back_center": {
+			"file": "res://assets/sprites/equipment/rope_l1_swing_back_center.png",
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"fps": 24.0,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			},
+			"loop": false,
+			"hit_frame": 3,
+			"facing": "direita",
+			"frames_note": "Corda ATRÁS do personagem (desenhar POR BAIXO do lutador), 6 quadros sincronizados com fighter_rope.",
+			"note": "Fase 8a2: versão do CENTRO de rope_l1_swing_back_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (corda de rolamento: cabo azul com punhos pretos (l1); cabo preto com punhos amarelos (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"rope_l1_swing_center": {
+			"file": "res://assets/sprites/equipment/rope_l1_swing_center.png",
+			"frame_size": [
+				48,
+				80
+			],
+			"frames": 7,
+			"fps": 24.0,
+			"pivot": [
+				22,
+				75
+			],
+			"positions": {
+				"foco_corda": [
+					336,
+					272
+				]
+			},
+			"loop": false,
+			"hit_frame": 3,
+			"facing": "direita",
+			"frames_note": "Corda NA FRENTE do personagem (desenhar POR CIMA do lutador), 6 quadros sincronizados com fighter_rope.",
+			"note": "Fase 8a2: versão do CENTRO de rope_l1_swing_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (corda de rolamento: cabo azul com punhos pretos (l1); cabo preto com punhos amarelos (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l0_hit_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l0_hit_center.png",
+			"frame_size": [
+				44,
+				84
+			],
+			"frames": 5,
+			"fps": 18.0,
+			"pivot": [
+				22,
+				81
+			],
+			"positions": {
+				"centro": [
+					330,
+					274
+				]
+			},
+			"loop": false,
+			"sort_y": 268,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l0_hit (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l0_idle_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l0_idle_center.png",
+			"frame_size": [
+				44,
+				84
+			],
+			"frames": 2,
+			"fps": 2.0,
+			"pivot": [
+				22,
+				81
+			],
+			"positions": {
+				"centro": [
+					330,
+					274
+				]
+			},
+			"loop": true,
+			"sort_y": 268,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l0_idle (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l0_wall_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l0_wall_center.png",
+			"frame_size": [
+				48,
+				52
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				24,
+				0
+			],
+			"positions": {
+				"parede": [
+					436,
+					46
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l0_wall_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l0_wall_swing_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l0_wall_swing_center.png",
+			"frame_size": [
+				48,
+				52
+			],
+			"frames": 6,
+			"fps": 12.0,
+			"pivot": [
+				24,
+				0
+			],
+			"positions": {
+				"parede": [
+					436,
+					46
+				]
+			},
+			"loop": false,
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l0_wall_swing_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l1_hit_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l1_hit_center.png",
+			"frame_size": [
+				44,
+				84
+			],
+			"frames": 5,
+			"fps": 18.0,
+			"pivot": [
+				22,
+				81
+			],
+			"positions": {
+				"centro": [
+					330,
+					274
+				]
+			},
+			"loop": false,
+			"sort_y": 268,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l1_hit (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l1_idle_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l1_idle_center.png",
+			"frame_size": [
+				44,
+				84
+			],
+			"frames": 2,
+			"fps": 2.0,
+			"pivot": [
+				22,
+				81
+			],
+			"positions": {
+				"centro": [
+					330,
+					274
+				]
+			},
+			"loop": true,
+			"sort_y": 268,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l1_idle (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"speed_bag_l1_wall_center": {
+			"file": "res://assets/sprites/equipment/speed_bag_l1_wall_center.png",
+			"frame_size": [
+				48,
+				52
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				24,
+				0
+			],
+			"positions": {
+				"parede": [
+					436,
+					46
+				]
+			},
+			"layer": "frente_do_fundo",
+			"z": -40,
+			"note": "Fase 8a2: versão do CENTRO de speed_bag_l1_wall_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (plataforma de pera: madeira clara e pera de couro caramelo). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"sponsor_envelope": {
+			"file": "res://assets/sprites/center/sponsor_envelope.png",
+			"frame_size": [
+				16,
+				11
+			],
+			"frames": 3,
+			"fps": 4.0,
+			"pivot": [
+				8,
+				10
+			],
+			"note": "Fase 8a2: envelope PROPOSTA no chão (16x11; pivô = meio da base). Com career.sponsor == 'offered' fica na sala até o fim da campanha, nos 3 locais, no mesmo ponto (layout.sponsor_envelope_spot = 250,302: à esquerda dos pés do lutador, entre o tatame e a caixa da luva). 0 parado; 1,2 brilho (tocar [0,0,0,1,2,1] a 4 fps, de vez em quando). Camada do chão (abaixo das pessoas). Clique abre o contrato. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"pos": [
+				250,
+				302
+			],
+			"layer": "floor",
+			"loop": true,
+			"anim": {
+				"idle": [
+					0
+				],
+				"shine": [
+					0,
+					0,
+					0,
+					1,
+					2,
+					1
+				]
+			}
+		},
+		"sponsor_vale": {
+			"file": "res://assets/sprites/ui/sponsor_vale.png",
+			"frame_size": [
+				20,
+				20
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: marca do patrocinador AUTOPEÇAS VALE FORTE (original): selo 20x20, engrenagem amarela com os dois morros do Vale dentro, sobre preto. center.json sponsor.brand_sprite. Janela do contrato e cartão. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"sponsor_vale_9": {
+			"file": "res://assets/sprites/ui/sponsor_vale_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: marca 9x9 (engrenagem) para a linha PATROCÍNIO VALE FORTE: +$n da tela de vitória. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"sponsor_vale_patch": {
+			"file": "res://assets/sprites/ui/sponsor_vale_patch.png",
+			"frame_size": [
+				5,
+				3
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				2,
+				0
+			],
+			"note": "Fase 8a2: a marca no CALÇÃO do lutador (5x3, etiqueta amarela sem contorno). Sobreposição pequena, só com o contrato assinado, nesta campanha. Ponto: anchors[q].hip do quadro + (-2,+3) (pivô do patch = meio de cima), na frente do calção; quadros virados: espelhar o x. Vale nas folhas *_disc_layered da sala e da luta. É a 1ª peça a cortar (escopo §9). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"sponsor_vale_wide": {
+			"file": "res://assets/sprites/ui/sponsor_vale_wide.png",
+			"frame_size": [
+				89,
+				20
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: selo + VALE FORTE (5x7, amarelo y1 sobre preto), para o título da janela do contrato. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"treadmill_l0_idle_center": {
+			"file": "res://assets/sprites/equipment/treadmill_l0_idle_center.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"centro": [
+					336,
+					280
+				],
+				"lado_direito": [
+					466,
+					324
+				]
+			},
+			"note": "Fase 8a2: versão do CENTRO de treadmill_l0_idle_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (esteira com painel: grafite com painel azul (l1); grafite com faixas amarelas (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"treadmill_l0_run_center": {
+			"file": "res://assets/sprites/equipment/treadmill_l0_run_center.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"centro": [
+					336,
+					280
+				]
+			},
+			"loop": true,
+			"note": "Fase 8a2: versão do CENTRO de treadmill_l0_run_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (esteira com painel: grafite com painel azul (l1); grafite com faixas amarelas (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"treadmill_l0_side_center": {
+			"file": "res://assets/sprites/equipment/treadmill_l0_side_center.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"lado_direito": [
+					466,
+					324
+				]
+			},
+			"note": "Fase 8a2: versão do CENTRO de treadmill_l0_side_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (esteira com painel: grafite com painel azul (l1); grafite com faixas amarelas (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"treadmill_l1_idle_center": {
+			"file": "res://assets/sprites/equipment/treadmill_l1_idle_center.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"centro": [
+					336,
+					280
+				],
+				"lado_direito": [
+					466,
+					324
+				]
+			},
+			"note": "Fase 8a2: versão do CENTRO de treadmill_l1_idle_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (esteira com painel: grafite com painel azul (l1); grafite com faixas amarelas (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"treadmill_l1_run_center": {
+			"file": "res://assets/sprites/equipment/treadmill_l1_run_center.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 4,
+			"fps": 12.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"centro": [
+					336,
+					280
+				]
+			},
+			"loop": true,
+			"note": "Fase 8a2: versão do CENTRO de treadmill_l1_run_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (esteira com painel: grafite com painel azul (l1); grafite com faixas amarelas (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"treadmill_l1_side_center": {
+			"file": "res://assets/sprites/equipment/treadmill_l1_side_center.png",
+			"frame_size": [
+				86,
+				42
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				43,
+				41
+			],
+			"positions": {
+				"lado_direito": [
+					466,
+					324
+				]
+			},
+			"note": "Fase 8a2: versão do CENTRO de treadmill_l1_side_gym (sufixo _center do locations.json): mesma forma, quadros, pivô, pontos e anim; material novo (esteira com painel: grafite com painel azul (l1); grafite com faixas amarelas (l0)). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"ui_clipping_regional_zoom": {
+			"file": "res://assets/sprites/ui/ui_clipping_regional_zoom.png",
+			"frame_size": [
+				124,
+				92
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2 (opcional): o recorte grande para a dica/janela (124x92): CORREIO DA ESQUINA / ESCOLA DE GARAGEM / DERRUBA O BLINDADO, foto e colunas. O resto do texto (Roteirista) vai no hover. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"ui_map_region_label_center": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_center.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: plaquinha da região CENTRO (9-slice 16x13, faixa azul da escola). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"nine_slice": {
+				"left": 4,
+				"top": 1,
+				"right": 1,
+				"bottom": 1
+			}
+		},
+		"ui_poster_league_regional_won_zoom": {
+			"file": "res://assets/sprites/ui/ui_poster_league_regional_won_zoom.png",
+			"frame_size": [
+				124,
+				160
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2 (opcional): o zoom do cartaz vencido (124x160): o de 8a1 + adesivo + recorte; quadro 1 com a marca. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"anim": {
+				"won": [
+					0
+				],
+				"won_sponsor": [
+					1
+				]
+			}
+		},
+		"wall_clipping_regional_framed": {
+			"file": "res://assets/sprites/center/wall_clipping_regional_framed.png",
+			"frame_size": [
+				36,
+				36
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2 (D10): o recorte do jornal do Vale EMOLDURADO na parede do centro (36x36): moldura preta com filete de ouro, vidro com reflexo, plaquinha de latão; manchete RAÍZES legível em 1x, foto granulada do discípulo com o cinturão erguido, colunas. Ponto layout.center_clipping_spot. Hover: objects.regional_clipping. Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"pos": [
+				128,
+				90
+			],
+			"point": "center_clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_poster_league_regional_won_gym": {
+			"file": "res://assets/sprites/gym/wall_poster_league_regional_won_gym.png",
+			"frame_size": [
+				42,
+				58
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: o cartaz da liga na academia depois do 1º Cinturão do Vale da linhagem (42x58, mesmo canto do de 8a1: 412,54). Adesivo do R em cima da cara do James e o recorte do jornal preso com fita no canto de baixo, passando um pouco da borda. Quadro 0 = sem patrocínio; quadro 1 = com a marca Vale Forte no canto de cima (contrato assinado). Só parede lisa embaixo (conferido). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"pos": [
+				412,
+				54
+			],
+			"point": "gym_league_poster_spot",
+			"layer": "wall",
+			"z": -45,
+			"anim": {
+				"won": [
+					0
+				],
+				"won_sponsor": [
+					1
+				]
+			}
+		},
+		"coach_idle_center": {
+			"action": "idle@gym",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_idle_gym.png",
+			"fps": 3.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "= coach_idle (braços cruzados, respiração lenta) com a LUZ DOS TUBOS da academia aplicada no ponto (196,236) no lugar da lâmpada da garagem. Usar no lugar do coach_idle quando ele está na academia.",
+			"hands": [
+				{
+					"hand_back": [
+						4,
+						-39
+					],
+					"hand_front": [
+						-4,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-39
+					],
+					"hand_front": [
+						-4,
+						-41
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-38
+					],
+					"hand_front": [
+						-4,
+						-40
+					]
+				},
+				{
+					"hand_back": [
+						4,
+						-38
+					],
+					"hand_front": [
+						-4,
+						-40
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-63
+			],
+			"head_by_frame": [
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-54
+				],
+				[
+					1,
+					-54
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "idle@gym",
+			"who": "treinador",
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de coach_idle_gym (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"coach_talk_center": {
+			"action": "talk@gym",
+			"facing": "direita",
+			"file": "res://assets/sprites/characters/coach_talk_gym.png",
+			"fps": 6.0,
+			"frame_size": [
+				48,
+				72
+			],
+			"frames": 4,
+			"frames_note": "= coach_talk (um braço cruzado, a outra mão acompanha a fala, boca abre e fecha) com a LUZ DOS TUBOS da academia no ponto (196,236).",
+			"hands": [
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						13,
+						-44
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						13,
+						-47
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						14,
+						-45
+					]
+				},
+				{
+					"hand_back": [
+						5,
+						-39
+					],
+					"hand_front": [
+						13,
+						-46
+					]
+				}
+			],
+			"head_anchor": [
+				1,
+				-64
+			],
+			"head_by_frame": [
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-56
+				],
+				[
+					1,
+					-55
+				],
+				[
+					1,
+					-55
+				]
+			],
+			"light": "academia (tubos)",
+			"loop": true,
+			"mirror_ok": false,
+			"pivot": [
+				22,
+				67
+			],
+			"pos": [
+				196,
+				236
+			],
+			"scene_name": "talk@gym",
+			"who": "treinador",
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de coach_talk_gym (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"garage_crate_center": {
+			"file": "res://assets/sprites/garage/garage_crate_gym.png",
+			"frame_size": [
+				26,
+				19
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				16,
+				20
+			],
+			"pos": [
+				116,
+				234
+			],
+			"layer": "sorted",
+			"sort_y": 250,
+			"point": "center_mentor_spot",
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de garage_crate_gym (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+			"note_6d2": "Fase 6d2: ponto novo; a luz dos tubos no ponto novo dá a mesma do antigo (arquivo igual)."
+		},
+		"wall_mural_center": {
+			"file": "res://assets/sprites/gym/wall_mural_gym.png",
+			"frame_size": [
+				55,
+				23
+			],
+			"frames": 4,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				176,
+				128
+			],
+			"point": "center_mural_spot",
+			"layer": "wall",
+			"z": -45,
+			"loop": false,
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de wall_mural_gym (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"wall_photo_old_center": {
+			"file": "res://assets/sprites/gym/wall_photo_old_gym.png",
+			"frame_size": [
+				18,
+				21
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				130,
+				128
+			],
+			"point": "center_photo_spot",
+			"layer": "wall",
+			"z": -45,
+			"loop": false,
+			"anim": {
+				"straight": [
+					0
+				],
+				"tilt": [
+					0,
+					1
+				],
+				"crooked": [
+					1
+				]
+			},
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de wall_photo_old_gym (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"wall_clipping_black_cat_center": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				340,
+				60
+			],
+			"point": "center_clipping_black_cat_spot",
+			"layer": "wall",
+			"z": -45,
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de wall_clipping_black_cat_gym (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"icon_location_center": {
+			"file": "res://assets/sprites/ui/icon_region_center_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Fase 8a2: no centro usa o mesmo arquivo de icon_region_center_9 (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
 		}
 	},
 	"fight_layout": {

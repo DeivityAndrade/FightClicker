@@ -158,7 +158,7 @@ func _montar_retire(f: Dictionary, t: Dictionary) -> void:
 				UiTema.textura_rect(painel, nome_it, x, 62)
 			x += q.x + folga
 		if regional:
-			UiTema.rotulo_centro(painel, UiTema.txt("belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 320.0, 115.0)
+			UiTema.rotulo_centro(painel, UiTema.txt("belt_regional_unlock_done" if bool(GameState.permanente.get("center_reached", false)) else "belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 320.0, 115.0)
 	else:
 		# Luvas no meio da janela.
 		var luvas_rect := UiTema.textura_rect(painel, luvas, roundf(320.0 - UiTema.tamanho_quadro(luvas).x / 2.0), 62)
@@ -226,9 +226,7 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String, region
 	if dica_extra != "":
 		UiTema.rotulo(painel, dica_extra.to_upper(), UiTema.Y1, 152, yy)
 		yy += 11.0
-	if regional:
-		UiTema.rotulo(painel, UiTema.txt("belt_regional_soon", "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO").to_upper(), UiTema.G3, 152, yy)  # 8a1
-		yy += 11.0
+	# 8a2: a linha "a mudança chega na próxima versão" saiu da tela de fim: o texto agora é "USE O MUDAR" (vale só no HUD, antes de passar o posto).
 	var retire := str(f.kind) == "retire"
 	if retire:
 		_linha_honra(f, yy)  # 6c2: "+N HONRA" (nunca na derrota; nunca no HUD)

@@ -35,7 +35,7 @@ func em_academia() -> bool:
 ## description, title, price_text, effect_text, keeps_text, per_career_text, state ("locked" sem cinturão,
 ## "missing" sem dinheiro, "ready").
 func mudanca() -> Dictionary:
-	var d := gs.academia.destino_mudanca()
+	var d := gs.academia.destino_mudanca(gs.local_id)  # 8a2: o próximo local depois do atual
 	if d.is_empty() or d.id == gs.local_id:
 		return {}
 	var custo := float(d.move.cost)
@@ -43,19 +43,37 @@ func mudanca() -> Dictionary:
 		"id": d.move.id, "location": d.id, "cost": custo, "name": d.name, "mult": d.training_mult,
 		"button": d.move_button if d.move_button != "" else gs.texto_ui("move_button", "MUDAR"),
 		"description": d.move_description,
-		"title": gs.texto_ui("move_title"), "price_text": gs.preencher(gs.texto_ui("move_price", "${n}"), {"n": NumberFormat.fmt(custo)}),
-		"effect_text": gs.preencher(gs.texto_ui("move_effect"), {"mult": NumberFormat.fmt(float(d.training_mult))}),
+		"title": _texto_local("move_title", d.id), "price_text": gs.preencher(gs.texto_ui("move_price", "${n}"), {"n": NumberFormat.fmt(custo)}),
+		"effect_text": gs.preencher(_texto_local("move_effect", d.id), {"mult": NumberFormat.fmt(float(d.training_mult))}),
 		"keeps_text": gs.texto_ui("move_keeps"), "per_career_text": gs.texto_ui("move_per_career"),
 		"state": estado_mudanca(),
+		# 8a2: textos por local (centro: chaves com `_center`; "" se o local não tem). Aviso "sem luta nova", toast da chegada e HUD.
+		"no_fights_text": gs.texto_ui("move_no_fights_" + str(d.id), ""), "arrived_text": gs.texto_ui("move_arrived_" + str(d.id), ""),
+		"hud_next_text": _texto_local("hud_next_move", d.id),
 	}
+
+
+## Texto por local: a academia usa a chave sem sufixo; os outros locais usam `<chave>_<local>` (se não existir, a chave sem sufixo).
+func _texto_local(chave: String, local: String) -> String:
+	var base := gs.texto_ui(chave)
+	if local == "gym":
+		return base
+	return gs.texto_ui("%s_%s" % [chave, local], base)
+
+
+## 8a2: o requisito do local de destino vale? "belt" = cinturão amador (o da academia); "regional_belt" = Cinturão do Vale (o do centro).
+func _requisito_cumprido(destino: Dictionary) -> bool:
+	if str(destino.move.get("requires", "belt")) == "regional_belt":
+		return gs.cinturao_regional()
+	return gs.cinturao
 
 
 ## "none" (nada a comprar), "locked" (falta o cinturão: o botão não existe), "missing" (cinturão sem o dinheiro: apagado) ou "ready".
 func estado_mudanca() -> String:
-	var d := gs.academia.destino_mudanca()
+	var d := gs.academia.destino_mudanca(gs.local_id)
 	if d.is_empty() or d.id == gs.local_id:
 		return "none"
-	if not gs.cinturao:
+	if not _requisito_cumprido(d):
 		return "locked"
 	return "ready" if Economia.pode_pagar(gs.dinheiro, float(d.move.cost)) else "missing"
 
@@ -69,7 +87,7 @@ func pode_mudar() -> bool:
 func mudar() -> bool:
 	if not pode_mudar():
 		return false
-	var d := gs.academia.destino_mudanca()
+	var d := gs.academia.destino_mudanca(gs.local_id)
 	gs._gastar_dinheiro(float(d.move.cost))
 	gs._casa._interromper_saida()  # 6c1: trocar de local no meio da saída do John a termina na hora
 	var estava_parado := gs.estado_escada() == "move"
@@ -82,6 +100,7 @@ func mudar() -> bool:
 		gs.permanente["arts_unlocked"] = gs.academia.ids_artes_iniciais()
 	# 6c1: a 1ª chegada à academia toca a cena. O marco entra no MESMO salvar() da mudança (fechar o jogo no meio não repete).
 	var cena_id := gs._casa._cena_da_chegada()
+	var chegou_centro: bool = gs._centro.ao_mudar_para(gs.local_id)  # 8a2: marco e fala da chegada ao centro (sem cena)
 	if cena_id != "":
 		gs._escola._gravar_marco(str(gs.escola_cfg.gym_arrival.milestone), {}, false)
 		gs.cena_sala = cena_id
@@ -101,6 +120,9 @@ func mudar() -> bool:
 	if gs.local_id == "gym":
 		gs._academia_rearmada = true
 		gs.disparar_gatilho("gym_arrival")  # Fase 6a: só a chegada pelo MUDAR (a carga e o NOVA CAMPANHA não passam aqui)
+	if chegou_centro:
+		gs.permanente_mudou.emit()  # a região CENTRO da árvore abriu (permanent.center_reached)
+		gs.disparar_gatilho("center_arrival")  # 8a2: a fala do Osmar (1ª vez da linhagem: única; depois: as que se revezam)
 	if cena_id != "":
 		gs.cena_sala_pedida.emit(cena_id)  # a escolha da arte espera o fim da cena (cena_sala_terminou)
 	return true
@@ -108,10 +130,8 @@ func mudar() -> bool:
 
 ## Dinheiro que a LOJA não pode gastar: o preço da mudança, entre o cinturão e a mudança (0 nos outros casos).
 func reserva_mudanca() -> float:
-	if not gs.cinturao:
-		return 0.0
-	var d := gs.academia.destino_mudanca()
-	if d.is_empty() or d.id == gs.local_id:
+	var d := gs.academia.destino_mudanca(gs.local_id)
+	if d.is_empty() or d.id == gs.local_id or not _requisito_cumprido(d):  # 8a2: só reserva com o requisito DO DESTINO cumprido
 		return 0.0
 	return float(d.move.cost)
 

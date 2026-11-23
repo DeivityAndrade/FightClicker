@@ -26,8 +26,9 @@ static func textura(nome: String, look: Dictionary, simbolo: bool = false) -> Te
 	var top := str(look.get("top", "none"))
 	var faixa := str(look.get("headband", "none"))
 	var meiao := str(look.get("socks", "none"))
-	var chave := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [nome, look.get("skin", ""), look.get("hair_color", ""), look.get("shorts_color", ""),
-		estilo, top, look.get("top_color", ""), faixa, look.get("headband_color", ""), meiao, "sym" if simbolo else "-"]
+	var marca := GameState.patrocinio_estado == "signed"  # 8a2: a marca do patrocinador no calção (só com o contrato assinado)
+	var chave := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [nome, look.get("skin", ""), look.get("hair_color", ""), look.get("shorts_color", ""),
+		estilo, top, look.get("top_color", ""), faixa, look.get("headband_color", ""), meiao, "sym" if simbolo else "-", "pat" if marca else "-"]
 	if _cache.has(chave):
 		return _cache[chave]
 	var corpo := _imagem(str(cam.get("body", "")))
@@ -56,6 +57,8 @@ static func textura(nome: String, look: Dictionary, simbolo: bool = false) -> Te
 						_somar(base, _imagem(str(sims[lugar])), _mapa_simbolo(look, lugar))
 			"head":
 				if saida == null:
+					if marca:
+						_remendo(base, s)  # o remendo fica na base: a máscara da frente (braço, luva) passa por cima dele
 					saida = _copia(base)
 				var cortes: Dictionary = cam.get("head", {}) if cam.get("head", {}) is Dictionary else {}
 				var caminho := str(cortes.get(estilo, ""))
@@ -84,6 +87,32 @@ static func textura(nome: String, look: Dictionary, simbolo: bool = false) -> Te
 	var t := ImageTexture.create_from_image(saida)
 	_cache[chave] = t
 	return t
+
+
+## 8a2: remendo do patrocinador (sponsor_vale_patch, 5x3) no calção: em cada quadro, no `hip` + (-2,+3) com o pivô do remendo (2,0)
+## (= canto de cima à esquerda em hip - 4); quadro virado (`flipped`) espelha em torno do hip. Só pinta onde já há corpo (calção).
+static func _remendo(base: Image, folha: Dictionary) -> void:
+	var rem := _imagem(str(UiTema.sprite("sponsor_vale_patch").get("file", "")))
+	if rem == null:
+		return
+	var ancoras = folha.get("anchors", [])
+	var fs: Array = folha.get("frame_size", [48, 72])
+	var pv: Array = folha.get("pivot", [22, 67])
+	var n := maxi(1, int(folha.get("frames", 1)))
+	for q in n:
+		var a = ancoras[q] if ancoras is Array and q < ancoras.size() else (ancoras if ancoras is Dictionary else {})
+		if not (a is Dictionary) or not a.has("hip"):
+			continue
+		var hip: Array = a.hip
+		var x0 := q * int(fs[0]) + int(pv[0]) + int(hip[0]) + (-1 if bool(a.get("flipped", false)) else -4)
+		var y0 := int(pv[1]) + int(hip[1]) + 3
+		for yy in rem.get_height():
+			for xx in rem.get_width():
+				var c := rem.get_pixel(xx, yy)
+				var px := x0 + (rem.get_width() - 1 - xx if bool(a.get("flipped", false)) else xx)
+				var py := y0 + yy
+				if c.a > 0.0 and px >= 0 and py >= 0 and px < base.get_width() and py < base.get_height() and base.get_pixel(px, py).a > 0.0:
+					base.set_pixel(px, py, c)
 
 
 ## Troca de cor de um quadro 1 (miniatura/retrato) por nome de folha "_layered" do jogador ("..._disc" -> "..._disc_layered").

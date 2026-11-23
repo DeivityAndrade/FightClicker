@@ -888,9 +888,9 @@ func _teste_correcoes_qa() -> void:
 	var d := DialogosData.carregar()
 	var sem_local: Array = []
 	for l in d.linhas:
-		if l.speaker == "coach" and l.trigger != "opening" and not (str(l.get("conditions", {}).get("location", "garage")) in ["garage", "gym"]):
+		if l.speaker == "coach" and l.trigger != "opening" and not (str(l.get("conditions", {}).get("location", "garage")) in ["garage", "gym", "center"]):
 			sem_local.append(l.id)
-	checar_igual(sem_local, [], "B1 (6c1): fala do Osmar só tem local garagem ou academia (quem fala é quem está desenhado)")
+	checar_igual(sem_local, [], "B1 (6c1): fala do Osmar só tem local garagem, academia ou centro (quem fala é quem está desenhado)")
 	var g := _pronto("f6a_b1")
 	var falas: Array = []
 	g.fala_pedida.connect(func(_q: String, _t: String, id: String) -> void: falas.append(id))

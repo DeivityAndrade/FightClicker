@@ -1,0 +1,754 @@
+{
+	"bag_l0_hit_center": {
+		"fps": 12.0,
+		"frame_size": [
+			40,
+			76
+		],
+		"frames": 4,
+		"from": "bag_l0_hit_gym",
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "equipment/bag_l0_hit_center.png"
+	},
+	"bag_l0_idle_center": {
+		"fps": 3.0,
+		"frame_size": [
+			40,
+			76
+		],
+		"frames": 4,
+		"from": "bag_l0_idle_gym",
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "equipment/bag_l0_idle_center.png"
+	},
+	"bag_l0_side_center": {
+		"fps": 3.0,
+		"frame_size": [
+			40,
+			76
+		],
+		"frames": 4,
+		"from": "bag_l0_side_gym",
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "equipment/bag_l0_side_center.png"
+	},
+	"bag_l1_hit_center": {
+		"fps": 12.0,
+		"frame_size": [
+			40,
+			76
+		],
+		"frames": 4,
+		"from": "bag_l1_hit_gym",
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "equipment/bag_l1_hit_center.png"
+	},
+	"bag_l1_idle_center": {
+		"fps": 3.0,
+		"frame_size": [
+			40,
+			76
+		],
+		"frames": 4,
+		"from": "bag_l1_idle_gym",
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "equipment/bag_l1_idle_center.png"
+	},
+	"bag_l1_side_center": {
+		"fps": 3.0,
+		"frame_size": [
+			40,
+			76
+		],
+		"frames": 4,
+		"from": "bag_l1_side_gym",
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "equipment/bag_l1_side_center.png"
+	},
+	"center_bg": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "center/center_bg.png"
+	},
+	"center_led": {
+		"fps": 0.0,
+		"frame_size": [
+			40,
+			8
+		],
+		"frames": 2,
+		"pivot": [
+			20,
+			0
+		],
+		"rel": "center/center_led.png"
+	},
+	"grappling_dummy_l0_hit_center": {
+		"fps": 12.0,
+		"frame_size": [
+			66,
+			60
+		],
+		"frames": 3,
+		"from": "grappling_dummy_l0_hit",
+		"pivot": [
+			32,
+			57
+		],
+		"rel": "equipment/grappling_dummy_l0_hit_center.png"
+	},
+	"grappling_dummy_l0_idle_center": {
+		"fps": 0.0,
+		"frame_size": [
+			66,
+			60
+		],
+		"frames": 1,
+		"from": "grappling_dummy_l0_idle",
+		"pivot": [
+			32,
+			57
+		],
+		"rel": "equipment/grappling_dummy_l0_idle_center.png"
+	},
+	"grappling_dummy_l0_rest_center": {
+		"fps": 0.0,
+		"frame_size": [
+			66,
+			30
+		],
+		"frames": 1,
+		"from": "grappling_dummy_l0_rest_gym",
+		"pivot": [
+			32,
+			27
+		],
+		"rel": "equipment/grappling_dummy_l0_rest_center.png"
+	},
+	"grappling_dummy_l1_hit_center": {
+		"fps": 12.0,
+		"frame_size": [
+			66,
+			60
+		],
+		"frames": 3,
+		"from": "grappling_dummy_l1_hit",
+		"pivot": [
+			32,
+			57
+		],
+		"rel": "equipment/grappling_dummy_l1_hit_center.png"
+	},
+	"grappling_dummy_l1_idle_center": {
+		"fps": 0.0,
+		"frame_size": [
+			66,
+			60
+		],
+		"frames": 1,
+		"from": "grappling_dummy_l1_idle",
+		"pivot": [
+			32,
+			57
+		],
+		"rel": "equipment/grappling_dummy_l1_idle_center.png"
+	},
+	"grappling_dummy_l1_rest_center": {
+		"fps": 0.0,
+		"frame_size": [
+			66,
+			30
+		],
+		"frames": 1,
+		"from": "grappling_dummy_l1_rest_gym",
+		"pivot": [
+			32,
+			27
+		],
+		"rel": "equipment/grappling_dummy_l1_rest_center.png"
+	},
+	"icon_region_center": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_region_center.png"
+	},
+	"icon_region_center_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_region_center_9.png"
+	},
+	"icon_students": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_students.png"
+	},
+	"kick_bag_l0_hit_center": {
+		"fps": 12.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"from": "kick_bag_l0_hit",
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l0_hit_center.png"
+	},
+	"kick_bag_l0_idle_center": {
+		"fps": 3.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"from": "kick_bag_l0_idle",
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l0_idle_center.png"
+	},
+	"kick_bag_l0_rest_center": {
+		"fps": 0.0,
+		"frame_size": [
+			80,
+			28
+		],
+		"frames": 1,
+		"from": "kick_bag_l0_rest_gym",
+		"pivot": [
+			40,
+			25
+		],
+		"rel": "equipment/kick_bag_l0_rest_center.png"
+	},
+	"kick_bag_l1_hit_center": {
+		"fps": 12.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"from": "kick_bag_l1_hit",
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l1_hit_center.png"
+	},
+	"kick_bag_l1_idle_center": {
+		"fps": 3.0,
+		"frame_size": [
+			34,
+			80
+		],
+		"frames": 4,
+		"from": "kick_bag_l1_idle",
+		"pivot": [
+			17,
+			0
+		],
+		"rel": "equipment/kick_bag_l1_idle_center.png"
+	},
+	"kick_bag_l1_rest_center": {
+		"fps": 0.0,
+		"frame_size": [
+			80,
+			28
+		],
+		"frames": 1,
+		"from": "kick_bag_l1_rest_gym",
+		"pivot": [
+			40,
+			25
+		],
+		"rel": "equipment/kick_bag_l1_rest_center.png"
+	},
+	"map_node_b_owned_steel": {
+		"fps": 0.0,
+		"frame_size": [
+			38,
+			38
+		],
+		"frames": 1,
+		"pivot": [
+			19,
+			19
+		],
+		"rel": "ui/map/map_node_b_owned_steel.png"
+	},
+	"map_node_s_owned_steel": {
+		"fps": 0.0,
+		"frame_size": [
+			24,
+			24
+		],
+		"frames": 1,
+		"pivot": [
+			12,
+			12
+		],
+		"rel": "ui/map/map_node_s_owned_steel.png"
+	},
+	"map_tile_center_region": {
+		"fps": 0.0,
+		"frame_size": [
+			32,
+			32
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/map/map_tile_center_region.png"
+	},
+	"rope_l0_idle_center": {
+		"fps": 0.0,
+		"frame_size": [
+			18,
+			40
+		],
+		"frames": 1,
+		"from": "rope_l0_idle_gym",
+		"pivot": [
+			9,
+			0
+		],
+		"rel": "equipment/rope_l0_idle_center.png"
+	},
+	"rope_l0_swing_back_center": {
+		"fps": 24.0,
+		"frame_size": [
+			48,
+			80
+		],
+		"frames": 7,
+		"from": "rope_l0_swing_back_gym",
+		"pivot": [
+			22,
+			75
+		],
+		"rel": "equipment/rope_l0_swing_back_center.png"
+	},
+	"rope_l0_swing_center": {
+		"fps": 24.0,
+		"frame_size": [
+			48,
+			80
+		],
+		"frames": 7,
+		"from": "rope_l0_swing_gym",
+		"pivot": [
+			22,
+			75
+		],
+		"rel": "equipment/rope_l0_swing_center.png"
+	},
+	"rope_l1_idle_center": {
+		"fps": 0.0,
+		"frame_size": [
+			18,
+			40
+		],
+		"frames": 1,
+		"from": "rope_l1_idle_gym",
+		"pivot": [
+			9,
+			0
+		],
+		"rel": "equipment/rope_l1_idle_center.png"
+	},
+	"rope_l1_swing_back_center": {
+		"fps": 24.0,
+		"frame_size": [
+			48,
+			80
+		],
+		"frames": 7,
+		"from": "rope_l1_swing_back_gym",
+		"pivot": [
+			22,
+			75
+		],
+		"rel": "equipment/rope_l1_swing_back_center.png"
+	},
+	"rope_l1_swing_center": {
+		"fps": 24.0,
+		"frame_size": [
+			48,
+			80
+		],
+		"frames": 7,
+		"from": "rope_l1_swing_gym",
+		"pivot": [
+			22,
+			75
+		],
+		"rel": "equipment/rope_l1_swing_center.png"
+	},
+	"speed_bag_l0_hit_center": {
+		"fps": 18.0,
+		"frame_size": [
+			44,
+			84
+		],
+		"frames": 5,
+		"from": "speed_bag_l0_hit",
+		"pivot": [
+			22,
+			81
+		],
+		"rel": "equipment/speed_bag_l0_hit_center.png"
+	},
+	"speed_bag_l0_idle_center": {
+		"fps": 2.0,
+		"frame_size": [
+			44,
+			84
+		],
+		"frames": 2,
+		"from": "speed_bag_l0_idle",
+		"pivot": [
+			22,
+			81
+		],
+		"rel": "equipment/speed_bag_l0_idle_center.png"
+	},
+	"speed_bag_l0_wall_center": {
+		"fps": 0.0,
+		"frame_size": [
+			48,
+			52
+		],
+		"frames": 1,
+		"from": "speed_bag_l0_wall_gym",
+		"pivot": [
+			24,
+			0
+		],
+		"rel": "equipment/speed_bag_l0_wall_center.png"
+	},
+	"speed_bag_l0_wall_swing_center": {
+		"fps": 12.0,
+		"frame_size": [
+			48,
+			52
+		],
+		"frames": 6,
+		"from": "speed_bag_l0_wall_swing_gym",
+		"pivot": [
+			24,
+			0
+		],
+		"rel": "equipment/speed_bag_l0_wall_swing_center.png"
+	},
+	"speed_bag_l1_hit_center": {
+		"fps": 18.0,
+		"frame_size": [
+			44,
+			84
+		],
+		"frames": 5,
+		"from": "speed_bag_l1_hit",
+		"pivot": [
+			22,
+			81
+		],
+		"rel": "equipment/speed_bag_l1_hit_center.png"
+	},
+	"speed_bag_l1_idle_center": {
+		"fps": 2.0,
+		"frame_size": [
+			44,
+			84
+		],
+		"frames": 2,
+		"from": "speed_bag_l1_idle",
+		"pivot": [
+			22,
+			81
+		],
+		"rel": "equipment/speed_bag_l1_idle_center.png"
+	},
+	"speed_bag_l1_wall_center": {
+		"fps": 0.0,
+		"frame_size": [
+			48,
+			52
+		],
+		"frames": 1,
+		"from": "speed_bag_l1_wall_gym",
+		"pivot": [
+			24,
+			0
+		],
+		"rel": "equipment/speed_bag_l1_wall_center.png"
+	},
+	"sponsor_envelope": {
+		"fps": 4.0,
+		"frame_size": [
+			16,
+			11
+		],
+		"frames": 3,
+		"pivot": [
+			8,
+			10
+		],
+		"rel": "center/sponsor_envelope.png"
+	},
+	"sponsor_vale": {
+		"fps": 0.0,
+		"frame_size": [
+			20,
+			20
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/sponsor_vale.png"
+	},
+	"sponsor_vale_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/sponsor_vale_9.png"
+	},
+	"sponsor_vale_patch": {
+		"fps": 0.0,
+		"frame_size": [
+			5,
+			3
+		],
+		"frames": 1,
+		"pivot": [
+			2,
+			0
+		],
+		"rel": "ui/sponsor_vale_patch.png"
+	},
+	"sponsor_vale_wide": {
+		"fps": 0.0,
+		"frame_size": [
+			89,
+			20
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/sponsor_vale_wide.png"
+	},
+	"treadmill_l0_idle_center": {
+		"fps": 0.0,
+		"frame_size": [
+			86,
+			42
+		],
+		"frames": 1,
+		"from": "treadmill_l0_idle_gym",
+		"pivot": [
+			43,
+			41
+		],
+		"rel": "equipment/treadmill_l0_idle_center.png"
+	},
+	"treadmill_l0_run_center": {
+		"fps": 12.0,
+		"frame_size": [
+			86,
+			42
+		],
+		"frames": 4,
+		"from": "treadmill_l0_run_gym",
+		"pivot": [
+			43,
+			41
+		],
+		"rel": "equipment/treadmill_l0_run_center.png"
+	},
+	"treadmill_l0_side_center": {
+		"fps": 0.0,
+		"frame_size": [
+			86,
+			42
+		],
+		"frames": 1,
+		"from": "treadmill_l0_side_gym",
+		"pivot": [
+			43,
+			41
+		],
+		"rel": "equipment/treadmill_l0_side_center.png"
+	},
+	"treadmill_l1_idle_center": {
+		"fps": 0.0,
+		"frame_size": [
+			86,
+			42
+		],
+		"frames": 1,
+		"from": "treadmill_l1_idle_gym",
+		"pivot": [
+			43,
+			41
+		],
+		"rel": "equipment/treadmill_l1_idle_center.png"
+	},
+	"treadmill_l1_run_center": {
+		"fps": 12.0,
+		"frame_size": [
+			86,
+			42
+		],
+		"frames": 4,
+		"from": "treadmill_l1_run_gym",
+		"pivot": [
+			43,
+			41
+		],
+		"rel": "equipment/treadmill_l1_run_center.png"
+	},
+	"treadmill_l1_side_center": {
+		"fps": 0.0,
+		"frame_size": [
+			86,
+			42
+		],
+		"frames": 1,
+		"from": "treadmill_l1_side_gym",
+		"pivot": [
+			43,
+			41
+		],
+		"rel": "equipment/treadmill_l1_side_center.png"
+	},
+	"ui_clipping_regional_zoom": {
+		"fps": 0.0,
+		"frame_size": [
+			124,
+			92
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_clipping_regional_zoom.png"
+	},
+	"ui_map_region_label_center": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			13
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/map/ui_map_region_label_center.png"
+	},
+	"ui_poster_league_regional_won_zoom": {
+		"fps": 0.0,
+		"frame_size": [
+			124,
+			160
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_poster_league_regional_won_zoom.png"
+	},
+	"wall_clipping_regional_framed": {
+		"fps": 0.0,
+		"frame_size": [
+			36,
+			36
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "center/wall_clipping_regional_framed.png"
+	},
+	"wall_poster_league_regional_won_gym": {
+		"fps": 0.0,
+		"frame_size": [
+			42,
+			58
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_poster_league_regional_won_gym.png"
+	}
+}

@@ -96,8 +96,8 @@
 			"_doc": "Objeto parado na parede (como a foto antiga), com texto no hover. Aparece a partir da campanha min_campaign (1º discípulo) com o marco garage_saved. Na academia, só depois do marco da cena (mesma regra da foto).",
 			"requires_milestone": "garage_saved",
 			"min_campaign": 2,
-			"spot_by_location": { "garage": "clipping_spot", "gym": "gym_clipping_spot" },
-			"requires_milestone_by_location": { "garage": "", "gym": "cena_primeira_academia" },
+			"spot_by_location": { "garage": "clipping_spot", "gym": "gym_clipping_spot", "center": "center_clipping_black_cat_spot" },
+			"requires_milestone_by_location": { "garage": "", "gym": "cena_primeira_academia", "center": "" },
 			"object_text": "black_cat_clipping"
 		},
 		"rumor": {

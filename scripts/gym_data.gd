@@ -9,6 +9,7 @@ const CAMINHO_ARTES := "res://data/arts.json"
 
 const REGRAS: Array[String] = ["manual_click_bonus", "crew_time_bonus", "click_crit_bonus"]  # 7b1: click_crit_bonus (Muay Thai)
 const PADRAO_LOCAL := "garage"
+const REQUISITOS: Array[String] = ["belt", "regional_belt"]
 
 var local_padrao := PADRAO_LOCAL
 var locais: Array[Dictionary] = []
@@ -52,11 +53,19 @@ func ids_artes_iniciais() -> Array:
 	return r
 
 
-## Local que se compra (o 1º com bloco `move`); {} se nenhum.
-func destino_mudanca() -> Dictionary:
-	for l in locais:
-		if not l.move.is_empty():
-			return l
+## Local que se compra a partir de `atual` (8a2: o PRÓXIMO local da lista, se tiver bloco `move`); {} se não há.
+## Sem `atual` (""): o 1º local com `move` (comportamento de antes).
+func destino_mudanca(atual: String = "") -> Dictionary:
+	if atual == "":
+		for l in locais:
+			if not l.move.is_empty():
+				return l
+		return {}
+	for i in locais.size():
+		if locais[i].id == atual:
+			if i + 1 < locais.size() and not locais[i + 1].move.is_empty():
+				return locais[i + 1]
+			return {}
 	return {}
 
 
@@ -113,10 +122,12 @@ func _montar_local(item: Dictionary, id: String) -> Dictionary:
 		else:
 			if str(bruto.get("currency", "money")) != "money":
 				push_warning("GymData: move.currency de '%s' deve ser 'money' (só $ nesta fase): usando 'money'." % id)
-			if str(bruto.get("requires", "belt")) != "belt":
-				push_warning("GymData: move.requires de '%s' deve ser 'belt': usando 'belt'." % id)
+			var req := str(bruto.get("requires", "belt"))
+			if not (req in REQUISITOS):  # 8a2: "belt" (cinturão amador) ou "regional_belt" (Cinturão do Vale)
+				push_warning("GymData: move.requires de '%s' deve ser 'belt' ou 'regional_belt': usando 'belt'." % id)
+				req = "belt"
 			var mid := str(bruto.get("id", ""))
-			mv = {"id": mid if mid != "" else "move_" + id, "cost": float(custo), "currency": "money", "requires": "belt"}
+			mv = {"id": mid if mid != "" else "move_" + id, "cost": float(custo), "currency": "money", "requires": req}
 	return {
 		"id": id, "training_mult": mult,
 		"apparatus_suffix": str(item.get("apparatus_suffix", "")),

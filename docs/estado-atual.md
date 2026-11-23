@@ -2,7 +2,18 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-22)
+## Situação agora (2026-11-22, noite)
+- **Fase 8a2 fechada** (Centro Raízes), feita com o dono FORA ("siga até onde der"): depois do Cinturão do Vale, MUDAR para o centro
+  ($25 mil), treino x4, gerador **Alunos da Raízes** (só no centro), 5ª melhoria dos aparelhos (só no centro), patrocínio
+  **Autopeças Vale Forte** (só a partir da campanha seguinte ao 1º Cinturão do Vale, fama >= 200; +50% do prêmio por vitória, marca no
+  calção; ignorar não custa nada; aviso "CHEGOU UMA PROPOSTA"), região CENTRO na árvore (3 nós, 22 mil). Nada muda até o 1º Cinturão do
+  Vale. Save v13. Sem luta nova no centro até a 8b.
+- **Pendente com o dono:** confirmar as 12 decisões D1–D12 do Designer (lista simples em `fase8a2-revisao.md`) e testar 8a1/8a2
+  (`tools/teste/jogar_teste_8a1.ps1`, `jogar_teste_8a2.ps1 -Vale | -Patrocinio`). Ninguém ouviu a voz do James.
+- Recado para a 8b: o Legado volta a sobrar depois da região CENTRO (7–18 mil na campanha 8, 22–42 mil na 10).
+- **Próximo:** a Ronda Noturna do Gato Preto (entre 8a e 8b, decisão do dono) — escopo ainda não escrito; esperar o dono.
+
+## Situação anterior (2026-11-22)
 - **Fase 8a1 fechada** (Liga Regional do Vale): depois do Kid a carreira segue com 4 lutas no Clube Ferroviário (arena regional com
   ringue): Zé Bigorna (Queixo de ferro trava o K.O. de embalo), Tião Estaca (Base larga trava o Por cima), Rony Sabão (Ensaboado trava
   o Clinch) e o rival **James Blindado** (guarda fechada no 1º round; apresentação pulável ≤ 15 s e fala depois da luta conforme o

@@ -1415,3 +1415,42 @@ o azul é do discípulo), ligada em `speech_bubble.tag_by_speaker.rival`. Moldur
 (à mão: casacos, cachecóis, gente em pé na galeria); as cordas não balançam (um artista faria a corda reagir quando alguém bate
 nela e na entrada); a lona pediria manchas e marcas de uso; o cinturão erguido em 80 px é o mais fraco (as tiras caindo pedem
 curva desenhada à mão); a foto do cartaz é só o retrato em 2 tons. Tamanhos fixos para trocar só os arquivos.
+
+## 35. Fase 8a2 (Centro de Treinamento Raízes: sala larga, aparelhos do centro, recorte, cartaz vencido, patrocínio)
+Gerador: `tools/art/make_arte_fase8a2.gd` (headless; `-- --no-assets` só mockups). Manifest: `python tools/art/manifest_8a2.py`
+(depois do `manifest_8a2_personagens.py` do Artista; os dois são idempotentes). Lista, pontos e pedidos ao código:
+`docs/arte/fase8a2-manifest.md`. Mockups: `mockups/fase8a2_*.png`.
+
+**A sala (`center_bg`, padrão da 6d2):** mesma caixa de diorama larga (parede x 70..569, chão até y 329, pilares x 164..174 e
+468..478, ponto de fuga 320,-28, viga y 26..33 com os ganchos em 258 e 336). O que diz "centro" e não "academia":
+- **Pé-direito alto**: treliça escura acima da viga, 2 janelões no fundo (alas) e 2 nas paredes laterais, luz do dia + 4 painéis de LED
+  (`center_led`, falha opcional). Luz quase toda no passo 0; só os cantos e a frente caem 1 passo. É a sala mais clara do jogo.
+- **Cores da escola**: concreto pintado de branco em blocos em cima, **barrado azul da escola** (b1) embaixo, pilares de aço, o R
+  pintado na parede. Garagem = cinza e lâmpada; academia = creme e verde; centro = branco, azul e aço.
+- **Piso de borracha** em placas (o nó da árvore tem esse nome), tatame **vermelho** na frente à esquerda (onde a arte deita) e uma fita
+  de área de treino em volta do alvo.
+- **História na parede:** vitrine com os 2 cinturões (amador e do Vale) na ala direita; **canto da memória** na ala esquerda com o
+  recorte emoldurado e a **foto da garagem, torta de propósito**; o mural (176,128), o recorte do vulto (340,60) e o Metrônomo
+  (240,118) nos mesmos pontos da academia. Espelho inteiro (o da academia era trincado), porta de vidro dupla.
+- Os pontos de Osmar, mentores, equipe antiga, aparelhos e caixas são **os mesmos da academia**. Novos: os 4 alunos (fileira do
+  fundo à direita, canto direito da frente e canto esquerdo), o canto da memória e o envelope. Conferido pixel a pixel: 0 problemas.
+
+**Aparelhos `_center` (D4):** as 37 folhas dos 6 aparelhos, com a forma, os quadros e os pivôs da academia e **material novo**:
+saco de couro azul-marinho com faixas brancas; corda de cabo azul; esteira grafite com painel azul; pera caramelo em madeira clara;
+boneco de couro vermelho; saco comprido de lona crua com alças de couro. O nível visual continua 0/1 (a 5ª melhoria não troca sprite).
+
+**Recorte do Vale (D10):** a mesma peça nos dois lugares: papel creme, manchete RAÍZES (3x5, legível em 1x quando cabe), foto
+granulada do discípulo erguendo o cinturão, colunas, picote. Emoldurado no centro (36x36, moldura preta com filete de ouro);
+solto e preso com fita no **cartaz vencido** da academia (42x58: o cartaz da 8a1 + **adesivo redondo do R** em cima da cara do
+James + recorte passando da borda; quadro 1 com a marca no canto).
+
+**Patrocínio Autopeças Vale Forte:** marca original = **engrenagem amarela com os dois morros do Vale**, sobre preto (o amarelo da
+saia do ringue da 8a1). Selo 20, larga com VALE FORTE, 9x9, e o **remendo do calção** (5x3, etiqueta amarela sem contorno, no
+`hip` de cada quadro + (-2,+3)). O **envelope PROPOSTA** fica no chão no mesmo ponto nos 3 locais (250,302), brilhando de vez em quando.
+
+**Região CENTRO do mapa:** ícone da fachada com o R, plaquinha azul, ladrilho de piso de borracha, anel **aço** (`steel`) nos nós
+comprados. Nós usam os ícones que já existem (data). Atenção ao conflito da chave `center` no `janela_mapa.gd` (fase8a2-manifest.md).
+
+**Placeholder / precisa de pixel artist:** o fundo é montagem por código (blocos, reflexos em diagonal, vitrine plana); os aparelhos
+são troca de material, não forma nova; a silhueta do recorte tem 7 px; o remendo do calção só lê como marca no contexto. Tamanhos e
+pivôs fixos: trocar a arte é trocar o arquivo.

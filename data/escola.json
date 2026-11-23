@@ -17,13 +17,15 @@
 	"coach_presence": {
 		"_doc": "Design §3. O Osmar só aparece (e só fala) onde está desenhado. Na academia, só depois do marco da cena. Sem ponto no manifest = não aparece e não fala ali.",
 		"garage": { "spot": "by_data_id.original_trainer.pos", "requires_milestone": "" },
-		"gym": { "spot": "gym_coach_spot", "requires_milestone": "cena_primeira_academia" }
+		"gym": { "spot": "gym_coach_spot", "requires_milestone": "cena_primeira_academia" },
+		"center": { "spot": "center_coach_spot", "requires_milestone": "" }
 	},
 
 	"old_photo": {
 		"_doc": "Design §2. A foto acompanha a escola: na garagem sempre; na academia depois do marco. Hover: objects.old_photo (garagem) / objects.old_photo_gym (academia).",
 		"garage": { "spot": "garage_story_wall.objects.photo_old", "requires_milestone": "", "object_text": "old_photo" },
-		"gym": { "spot": "gym_photo_spot", "requires_milestone": "cena_primeira_academia", "object_text": "old_photo_gym", "tilted": false }
+		"gym": { "spot": "gym_photo_spot", "requires_milestone": "cena_primeira_academia", "object_text": "old_photo_gym", "tilted": false },
+		"center": { "spot": "center_photo_spot", "requires_milestone": "", "object_text": "old_photo_center", "tilted": true }
 	},
 
 	"mentor_leave": {
@@ -48,8 +50,8 @@
 
 	"mural": {
 		"_doc": "Fase 6c2 (design 6c2 §5). Objeto na parede da garagem e da academia, ao lado da foto. Abre a qualquer hora na sala (consulta). O hall só compra com a tela de fim pendente. Um retrato por entrada de school.roster, na ordem do roster (o John é a 1ª). A campanha em andamento não entra.",
-		"spot_by_location": { "garage": "mural_spot", "gym": "gym_mural_spot" },
-		"requires_milestone_by_location": { "garage": "", "gym": "cena_primeira_academia" },
+		"spot_by_location": { "garage": "mural_spot", "gym": "gym_mural_spot", "center": "center_mural_spot" },
+		"requires_milestone_by_location": { "garage": "", "gym": "cena_primeira_academia", "center": "" },
 		"object_text": "mural",
 		"portrait_head_scale": 2,
 		"_doc_layout": "columns e rows_per_page são sugestão; o layout final é da UI/UX (alinhamento-ui).",

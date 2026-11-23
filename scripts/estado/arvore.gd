@@ -112,6 +112,8 @@ func trava_aberta(trava: String) -> bool:
 		return true
 	if trava == "gym":
 		return not gs.permanente.get("arts_unlocked", []).is_empty()
+	if trava == "center":  # 8a2: aberta na 1ª mudança da linhagem para o centro
+		return bool(gs.permanente.get("center_reached", false))
 	if trava.begins_with("art:"):
 		return trava.substr(4) in gs.permanente.get("arts_unlocked", [])
 	return false

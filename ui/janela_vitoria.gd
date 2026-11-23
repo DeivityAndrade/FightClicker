@@ -46,7 +46,8 @@ func _montar_normal(r: Dictionary) -> void:
 	var lj := maxf(288.0, roundf(bloco / 2.0) * 2.0 + 40.0)
 	var xj := 320.0 - lj / 2.0
 	# 7b2: uma linha a mais para a meta da 2ª passiva ("2/3 K.O. DE EMBALO") ou, quando abre, o aviso único NOVO JEITO DE LUTAR.
-	var extra := _altura_passiva(r) + _altura_liga(r)
+	var sp := _altura_patrocinio(r)  # 8a2: a linha PATROCÍNIO ...: +$n entra entre o Legado em jogo e o PRÓXIMO
+	var extra := _altura_passiva(r) + _altura_liga(r) + sp
 	var corr := -roundf(extra / 2.0)  # a janela cresce para os dois lados (continua no meio)
 	var topo := (42.0 if revanche else 72.0) + corr
 	var dy := (32.0 if revanche else 0.0) + corr  # deslocamento do miolo (posições originais + dy)
@@ -67,13 +68,38 @@ func _montar_normal(r: Dictionary) -> void:
 	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 196, 192.0 + dy)
 	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 192.0 + dy)
 	v.position.x = roundf(444.0 - UiTema.largura(v.text))
+	_linha_patrocinio(r, 209.0 + dy)
 	if str(r.get("next_name", "")) != "":
 		UiTema.rotulo_centro(painel, UiTema.txt("victory_next", "PRÓXIMO: {nome}", {"nome": str(r.next_name)}),
-			UiTema.WHITE, 320.0, 212.0 + dy)
-	_bloco_passiva(r, xj, lj, 228.0 + dy)
-	_bloco_liga(r, xj, lj, 228.0 + dy + _altura_passiva(r))
+			UiTema.WHITE, 320.0, 212.0 + dy + sp)
+	_bloco_passiva(r, xj, lj, 228.0 + dy + sp)
+	_bloco_liga(r, xj, lj, 228.0 + dy + sp + _altura_passiva(r))
 	var b := botao_texto(Rect2(240, 242.0 + dy + extra, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
+
+
+## 8a2: 14 px a mais na janela quando o contrato está assinado e esta vitória pagou o bônus (resumo.sponsor_money).
+func _altura_patrocinio(r: Dictionary) -> float:
+	return 14.0 if int(r.get("sponsor_money", 0)) > 0 and not GameState.patrocinio().is_empty() else 0.0
+
+
+## 8a2: "[marca 9x9] PATROCÍNIO VALE FORTE: +$n" (ouro), o grupo centralizado na janela; o número sobe junto com os outros.
+func _linha_patrocinio(r: Dictionary, y: float) -> void:
+	var v := int(r.get("sponsor_money", 0))
+	var p: Dictionary = GameState.patrocinio()
+	if v <= 0 or p.is_empty():
+		return
+	var final := GameState.preencher(str(p.bonus_line), {"n": NumberFormat.fmt(float(v))}).to_upper()
+	var marca := "sponsor_vale_9"
+	var tem := not UiTema.sprite(marca).is_empty()
+	var grupo := UiTema.largura_visivel(final) + (12.0 if tem else 0.0)
+	var x0 := roundf(320.0 - grupo / 2.0)
+	if tem:
+		var ic := UiTema.textura_rect(painel, marca, x0, y - 1.0)
+		ic.set_meta("ui_align", "ignore")
+	var l := UiTema.rotulo(painel, "", UiTema.Y1, x0 + (12.0 if tem else 0.0), y)
+	UiTema.alinhar(l, "left")
+	_contadores.append({"rotulo": l, "valor": float(v), "modelo": str(p.bonus_line)})
 
 
 ## 7b2: altura extra da janela para a linha da 2ª passiva (0 sem nada; 14 com a meta; 36 com o aviso de liberação).
@@ -208,7 +234,8 @@ func _letreiro_revanche(r: Dictionary, y: float) -> void:
 func _montar_cinturao(r: Dictionary) -> void:
 	# Fase 6a: o 1º cinturão da escola salva a garagem. Entra uma 4ª linha de prêmio (ícone + GARAGEM SALVA) e o selo à direita.
 	var salva := bool(r.get("garage_saved", false))
-	var ds := 18.0 if salva else 0.0  # a janela é a mesma; o miolo de baixo desce 18 px para caber a linha extra
+	var patrocinio := int(r.get("sponsor_money", 0)) > 0 and not GameState.patrocinio().is_empty()
+	var ds := 18.0 if (salva or patrocinio) else 0.0  # a janela é a mesma; o miolo de baixo desce 18 px para caber a linha extra (8a2: ou o patrocínio)
 	moldura("ui_window", Rect2(150, 22, 340, 316))
 	faixa_titulo("victory", Rect2(156, 28, 328, 22), UiTema.txt("belt_title", "CINTURÃO AMADOR"), UiTema.Y1, 2)
 	var cint := AnimSprite.new()
@@ -236,6 +263,8 @@ func _montar_cinturao(r: Dictionary) -> void:
 	if salva:
 		_linha_selo(x_linhas, 206.0, titulo_selo, sub_selo)
 		_selo_garagem()
+	if patrocinio:
+		_linha_patrocinio(r, 206.0)
 	divisor(166, 208 + ds + (2.0 if salva else 0.0), 308)
 	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 215 + ds)
 	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215 + ds)
@@ -252,7 +281,8 @@ func _montar_cinturao(r: Dictionary) -> void:
 ## 8a1: o James caiu. Cinturão do Vale grande (2x, brilho em 3 quadros), a frase do Roteirista, os prêmios e o aviso "CENTRO DE TREINAMENTO
 ## LIBERADO" (a mudança chega na próxima versão). Mesma janela do cinturão amador, com o cinturão maior.
 func _montar_cinturao_regional(r: Dictionary) -> void:
-	moldura("ui_window", Rect2(150, 22, 340, 316))
+	var sp := 14.0 if int(r.get("sponsor_money", 0)) > 0 and not GameState.patrocinio().is_empty() else 0.0  # 8a2: linha do patrocínio
+	moldura("ui_window", Rect2(150, 22, 340, 316 + sp))
 	faixa_titulo("victory", Rect2(156, 28, 328, 22), UiTema.txt("belt_regional_title", "CINTURÃO DO VALE"), UiTema.Y1, 2)
 	var cint := AnimSprite.new()
 	cint.definir("belt_regional_big")
@@ -264,17 +294,18 @@ func _montar_cinturao_regional(r: Dictionary) -> void:
 	var larg := _largura_ganhos(r, 1)
 	var x_linhas := roundf(320.0 - larg / 2.0)
 	_linhas_ganhos(r, x_linhas, 180.0, 1, true)
-	divisor(166, 232, 308)
-	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 239)
-	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 239)
+	_linha_patrocinio(r, 232.0)
+	divisor(166, 232 + sp, 308)
+	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 239 + sp)
+	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 239 + sp)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
-	# Aviso (NÃO é botão): o centro de treinamento abre, mas a mudança só chega na próxima versão.
-	var caixa := fundo_cor(Rect2(166, 256, 308, 30), Color(UiTema.P0, 0.55))
+	# Aviso (NÃO é botão): o centro de treinamento abre e o MUDAR espera no HUD (8a2).
+	var caixa := fundo_cor(Rect2(166, 256 + sp, 308, 30), Color(UiTema.P0, 0.55))
 	caixa.set_meta("ui_align", "ignore")
-	UiTema.textura_rect(painel, "icon_belt_regional_9", 174, 262)
-	UiTema.rotulo(painel, UiTema.txt("belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 188, 262, 280)
-	UiTema.rotulo(painel, UiTema.txt("belt_regional_soon", "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO").to_upper(), UiTema.G3, 188, 273, 280)
-	var b := botao_texto(Rect2(240, 298, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+	UiTema.textura_rect(painel, "icon_belt_regional_9", 174, 262 + sp)
+	UiTema.rotulo(painel, UiTema.txt("belt_regional_unlock_done" if bool(GameState.permanente.get("center_reached", false)) else "belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 188, 262 + sp, 280)
+	UiTema.rotulo(painel, UiTema.txt("belt_regional_soon", "O CENTRO ESPERA: USE O MUDAR").to_upper(), UiTema.G3, 188, 273 + sp, 280)
+	var b := botao_texto(Rect2(240, 298 + sp, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
 

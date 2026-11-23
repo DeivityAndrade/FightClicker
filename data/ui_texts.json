@@ -746,7 +746,18 @@
 	"belt_regional_title": "CINTURÃO DO VALE",
 	"belt_regional_line": "O BLINDADO CAIU. A RAÍZES É DO VALE",
 	"belt_regional_unlock": "CENTRO DE TREINAMENTO LIBERADO",
-	"belt_regional_soon": "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO",
+	"belt_regional_unlock_done": "O CENTRO RAÍZES É A NOSSA CASA",
+	"belt_regional_soon": "O CENTRO ESPERA: USE O MUDAR",
 	"belt_regional_lost": "O BLINDADO FICA COM O CINTURÃO. VOLTE MAIS FORTE",
-	"belt_regional_label": "CINTURÃO DO VALE"
+	"belt_regional_label": "CINTURÃO DO VALE",
+
+	"move_title_center": "CENTRO RAÍZES",
+	"move_effect_center": "TREINO x{mult} / ALUNOS NOVOS",
+	"move_no_fights_center": "SEM LUTA NOVA POR ENQUANTO",
+	"move_arrived_center": "BEM-VINDO AO CENTRO RAÍZES!",
+	"hud_next_move_center": "MUDE PARA O CENTRO",
+	"map_region_center": "CENTRO",
+	"sponsor_envelope": "PROPOSTA",
+	"sponsor_signed": "CONTRATO ASSINADO",
+	"sponsor_arrived": "CHEGOU UMA PROPOSTA PARA A RAÍZES"
 }

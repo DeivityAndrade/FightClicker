@@ -28,8 +28,13 @@ func multiplicador_aparelho(aparelho_id: String) -> float:
 	var m := 1.0
 	var ap := gs.dados.aparelho(aparelho_id)
 	var nivel := nivel_melhoria(aparelho_id)
+	var base: int = ap.upgrades.size()
+	var extras: Array = gs.centro.melhorias_do(aparelho_id)
 	for i in nivel:
-		m *= float(ap.upgrades[i].multiplier)
+		if i < base:
+			m *= float(ap.upgrades[i].multiplier)
+		elif i - base < extras.size():
+			m *= float(extras[i - base].multiplier)  # 8a2: a 5ª melhoria (só se compra no centro; o nível só passa de 4 lá)
 	return m
 
 
@@ -59,13 +64,15 @@ func producao_total() -> float:
 		total += producao_gerador(g.id)
 	for g in gs.lutas.geradores_pagos:
 		total += producao_gerador(g.id)
+	for g in gs.centro.geradores:  # 8a2: Alunos da Raízes (0 fora do centro)
+		total += producao_gerador(g.id)
 	return total
 
 
 ## Aceita id de gerador da garagem ou pago.
 func producao_gerador(gerador_id: String) -> float:
 	var g := _def_gerador(gerador_id)
-	if g.is_empty():
+	if g.is_empty() or (g.has("location") and str(g.location) != gs.local_id):  # 8a2: gerador de um local só produz nele
 		return 0.0
 	return float(g.production) * quantidade_gerador(gerador_id) * _fator_equipe()
 
@@ -79,19 +86,29 @@ func quantidade_gerador(gerador_id: String) -> int:
 
 func _def_gerador(gerador_id: String) -> Dictionary:
 	var g := gs.dados.gerador(gerador_id)
-	return g if not g.is_empty() else gs.lutas.gerador_pago(gerador_id)
+	if g.is_empty():
+		g = gs.lutas.gerador_pago(gerador_id)
+	return g if not g.is_empty() else gs.centro.gerador(gerador_id)
+
+
+## Gerador de Treino que se compra com Treino: os de sempre, ou o do centro quando se está lá (8a2). {} se não.
+func _gerador_de_compra(gerador_id: String) -> Dictionary:
+	var g := gs.dados.gerador(gerador_id)
+	if not g.is_empty():
+		return g
+	return gs.centro.gerador(gerador_id) if gs._centro.gerador_do_centro_vale(gerador_id) else {}
 
 
 ## Custo da próxima unidade (já em 3 dígitos significativos).
 func custo_gerador(gerador_id: String) -> float:
-	var g := gs.dados.gerador(gerador_id)
+	var g := _gerador_de_compra(gerador_id)
 	if g.is_empty():
 		return INF
 	return Economia.custo_gerador(g.base_cost, g.growth, quantidade_gerador(gerador_id))
 
 
 func pode_comprar_gerador(gerador_id: String) -> bool:
-	return not gs.dados.gerador(gerador_id).is_empty() and Economia.pode_pagar(gs.treino, custo_gerador(gerador_id))
+	return not _gerador_de_compra(gerador_id).is_empty() and Economia.pode_pagar(gs.treino, custo_gerador(gerador_id))
 
 
 ## Quantas pessoas desenhar na sala (limite só de desenho; comprar nunca é bloqueado).
@@ -118,7 +135,9 @@ func proxima_melhoria(aparelho_id: String) -> Dictionary:
 		return {}
 	var nivel := nivel_melhoria(aparelho_id)
 	if nivel >= ap.upgrades.size():
-		return {}
+		var extras: Array = gs._centro.extras_validas(aparelho_id)  # 8a2: a 5ª só aparece e só se compra no centro
+		var j: int = nivel - ap.upgrades.size()
+		return extras[j] if j < extras.size() else {}
 	return ap.upgrades[nivel]
 
 
@@ -133,7 +152,7 @@ func nivel_visual(aparelho_id: String) -> int:
 	var v := 0
 	for i in mini(nivel_melhoria(aparelho_id), ap.get("upgrades", []).size()):
 		v = maxi(v, int(ap.upgrades[i].visual_level))
-	return v
+	return v  # (as extras do centro não trocam o sprite: o do centro já vem do sufixo `_center`)
 
 
 ## Um clique no alvo central. Soma no saldo e no atributo do foco; emite `clicou`.

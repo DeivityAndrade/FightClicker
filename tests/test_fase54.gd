@@ -47,7 +47,7 @@ func rodar_testes() -> void:
 
 func _teste_dados() -> void:
 	var d := FightData.carregar()
-	checar_igual(d.arvore.size(), 43, "43 nós carregados (39 + 4 do Muay Thai, 7b1)")
+	checar_igual(d.arvore.size(), 46, "46 nós carregados (39 + 4 do Muay Thai, 7b1 + 3 do CENTRO, 8a2)")
 	checar_igual(d.no_da_arvore("gar_rope").region, "garage", "região lida")
 	checar(d.no_da_arvore("body_jab").root and "gar_tape" in d.no_da_arvore("body_jab").neighbors, "raiz e vizinhos lidos")
 	checar("gar_rope" in d.no_da_arvore("gar_tape").neighbors, "vizinhança simétrica")
@@ -221,11 +221,11 @@ func _teste_legado() -> void:
 func _teste_mapa_api() -> void:
 	var gs := _novo("f54_api")
 	var mapa: Array = gs.arvore_mapa()
-	checar_igual(mapa.size(), 43, "arvore_mapa traz os 43 nós")
+	checar_igual(mapa.size(), 46, "arvore_mapa traz os 46 nós")
 	var n: Dictionary = mapa.filter(func(x): return x.id == "link_shout")[0]
 	checar(n.needs_shout and n.pos is Vector2 and n.state == "hidden", "campos do mapa (needs_shout, pos, state)")
 	var info: Dictionary = gs.arvore_mapa_info()
-	checar(info.unit_px == 40.0 and info.regions.size() == 10, "info do mapa")
+	checar(info.unit_px == 40.0 and info.regions.size() == 11, "info do mapa (11 regiões com o CENTRO, 8a2)")
 	_liberar(gs)
 
 

@@ -136,7 +136,10 @@ func atualizar() -> void:
 	var revanche := bool(info.get("revenge", false))
 	var espere := bool(info.get("wait_green", false)) and not GameState.no_dia_da_luta()
 	var estado := GameState.estado_escada()
-	var mud: Dictionary = GameState.mudanca() if opp.is_empty() and estado == "move" else {}
+	# 8a2: depois do James (escada completa na academia) o MUDAR do centro também aparece aqui; "locked" = nada (a UI não mostra).
+	var mud: Dictionary = GameState.mudanca() if opp.is_empty() and (estado == "move" or estado == "end") else {}
+	if estado == "end" and not (str(mud.get("state", "")) in ["ready", "missing"]):
+		mud = {}
 	var dica: Dictionary = GameState.dica_aposentar() if not opp.is_empty() else {}
 	var texto_dica := _texto_dica_posto(dica) if bool(dica.get("show", false)) else ""
 	# Fase 5.3: a folhinha do calendário (data da luta) ou, depois do Kid, a folhinha dourada.
@@ -315,7 +318,7 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary, completa: bool = false) 
 	_verde.visible = false
 	_dica_ret.visible = false
 	_nome.visible = true
-	if completa:
+	if completa and not (str(mud.get("state", "")) in ["ready", "missing"]):
 		# Depois do Kid: a folhinha dourada "CAMPANHA / COMPLETA" e, embaixo, o aviso de que passar o posto vale mais.
 		_icone_cinturao.visible = false
 		_caixa.position.x = 4.0
@@ -327,13 +330,16 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary, completa: bool = false) 
 		_premio.add_theme_color_override("font_color", UiTema.P2)
 		_medir()
 		return
-	if estado == "move" and str(mud.get("state", "")) in ["ready", "missing"]:
+	if (estado == "move" or estado == "end") and str(mud.get("state", "")) in ["ready", "missing"]:
 		_icone_cinturao.visible = false
 		_caixa.position.x = 4.0
 		_largura_caixa(112.0)
-		_nome.text = UiTema.txt("hud_next_move", "PRÓXIMA: MUDE PARA A ACADEMIA")
+		_nome.text = str(mud.get("hud_next_text", "")) if str(mud.get("hud_next_text", "")) != "" else UiTema.txt("hud_next_move", "PRÓXIMA: MUDE PARA A ACADEMIA")
 		_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
-		_premio.visible = false
+		# 8a2: no centro não há luta nova: o aviso curto fica entre o título e o cartão (a academia não tem esse texto).
+		_premio.visible = str(mud.get("no_fights_text", "")) != ""
+		_premio.text = str(mud.get("no_fights_text", "")).to_upper()
+		_premio.add_theme_color_override("font_color", UiTema.COL_TEXT_2)
 		_montar_cartao_mudanca(mud)
 		_medir()
 		return
@@ -379,8 +385,11 @@ func _montar_cartao_mudanca(d: Dictionary) -> void:
 	UiTema.textura_rect(c, str(info.get("icon", "icon_move")), 6, 5)
 	UiTema.rotulo(c, str(d.title).to_upper(), UiTema.WHITE if pronto else UiTema.G3, 26, 3, 88)
 	# 6d2: a quebra é no "/", não no meio de "2 LUTAS DA CASA"
-	UiTema.rotulo(c, str(d.effect_text).to_upper().replace(" / ", "
-"), UiTema.GR3 if pronto else UiTema.GR2, 7, 27, 106)
+	# 8a2: uma linha por trecho do efeito, de 10 em 10 px (um rotulo so com quebra de linha deixava a 2a linha em cima do FALTA do estado apagado).
+	var y_efeito := 27.0
+	for trecho in str(d.effect_text).to_upper().split(" / ", false):
+		UiTema.rotulo(c, trecho, UiTema.GR3 if pronto else UiTema.GR2, 7, y_efeito, 106)
+		y_efeito += 10.0
 	if not pronto:
 		UiTema.rotulo(c, UiTema.txt("move_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, float(d.get("cost", 0.0)) - GameState.dinheiro))}), UiTema.COL_TEXT_2, 7, 47, 106)
 	var b := UiTema.botao_estilizado(c, Rect2(7, 59, 106, 26), "ui_button_move")

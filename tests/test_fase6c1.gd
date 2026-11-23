@@ -114,7 +114,7 @@ func _teste_dados() -> void:
 	checar_igual(str(gs.escola_cfg.gym_arrival.milestone), CENA_ACADEMIA, "marco da cena da academia")
 	checar_igual(float(gs.escola_cfg.gym_arrival.max_locked_seconds), 15.0, "teto de 15 s da cena da academia")
 	checar_igual(int(gs.escola_cfg.mentor_leave.reserve_campaign_offset), 3, "reserva da saida: F + 3")
-	checar_igual(gs.disciples.toques.get("locations", []), ["garage", "gym"], "toques do John valem na garagem e na academia")
+	checar_igual(gs.disciples.toques.get("locations", []), ["garage", "gym", "center"], "toques do John valem na garagem, na academia e no centro (8a2)")
 	checar(gs.disciples.mentores_cfg.spots_by_location.has("gym"), "pontos da academia nos dados dos mentores")
 	checar(not gs.marco(CENA_ACADEMIA) and not gs.marco(CENA_SAIDA) and not gs.marco(VITORIA), "save novo: nenhum marco da 6c1")
 	_liberar(gs)

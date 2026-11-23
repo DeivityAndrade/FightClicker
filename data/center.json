@@ -1,0 +1,65 @@
+{
+	"_doc": "Fase 8a2 (docs/fases/fase8a2-design.md). Conteudo do centro de treinamento (local 'center' em locations.json): gerador que so existe no centro, 5a melhoria dos aparelhos (so compravel no centro), patrocinio pequeno (1 por campanha) e a regiao CENTRO da arvore. Arquivo ausente = jogo da 8a1. Valores do Designer; nomes e textos [ROT] (Roteirista).",
+	"location": "center",
+	"generators": [
+		{
+			"id": "center_students",
+			"location": "center",
+			"base_cost": 2000000,
+			"growth": 1.25,
+			"production": 500,
+			"draw_thresholds": [1, 5, 12, 25],
+			"name": "Alunos da Raízes",
+			"description": "Vieram pelo recorte do jornal. Ficaram pelo saco.",
+			"appears_as": "Gente de camisa preta com o R no peito, treinando ao fundo"
+		}
+	],
+	"apparatus_upgrades": [
+		{ "apparatus": "punching_bag", "id": "bag_center", "location": "center", "cost": 150000000, "multiplier": 3, "visual_level": 1,
+		  "name": "Saco de competição", "description": "Couro de verdade. Nem parece nosso." },
+		{ "apparatus": "treadmill", "id": "treadmill_center", "location": "center", "cost": 150000000, "multiplier": 3, "visual_level": 1,
+		  "name": "Esteira com painel", "description": "Tem botão de subida. Ninguém usa o de descida." },
+		{ "apparatus": "jump_rope", "id": "rope_center", "location": "center", "cost": 150000000, "multiplier": 3, "visual_level": 1,
+		  "name": "Corda de rolamento", "description": "Gira sozinha. O pé que se vire." },
+		{ "apparatus": "speed_bag", "id": "tech_boxing_center", "location": "center", "cost": 250000000, "multiplier": 3, "visual_level": 1,
+		  "name": "Plataforma de pera", "description": "Madeira maciça. O eco chega na recepção." },
+		{ "apparatus": "grappling_dummy", "id": "tech_bjj_center", "location": "center", "cost": 250000000, "multiplier": 3, "visual_level": 1,
+		  "name": "Boneco de competição", "description": "Tem braço que dobra. E reclama." },
+		{ "apparatus": "kick_bag", "id": "tech_mt_center", "location": "center", "cost": 250000000, "multiplier": 3, "visual_level": 1,
+		  "name": "Saco de lona dupla", "description": "Pendurado em corrente de navio." }
+	],
+	"sponsor": {
+		"id": "sponsor_vale",
+		"requires_regional_belts": 1,
+		"fame_at_least": 200,
+		"prize_share": 0.5,
+		"name": "Autopeças Vale Forte",
+		"short_name": "VALE FORTE",
+		"brand_sprite": "sponsor_vale",
+		"offer_title": "PROPOSTA DE PATROCÍNIO",
+		"offer_line": "Metade da bolsa a mais em cada vitória. Em troca, o nosso nome no seu calção.",
+		"accept_button": "ASSINAR",
+		"close_button": "AGORA NÃO",
+		"win_line": "PATROCÍNIO {marca}: +${n}"
+	},
+	"skill_tree": {
+		"region": { "id": "center", "name": "CENTRO", "lock": "center", "icon": "region_center" },
+		"nodes": [
+			{ "id": "ctr_door", "region": "center", "kind": "small", "pos": [12, -3], "root": true, "lock": "center",
+			  "neighbors": ["gym_league", "ctr_schedule", "ctr_floor"], "cost": 5000,
+			  "effect": { "type": "click_bonus", "value": 0.5 },
+			  "name": "Porta aberta", "description": "Todo mundo te vê. Você treina melhor.",
+			  "effect_text": "+{pct}% TREINO POR CLIQUE", "icon": "skill_body_jab" },
+			{ "id": "ctr_schedule", "region": "center", "kind": "milestone", "pos": [14, -4], "root": false, "lock": "center",
+			  "neighbors": ["ctr_door", "ctr_floor"], "cost": 7000,
+			  "effect": { "type": "prep_days_bonus", "value": 1 },
+			  "name": "Agenda do centro", "description": "Quem tem endereço marca a luta quando quer.",
+			  "effect_text": "+{n} DIA DE PREPARO ANTES DE CADA LUTA", "icon": "skill_prep_day" },
+			{ "id": "ctr_floor", "region": "center", "kind": "milestone", "pos": [13, -6], "root": false, "lock": "center",
+			  "neighbors": ["ctr_door", "ctr_schedule"], "cost": 10000,
+			  "effect": { "type": "gym_training_bonus", "value": 0.25 },
+			  "name": "Piso de borracha", "description": "Ninguém escorrega. Ninguém para.",
+			  "effect_text": "TREINO FORA DA GARAGEM +{pct}%", "icon": "skill_standing_fan" }
+		]
+	}
+}

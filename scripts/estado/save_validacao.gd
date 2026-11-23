@@ -49,7 +49,7 @@ func apagar_save() -> void:
 
 ## Campos do estado que vão para o save (v7). Produção e custos não são salvos (vêm de data/).
 func para_save() -> Dictionary:
-	return {
+	var salvo := {
 		"career": {
 			"metronome_level": gs.nivel_metronomo,
 			"location": gs.local_id,
@@ -87,6 +87,9 @@ func para_save() -> Dictionary:
 		"ending": gs.fim.duplicate(true) if not gs.fim.is_empty() else null,
 		"school": gs.escola.duplicate(true),
 	}
+	if gs.patrocinio_estado != "":
+		salvo["career"]["sponsor"] = gs.patrocinio_estado  # 8a2, opcional: só quando há envelope ou contrato
+	return salvo
 
 
 ## Aplica um estado lido do save (formato v7). Campo faltando ou inválido recebe o padrão.
@@ -115,12 +118,26 @@ func aplicar_save(estado: Dictionary) -> void:
 	for g in gs.dados.geradores:
 		var q = gens.get(g.id, 0) if gens is Dictionary else 0
 		gs.geradores[g.id] = gs._inteiro_valido(q, 1.0e9)
+	# 8a2: geradores do centro (só existem no centro; a chave só entra no save/estado quando há unidades)
+	for g in gs.centro.geradores:
+		var q = gens.get(g.id, 0) if gens is Dictionary else 0
+		var qtd: int = gs._inteiro_valido(q, 1.0e9)
+		if qtd > 0 and str(g.location) != gs.local_id:
+			gs._avisar("Gerador do centro fora do centro: zerado.")
+			qtd = 0
+		if qtd > 0:
+			gs.geradores[g.id] = qtd
 
 	gs.niveis_melhoria = {}
 	var us = c.get("upgrades", {})
 	for ap in gs.dados.todos_aparelhos():
 		var n = us.get(ap.id, 0) if us is Dictionary else 0
-		gs.niveis_melhoria[ap.id] = gs._inteiro_valido(n, float(ap.upgrades.size()))
+		var teto: int = gs._centro.nivel_maximo(str(ap.id))  # 8a2: a 5ª melhoria só vale no centro
+		gs.niveis_melhoria[ap.id] = gs._inteiro_valido(n, float(teto))
+		var teto_local: int = ap.upgrades.size() + gs._centro.extras_validas(str(ap.id)).size()
+		if gs.niveis_melhoria[ap.id] > teto_local:
+			gs.niveis_melhoria[ap.id] = teto_local
+			gs._avisar("Melhoria do centro fora do centro: voltou para o nível %d." % teto_local)
 		if gs.niveis_melhoria[ap.id] > 0 and not gs.aparelho_montado(ap.id):
 			gs.niveis_melhoria[ap.id] = 0
 			gs._avisar("Melhoria em aparelho não montado: zerada.")
@@ -176,6 +193,8 @@ func aplicar_save(estado: Dictionary) -> void:
 	gs._treino_premio = {}
 	gs.convite = gs._treino.validar(c.get("training_invite", null))
 	gs.rival_spoke = gs._liga.validar_falou(c.get("rival_spoke", null))
+	gs.patrocinio_estado = gs._centro.validar_estado(c.get("sponsor", null))  # 8a2 (depende de permanent.regional_belts, já validado)
+	gs._centro.avaliar_oferta()  # a fama já bateu e o save ainda não tinha o envelope (save antigo parado depois do cinturão)
 	gs._convite_local = gs.local_id
 	gs._convite_vis = ""
 	for b in gs.caixas_lista:  # 6c2: o hall pode ter baixado os cliques da caixa
@@ -253,6 +272,7 @@ func _validar_permanente(v: Variant) -> Dictionary:
 		"last_art": _validar_arte_id(p.get("last_art", "")),
 	}
 	gs._liga.validar_permanente(p, r)  # 8a1: cinturoes regionais (opcionais)
+	gs._centro.validar_permanente(p, r)  # 8a2: center_reached (só entra quando verdadeiro)
 	_validar_passivas2(p, r)
 	r["tree_last_node"] = _validar_ultimo_no(p.get("tree_last_node", ""), r.skill_nodes)  # Fase 5.4
 	return r
@@ -333,6 +353,7 @@ func _emitir_tudo(pedir_arte: bool = true) -> void:
 	gs.metronomo_mudou.emit(gs.nivel_metronomo)
 	gs.crew_click_mudou.emit(gs.crew_click_comprado)
 	gs.local_mudou.emit(gs.local_id)
+	gs.patrocinio_mudou.emit(gs.patrocinio_estado)  # 8a2
 	gs.arte_mudou.emit(gs.arte_id)
 	gs._aparelhos._atualizar_estado_assist()
 	gs.escada_mudou.emit()
@@ -393,6 +414,7 @@ func _validar_local_e_arte(c: Dictionary) -> void:
 
 # Escada além do 1º adversário de outro local com a carreira na garagem (save editado): vai para esse local.
 func _corrigir_local_pela_escada() -> void:
+	gs._centro.corrigir_local_sem_cinturao()  # 8a2: "center" sem o Cinturão do Vale volta para a academia
 	for i in gs.lutas.adversarios.size():
 		var loc := str(gs.lutas.adversarios[i].location)
 		if loc != gs.academia.local_padrao:

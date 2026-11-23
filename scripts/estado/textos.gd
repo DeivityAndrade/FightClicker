@@ -21,6 +21,9 @@ func texto_efeito_melhoria(melhoria: Dictionary) -> String:
 		for m in ap.upgrades:
 			if m.id == melhoria.get("id", ""):
 				alvo = str(ap.focus_label[1]).to_upper()
+		for m in gs.centro.melhorias_do(str(ap.id)):  # 8a2
+			if m.id == melhoria.get("id", ""):
+				alvo = str(ap.focus_label[1]).to_upper()
 	var modelo: String = gs.dados.ui.get("upgrade_effect", "x{mult} POR CLIQUE: {alvo}")
 	return modelo.replace("{mult}", NumberFormat.fmt(float(melhoria.get("multiplier", 1.0)))).replace("{alvo}", alvo)
 

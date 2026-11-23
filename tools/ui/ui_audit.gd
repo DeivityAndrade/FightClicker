@@ -147,6 +147,15 @@ const ESTADOS_TODOS := [
 	"f8a1_james_depois_pontos", "f8a1_fim_kid_liga", "f8a1_fim_cinturao_vale", "f8a1_luta_cinturao_erguido", "f8a1_fim_retire_regional",
 	"f8a1_fim_derrota_bigorna", "f8a1_fim_derrota_estaca", "f8a1_fim_derrota_sabao", "f8a1_fim_derrota_james", "f8a1_cartaz_antes", "f8a1_cartaz",
 	"f8a1_cartaz_zoom",
+	# Fase 8a2: centro de treinamento (mudança, chegada, sala, alunos, 5ª melhoria, envelope e contrato, vitória, calção, cartaz vencido, recorte, mapa)
+	"f8a2_mudar_travado", "f8a2_mudar_faltando", "f8a2_mudar_pronto", "f8a2_chegada", "f8a2_chegada_falou", "f8a2_centro_chegada_mt",
+	"f8a2_centro_cheia_boxe", "f8a2_centro_cheia_jj", "f8a2_centro_cheia_mt", "f8a2_centro_cheia_boxe_fechado", "f8a2_equipe_alunos",
+	"f8a2_equipe_alunos_fundo", "f8a2_aparelho_5a", "f8a2_aparelho_5a_maximo", "f8a2_academia_sem_5a", "f8a2_envelope_garagem",
+	"f8a2_envelope_academia", "f8a2_envelope_centro", "f8a2_envelope_aviso", "f8a2_contrato", "f8a2_contrato_assinado", "f8a2_contrato_agora_nao",
+	"f8a2_vitoria_bonus", "f8a2_vitoria_bonus_cinturao", "f8a2_vitoria_bonus_james", "f8a2_vitoria_sem_contrato", "f8a2_calcao_marca",
+	"f8a2_calcao_sem_marca", "f8a2_cartaz_vencido", "f8a2_cartaz_vencido_marca", "f8a2_cartaz_vencido_zoom", "f8a2_cartaz_vencido_zoom_marca",
+	"f8a2_academia_boxe_pera", "f8a2_recorte_centro", "f8a2_recorte_centro_zoom", "f8a2_foto_centro", "f8a2_mapa_centro_fechado",
+	"f8a2_mapa_centro_aberto", "f8a2_fim_retire_centro",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -175,6 +184,7 @@ var _f7a2 = preload("res://tools/ui/audit/estados_f7a2.gd").new(self)
 var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
 var _f7b2 = preload("res://tools/ui/audit/estados_f7b2.gd").new(self)
 var _f8a1 = preload("res://tools/ui/audit/estados_f8a1.gd").new(self)
+var _f8a2 = preload("res://tools/ui/audit/estados_f8a2.gd").new(self)
 
 
 func _initialize() -> void:
@@ -406,6 +416,7 @@ func _rodar() -> void:
 	await _f7b1._rodar_fase7b1()
 	await _f7b2._rodar_fase7b2()
 	await _f8a1._rodar_fase8a1()
+	await _f8a2._rodar_fase8a2()
 	_fechar_cena()
 
 
