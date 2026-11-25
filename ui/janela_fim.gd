@@ -100,16 +100,21 @@ func _montar_derrota(f: Dictionary, t_: Dictionary) -> void:
 	var altura := 10.0
 	for l in linhas:
 		altura += 11.0 + float(l.get("sep", 0))
-	fundo_cor(Rect2(126, 76, 388, altura), Color(UiTema.R0, 0.85))
-	fundo_cor(Rect2(126, 76, 3, altura), UiTema.R2)
+	var caixa := fundo_cor(Rect2(126, 76, 388, altura), UiTema.R0, true)  # caixa escura: o texto dentro fica claro
+	var listra := ColorRect.new()
+	listra.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	listra.color = UiTema.R2
+	listra.size = Vector2(3, altura)
+	caixa.add_child(listra)
 	# Azar (attribute == ""): sem ícone de atributo; o texto continua vindo só de textos_fim().
 	var atr := str(f.reason.get("attribute", ""))
 	if atr != "":
-		UiTema.textura_rect(painel, "icon_" + atr, 135, 81)
-	var y := 81.0
+		UiTema.textura_rect(caixa, "icon_" + atr, 9, 5)
+	var y := 5.0
 	for l in linhas:
 		y += float(l.get("sep", 0))
-		UiTema.rotulo(painel, l.texto, l.cor, 149, y, 360)
+		var lr := UiTema.rotulo(caixa, l.texto, l.cor, 23, y, 360)
+		UiTema.alinhar_motivo(lr, "left", "lista de motivos da derrota, alinhada à esquerda ao lado do ícone, na caixa escura")
 		y += 11.0
 	# Com 6 linhas ou mais (arte + nota da passiva) o respiro abaixo da caixa encolhe para o rodapé não encostar nos botões.
 	var topo := 76.0 + altura + (3.0 if linhas.size() >= 6 else 8.0)
@@ -233,27 +238,26 @@ func _rodape(f: Dictionary, y: float, cinturao: bool, dica_extra: String, region
 	# Três botões na largura útil (130..510), 4 px entre eles: ÁRVORE (gastar o Legado) e MURAL (gastar a Honra no hall), pequenos,
 	# e o principal RECEBER NOVO DISCÍPULO, maior. Quem não quer comprar nada clica 1 vez no principal e já está na garagem.
 	# A fileira tem 1 botão largo de propósito (ui_align_row = free).
-	painel.set_meta("ui_align_row", "free")
+	UiTema.fileira_livre(painel, "ÁRVORE e MURAL são pequenos e RECEBER NOVO DISCÍPULO é o botão principal, maior de propósito")
 	_arvore_chamando = GameState.ha_no_compravel()
-	_botao_arvore = UiTema.botao(painel, Rect2(130, 290, 94, 32))
+	_botao_arvore = UiTema.botao(painel, Rect2(130, 290, 94, 32), "c_btn_papel_normal")
 	_botao_arvore.name = "BotaoArvore"
-	UiTema.botao_conteudo(_botao_arvore, UiTema.txt("tree_button", "ÁRVORE"), UiTema.Y1 if _arvore_chamando else UiTema.WHITE, 1,
+	UiTema.botao_conteudo(_botao_arvore, UiTema.txt("tree_button", "ÁRVORE"), UiTema.BR1 if _arvore_chamando else UiTema.INK, 1,
 		"icon_skill_map", 5.0)
 	_botao_arvore.pressed.connect(func() -> void: arvore_pedido.emit())
 	for n in GameState.hall_lista():
 		if str(n.state) == "buyable":
 			_mural_chamando = true
-	_botao_mural = UiTema.botao(painel, Rect2(228, 290, 94, 32))
+	_botao_mural = UiTema.botao(painel, Rect2(228, 290, 94, 32), "c_btn_papel_normal")
 	_botao_mural.name = "BotaoMural"
-	UiTema.botao_conteudo(_botao_mural, UiTema.txt("mural_button", "MURAL"), UiTema.COL_HONOR if _mural_chamando else UiTema.WHITE, 1,
+	UiTema.botao_conteudo(_botao_mural, UiTema.txt("mural_button", "MURAL"), UiTema.P0 if _mural_chamando else UiTema.INK, 1,
 		"icon_honor_16", 5.0)
 	_botao_mural.pressed.connect(func() -> void: mural_pedido.emit())
 	# Fase 6b1: RECEBER NOVO DISCÍPULO (22 letras). Em escala 2 não cabe nos 184 px do botão: usa NOVO DISCÍPULO (plano B do Roteirista).
 	var texto_botao := UiTema.txt("new_disciple_button", "RECEBER NOVO DISCÍPULO")
 	if UiTema.largura_visivel(texto_botao) * 2.0 > 184.0 - 12.0:
 		texto_botao = UiTema.txt("new_disciple_button_short", "NOVO DISCÍPULO")
-	var b := botao_texto(Rect2(326, 290, 184, 32), texto_botao,
-		UiTema.P2 if retire else UiTema.WHITE, "ui_button_normal", 2, "ui_button_retire" if retire else "")
+	var b := botao_texto(Rect2(326, 290, 184, 32), texto_botao, UiTema.WHITE, "ui_button_normal", 2, "", true)
 	b.name = "BotaoNovoDiscipulo"
 	b.pressed.connect(func() -> void: nova_carreira_pedido.emit())
 

@@ -147346,6 +147346,1030 @@
 				94
 			],
 			"who": "vulto"
+		},
+		"c_balao": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 5,
+				"left": 5,
+				"right": 5,
+				"top": 5
+			},
+			"note": "Tema C (cartaz). ladrilho; rect = corpo inteiro (17 ou 26 de altura), a sombra é a última LINHA (não há mais sombra à direita). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_blue": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_blue.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo ink em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_gold": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_gold.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo ink em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_gray": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_gray.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo ink em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_green": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_green.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo ink em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_purple": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_purple.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo ink em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_red": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_red.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo white em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_placa_steel": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_placa_steel.png",
+			"fps": 0.0,
+			"frame_size": [
+				8,
+				10
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). altura 10, largura = largura visível do nome + 7; texto minúsculo white em (3,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_rabicho": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_rabicho.png",
+			"fps": 0.0,
+			"frame_size": [
+				7,
+				6
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 7x6; ponta (3,5) (mesmo tip_offset do ui_balloon_tail*). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_rabicho_d": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_rabicho_d.png",
+			"fps": 0.0,
+			"frame_size": [
+				7,
+				6
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 7x6; ponta (6,5) (mesmo tip_offset do ui_balloon_tail*). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_rabicho_e": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_rabicho_e.png",
+			"fps": 0.0,
+			"frame_size": [
+				7,
+				6
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 7x6; ponta (0,5) (mesmo tip_offset do ui_balloon_tail*). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_balao_seta": {
+			"file": "res://assets/sprites/ui/tema_c/c_balao_seta.png",
+			"fps": 0.0,
+			"frame_size": [
+				10,
+				4
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). 2 quadros 5x4 a 2 fps (aceso r1, apagado g3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_cartao_apagado": {
+			"file": "res://assets/sprites/ui/tema_c/c_cartao_apagado.png",
+			"fps": 0.0,
+			"frame_size": [
+				12,
+				14
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 4,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). ladrilho; rect +2 px (sombra); texto ink. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_contagem_done": {
+			"file": "res://assets/sprites/ui/tema_c/c_contagem_done.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				18
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 4,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). uso 116x28 (face 26 + sombra 2); faixa da esquerda b1. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_contagem_easy": {
+			"file": "res://assets/sprites/ui/tema_c/c_contagem_easy.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				18
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 4,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). uso 116x28 (face 26 + sombra 2); faixa da esquerda gr2. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_contagem_even": {
+			"file": "res://assets/sprites/ui/tema_c/c_contagem_even.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				18
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 4,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). uso 116x28 (face 26 + sombra 2); faixa da esquerda y0. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_contagem_hard": {
+			"file": "res://assets/sprites/ui/tema_c/c_contagem_hard.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				18
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 4,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). uso 116x28 (face 26 + sombra 2); faixa da esquerda r2. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_contagem_today": {
+			"file": "res://assets/sprites/ui/tema_c/c_contagem_today.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				18
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 4,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). uso 116x28 (face 26 + sombra 2); faixa da esquerda y1. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_faixa_tela": {
+			"file": "res://assets/sprites/ui/tema_c/c_faixa_tela.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				20
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 3,
+				"left": 0,
+				"right": 0,
+				"top": 1
+			},
+			"note": "Tema C (cartaz). ladrilho; HUD da luta 640x49 (46 + 3 por cima da arena). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_bjj": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_bjj.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa b2); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_black_cat": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_black_cat.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa b1); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_boxing": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_boxing.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa r2); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_campaign": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_campaign.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa y0); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_center": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_center.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa b2); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_garage": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_garage.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa g2); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_gym": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_gym.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa gr2); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_aba_muay_thai": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_aba_muay_thai.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 5,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). aba da região (faixa br2); ícone em (5,2), texto ink em (17,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_fechar_hover": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_fechar_hover.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 16x16 em (616,7). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_fechar_normal": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_fechar_normal.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 16x16 em (616,7). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_fechar_pressed": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_fechar_pressed.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 16x16 em (616,7). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_ficha": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_ficha.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				18
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 5,
+				"left": 3,
+				"right": 3,
+				"top": 3
+			},
+			"note": "Tema C (cartaz). ladrilho; cartão do nó; rect +2 px (sombra); texto ink. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_ficha_proxima": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_ficha_proxima.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 1,
+				"left": 1,
+				"right": 1,
+				"top": 1
+			},
+			"note": "Tema C (cartaz). faixa VALE NA PRÓXIMA CAMPANHA; texto cream. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_moldura": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_moldura.png",
+			"fps": 0.0,
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 5,
+				"left": 5,
+				"right": 5,
+				"top": 5
+			},
+			"note": "Tema C (cartaz). ladrilho, miolo vazio; 640x360 por cima do mapa. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_preco_falta": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_preco_falta.png",
+			"fps": 0.0,
+			"frame_size": [
+				12,
+				11
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 1,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). preço sem Legado; número g3. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_preco_ok": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_preco_ok.png",
+			"fps": 0.0,
+			"frame_size": [
+				12,
+				11
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 1,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). preço que o Legado paga; número p0. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mapa_topo": {
+			"file": "res://assets/sprites/ui/tema_c/c_mapa_topo.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				20
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 1,
+				"right": 1,
+				"top": 1
+			},
+			"note": "Tema C (cartaz). ladrilho; 630x20 em (5,5); texto cream. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mudanca": {
+			"file": "res://assets/sprites/ui/tema_c/c_mudanca.png",
+			"fps": 0.0,
+			"frame_size": [
+				26,
+				22
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 7,
+				"left": 5,
+				"right": 5,
+				"top": 5
+			},
+			"note": "Tema C (cartaz). ladrilho; rect +2 px de altura (sombra). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mudanca_apagado": {
+			"file": "res://assets/sprites/ui/tema_c/c_mudanca_apagado.png",
+			"fps": 0.0,
+			"frame_size": [
+				26,
+				22
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 7,
+				"left": 5,
+				"right": 5,
+				"top": 5
+			},
+			"note": "Tema C (cartaz). ladrilho; rect +2 px de altura (sombra). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mudanca_pronto": {
+			"file": "res://assets/sprites/ui/tema_c/c_mudanca_pronto.png",
+			"fps": 0.0,
+			"frame_size": [
+				26,
+				22
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 7,
+				"left": 5,
+				"right": 5,
+				"top": 5
+			},
+			"note": "Tema C (cartaz). ladrilho; rect +2 px de altura (sombra). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mural_fundo": {
+			"file": "res://assets/sprites/ui/tema_c/c_mural_fundo.png",
+			"fps": 0.0,
+			"frame_size": [
+				56,
+				60
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 56x60: fundo do retrato do mural (asfalto + faixa de cartaz). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mural_moldura": {
+			"file": "res://assets/sprites/ui/tema_c/c_mural_moldura.png",
+			"fps": 0.0,
+			"frame_size": [
+				62,
+				66
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 62x66; furo 56x60 em (3,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_mural_moldura_primeiro": {
+			"file": "res://assets/sprites/ui/tema_c/c_mural_moldura_primeiro.png",
+			"fps": 0.0,
+			"frame_size": [
+				62,
+				66
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 62x66; furo 56x60 em (3,3). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_retrato_moldura": {
+			"file": "res://assets/sprites/ui/tema_c/c_retrato_moldura.png",
+			"fps": 0.0,
+			"frame_size": [
+				36,
+				36
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 36x36; furo 32x32 em (2,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_retrato_moldura_ouro": {
+			"file": "res://assets/sprites/ui/tema_c/c_retrato_moldura_ouro.png",
+			"fps": 0.0,
+			"frame_size": [
+				36,
+				36
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 36x36; furo 32x32 em (2,2). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_selo_risco_equilibrado": {
+			"file": "res://assets/sprites/ui/tema_c/c_selo_risco_equilibrado.png",
+			"fps": 0.0,
+			"frame_size": [
+				84,
+				16
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 84x16; risco even; texto ink. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_selo_risco_equilibrado_base": {
+			"file": "res://assets/sprites/ui/tema_c/c_selo_risco_equilibrado_base.png",
+			"fps": 0.0,
+			"frame_size": [
+				24,
+				16
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 5,
+				"left": 16,
+				"right": 3,
+				"top": 3
+			},
+			"note": "Tema C (cartaz). 9-slice para outra palavra; texto ink. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_selo_risco_facil": {
+			"file": "res://assets/sprites/ui/tema_c/c_selo_risco_facil.png",
+			"fps": 0.0,
+			"frame_size": [
+				50,
+				16
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 50x16; risco easy; texto ink. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_selo_risco_facil_base": {
+			"file": "res://assets/sprites/ui/tema_c/c_selo_risco_facil_base.png",
+			"fps": 0.0,
+			"frame_size": [
+				24,
+				16
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 5,
+				"left": 16,
+				"right": 3,
+				"top": 3
+			},
+			"note": "Tema C (cartaz). 9-slice para outra palavra; texto ink. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_selo_risco_perigoso": {
+			"file": "res://assets/sprites/ui/tema_c/c_selo_risco_perigoso.png",
+			"fps": 0.0,
+			"frame_size": [
+				68,
+				16
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 68x16; risco hard; texto cream. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_selo_risco_perigoso_base": {
+			"file": "res://assets/sprites/ui/tema_c/c_selo_risco_perigoso_base.png",
+			"fps": 0.0,
+			"frame_size": [
+				24,
+				16
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 5,
+				"left": 16,
+				"right": 3,
+				"top": 3
+			},
+			"note": "Tema C (cartaz). 9-slice para outra palavra; texto cream. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_tela_asfalto": {
+			"file": "res://assets/sprites/ui/tema_c/c_tela_asfalto.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 0,
+				"left": 0,
+				"right": 0,
+				"top": 0
+			},
+			"note": "Tema C (cartaz). ladrilho 16x16 (TextureRect stretch TILE). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_tela_fundo": {
+			"file": "res://assets/sprites/ui/tema_c/c_tela_fundo.png",
+			"fps": 0.0,
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"note": "Tema C (cartaz). fixo 640x360: fundo das telas cheias sem cenário. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_vida_baixa": {
+			"file": "res://assets/sprites/ui/tema_c/c_vida_baixa.png",
+			"fps": 0.0,
+			"frame_size": [
+				18,
+				8
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 0,
+				"left": 1,
+				"right": 1,
+				"top": 0
+			},
+			"note": "Tema C (cartaz). ladrilho na horizontal dentro da moldura (área 8 de altura). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_vida_cheia": {
+			"file": "res://assets/sprites/ui/tema_c/c_vida_cheia.png",
+			"fps": 0.0,
+			"frame_size": [
+				18,
+				8
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 0,
+				"left": 1,
+				"right": 1,
+				"top": 0
+			},
+			"note": "Tema C (cartaz). ladrilho na horizontal dentro da moldura (área 8 de altura). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_vida_moldura": {
+			"file": "res://assets/sprites/ui/tema_c/c_vida_moldura.png",
+			"fps": 0.0,
+			"frame_size": [
+				16,
+				12
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 2,
+				"left": 2,
+				"right": 2,
+				"top": 2
+			},
+			"note": "Tema C (cartaz). ladrilho; uso 236x12; miolo vazio d1 com hachura d2. Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_vida_rastro": {
+			"file": "res://assets/sprites/ui/tema_c/c_vida_rastro.png",
+			"fps": 0.0,
+			"frame_size": [
+				18,
+				8
+			],
+			"frames": 1,
+			"nine_slice": {
+				"bottom": 0,
+				"left": 1,
+				"right": 1,
+				"top": 0
+			},
+			"note": "Tema C (cartaz). ladrilho na horizontal dentro da moldura (área 8 de altura). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
 		}
 	},
 	"fight_layout": {

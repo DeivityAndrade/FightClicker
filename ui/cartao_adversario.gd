@@ -34,11 +34,10 @@ func montar(d: Dictionary) -> void:
 	var y_linha := y
 	y += float(linha.size()) * PASSO + 4.0
 	var y_hits := y
-	y += float(hits.size()) * PASSO + 5.0
+	y += float(hits.size()) * PASSO + 7.0  # 5 de margem + 2 da sombra do c_cartao
 	_altura = y
 	size = Vector2(LARG, _altura)
-	var fundo := UiTema.nine_patch(self, "ui_card", Rect2(0, 0, LARG, _altura))
-	fundo.set_meta("ui_align", "ignore")
+	UiTema.nine_patch(self, "c_cartao", Rect2(0, 0, LARG, _altura))
 	# Ícone 16x16 + nome, o grupo centralizado no cartão.
 	var faixa := Control.new()
 	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE

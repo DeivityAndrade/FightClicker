@@ -69,9 +69,9 @@ func _montar() -> void:
 	var g2 := floorf(float(folga) * 0.3)  # atributos -> risco
 	var g3 := floorf(float(folga) * 0.2)  # risco -> táticas
 	var g4 := floorf(float(folga) * 0.3)  # dica da tática -> o que está em jogo
-	moldura("ui_window", Rect2(152, 16 + oy - topo, 336, 328 + ex + folga))
+	moldura("ui_window", Rect2(152, 16 + oy - topo, 336, 325 + ex + folga))  # 325: a sombra da c_janela (+3) cabe nos 360 px
 	var titulo := UiTema.txt("fight_day_title", "DIA DA LUTA") if dia_da_luta else UiTema.txt("preview_title", "PRÓXIMA LUTA")
-	faixa_titulo("neutral", Rect2(158, 22 + oy - topo, 324, 17), titulo)
+	faixa_titulo("neutral", Rect2(154, 18 + oy - topo, 332, 16), titulo)
 	if dia_da_luta:
 		_folhinha_do_dia(152.0, 16.0 + oy - topo)
 
@@ -122,6 +122,7 @@ func _montar() -> void:
 	_selo_area.position = Vector2(X0, y)  # 6d2: sem a palavra RISCO na frente (o selo já diz FÁCIL / EQUILIBRADO / PERIGOSO)
 	painel.add_child(_selo_area)
 	_aviso = UiTema.rotulo(painel, "", UiTema.Y1, X0 + 130, y + 3, X1 - X0 - 130, HORIZONTAL_ALIGNMENT_RIGHT)
+	UiTema.alinhar_motivo(_aviso, "right", "aviso curto à direita do selo de risco; o texto muda com o risco")
 	# Porcentagem de vitória (só com o nó "Olho clínico"): ao lado do selo, na cor do risco.
 	_percent = UiTema.rotulo(painel, "", UiTema.WHITE, X0, y + 3)
 	_percent.visible = false
@@ -176,8 +177,8 @@ func _montar() -> void:
 		# Prévia do dia: PASSAR O POSTO (contorno roxo, menos peso) e LUTAR! (vermelho cheio), 12 px entre eles para não
 		# apertar um pelo outro. Sem botão de voltar.
 		var larg_dia := (X1 - X0 - 12.0) / 2.0
-		var passar := UiTema.botao_estilizado(painel, Rect2(X0, yb, larg_dia, 26), "ui_button_pass")
-		UiTema.botao_conteudo(passar, UiTema.txt("fight_day_pass", "PASSAR O POSTO"), UiTema.P2, 1, "icon_pass_post", 4.0)
+		var passar := UiTema.botao(painel, Rect2(X0, yb, larg_dia, 26), "c_btn_papel_normal")
+		UiTema.botao_conteudo(passar, UiTema.txt("fight_day_pass", "PASSAR O POSTO"), UiTema.INK, 1, "icon_pass_post", 4.0)
 		passar.pressed.connect(func() -> void: passar_pedido.emit())
 		var lutar_dia := botao_texto(Rect2(X0 + larg_dia + 12.0, yb, larg_dia, 26), UiTema.txt("fight_day_fight", "LUTAR") + "!",
 			UiTema.Y2, "", 2, "ui_button_fight")
@@ -272,6 +273,7 @@ func _fita_revanche(y: float) -> void:
 		w += 1.0  # largura par: a fita fica no meio exato da janela (320)
 	var fita := UiTema.nine_patch(painel, "ui_seal_revenge", Rect2(320.0 - w / 2.0, y, w, 15))
 	fita.set_meta("ui_pos", "center_h")
+	fita.set_meta("ui_fundo_escuro", true)  # a fita é vermelha: o texto dela é cream
 	var area := UiTema.area_nove("ui_seal_revenge", Vector2(w, 15))
 	var gx := roundf(area.position.x + (area.size.x - grupo) / 2.0)
 	UiTema.textura_rect(fita, "icon_revenge", gx, UiTema.y_imagem(area, ic.y))
@@ -286,24 +288,42 @@ func _rotulo_dir(texto: String, cor: Color, x_fim: float, y: float) -> void:
 # Uma linha: [número dele] [ícone + atributo] [número seu]. Destaque quando ele está muito à frente.
 func _linha_atributo(atr: String, y: float) -> void:
 	var eh_lead: bool = str(_dados.lead) == atr
-	UiTema.nine_patch(painel, "ui_stat_row_lead" if eh_lead else "ui_stat_row", Rect2(X0, y, X1 - X0, 15))
+	# Linha comum: texto sobre o papel, com um fio g3 embaixo. Linha em que ele está muito à frente: faixa vermelha r1 (fundo
+	# escuro: texto claro) com o filete de cima em r2.
+	var pai: Node = painel
+	var ox := 0.0
+	var oy := 0.0
+	var claro := false
+	if eh_lead:
+		var faixa := fundo_cor(Rect2(X0, y, X1 - X0, 15), UiTema.R1, true)
+		var filete := ColorRect.new()
+		filete.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		filete.color = UiTema.R2
+		filete.size = Vector2(X1 - X0, 1)
+		faixa.add_child(filete)
+		pai = faixa
+		ox = X0
+		oy = y
+		claro = true
+	else:
+		divisor(X0, y + 14.0, X1 - X0)
 	var dele := float(_dados.opponent[atr])
 	var seu := float(_dados.you[atr])
 	var t_dele := NumberFormat.fmt(dele, NumberFormat.TRUNCAR)
 	var t_seu := NumberFormat.fmt(seu, NumberFormat.TRUNCAR)
 	var maior_dele := dele > seu
 	var maior_seu := seu > dele
-	UiTema.rotulo(painel, t_dele, UiTema.R3 if maior_dele else UiTema.G3, X0 + 6, y + 3)
+	UiTema.rotulo(pai, t_dele, UiTema.WHITE if claro else (UiTema.R3 if maior_dele else UiTema.G3), X0 + 6 - ox, y + 3 - oy)
 	if eh_lead:
-		UiTema.textura_rect(painel, "icon_lead", X0 + 10 + UiTema.largura(t_dele), y + 3)
-	var cor := UiTema.cor_atributo(atr)
+		UiTema.textura_rect(pai, "icon_lead", X0 + 10 + UiTema.largura(t_dele) - ox, y + 3 - oy)
+	var cor := UiTema.WHITE if claro else UiTema.cor_atributo(atr)
 	var nome := str(GameState.dados.atributo_info(atr).get("name", atr)).to_upper()
 	var w := 12.0 + UiTema.largura(nome)
 	var xc := 320.0 - w / 2.0
-	UiTema.textura_rect(painel, "icon_" + atr, roundf(xc), y + 3)
-	UiTema.rotulo(painel, nome, cor, roundf(xc) + 12, y + 3)
-	var rs := UiTema.rotulo(painel, t_seu, UiTema.GR3 if maior_seu else UiTema.G3, 0, y + 3)
-	rs.position.x = roundf(X1 - 6 - UiTema.largura(t_seu))
+	UiTema.textura_rect(pai, "icon_" + atr, roundf(xc) - ox, y + 3 - oy)
+	UiTema.rotulo(pai, nome, cor, roundf(xc) + 12 - ox, y + 3 - oy)
+	var rs := UiTema.rotulo(pai, t_seu, UiTema.WHITE if claro else (UiTema.GR3 if maior_seu else UiTema.G3), 0, y + 3 - oy)
+	rs.position.x = roundf(X1 - 6 - UiTema.largura(t_seu)) - ox
 
 
 func _montar_tatica(t: Dictionary, x: float, y: float) -> void:
@@ -316,7 +336,7 @@ func _montar_tatica(t: Dictionary, x: float, y: float) -> void:
 	var rot := str(_dados.risks.get(id, {}).get("label", ""))
 	var sub := ColorRect.new()
 	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sub.color = UiTema.cor_atributo({"aggressive": "strength", "counter": "agility", "defensive": "endurance"}.get(id, ""))
+	sub.color = UiTema.R1  # a seleção já está no botão vermelho (c_btn_foco); o fio vermelho embaixo reforça
 	sub.position = Vector2(x + 3, y + 23)
 	sub.size = Vector2(92, 2)
 	painel.add_child(sub)
@@ -341,7 +361,7 @@ func _escolher(id: String, tocou: bool) -> void:
 	for tid in _rotulo_tatica:
 		var d: Dictionary = _rotulo_tatica[tid]
 		var ativo: bool = tid == id
-		var estilo := str(d.info.get("button_selected", "ui_button_normal")) if ativo else "ui_button_normal"
+		var estilo := "c_btn_foco" if ativo else "c_btn_normal"
 		UiTema.aplicar_estilo_botao(d.botao, estilo)
 		d.sub.visible = ativo
 	var t: Dictionary = GameState.lutas.tatica(id)
@@ -362,7 +382,7 @@ func _mostrar_risco(rot: String, animar: bool) -> void:
 		_selo = null
 	if rot == "":
 		return
-	_selo = UiTema.selo_risco(_selo_area, rot, 0, 0)
+	_selo = UiTema.selo_carimbo(_selo_area, rot, 0, 0)
 	if animar and mudou:
 		_selo.modulate = Color(2.4, 2.4, 2.4)
 		_selo.create_tween().tween_property(_selo, "modulate", Color.WHITE, 0.35)
@@ -372,21 +392,21 @@ func _mostrar_risco(rot: String, animar: bool) -> void:
 	_aviso.text = ""
 	if primeira and rot == "even":
 		_aviso.text = UiTema.txt("risk_even_warn", "AMARELO = PODE PERDER")
-		_aviso.add_theme_color_override("font_color", UiTema.Y1)
+		UiTema.pintar(_aviso, UiTema.Y1)
 	elif primeira and rot == "hard":
 		_aviso.text = UiTema.txt("risk_hard_warn", "VERMELHO = VAI PERDER")
-		_aviso.add_theme_color_override("font_color", UiTema.R3)
+		UiTema.pintar(_aviso, UiTema.R3)
 	elif GameState.esperar_verde(str(_dados.opponent.id), rot) and not GameState.no_dia_da_luta():
 		# No dia da luta o treino está parado: não dá para esperar, então a dica some.
 		# Regra L1 (decisão D2): contra o algoz e quem vem antes dele, enquanto não estiver verde. Só texto: a cor não mente.
 		_aviso.text = UiTema.txt("preview_wait_green", "ESPERE FICAR VERDE")
-		_aviso.add_theme_color_override("font_color", UiTema.Y1)
+		UiTema.pintar(_aviso, UiTema.Y1)
 	# Porcentagem ao lado do selo (a decisão 11 da Fase 3: só com o nó que a libera).
 	_percent.visible = bool(_dados.get("show_percent", false))
 	if _percent.visible:
 		var pct := int(_dados.risks.get(_tatica, {}).get("percent", 0))
 		_percent.text = UiTema.txt("preview_percent", "{n}%", {"n": pct})
-		_percent.add_theme_color_override("font_color", UiTema.cor_risco(rot))
+		UiTema.pintar(_percent, UiTema.cor_risco(rot))
 		_percent.position.x = _selo_area.position.x + _selo.size.x + 8.0
 
 

@@ -139,7 +139,7 @@ func _linha_icone_centrada(icone: String, texto: String, cor: Color, y: float, a
 
 
 func _botao_voltar(y: float) -> void:
-	var b := botao_texto(Rect2(240, y, 160, 28), UiTema.txt("mini_back", "VOLTAR"), UiTema.WHITE, "ui_button_normal", 1)
+	var b := botao_texto(Rect2(240, y, 160, 28), UiTema.txt("mini_back", "VOLTAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
 	b.pressed.connect(func() -> void:
 		if _t >= RESPIRO:
 			voltar_pedido.emit())

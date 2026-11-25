@@ -74,7 +74,7 @@ func _montar_normal(r: Dictionary) -> void:
 			UiTema.WHITE, 320.0, 212.0 + dy + sp)
 	_bloco_passiva(r, xj, lj, 228.0 + dy + sp)
 	_bloco_liga(r, xj, lj, 228.0 + dy + sp + _altura_passiva(r))
-	var b := botao_texto(Rect2(240, 242.0 + dy + extra, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+	var b := botao_texto(Rect2(240, 242.0 + dy + extra, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
 
@@ -96,7 +96,7 @@ func _linha_patrocinio(r: Dictionary, y: float) -> void:
 	var x0 := roundf(320.0 - grupo / 2.0)
 	if tem:
 		var ic := UiTema.textura_rect(painel, marca, x0, y - 1.0)
-		ic.set_meta("ui_align", "ignore")
+		UiTema.ignorar(ic, "marca do patrocinador ao lado do texto: o grupo marca + texto é que fica centralizado na janela")
 	var l := UiTema.rotulo(painel, "", UiTema.Y1, x0 + (12.0 if tem else 0.0), y)
 	UiTema.alinhar(l, "left")
 	_contadores.append({"rotulo": l, "valor": float(v), "modelo": str(p.bonus_line)})
@@ -122,26 +122,25 @@ func _bloco_liga(r: Dictionary, xj: float, lj: float, y: float) -> void:
 	var alt := _altura_liga(r)
 	if alt <= 0.0:
 		return
-	var caixa := fundo_cor(Rect2(xj + 14.0, y - 1.0, lj - 28.0, alt), Color(UiTema.P0, 0.55))
-	caixa.set_meta("ui_align", "ignore")
-	var x_txt := xj + 14.0 + 6.0
+	var caixa := fundo_cor(Rect2(xj + 14.0, y - 1.0, lj - 28.0, alt), UiTema.INK, true)
+	var x_txt := 6.0
 	var icone := "icon_belt_regional"
 	if not UiTema.sprite(icone).is_empty():
-		UiTema.textura_rect(painel, icone, x_txt, y - 1.0 + roundf((alt - 16.0) / 2.0))
+		UiTema.textura_rect(caixa, icone, x_txt, roundf((alt - 16.0) / 2.0))
 		x_txt += 22.0
-	var larg := xj + lj - 14.0 - 6.0 - x_txt
+	var larg := lj - 28.0 - 6.0 - x_txt
 	var linhas: Array = []
 	if alt >= 40.0:
 		linhas.append(UiTema.txt("league_regional_invite_title", "CONVITE: LIGA REGIONAL DO VALE").to_upper())
 	var frases := _quebrar(UiTema.txt("league_regional_invite_line", "O KID PERDEU. O VALE QUER CONHECER A RAÍZES").to_upper(), larg)
-	var yy := y - 1.0 + roundf((alt - 10.0 * float(linhas.size() + frases.size())) / 2.0)
+	var yy := roundf((alt - 10.0 * float(linhas.size() + frases.size())) / 2.0)
 	for t in linhas:
-		var lt := UiTema.rotulo(painel, str(t), UiTema.Y2, x_txt, yy, larg, HORIZONTAL_ALIGNMENT_LEFT)
-		UiTema.alinhar(lt, "left")
+		var lt := UiTema.rotulo(caixa, str(t), UiTema.Y2, x_txt, yy, larg, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar_motivo(lt, "left", "texto de várias linhas ao lado do ícone, na caixa escura")
 		yy += 10.0
 	for t in frases:
-		var lf := UiTema.rotulo(painel, str(t), UiTema.CREAM, x_txt, yy, larg, HORIZONTAL_ALIGNMENT_LEFT)
-		UiTema.alinhar(lf, "left")
+		var lf := UiTema.rotulo(caixa, str(t), UiTema.CREAM, x_txt, yy, larg, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar_motivo(lf, "left", "texto de várias linhas ao lado do ícone, na caixa escura")
 		yy += 10.0
 
 
@@ -177,15 +176,14 @@ func _bloco_passiva(r: Dictionary, xj: float, lj: float, y: float) -> void:
 	var liberou := str(r.get("passive2_unlocked", ""))
 	if linha != "" and liberou != "":
 		var icone := str(por_arte.get(liberou, {}).get("passive_2_icon", ""))
-		var caixa := fundo_cor(Rect2(xj + 14.0, y - 4.0, lj - 28.0, 30.0), Color(UiTema.P0, 0.55))
-		caixa.set_meta("ui_align", "ignore")
-		var x_txt := xj + 14.0 + 6.0
+		var caixa := fundo_cor(Rect2(xj + 14.0, y - 4.0, lj - 28.0, 30.0), UiTema.INK, true)
+		var x_txt := 6.0
 		if icone != "" and not UiTema.sprite(icone).is_empty():
-			UiTema.textura_rect(painel, icone, x_txt, y + 3.0)
+			UiTema.textura_rect(caixa, icone, x_txt, 7.0)
 			x_txt += 22.0
-		var larg := xj + lj - 14.0 - 6.0 - x_txt
-		var l := UiTema.rotulo(painel, linha.to_upper(), UiTema.Y1, x_txt, y + 1.0, larg, HORIZONTAL_ALIGNMENT_LEFT)
-		UiTema.alinhar(l, "left")
+		var larg := lj - 28.0 - 6.0 - x_txt
+		var l := UiTema.rotulo(caixa, linha.to_upper(), UiTema.Y1, x_txt, 5.0, larg, HORIZONTAL_ALIGNMENT_LEFT)
+		UiTema.alinhar_motivo(l, "left", "aviso de 2 linhas ao lado do ícone, na caixa escura")
 		return
 	var texto := _texto_meta(r)
 	if texto == "":
@@ -198,7 +196,7 @@ func _bloco_passiva(r: Dictionary, xj: float, lj: float, y: float) -> void:
 	if tem:
 		UiTema.textura_rect(painel, icone9, gx, y - 1.0)
 	var lt := UiTema.rotulo(painel, texto, UiTema.Y1, gx + (12.0 if tem else 0.0), y)
-	UiTema.alinhar(lt, "left")
+	UiTema.alinhar_motivo(lt, "left", "o grupo ícone + texto é que está centralizado; o texto começa depois do ícone")
 
 
 ## "REVANCHE!" (letreiro com estouro, 2 quadros) e a linha do Roteirista logo abaixo. Entra com um "pop" e a tremida de 2 px
@@ -270,11 +268,12 @@ func _montar_cinturao(r: Dictionary) -> void:
 	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215 + ds)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
 	# Academia de bairro: aviso de que a mudança é automática (NÃO é botão).
-	fundo_cor(Rect2(166, 232 + ds, 308, 42), Color(UiTema.P0, 0.55))
-	UiTema.textura_rect(painel, "icon_belt_amateur_9", 174, 238 + ds)
-	UiTema.rotulo(painel, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 188, 238 + ds, 280)
+	var aviso := fundo_cor(Rect2(166, 232 + ds, 308, 42), UiTema.INK, true)
+	UiTema.textura_rect(aviso, "icon_belt_amateur_9", 8, 6)
+	var la := UiTema.rotulo(aviso, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 22, 6, 280)
+	UiTema.alinhar_motivo(la, "left", "aviso de 2 linhas ao lado do ícone, na caixa escura")
 	# 6d2: a linha "A MUDANÇA SAI DO PRÊMIO..." saiu (o aviso da reserva já diz isso depois).
-	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
 
@@ -300,12 +299,13 @@ func _montar_cinturao_regional(r: Dictionary) -> void:
 	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 239 + sp)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
 	# Aviso (NÃO é botão): o centro de treinamento abre e o MUDAR espera no HUD (8a2).
-	var caixa := fundo_cor(Rect2(166, 256 + sp, 308, 30), Color(UiTema.P0, 0.55))
-	caixa.set_meta("ui_align", "ignore")
-	UiTema.textura_rect(painel, "icon_belt_regional_9", 174, 262 + sp)
-	UiTema.rotulo(painel, UiTema.txt("belt_regional_unlock_done" if bool(GameState.permanente.get("center_reached", false)) else "belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 188, 262 + sp, 280)
-	UiTema.rotulo(painel, UiTema.txt("belt_regional_soon", "O CENTRO ESPERA: USE O MUDAR").to_upper(), UiTema.G3, 188, 273 + sp, 280)
-	var b := botao_texto(Rect2(240, 298 + sp, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1)
+	var caixa := fundo_cor(Rect2(166, 256 + sp, 308, 30), UiTema.INK, true)
+	UiTema.textura_rect(caixa, "icon_belt_regional_9", 8, 6)
+	var l1 := UiTema.rotulo(caixa, UiTema.txt("belt_regional_unlock_done" if bool(GameState.permanente.get("center_reached", false)) else "belt_regional_unlock", "CENTRO DE TREINAMENTO LIBERADO").to_upper(), UiTema.Y1, 22, 6, 280)
+	var l2 := UiTema.rotulo(caixa, UiTema.txt("belt_regional_soon", "O CENTRO ESPERA: USE O MUDAR").to_upper(), UiTema.G3, 22, 17, 280)
+	UiTema.alinhar_motivo(l1, "left", "aviso de 2 linhas ao lado do ícone, na caixa escura")
+	UiTema.alinhar_motivo(l2, "left", "aviso de 2 linhas ao lado do ícone, na caixa escura")
+	var b := botao_texto(Rect2(240, 298 + sp, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
 
@@ -322,7 +322,7 @@ func _selo_garagem() -> void:
 	var p: Array = info.get("victory_pos", [418, 146])
 	var selo := UiTema.textura_rect(painel, str(info.get("seal", "seal_garage_saved")), float(p[0]), float(p[1]))
 	selo.visible = false
-	UiTema.alinhar(selo, "ignore")  # posição do manifest (victory_pos): à direita das linhas de prêmio
+	UiTema.ignorar(selo, "selo animado: posição do manifest (victory_pos), à direita das linhas de prêmio; escala e tremida no meio da animação")
 	var centro := Vector2(float(p[0]), float(p[1])) + selo.size / 2.0
 	var tw := create_tween()
 	tw.tween_interval(0.3)

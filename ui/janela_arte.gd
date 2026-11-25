@@ -51,7 +51,7 @@ func abrir_com() -> void:
 	var cliques := Control.new()
 	cliques.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cliques.size = TELA
-	cliques.set_meta("ui_align_row", "free")
+	UiTema.fileira_livre(cliques, "os cartões (2 ou 3) ficam lado a lado e a área clicável de cada um tem o tamanho do cartão")
 	painel.add_child(cliques)
 	var conteudo := Control.new()
 	conteudo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -86,8 +86,13 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 	var id := str(arte.id)
 	var ultima := bool(arte.get("last", false))
 	var por_id: Dictionary = UiTema.manifest().get("by_data_id", {}).get(id, {})
-	var nome_normal := str(info.get("card", {}).get("last" if ultima else "normal", "ui_art_card"))
-	var fundo := UiTema.nine_patch(fundos, nome_normal, r)
+	var nome_normal := "c_cartao"  # tema C: o cartão é papel; a arte da última carreira leva o selo ÚLTIMA e o hover clareia
+	var base := Control.new()  # cada cartão tem o próprio Control do tamanho dele (não é uma "janela" solta na tela cheia)
+	base.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	base.position = r.position
+	base.size = r.size
+	fundos.add_child(base)
+	var fundo := UiTema.nine_patch(base, nome_normal, Rect2(Vector2.ZERO, r.size))
 
 	# Área clicável do cartão (por baixo do conteúdo: o botão ESCOLHER continua clicável por cima).
 	var area := Button.new()
@@ -109,10 +114,11 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 
 	# Faixa do nome: ícone da arte à esquerda e o nome em 2x, centralizado na faixa.
 	var cab_nome := str(por_id.get("card_header", "ui_art_card_header_" + id))
-	var cab := UiTema.nine_patch(c, cab_nome, Rect2(6, 6, 178, 18))
+	var cab := UiTema.nine_patch(c, cab_nome, Rect2(6, 6, 178, 20))
 	cab.set_meta("ui_pos", "center_h")
+	cab.set_meta("ui_fundo_escuro", true)  # a faixa do nome é colorida: texto claro
 	UiTema.textura_rect(cab, str(por_id.get("icon", "art_" + id)), 3, 1)
-	UiTema.rotulo_centrado(cab, UiTema.area_nove(cab_nome, Vector2(178, 18)), str(arte.name).to_upper(), UiTema.WHITE, 2, false, "center_h")
+	UiTema.rotulo_centrado(cab, UiTema.area_nove(cab_nome, Vector2(178, 20)), str(arte.name).to_upper(), UiTema.WHITE, 2, false, "center_h")
 
 	# Ilustração do aparelho (72x56) no meio do cartão.
 	var ilus := UiTema.textura_rect(c, str(por_id.get("card_art", "art_card_" + id)), floorf((r.size.x - 72.0) / 2.0), 28)
@@ -132,8 +138,8 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 	_texto(c, UiTema.txt("art_whole_career", "VALE A CARREIRA INTEIRA"), UiTema.G2, 250.0, r.size.x)
 
 	# Botão ESCOLHER, centralizado no cartão.
-	var b := UiTema.botao_estilizado(c, Rect2(floorf((r.size.x - LARG_BOTAO) / 2.0), 262, LARG_BOTAO, ALT_BOTAO), "ui_button_art")
-	UiTema.botao_conteudo(b, UiTema.txt("art_choose", "ESCOLHER"), UiTema.WHITE, 1)
+	var b := UiTema.botao(c, Rect2(floorf((r.size.x - LARG_BOTAO) / 2.0), 262, LARG_BOTAO, ALT_BOTAO), "c_btn_foco")
+	UiTema.botao_conteudo(b, UiTema.txt("art_choose", "ESCOLHER"), UiTema.CREAM, 1)
 	b.set_meta("ui_pos", "center_h")
 	b.pressed.connect(func() -> void: _escolher(id))
 
@@ -147,7 +153,7 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 		var a := UiTema.area_nove("ui_art_tag_last", Vector2(w, 13))
 		var l := UiTema.rotulo(tag, texto, Sala.BR0, roundf(a.position.x + (a.size.x - UiTema.largura_visivel(texto)) / 2.0),
 			UiTema.y_texto(a), 0, HORIZONTAL_ALIGNMENT_LEFT, false)
-		UiTema.alinhar(l, "left")
+		UiTema.alinhar_motivo(l, "left", "texto do selo ÚLTIMA sobre a borda do cartão")
 	return {"id": id, "area": area, "fundo": fundo, "ultima": ultima, "container": c, "botao": b, "rect": r,
 		"normal": nome_normal, "hover": str(info.get("card", {}).get("hover", "ui_art_card_hover")), "aceso": false}
 
@@ -160,13 +166,12 @@ func _montar_opcao(c: Control, id: String, p: Dictionary, y: float, por_id: Dict
 	borda.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	borda.position = Vector2(OPC_X, y)
 	borda.size = Vector2(OPC_LARG, OPC_ALT)
-	borda.set_meta("ui_align", "ignore")
+	borda.set_meta("ui_fundo_escuro", true)  # a caixa da passiva é escura (ink): texto claro dentro
 	c.add_child(borda)
 	var fundo := ColorRect.new()
 	fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fundo.position = Vector2(1, 1)
 	fundo.size = Vector2(OPC_LARG - 2.0, OPC_ALT - 2.0)
-	fundo.set_meta("ui_align", "ignore")
 	borda.add_child(fundo)
 	# Ícone: a 1ª usa o ícone da arte; a 2ª, o ícone próprio (a versão cinza com cadeado enquanto trancada).
 	var icone := str(por_id.get("icon", "art_" + id)) if int(p.n) == 1 else str(p.get("icon", ""))
@@ -174,8 +179,8 @@ func _montar_opcao(c: Control, id: String, p: Dictionary, y: float, por_id: Dict
 		icone += "_locked"
 	if icone != "" and not UiTema.sprite(icone).is_empty():
 		UiTema.textura_rect(borda, icone, 4, 2)
-	var nome := UiTema.rotulo(borda, str(p.name).to_upper(), UiTema.G1 if trancada else cor, 24, 5, 0.0, HORIZONTAL_ALIGNMENT_LEFT)
-	UiTema.alinhar(nome, "left")
+	var nome := UiTema.rotulo(borda, str(p.name).to_upper(), UiTema.G2 if trancada else cor, 24, 5, 0.0, HORIZONTAL_ALIGNMENT_LEFT)
+	UiTema.alinhar_motivo(nome, "left", "nome da passiva ao lado do ícone, na caixa da passiva")
 	var marca: Control = null
 	var texto_label: Label = null
 	var largura_texto := OPC_LARG - 10.0
@@ -184,12 +189,12 @@ func _montar_opcao(c: Control, id: String, p: Dictionary, y: float, por_id: Dict
 		marca = _quadro(borda, "ui_passive_lock", 9, 12, 0, OPC_LARG - 14.0, 2.0)
 		var prog: Dictionary = p.get("progress", {})
 		var l := UiTema.rotulo(borda, str(prog.get("text", "")).to_upper(), UiTema.Y1, 5, 21, largura_texto, HORIZONTAL_ALIGNMENT_LEFT)
-		UiTema.alinhar(l, "left")
+		UiTema.alinhar_motivo(l, "left", "texto da passiva ao lado do ícone, na caixa da passiva")
 		_barra_meta(borda, 5.0, 36.0, largura_texto, int(prog.get("n", 0)), int(prog.get("m", 3)))
 	else:
 		marca = _quadro(borda, "ui_passive_goal_pip", 7, 7, 0, OPC_LARG - 13.0, 5.0)
 		var l := UiTema.rotulo(borda, str(p.fight_text).to_upper(), UiTema.CREAM, 5, 19, largura_texto, HORIZONTAL_ALIGNMENT_LEFT)
-		UiTema.alinhar(l, "left")
+		UiTema.alinhar_motivo(l, "left", "texto da passiva em até 3 linhas, na caixa da passiva")
 		l.size = Vector2(largura_texto, 32)
 		texto_label = l
 	# Botão invisível sobre a caixa: marca a opção (a trancada só treme o cadeado).
@@ -200,7 +205,6 @@ func _montar_opcao(c: Control, id: String, p: Dictionary, y: float, por_id: Dict
 	botao.size = Vector2(OPC_LARG, OPC_ALT)
 	for e in ["normal", "hover", "pressed", "disabled", "focus"]:
 		botao.add_theme_stylebox_override(e, StyleBoxEmpty.new())
-	botao.set_meta("ui_align", "ignore")
 	var n := int(p.n)
 	botao.pressed.connect(func() -> void: _marcar(id, n))
 	c.add_child(botao)
@@ -226,7 +230,7 @@ func _quadro(pai: Control, nome: String, lw: int, lh: int, q: int, x: float, y: 
 	t.stretch_mode = TextureRect.STRETCH_KEEP
 	t.position = Vector2(x, y)
 	t.size = Vector2(lw, lh)
-	t.set_meta("ui_align", "ignore")
+	UiTema.ignorar(t, "quadro de folha de sprites (pip/cadeado) em posição livre dentro da caixa da passiva")
 	pai.add_child(t)
 	return t
 
@@ -241,7 +245,7 @@ static func _definir_quadro(t: Control, lw: int, q: int) -> void:
 func _barra_meta(pai: Control, x: float, y: float, larg: float, n: int, m: int) -> void:
 	var interior := larg - 4.0
 	if not UiTema.sprite("ui_passive_progress_bar").is_empty():
-		UiTema.nine_patch(pai, "ui_passive_progress_bar", Rect2(x, y, larg, 8)).set_meta("ui_align", "ignore")
+		UiTema.ignorar(UiTema.nine_patch(pai, "ui_passive_progress_bar", Rect2(x, y, larg, 8)), "moldura da barra de meta, em posição livre dentro da caixa da passiva")
 	else:
 		var q := ColorRect.new()
 		q.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -265,7 +269,7 @@ func _barra_meta(pai: Control, x: float, y: float, larg: float, n: int, m: int) 
 		t.stretch_mode = TextureRect.STRETCH_TILE
 		t.position = Vector2(x + 2.0, y + 2.0)
 		t.size = Vector2(w, 4)
-		t.set_meta("ui_align", "ignore")
+		UiTema.ignorar(t, "enchimento da barra de meta, dentro da moldura")
 		pai.add_child(t)
 	for k in range(1, m):
 		var tick := ColorRect.new()
@@ -273,7 +277,7 @@ func _barra_meta(pai: Control, x: float, y: float, larg: float, n: int, m: int) 
 		tick.color = UiTema.G2
 		tick.position = Vector2(x + 2.0 + roundf(interior * float(k) / float(m)), y + 2.0)
 		tick.size = Vector2(1, 4)
-		tick.set_meta("ui_align", "ignore")
+		UiTema.ignorar(tick, "divisória da barra de meta, em posição livre dentro da moldura")
 		pai.add_child(tick)
 
 
@@ -359,7 +363,4 @@ func _process(delta: float) -> void:
 		if dentro == bool(c.aceso):
 			continue
 		c.aceso = dentro
-		if bool(c.ultima):
-			c.fundo.modulate = Color(1.18, 1.14, 1.0) if dentro else Color.WHITE  # já tem a borda dourada
-		else:
-			(c.fundo as NinePatchRect).texture = UiTema.textura(str(c.hover) if dentro else str(c.normal))
+		c.fundo.modulate = Color(1.15, 1.12, 1.0) if dentro else Color.WHITE  # hover: o papel clareia

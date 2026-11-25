@@ -185,11 +185,11 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 	_raiz.size = Vector2(640, 360)
 	add_child(_raiz)
 	var by_data: Dictionary = UiTema.manifest().get("by_data_id", {}).get("speech_bubble", {})
-	_fundo = UiTema.nine_patch(_raiz, "ui_balloon", corpo)
+	_fundo = UiTema.nine_patch(_raiz, "c_balao", corpo)
 	# Rabicho: central, ou à esquerda/direita quando a ponta fica perto da borda.
 	var perto_e := ponta.x - corpo.position.x < 14.0
 	var perto_d := corpo.end.x - ponta.x < 15.0
-	var nome_t := str(by_data.get("tail_l", "ui_balloon_tail_l")) if perto_e else (str(by_data.get("tail_r", "ui_balloon_tail_r")) if perto_d else str(by_data.get("tail", "ui_balloon_tail")))
+	var nome_t := "c_balao_rabicho_e" if perto_e else ("c_balao_rabicho_d" if perto_d else "c_balao_rabicho")  # tema C: mesma ponta (0,5) / (6,5) / (3,5)
 	var off: Array = by_data.get("tail_rule", {}).get("tip_offset", {}).get("l" if perto_e else ("r" if perto_d else "c"), [3, 5])
 	UiTema.textura_rect(_raiz, nome_t, ponta.x - float(off[0]), corpo.position.y + h - 2.0)
 	# Texto: linhas à esquerda, bloco centrado; Label em y = by + 3 (célula do BMFont).
@@ -202,9 +202,9 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 		_chars_por_linha.append(str(_linhas[i]).length())
 	# 8a1: seta de "próxima" no canto de baixo à direita do corpo (só no modo de cena; acende quando a fala termina de escrever).
 	_seta_anim = null
-	if modo_cena and not UiTema.sprite("ui_balloon_next").is_empty():
+	if modo_cena and not UiTema.sprite("c_balao_seta").is_empty():
 		var anim := AnimSprite.new()
-		anim.definir("ui_balloon_next")
+		anim.definir("c_balao_seta")
 		anim.position = Vector2(corpo.end.x - 10.0, corpo.end.y - 7.0)
 		anim.tocar([0, 1], 2.0, true)
 		anim.visible = false
@@ -216,9 +216,9 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 	var nome := str(p.get("short", speaker))
 	if speaker == "last":
 		nome = str(GameState.mentor_do_caixote().get("name", "")).split(" ")[0].to_lower()  # só o primeiro nome, minúsculo, como as outras plaquinhas
-	var tw := float(nome.length() * AVANCO + 6)
-	var tag := UiTema.nine_patch(_raiz, str(by_data.get("tag_by_color", {}).get(cor_nome, "ui_balloon_tag_gray")),
-		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 10.0))
+	var tw := UiTema.largura_visivel(nome) + 7.0  # tema C: largura da placa = largura visível do nome + 7 (folga 2/2)
+	var tag := UiTema.nine_patch(_raiz, "c_balao_placa_" + cor_nome,
+		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 11.0))  # 11: o verificador mede o texto com 7 px de altura (a placa tem 6 de miolo)
 	var cor_txt := UiTema.WHITE if str(by_data.get("tag_text_color", {}).get(cor_nome, "ink")) == "white" else UiTema.INK
 	UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 	_timbre = str(p.get("voice", speaker))

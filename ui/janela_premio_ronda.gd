@@ -21,7 +21,7 @@ func abrir_com(premio: Dictionary, _info: Dictionary = {}) -> void:
 	_premio = premio
 	var sobe := bool(premio.get("level_up", false)) and int(premio.get("level", 0)) >= 1
 	var linhas: Array = _linhas(sobe)
-	var altura := 36.0 + 6.0  # 6 em cima (borda ao título) = 6 embaixo (botão à borda)
+	var altura := 36.0  # a faixa do título encosta a 2 px da borda de cima; o botão fica a ~2 px da de baixo
 	for l in linhas:
 		altura += float(l.h)
 	var topo := roundf((360.0 - altura) / 2.0)
@@ -154,7 +154,7 @@ func _bolinhas(y: float, nivel: int, sobe: bool) -> void:
 
 
 func _botao_voltar(y: float) -> void:
-	var b := botao_texto(Rect2(240, y, 160, 28), UiTema.txt("mini_back", "VOLTAR"), UiTema.WHITE, "ui_button_normal", 1)
+	var b := botao_texto(Rect2(240, y, 160, 28), UiTema.txt("mini_back", "VOLTAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
 	b.pressed.connect(func() -> void:
 		if _t >= RESPIRO:
 			voltar_pedido.emit())

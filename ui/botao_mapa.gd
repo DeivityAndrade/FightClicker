@@ -9,11 +9,11 @@ const POSICAO := Vector2(118, 22)  # 6d2: ao lado dos atributos em miniatura
 const TAMANHO := Vector2(22, 22)
 
 var _img: TextureRect
-var _atlas: AtlasTexture
 var _brilha := false
 var _abre := true
 var _t := 0.0
 var _tempo_leitura := 0.0
+var _estilo := ""
 
 
 func _ready() -> void:
@@ -22,16 +22,12 @@ func _ready() -> void:
 	size = TAMANHO
 	z_index = 1000  # acima da sala (mundo z 100) e abaixo das janelas (Fluxo z 3000)
 	focus_mode = Control.FOCUS_NONE
-	flat = true
-	for estilo in ["normal", "hover", "pressed", "disabled", "focus"]:
-		add_theme_stylebox_override(estilo, StyleBoxEmpty.new())
-	_img = TextureRect.new()
-	_img.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_img.stretch_mode = TextureRect.STRETCH_KEEP
-	_img.size = TAMANHO
-	_atlas = AtlasTexture.new()
-	_img.texture = _atlas
-	add_child(_img)
+	# Tema C: botão quadrado de asfalto (c_btn_normal) com o ícone do mapa; pisca no vermelho de foco quando há nó para comprar.
+	UiTema.aplicar_estilo_botao(self, "c_btn_normal")
+	var q := UiTema.tamanho_quadro("icon_skill_map")
+	var a := UiTema.area_botao(self)
+	_img = UiTema.textura_rect(self, "icon_skill_map", roundf(a.position.x + (a.size.x - q.x) / 2.0), UiTema.y_imagem(a, q.y))
+	_img.set_meta("y_base", _img.position.y)
 	mouse_entered.connect(func() -> void: Dica.pedir(texto_dica(), self))
 	mouse_exited.connect(Dica.limpar)
 	pressed.connect(Dica.limpar)
@@ -74,19 +70,11 @@ func _process(delta: float) -> void:
 
 
 func _desenhar() -> void:
-	var nome := "ui_map_button_normal"
-	var quadro := 0
-	match get_draw_mode():
-		DRAW_PRESSED, DRAW_HOVER_PRESSED:
-			nome = "ui_map_button_pressed"
-		DRAW_HOVER:
-			nome = "ui_map_button_hover"
-		_:
-			if _brilha:
-				nome = "ui_map_button_glow"
-				quadro = int(_t * 2.0) % 2
-	var folha := UiTema.textura(nome)
-	if _atlas.atlas != folha or _atlas.region.position.x != float(quadro * 22):
-		_atlas.atlas = folha
-		_atlas.region = Rect2(quadro * 22, 0, 22, 22)
+	var apertado := get_draw_mode() in [DRAW_PRESSED, DRAW_HOVER_PRESSED]
+	var aceso := _brilha and int(_t * 2.0) % 2 == 1 and get_draw_mode() == DRAW_NORMAL  # 2 quadros a 2 fps
+	var estilo := "c_btn_foco" if aceso else "c_btn_normal"
+	if estilo != _estilo:
+		_estilo = estilo
+		add_theme_stylebox_override("normal", UiTema.estilo(estilo))
+	_img.position.y = float(_img.get_meta("y_base")) + (2.0 if apertado else 0.0)  # a face desce 2 px ao apertar
 	modulate = Color.WHITE if _abre else Color(0.62, 0.6, 0.66)
