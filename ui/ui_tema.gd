@@ -476,6 +476,11 @@ static func ignorar(no: Node, motivo: String, dinamico: bool = false) -> void:
 		no.set_meta("ui_texto_dinamico", true)
 
 
+## Marca uma área de hover/toque sem desenho (Control sem texto nem filhos): o verificador a isenta do `ignore`.
+static func area_hover(no: Node) -> void:
+	no.set_meta("ui_area_hover", true)
+
+
 ## Texto colado à borda direita `x_borda` (a última letra termina nela): alinhamento RIGHT de verdade (o verificador exige
 ## `horizontal_alignment` RIGHT quando o nó declara `right`) e declara `right` com o motivo. Texto fixo: se mudar, chame de novo.
 static func fixar_direita(l: Label, x_borda: float, motivo: String) -> void:

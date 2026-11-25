@@ -20,8 +20,8 @@ const LINHAS_MAX := 7
 const BORDA_E := 28.0
 const BORDA_D := 612.0
 const HALL_X := 441.0
-const HALL_Y := 94.0
-const HALL_PASSO := 42.0
+const HALL_Y := 74.0
+const HALL_PASSO := 45.0  # 3 px a mais que antes: a descrição de 2 linhas não encosta na etiqueta de estado
 const HALL_LARG := 171.0
 
 var sfx: Sfx
@@ -277,7 +277,7 @@ func _no(n: Dictionary, y: float) -> void:
 	linha.name = "No_" + str(n.id)
 	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	linha.position = Vector2(HALL_X, y)
-	linha.size = Vector2(HALL_LARG, 42)
+	linha.size = Vector2(HALL_LARG, HALL_PASSO)
 	_conteudo.add_child(linha)
 	var icone := "icon_hall_" + str(n.id).trim_prefix("hall_")
 	UiTema.textura_rect(linha, icone if aceso else icone + "_gray", 0, 0)
@@ -323,7 +323,7 @@ func _no(n: Dictionary, y: float) -> void:
 	linha.add_child(area)
 	_ligar_balao(area, linhas_dica, linha)
 	var w := roundf(UiTema.largura_visivel(texto)) + 12.0
-	var rect := Rect2(20, 29, w, 13)
+	var rect := Rect2(20, 31, w, 13)
 	if estado == "buyable":
 		var b := UiTema.botao(linha, rect, "c_btn_foco")  # comprável: o botão vermelho de foco
 		b.mouse_entered.connect(func() -> void: b.modulate = Color(1.3, 1.3, 1.3))
@@ -334,9 +334,17 @@ func _no(n: Dictionary, y: float) -> void:
 		var id := str(n.id)
 		b.pressed.connect(func() -> void: _comprar(id))
 	else:
-		var chip := UiTema.nine_patch(linha, "c_chip", rect)
-		chip.set_meta("ui_fundo_escuro", true)
-		UiTema.rotulo_centrado(chip, UiTema.area_nove("c_chip", rect.size), texto, cor if estado != "closed" else UiTema.G3)
+		# Tema C: a etiqueta de papel (altura fixa 12, texto escuro), não a tarja preta, sobre o papel da janela.
+		var etq_rect := Rect2(20, 31, w + 2.0, 12)
+		var etq := UiTema.nine_patch(linha, "c_etiqueta", etq_rect)
+		# O Control do tamanho da área útil do 9-slice (furo do barbante à esquerda, sombra embaixo) faz de pai: o texto centra nele.
+		var area_e := UiTema.area_nove("c_etiqueta", etq_rect.size)
+		var miolo := Control.new()
+		miolo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		miolo.position = area_e.position
+		miolo.size = area_e.size
+		etq.add_child(miolo)
+		UiTema.rotulo_centrado(miolo, Rect2(Vector2.ZERO, miolo.size), texto, cor if estado != "closed" else UiTema.G1)
 
 
 func _ligar_balao(c: Control, linhas: Array, alvo: Control) -> void:

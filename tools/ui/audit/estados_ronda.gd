@@ -330,7 +330,10 @@ func _conferir_margens_vertical(painel: Control) -> void:
 	var mr: Rect2 = moldura.get_global_rect()
 	var em_cima := topo - mr.position.y
 	var embaixo := mr.end.y - fundo
-	au._exigir(absf(em_cima - embaixo) <= 2.0, au._estado, "margens de cima e de baixo iguais (±2 px): cima %.0f, baixo %.0f" % [em_cima, embaixo])
+	# Tema C: o título fica colado no topo da moldura (cima ~2 px) e o botão de baixo segue o padrão
+	# das janelas (12 ± 2 px até a borda interna, o mesmo que FOLGA_VIZINHO exige).
+	au._exigir(em_cima >= 0.0 and em_cima <= 4.0, au._estado, "título colado no topo da moldura (0–4 px): cima %.0f" % em_cima)
+	au._exigir(absf(embaixo - 15.0) <= 2.0, au._estado, "botão de baixo no padrão das janelas (12 ± 2 px + 3 de sombra): baixo %.0f" % embaixo)
 
 
 func _premios() -> void:

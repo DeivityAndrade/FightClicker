@@ -51,7 +51,7 @@ func _montar_normal(r: Dictionary) -> void:
 	var corr := -roundf(extra / 2.0)  # a janela cresce para os dois lados (continua no meio)
 	var topo := (42.0 if revanche else 72.0) + corr
 	var dy := (32.0 if revanche else 0.0) + corr  # deslocamento do miolo (posições originais + dy)
-	moldura("ui_window", Rect2(xj, topo, lj, 222.0 + (62.0 if revanche else 0.0) + extra))
+	moldura("ui_window", Rect2(xj, topo, lj, 210.0 + (62.0 if revanche else 0.0) + extra))  # 210: o botão fica a 12 px da borda de baixo, como nas outras janelas
 	faixa_titulo("victory", Rect2(xj + 6.0, topo + 6.0, lj - 12.0, 22), UiTema.txt("victory_title", "VENCEU!"), UiTema.Y2, 2)
 	if revanche:
 		_letreiro_revanche(r, topo + 32.0)
@@ -233,21 +233,25 @@ func _montar_cinturao(r: Dictionary) -> void:
 	# Fase 6a: o 1º cinturão da escola salva a garagem. Entra uma 4ª linha de prêmio (ícone + GARAGEM SALVA) e o selo à direita.
 	var salva := bool(r.get("garage_saved", false))
 	var patrocinio := int(r.get("sponsor_money", 0)) > 0 and not GameState.patrocinio().is_empty()
-	var ds := 18.0 if (salva or patrocinio) else 0.0  # a janela é a mesma; o miolo de baixo desce 18 px para caber a linha extra (8a2: ou o patrocínio)
-	moldura("ui_window", Rect2(150, 22, 340, 316))
-	faixa_titulo("victory", Rect2(156, 28, 328, 22), UiTema.txt("belt_title", "CINTURÃO AMADOR"), UiTema.Y1, 2)
+	var ds := 20.0 if salva else (18.0 if patrocinio else 0.0)  # o miolo de baixo desce para caber a linha extra (8a2: ou o patrocínio); GARAGEM SALVA tem 2 linhas com ar entre elas
+	# ID3: o aviso da mudança é uma etiqueta do tamanho do texto (não mais a caixa preta alta), então a janela encolhe e se recentraliza.
+	var alt := 282.0 + ds
+	var topo := roundf((360.0 - alt) / 2.0)
+	var oy := topo - 22.0  # tudo abaixo estava desenhado para a janela em y 22
+	moldura("ui_window", Rect2(150, topo, 340, alt))
+	faixa_titulo("victory", Rect2(156, 28 + oy, 328, 22), UiTema.txt("belt_title", "CINTURÃO AMADOR"), UiTema.Y1, 2)
 	var cint := AnimSprite.new()
 	cint.definir("belt_amateur_big")
-	cint.position = Vector2(320, 100)
+	cint.position = Vector2(320, 100 + oy)
 	cint.scale = Vector2(2, 2)
 	cint.tocar([0, 1, 2], 6.0, true)
 	painel.add_child(cint)
 	if bool(r.get("revenge", false)):
 		# Cinturão e revanche juntos: a linha do bairro dá lugar a "REVANCHE! ... NÃO ESPERAVA ESSA." (a janela já está cheia).
 		UiTema.rotulo_centro(painel, (UiTema.txt("victory_revenge", "REVANCHE!") + " " + str(r.get("revenge_line", ""))).to_upper(),
-			UiTema.Y1, 320.0, 140.0)
+			UiTema.Y1, 320.0, 140.0 + oy)
 	else:
-		UiTema.rotulo_centro(painel, UiTema.txt("belt_line", "O bairro viu. Uns quinze."), UiTema.CREAM, 320.0, 140.0)
+		UiTema.rotulo_centro(painel, UiTema.txt("belt_line", "O bairro viu. Uns quinze."), UiTema.CREAM, 320.0, 140.0 + oy)
 	var larg := _largura_ganhos(r, 1)
 	var titulo_selo := ""
 	var sub_selo := ""
@@ -257,23 +261,30 @@ func _montar_cinturao(r: Dictionary) -> void:
 		sub_selo = d.texto_objeto("garage_saved_seal", "text").to_upper()
 		larg = maxf(larg, 20.0 + UiTema.largura_visivel(sub_selo))
 	var x_linhas := roundf(320.0 - larg / 2.0)
-	_linhas_ganhos(r, x_linhas, 158.0, 1, true)
+	_linhas_ganhos(r, x_linhas, 158.0 + oy, 1, true)
 	if salva:
-		_linha_selo(x_linhas, 206.0, titulo_selo, sub_selo)
-		_selo_garagem()
+		_linha_selo(x_linhas, 206.0 + oy, titulo_selo, sub_selo)
+		_selo_garagem(oy)
 	if patrocinio:
-		_linha_patrocinio(r, 206.0)
-	divisor(166, 208 + ds + (2.0 if salva else 0.0), 308)
-	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 215 + ds)
-	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215 + ds)
+		_linha_patrocinio(r, 206.0 + oy)
+	divisor(166, 208 + ds + (2.0 if salva else 0.0) + oy, 308)
+	linha_icone("icon_legacy", UiTema.txt("hud_legacy_run", "LEGADO EM JOGO"), UiTema.P2, 172, 215 + ds + oy)
+	var v := UiTema.rotulo(painel, str(int(r.legacy_run)), UiTema.P2, 0, 215 + ds + oy)
 	v.position.x = roundf(468.0 - UiTema.largura(v.text))
-	# Academia de bairro: aviso de que a mudança é automática (NÃO é botão).
-	var aviso := fundo_cor(Rect2(166, 232 + ds, 308, 42), UiTema.INK, true)
-	UiTema.textura_rect(aviso, "icon_belt_amateur_9", 8, 6)
-	var la := UiTema.rotulo(aviso, UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA"), UiTema.Y1, 22, 6, 280)
-	UiTema.alinhar_motivo(la, "left", "aviso de 2 linhas ao lado do ícone, na caixa escura")
+	# Academia de bairro: aviso de que a mudança é automática (NÃO é botão). Etiqueta c_chip do tamanho do texto, no meio da janela.
+	var aviso_txt := UiTema.txt("belt_unlock", "VOCÊ SE MUDA PARA A ACADEMIA BOA ESQUINA")
+	var aw := 5.0 + 9.0 + 4.0 + UiTema.largura_visivel(aviso_txt) + 5.0
+	aw = ceilf(aw)
+	if int(aw) % 2 != 0:
+		aw += 1.0
+	var aviso := UiTema.nine_patch(painel, "c_chip", Rect2(320.0 - aw / 2.0, 236.0 + ds + oy, aw, 13))
+	aviso.set_meta("ui_fundo_escuro", true)
+	UiTema.alinhar(aviso, "center_h")
+	UiTema.textura_rect(aviso, "icon_belt_amateur_9", 5, 2)
+	var la := UiTema.rotulo(aviso, aviso_txt, UiTema.Y1, 18, UiTema.y_texto(Rect2(0, 2, 1, 9)))
+	UiTema.alinhar_motivo(la, "left", "aviso de 1 linha ao lado do ícone, na etiqueta escura")
 	# 6d2: a linha "A MUDANÇA SAI DO PRÊMIO..." saiu (o aviso da reserva já diz isso depois).
-	var b := botao_texto(Rect2(240, 296, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
+	var b := botao_texto(Rect2(240, 263.0 + ds + oy, 160, 28), UiTema.txt("victory_continue", "CONTINUAR"), UiTema.WHITE, "ui_button_normal", 1, "", true)
 	b.pressed.connect(func() -> void: continuar_pedido.emit())
 
 
@@ -313,13 +324,14 @@ func _montar_cinturao_regional(r: Dictionary) -> void:
 func _linha_selo(x: float, y: float, titulo: String, sub: String) -> void:
 	UiTema.textura_rect(painel, "icon_garage_saved", x, y)
 	UiTema.rotulo(painel, titulo, UiTema.WHITE, x + 20.0, y + 1.0)
-	UiTema.rotulo(painel, sub, UiTema.COL_TEXT_2, x + 20.0, y + 9.0)
+	UiTema.rotulo(painel, sub, UiTema.COL_TEXT_2, x + 20.0, y + 11.0)  # 2 px a mais que antes: as duas linhas não ficam coladas
 
 
 ## Selo 52x54 em (418,146): entra 0,3 s depois da janela (2 quadros em 2x, depois 1x), tremida de 1 px e o som do hit_heavy.
-func _selo_garagem() -> void:
+func _selo_garagem(oy: float = 0.0) -> void:
 	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("garage_saved_seal", {})
-	var p: Array = info.get("victory_pos", [418, 146])
+	var p: Array = (info.get("victory_pos", [418, 146]) as Array).duplicate()
+	p[1] = float(p[1]) + oy
 	var selo := UiTema.textura_rect(painel, str(info.get("seal", "seal_garage_saved")), float(p[0]), float(p[1]))
 	selo.visible = false
 	UiTema.ignorar(selo, "selo animado: posição do manifest (victory_pos), à direita das linhas de prêmio; escala e tremida no meio da animação")

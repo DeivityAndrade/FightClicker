@@ -98,8 +98,8 @@ func _montar_cartao(arte: Dictionary, r: Rect2, fundos: Control, cliques: Contro
 	var area := Button.new()
 	area.focus_mode = Control.FOCUS_NONE
 	area.flat = true
-	area.position = r.position
-	area.size = r.size
+	area.position = r.position + Vector2(0, 6)  # a área clicável começa na faixa do nome: os 6 px de cima são do selo ÚLTIMA (sem botão por baixo do texto dele)
+	area.size = r.size - Vector2(0, 6)
 	for e in ["normal", "hover", "pressed", "disabled", "focus"]:
 		area.add_theme_stylebox_override(e, StyleBoxEmpty.new())
 	area.pressed.connect(func() -> void: _escolher(id))
