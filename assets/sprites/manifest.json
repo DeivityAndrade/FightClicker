@@ -337,7 +337,24 @@
 				28
 			],
 			"when": "data/minigames.json black_cat_seed.clipping (campanha >= 2 e garage_saved)",
-			"_nota": "Fase 7a2: à direita do pôster SOCO (até x 298), embaixo da lâmpada (até y 80), 9 px antes da corrente do saco no centro (x 335) e longe da parede da memória (x 176..256), do metrônomo, da corda no gancho (296,166) e da zona do alvo (x 273..370 só de y 150 para baixo). Conferido no gerador (conferência do recorte: 0)."
+			"_nota": "Fase 7a2: à direita do pôster SOCO (até x 298), embaixo da lâmpada (até y 80), 9 px antes da corrente do saco no centro (x 335) e longe da parede da memória (x 176..256), do metrônomo, da corda no gancho (296,166) e da zona do alvo (x 273..370 só de y 150 para baixo). Conferido no gerador (conferência do recorte: 0).",
+			"sprite_by_level": [
+				"wall_clipping_black_cat",
+				"wall_clipping_black_cat_l1",
+				"wall_clipping_black_cat_l2",
+				"wall_clipping_black_cat_l3",
+				"wall_clipping_black_cat_l4",
+				"wall_clipping_black_cat_l5"
+			],
+			"zoom_by_level": [
+				"ui_clipping_black_cat_zoom",
+				"ui_clipping_black_cat_zoom_l1",
+				"ui_clipping_black_cat_zoom_l2",
+				"ui_clipping_black_cat_zoom_l3",
+				"ui_clipping_black_cat_zoom_l4",
+				"ui_clipping_black_cat_zoom_l5"
+			],
+			"level_rule": "Ronda: a partir da lenda nível 1 troca o sprite pelo do nível (sprite_by_level[n]); o hover usa clipping_text_by_level do ronda.json e o zoom zoom_by_level[n]. Mesmo ponto e tamanho em todos os níveis."
 		},
 		"gym_clipping_spot": [
 			340,
@@ -361,7 +378,24 @@
 				28
 			],
 			"requires_milestone": "cena_primeira_academia",
-			"_nota": "Fase 7a2: entre o espelho (até x 330) e o relógio de rounds (x 372), embaixo do letreiro (até y 52); 4 px depois da corrente do saco no centro (x 335). Fora da corrente do saco de lado (x 257), do Osmar, da foto e do mural."
+			"_nota": "Fase 7a2: entre o espelho (até x 330) e o relógio de rounds (x 372), embaixo do letreiro (até y 52); 4 px depois da corrente do saco no centro (x 335). Fora da corrente do saco de lado (x 257), do Osmar, da foto e do mural.",
+			"sprite_by_level": [
+				"wall_clipping_black_cat_gym",
+				"wall_clipping_black_cat_gym_l1",
+				"wall_clipping_black_cat_gym_l2",
+				"wall_clipping_black_cat_gym_l3",
+				"wall_clipping_black_cat_gym_l4",
+				"wall_clipping_black_cat_gym_l5"
+			],
+			"zoom_by_level": [
+				"ui_clipping_black_cat_zoom",
+				"ui_clipping_black_cat_zoom_l1",
+				"ui_clipping_black_cat_zoom_l2",
+				"ui_clipping_black_cat_zoom_l3",
+				"ui_clipping_black_cat_zoom_l4",
+				"ui_clipping_black_cat_zoom_l5"
+			],
+			"level_rule": "Ronda: a partir da lenda nível 1 troca o sprite pelo do nível (sprite_by_level[n]); o hover usa clipping_text_by_level do ronda.json e o zoom zoom_by_level[n]. Mesmo ponto e tamanho em todos os níveis."
 		},
 		"foco_saco_comprido": {
 			"saco": "bag_lN_side em lado_esquerdo",
@@ -487,6 +521,124 @@
 			"sort_y": 272,
 			"when": "career.sponsor == 'offered'",
 			"_nota": "Fase 8a2: mesmo ponto nos 3 locais; chão livre conferido na garagem (7b), na academia e no centro; 0 px de pessoa, caixa ou aparelho em cima no centro cheio. Desenhar na camada do chão (sort_y baixo): quem passa fica por cima."
+		},
+		"hood_spot": [
+			352,
+			95
+		],
+		"hood_spot_info": {
+			"location": "garage",
+			"sprite": "hood_on_nail",
+			"anchor": "pivô = cabeça do prego (8,1)",
+			"size": [
+				16,
+				22
+			],
+			"layer": "wall",
+			"z": -44,
+			"frames": {
+				"idle": 0,
+				"hover": 1
+			},
+			"object_text": "hood_hover",
+			"click_rect": [
+				342,
+				94,
+				20,
+				24
+			],
+			"when": "GameState.capuz_visivel() != '' (ronda.json hood); sem clique (hover e clique desligados) quando capuz_info().clickable é falso, mas continua desenhado",
+			"_nota": "Ronda (Diretor de Arte): o mesmo prego nos 3 locais, na parede lisa entre a corrente do saco (x 335) e a porta (garagem) / o relógio de rounds (academia e centro), logo ao lado do recorte do vulto: o capuz e o jornal contam a mesma história. Fora da zona do alvo (y < 150), dos cards da esquerda e do painel fixado. Conferido no gerador contra o manifest e a ocupação conhecida, e colado nas capturas do ui_audit com a sala cheia (docs/arte/mockups/ronda_capuz_*.png): 0 problemas. Ninguém da equipe chega a y 117 (as cabeças mais altas ficam em y ~183)."
+		},
+		"gym_hood_spot": [
+			352,
+			95
+		],
+		"gym_hood_spot_info": {
+			"location": "gym",
+			"sprite": "hood_on_nail_gym",
+			"anchor": "pivô = cabeça do prego (8,1)",
+			"size": [
+				16,
+				22
+			],
+			"layer": "wall",
+			"z": -44,
+			"frames": {
+				"idle": 0,
+				"hover": 1
+			},
+			"object_text": "hood_hover",
+			"click_rect": [
+				342,
+				94,
+				20,
+				24
+			],
+			"when": "GameState.capuz_visivel() != '' (ronda.json hood); sem clique (hover e clique desligados) quando capuz_info().clickable é falso, mas continua desenhado",
+			"_nota": "Ronda (Diretor de Arte): o mesmo prego nos 3 locais, na parede lisa entre a corrente do saco (x 335) e a porta (garagem) / o relógio de rounds (academia e centro), logo ao lado do recorte do vulto: o capuz e o jornal contam a mesma história. Fora da zona do alvo (y < 150), dos cards da esquerda e do painel fixado. Conferido no gerador contra o manifest e a ocupação conhecida, e colado nas capturas do ui_audit com a sala cheia (docs/arte/mockups/ronda_capuz_*.png): 0 problemas. Ninguém da equipe chega a y 117 (as cabeças mais altas ficam em y ~183)."
+		},
+		"center_hood_spot": [
+			352,
+			95
+		],
+		"center_hood_spot_info": {
+			"location": "center",
+			"sprite": "hood_on_nail_center",
+			"anchor": "pivô = cabeça do prego (8,1)",
+			"size": [
+				16,
+				22
+			],
+			"layer": "wall",
+			"z": -44,
+			"frames": {
+				"idle": 0,
+				"hover": 1
+			},
+			"object_text": "hood_hover",
+			"click_rect": [
+				342,
+				94,
+				20,
+				24
+			],
+			"when": "GameState.capuz_visivel() != '' (ronda.json hood); sem clique (hover e clique desligados) quando capuz_info().clickable é falso, mas continua desenhado",
+			"_nota": "Ronda (Diretor de Arte): o mesmo prego nos 3 locais, na parede lisa entre a corrente do saco (x 335) e a porta (garagem) / o relógio de rounds (academia e centro), logo ao lado do recorte do vulto: o capuz e o jornal contam a mesma história. Fora da zona do alvo (y < 150), dos cards da esquerda e do painel fixado. Conferido no gerador contra o manifest e a ocupação conhecida, e colado nas capturas do ui_audit com a sala cheia (docs/arte/mockups/ronda_capuz_*.png): 0 problemas. Ninguém da equipe chega a y 117 (as cabeças mais altas ficam em y ~183)."
+		},
+		"center_clipping_black_cat_spot_info": {
+			"location": "center",
+			"anchor": "canto de cima à esquerda",
+			"size": [
+				23,
+				28
+			],
+			"layer": "wall",
+			"z": -45,
+			"object_text": "black_cat_clipping",
+			"click_rect": [
+				340,
+				60,
+				23,
+				28
+			],
+			"sprite_by_level": [
+				"wall_clipping_black_cat_center",
+				"wall_clipping_black_cat_center_l1",
+				"wall_clipping_black_cat_center_l2",
+				"wall_clipping_black_cat_center_l3",
+				"wall_clipping_black_cat_center_l4",
+				"wall_clipping_black_cat_center_l5"
+			],
+			"zoom_by_level": [
+				"ui_clipping_black_cat_zoom",
+				"ui_clipping_black_cat_zoom_l1",
+				"ui_clipping_black_cat_zoom_l2",
+				"ui_clipping_black_cat_zoom_l3",
+				"ui_clipping_black_cat_zoom_l4",
+				"ui_clipping_black_cat_zoom_l5"
+			],
+			"level_rule": "Ronda: a partir da lenda nível 1 troca o sprite pelo do nível (sprite_by_level[n]); o hover usa clipping_text_by_level do ronda.json e o zoom zoom_by_level[n]. Mesmo ponto e tamanho em todos os níveis."
 		}
 	},
 	"by_data_id": {
@@ -2517,12 +2669,14 @@
 						"green": "map_node_s_owned_green",
 						"blue": "map_node_s_owned_blue",
 						"orange": "map_node_s_owned_orange",
-						"steel": "map_node_s_owned_steel"
+						"steel": "map_node_s_owned_steel",
+						"night": "map_node_s_owned_night"
 					},
 					"buyable": "map_node_s_buyable",
 					"missing": "map_node_s_missing",
 					"hidden": "map_node_s_hidden",
-					"hover": "map_node_s_hover"
+					"hover": "map_node_s_hover",
+					"sealed": "map_node_s_sealed"
 				},
 				"big": {
 					"size": [
@@ -2544,12 +2698,15 @@
 						"chalk": "map_node_b_owned_chalk",
 						"green": "map_node_b_owned_green",
 						"blue": "map_node_b_owned_blue",
-						"orange": "map_node_b_owned_orange"
+						"orange": "map_node_b_owned_orange",
+						"night": "map_node_b_owned_night",
+						"steel": "map_node_b_owned_steel"
 					},
 					"buyable": "map_node_b_buyable",
 					"missing": "map_node_b_missing",
 					"hidden": "map_node_b_hidden",
-					"hover": "map_node_b_hover"
+					"hover": "map_node_b_hover",
+					"sealed": "map_node_b_sealed"
 				},
 				"link": {
 					"size": [
@@ -2588,7 +2745,8 @@
 					"bjj": "blue",
 					"campaign": "gold",
 					"muay_thai": "orange",
-					"center": "steel"
+					"center": "steel",
+					"black_cat": "night"
 				},
 				"veil": "map_node_veil",
 				"veil_offset": [
@@ -2614,7 +2772,8 @@
 					"text_color_ok": "col_legacy",
 					"text_color_missing": "col_text_2",
 					"note": "Etiqueta 9-slice centrada embaixo de cada nó À VISTA (não nos comprados). Largura = 12 + texto + 5."
-				}
+				},
+				"sealed_rule": "Ronda (D7): estado 'sealed' (só nós com trava black_cat:N): desenhar o sealed no lugar do missing, sem ícone e sem preço; cartão com node_sealed (PRECISA DA LENDA NÍVEL {n})."
 			},
 			"lines": {
 				"lit": {
@@ -2657,7 +2816,8 @@
 					"bjj": "ui_map_region_label_bjj",
 					"campaign": "ui_map_region_label_campaign",
 					"muay_thai": "ui_map_region_label_muay_thai",
-					"center": "ui_map_region_label_center"
+					"center": "ui_map_region_label_center",
+					"black_cat": "ui_map_region_label_black_cat"
 				},
 				"height": 13,
 				"icon": "icon_region_<região>_9",
@@ -2679,7 +2839,8 @@
 				"bjj": "icon_region_bjj",
 				"campaign": "icon_region_campaign",
 				"muay_thai": "icon_region_muay_thai",
-				"center": "icon_region_center"
+				"center": "icon_region_center",
+				"black_cat": "icon_region_black_cat"
 			},
 			"card": {
 				"panel": "ui_map_card",
@@ -2763,7 +2924,10 @@
 				"style_muay_thai": "skill_style_muay_thai",
 				"mt_shin": "skill_shin_kick",
 				"mt_oil": "skill_thai_oil",
-				"mt_rope": "skill_thai_rope"
+				"mt_rope": "skill_thai_rope",
+				"cat_rooftop": "skill_black_cat_roof",
+				"cat_watch": "skill_black_cat_watch",
+				"cat_thanks": "skill_black_cat_thanks"
 			},
 			"icon_rule": "Ícone 16x16 de um nó do mapa: icon_by_node[id] -> senão icon_by_effect[effect.type] (objeto: pela requires_art) -> senão o campo icon do nó. icon_by_node cobre os 39 nós do skill_tree.json v2: os 12 do centro com os skill_body_*/skill_career_*/skill_style_* de sempre, os pequenos novos com o ícone do tipo, os 6 marcos da 2ª passada com ícone próprio e as ligações com o ícone do tipo dentro da peça de ligação. O campo icon do JSON ainda aponta para icon_region_*/icon_legacy_16 nesses 6 marcos (dado do Designer); pela regra acima o manifest ganha.",
 			"milestone_icons": {
@@ -2831,7 +2995,8 @@
 			"_nota_7b1": "Fase 7b1: região MUAY THAI = corda trançada (map_tile_muay_thai), anel laranja. A lista de ladrilhos de ui/janela_mapa.gd (_pintar_fundo) precisa ganhar 'muay_thai' (UI/UX/Programador).",
 			"region_tiles": {
 				"center": "map_tile_center_region",
-				"_nota": "Fase 8a2: a região nova se chama 'center', mas em janela_mapa.gd a chave de ladrilho 'center' já é o miolo (body/career/style). Usar map_tile_center_region para a região CENTRO, e não deixar o miolo virar parede quando a região CENTRO está fechada (aberta.get('center') hoje confunde os dois). Ver fase8a2-manifest.md."
+				"_nota": "Fase 8a2: a região nova se chama 'center', mas em janela_mapa.gd a chave de ladrilho 'center' já é o miolo (body/career/style). Usar map_tile_center_region para a região CENTRO, e não deixar o miolo virar parede quando a região CENTRO está fechada (aberta.get('center') hoje confunde os dois). Ver fase8a2-manifest.md.",
+				"black_cat": "map_tile_black_cat_region"
 			}
 		},
 		"_nota_fase54_arte": "Fase 5.4 (Diretor de Arte): skill_map (mapa da árvore grande). direcao-visual.md §21.",
@@ -4480,7 +4645,120 @@
 			"shorts_rule": "anchors[q].hip + (-2,+3) com o pivô do patch (2,0); espelhar o x quando a folha está virada; desenhar por cima do calção e embaixo do front_mask (luva/braço da frente). Só com career.sponsor == 'signed'.",
 			"note": "Fase 8a2: Autopeças Vale Forte (short_name VALE FORTE), a mesma marca da saia do ringue da 8a1."
 		},
-		"_nota_fase8a2_arte": "Fase 8a2 (Diretor de Arte): by_data_id.center, center_students.icon, sponsor_vale, skill_map (steel, região CENTRO), layout center_*, sponsor_envelope_spot, cartaz vencido. direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		"_nota_fase8a2_arte": "Fase 8a2 (Diretor de Arte): by_data_id.center, center_students.icon, sponsor_vale, skill_map (steel, região CENTRO), layout center_*, sponsor_envelope_spot, cartaz vencido. direcao-visual.md §35, docs/arte/fase8a2-manifest.md.",
+		"black_cat": {
+			"hood": {
+				"garage": "hood_on_nail",
+				"gym": "hood_on_nail_gym",
+				"center": "hood_on_nail_center",
+				"points": {
+					"garage": "hood_spot",
+					"gym": "gym_hood_spot",
+					"center": "center_hood_spot"
+				}
+			},
+			"legend_icon": "icon_legend",
+			"legend_icon_16": "icon_legend_16",
+			"legend_pip": "ui_legend_pip",
+			"occurrence_icon": "icon_occurrence",
+			"reward_icon": "icon_ronda_16",
+			"clipping_by_level": {
+				"garage": [
+					"wall_clipping_black_cat",
+					"wall_clipping_black_cat_l1",
+					"wall_clipping_black_cat_l2",
+					"wall_clipping_black_cat_l3",
+					"wall_clipping_black_cat_l4",
+					"wall_clipping_black_cat_l5"
+				],
+				"gym": [
+					"wall_clipping_black_cat_gym",
+					"wall_clipping_black_cat_gym_l1",
+					"wall_clipping_black_cat_gym_l2",
+					"wall_clipping_black_cat_gym_l3",
+					"wall_clipping_black_cat_gym_l4",
+					"wall_clipping_black_cat_gym_l5"
+				],
+				"center": [
+					"wall_clipping_black_cat_center",
+					"wall_clipping_black_cat_center_l1",
+					"wall_clipping_black_cat_center_l2",
+					"wall_clipping_black_cat_center_l3",
+					"wall_clipping_black_cat_center_l4",
+					"wall_clipping_black_cat_center_l5"
+				],
+				"zoom": [
+					"ui_clipping_black_cat_zoom",
+					"ui_clipping_black_cat_zoom_l1",
+					"ui_clipping_black_cat_zoom_l2",
+					"ui_clipping_black_cat_zoom_l3",
+					"ui_clipping_black_cat_zoom_l4",
+					"ui_clipping_black_cat_zoom_l5"
+				]
+			},
+			"street_layers": {
+				"graffiti": "ronda_layer_graffiti",
+				"banner": "ronda_layer_banner",
+				"kid_ears": "ronda_layer_kid_ears",
+				"whole_street": "ronda_layer_whole_street"
+			},
+			"color_rule": "cor da Ronda = NOITE: azul-marinho b0/b1 + o creme da lua; ouro só no PERTO/SUSTO (conquista sua). Nunca o roxo do Legado nem o azul vivo do Jiu-jitsu.",
+			"note": "Ronda (Diretor de Arte). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"_nota_ronda_arte": "Ronda (Diretor de Arte): by_data_id.black_cat, skill_map (tom night, região black_cat, sealed, anel aço do marco), layout hood_spot/gym_hood_spot/center_hood_spot, recortes por nível, minigame_layout.ronda. direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+		"ronda_characters": {
+			"_nota": "Ronda (Artista de Personagens): elenco da tela. Quadro 96x100, pivô (50,94) = chão (pés do vulto em walk_y/land/rooftop_pose.feet; do ladrão em occurrences.<id>.thief). Nada precisa de espelho. Vulto em camadas pela disciple_palette (ver o 'note' de cada ronda_vulto_*). Detalhes: docs/arte/ronda-personagens-manifest.md.",
+			"thief_by_state": {
+				"aviso": "warn",
+				"aviso_falso": "fake",
+				"fuga": "flee",
+				"olhando": "look",
+				"susto": "fall",
+				"trabalha": "work"
+			},
+			"thieves": {
+				"bike": {
+					"fake": "ronda_thief_bike_fake",
+					"fall": "ronda_thief_bike_fall",
+					"flee": "ronda_thief_bike_flee",
+					"look": "ronda_thief_bike_look",
+					"warn": "ronda_thief_bike_warn",
+					"work": "ronda_thief_bike_work"
+				},
+				"gate": {
+					"fake": "ronda_thief_gate_fake",
+					"fall": "ronda_thief_gate_fall",
+					"flee": "ronda_thief_gate_flee",
+					"look": "ronda_thief_gate_look",
+					"warn": "ronda_thief_gate_warn",
+					"work": "ronda_thief_gate_work"
+				},
+				"tire": {
+					"fake": "ronda_thief_tire_fake",
+					"fall": "ronda_thief_tire_fall",
+					"flee": "ronda_thief_tire_flee",
+					"look": "ronda_thief_tire_look",
+					"warn": "ronda_thief_tire_warn",
+					"work": "ronda_thief_tire_work"
+				}
+			},
+			"vulto": {
+				"freeze": "ronda_vulto_freeze",
+				"roof": "ronda_vulto_roof",
+				"scare": "ronda_vulto_scare",
+				"seen": "ronda_vulto_seen",
+				"sneak_idle": "ronda_vulto_sneak_idle",
+				"sneak_walk": "ronda_vulto_sneak_walk"
+			},
+			"vulto_by_state": {
+				"fim": "roof",
+				"ladrao_olhando_parado": "freeze",
+				"parado": "sneak_idle",
+				"segurando": "sneak_walk",
+				"susto": "scare",
+				"visto": "seen"
+			}
+		}
 	},
 	"palette_swap_glove": {
 		"r0": "#5a1a22",
@@ -145029,6 +145307,1599 @@
 				0
 			],
 			"note": "Fase 8a2: no centro usa o mesmo arquivo de icon_region_center_9 (mesma luz fria). Gerador: tools/art/make_arte_fase8a2.gd (+ manifest_8a2.py). direcao-visual.md §35, docs/arte/fase8a2-manifest.md."
+		},
+		"hood_on_nail": {
+			"file": "res://assets/sprites/garage/hood_on_nail.png",
+			"frame_size": [
+				16,
+				22
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				8,
+				1
+			],
+			"note": "Ronda: o CAPUZ NO PREGO da garagem (16x22; pivô 8,1 = cabeça do prego). Capuz preto pendurado pela nuca, orelhas largas e baixas costuradas, abertura do rosto, a faixa vermelha (a da folha do vulto) enrolada no prego com as pontas caindo. Luz da lâmpada pela esquerda. Quadro 0 = parado; 1 = hover (contorno creme). Parado: sem brilho, sem som, sem anim. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				352,
+				95
+			],
+			"point": "hood_spot",
+			"layer": "wall",
+			"z": -44,
+			"anim": {
+				"idle": [
+					0
+				],
+				"hover": [
+					1
+				]
+			}
+		},
+		"hood_on_nail_gym": {
+			"file": "res://assets/sprites/gym/hood_on_nail_gym.png",
+			"frame_size": [
+				16,
+				22
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				8,
+				1
+			],
+			"note": "Ronda: o capuz no prego da academia (e do centro): o mesmo desenho com a luz fria de cima. Quadros iguais ao hood_on_nail. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				352,
+				95
+			],
+			"point": "gym_hood_spot",
+			"layer": "wall",
+			"z": -44,
+			"anim": {
+				"idle": [
+					0
+				],
+				"hover": [
+					1
+				]
+			}
+		},
+		"icon_legend": {
+			"file": "res://assets/sprites/ui/icon_legend.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: ícone 9x9 da LENDA (lua cheia com o capuz de orelhas na frente). HUD da Ronda, tela de prêmio, janela da árvore. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"icon_legend_16": {
+			"file": "res://assets/sprites/ui/icon_legend_16.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: ícone 16x16 da LENDA (o mesmo desenho maior). Topo da tela da Ronda e do prêmio. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"icon_occurrence": {
+			"file": "res://assets/sprites/ui/icon_occurrence.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: ícone 9x9 das OCORRÊNCIAS (o estepe solto): contador da tela de prêmio e os 3 sustos no HUD. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"icon_region_black_cat": {
+			"file": "res://assets/sprites/ui/icon_region_black_cat.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: ícone 16x16 da região GATO PRETO (telhado de telha à noite, a lua e o vulto na cumeeira). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"icon_region_black_cat_9": {
+			"file": "res://assets/sprites/ui/icon_region_black_cat_9.png",
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: ícone 9x9 da região GATO PRETO (plaquinha do nome da região). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"icon_ronda_16": {
+			"file": "res://assets/sprites/ui/icon_ronda_16.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: o capuz em 16x16 (título da tela de prêmio, linha do relatório). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"map_node_b_owned_night": {
+			"file": "res://assets/sprites/ui/map/map_node_b_owned_night.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "Ronda: anel 'noite' do marco comprado da região GATO PRETO. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"map_node_b_sealed": {
+			"file": "res://assets/sprites/ui/map/map_node_b_sealed.png",
+			"frame_size": [
+				38,
+				38
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				19,
+				19
+			],
+			"note": "Ronda (D7): marco LACRADO (o mesmo lacre, maior). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"map_node_s_owned_night": {
+			"file": "res://assets/sprites/ui/map/map_node_s_owned_night.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Ronda: anel 'noite' do nó pequeno comprado da região GATO PRETO (troca de cor do anel azul: marinho + brilho creme). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"map_node_s_sealed": {
+			"file": "res://assets/sprites/ui/map/map_node_s_sealed.png",
+			"frame_size": [
+				24,
+				24
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				12,
+				12
+			],
+			"note": "Ronda (D7 do design): nó pequeno LACRADO (vizinho de nó comprado com a trava black_cat:N fechada): o 'faltando' com um lacre cinza do capuz no meio. Sem ícone e sem preço; o texto PRECISA DA LENDA NÍVEL N vai no cartão. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"map_tile_black_cat_region": {
+			"file": "res://assets/sprites/ui/map/map_tile_black_cat_region.png",
+			"frame_size": [
+				32,
+				32
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: ladrilho 32x32 da região GATO PRETO (telhado de telha capa-canal à noite, azul-marinho). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ronda_bg": {
+			"file": "res://assets/sprites/minigame/ronda_bg.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: a rua da borracharia à noite (640x360 em 0,0). Da esquerda para a direita: muro do terreno baldio (trecho 1), borracharia de chapa com letreiro BORRACHARIA 24H, marquise de concreto (trecho 2) e porta 07, sobrado ocre com a janela de cima acesa e a bicicleta encostada, muro verde da casa 15 (trecho 3), pilar com luminária e portão. Lua cheia em cima à direita (pose do telhado). Cada ladrão fica numa poça de luz; o vulto anda na sombra do alto, com meio-tom atrás. Camadas da lenda por cima: minigame_layout.ronda.layers. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -100
+		},
+		"ronda_layer_banner": {
+			"file": "res://assets/sprites/minigame/ronda_layer_banner.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda, nível 3: faixa de pano VALEU, GATO PRETO pendurada na chapa da borracharia (atrás do trecho 2). 640x360 em 0,0. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -90
+		},
+		"ronda_layer_graffiti": {
+			"file": "res://assets/sprites/minigame/ronda_layer_graffiti.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda, nível 2: pichação do gato (estêncil creme com a faixa nos olhos e o GP vermelho) no muro do terreno. 640x360 em 0,0. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -90
+		},
+		"ronda_layer_kid_ears": {
+			"file": "res://assets/sprites/minigame/ronda_layer_kid_ears.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda, nível 4: criança na janela de cima do sobrado com orelhinhas de papelão e a faixa vermelha, acenando; desenho colado no vidro. 640x360 em 0,0. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -90
+		},
+		"ronda_layer_whole_street": {
+			"file": "res://assets/sprites/minigame/ronda_layer_whole_street.png",
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda, nível 5: o bairro inteiro com o gato desenhado: bandeirinhas com o capuz, gatos de giz na calçada, adesivo no poste, gato na caixa d'água, orelhas na janela da casa 15, GP no portão. 640x360 em 0,0. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				0,
+				0
+			],
+			"layer": "fundo",
+			"z": -90
+		},
+		"ronda_prop_crowbar": {
+			"file": "res://assets/sprites/minigame/ronda_prop_crowbar.png",
+			"frame_size": [
+				18,
+				7
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				9,
+				3
+			],
+			"note": "Ronda, ocorrência gate: o pé de cabra que o sujeito larga no SUSTO. Pivô no meio. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ronda_prop_pliers": {
+			"file": "res://assets/sprites/minigame/ronda_prop_pliers.png",
+			"frame_size": [
+				12,
+				8
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				6,
+				4
+			],
+			"note": "Ronda, ocorrência bike: o alicate que o moleque larga no SUSTO. Pivô no meio. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ronda_prop_tire": {
+			"file": "res://assets/sprites/minigame/ronda_prop_tire.png",
+			"frame_size": [
+				20,
+				20
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				10,
+				19
+			],
+			"note": "Ronda, ocorrência tire: o estepe (roda com pneu). Pivô = meio da base, no chão. No SUSTO voa e cai (o UI/UX anima: arco + giro em quadros não; só deslocamento inteiro). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"skill_black_cat_roof": {
+			"file": "res://assets/sprites/ui/skill_black_cat_roof.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: nó Atalho pelos telhados (2 Tios no começo): o desenho de skill_crew_regulars com o carimbo do gato no canto. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"skill_black_cat_thanks": {
+			"file": "res://assets/sprites/ui/skill_black_cat_thanks.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: nó O bairro agradece (equipe +40%): o desenho de skill_body_crew com o carimbo do gato. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"skill_black_cat_watch": {
+			"file": "res://assets/sprites/ui/skill_black_cat_watch.png",
+			"frame_size": [
+				16,
+				16
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: nó O bairro de olho (+2 dias na liga): o calendário de skill_prep_day com +2 e o carimbo do gato. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_banner_escaped": {
+			"file": "res://assets/sprites/ui/ui_banner_escaped.png",
+			"frame_size": [
+				90,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				45,
+				14
+			],
+			"note": "Ronda: ESCAPOU (cinza, fonte 2x, sem tremida): falha leve. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_banner_scare": {
+			"file": "res://assets/sprites/ui/ui_banner_scare.png",
+			"frame_size": [
+				101,
+				40
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				50,
+				20
+			],
+			"note": "Ronda: letreiro SUSTO! (receita do K.O.!: ouro, contorno ink, sombra de fonte azul-marinho b0). 2x no jogo em (320,118), com a tremida do K.O. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_banner_scare_near": {
+			"file": "res://assets/sprites/ui/ui_banner_scare_near.png",
+			"frame_size": [
+				70,
+				28
+			],
+			"frames": 2,
+			"fps": 6.0,
+			"pivot": [
+				35,
+				14
+			],
+			"note": "Ronda: SUSTO! pequeno piscando em cima do vulto quando ele está PERTO (2 quadros: aceso / apagado, 6 fps). Pivô no meio; 50 px acima dos pés. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"loop": true
+		},
+		"ui_clipping_black_cat_zoom_l1": {
+			"file": "res://assets/sprites/ui/ui_clipping_black_cat_zoom_l1.png",
+			"frame_size": [
+				128,
+				96
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: o recorte grande do hover/prêmio, lenda nível 1 (128x96): CORREIO DA ESQUINA, chamada + título, foto e colunas. É a 1ª peça a cortar (escopo §9). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_clipping_black_cat_zoom_l2": {
+			"file": "res://assets/sprites/ui/ui_clipping_black_cat_zoom_l2.png",
+			"frame_size": [
+				128,
+				96
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: o recorte grande do hover/prêmio, lenda nível 2 (128x96): CORREIO DA ESQUINA, chamada + título, foto e colunas. É a 1ª peça a cortar (escopo §9). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_clipping_black_cat_zoom_l3": {
+			"file": "res://assets/sprites/ui/ui_clipping_black_cat_zoom_l3.png",
+			"frame_size": [
+				128,
+				96
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: o recorte grande do hover/prêmio, lenda nível 3 (128x96): CORREIO DA ESQUINA, chamada + título, foto e colunas. É a 1ª peça a cortar (escopo §9). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_clipping_black_cat_zoom_l4": {
+			"file": "res://assets/sprites/ui/ui_clipping_black_cat_zoom_l4.png",
+			"frame_size": [
+				128,
+				96
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: o recorte grande do hover/prêmio, lenda nível 4 (128x96): CORREIO DA ESQUINA, chamada + título, foto e colunas. É a 1ª peça a cortar (escopo §9). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_clipping_black_cat_zoom_l5": {
+			"file": "res://assets/sprites/ui/ui_clipping_black_cat_zoom_l5.png",
+			"frame_size": [
+				128,
+				96
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: o recorte grande do hover/prêmio, lenda nível 5 (128x96): CORREIO DA ESQUINA, chamada + título, foto e colunas. É a 1ª peça a cortar (escopo §9). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_legend_pip": {
+			"file": "res://assets/sprites/ui/ui_legend_pip.png",
+			"frame_size": [
+				7,
+				7
+			],
+			"frames": 3,
+			"fps": 0.0,
+			"pivot": [
+				3,
+				3
+			],
+			"note": "Ronda: bolinha do nível da lenda (7x7; pivô no meio): 0 apagada, 1 acesa (lua), 2 acendendo (1 quadro, na subida de nível). 5 com passo 9. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"anim": {
+				"off": [
+					0
+				],
+				"on": [
+					1
+				],
+				"light": [
+					2,
+					1
+				]
+			}
+		},
+		"ui_map_region_label_black_cat": {
+			"file": "res://assets/sprites/ui/map/ui_map_region_label_black_cat.png",
+			"frame_size": [
+				16,
+				13
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: plaquinha da região GATO PRETO (9-slice 16x13, faixa da noite b1 com o ponto da lua). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"nine_slice": {
+				"left": 4,
+				"top": 1,
+				"right": 1,
+				"bottom": 1
+			}
+		},
+		"ui_ronda_fill": {
+			"file": "res://assets/sprites/ui/ui_ronda_fill.png",
+			"frame_size": [
+				4,
+				4
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: enchimento da barra (4x4 repetido): 0 = andando (azul da noite), 1 = PERTO (ouro). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md."
+		},
+		"ui_ronda_track": {
+			"file": "res://assets/sprites/ui/ui_ronda_track.png",
+			"frame_size": [
+				8,
+				6
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: moldura da barra de distância (9-slice 8x6: 1,1,1,1), embaixo da capa do muro, de start-4 a end+4 do trecho (minigame_layout.ronda). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"nine_slice": {
+				"left": 1,
+				"top": 1,
+				"right": 1,
+				"bottom": 1
+			}
+		},
+		"ui_ronda_zone": {
+			"file": "res://assets/sprites/ui/ui_ronda_zone.png",
+			"frame_size": [
+				4,
+				4
+			],
+			"frames": 2,
+			"fps": 6.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: zona do SUSTO na barra (4x4 repetido de 0,8 até o fim, por baixo do enchimento): 0 parada, 1 piscando com o PERTO (6 fps). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"loop": true
+		},
+		"ui_thief_warn": {
+			"file": "res://assets/sprites/ui/ui_thief_warn.png",
+			"frame_size": [
+				13,
+				14
+			],
+			"frames": 3,
+			"fps": 0.0,
+			"pivot": [
+				6,
+				13
+			],
+			"note": "Ronda: aviso em cima da cabeça do ladrão (13x14; pivô 6,13 = ponta de baixo): 0 = AVISO começando (? cinza), 1 = AVISO (? branco), 2 = OLHANDO (! branco no balão vermelho). Forma e cor mudam juntas. Aviso falso = 0,1 e some. Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"anim": {
+				"warn_start": [
+					0
+				],
+				"warn": [
+					1
+				],
+				"look": [
+					2
+				],
+				"fake": [
+					0,
+					1,
+					0
+				]
+			}
+		},
+		"wall_clipping_black_cat_gym_l1": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l1.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na ACADEMIA (e no CENTRO), lenda nível 1 (23x28, papel mais claro da luz fria; gym_clipping_spot / center_clipping_black_cat_spot). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "gym_clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_gym_l2": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l2.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na ACADEMIA (e no CENTRO), lenda nível 2 (23x28, papel mais claro da luz fria; gym_clipping_spot / center_clipping_black_cat_spot). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "gym_clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_gym_l3": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l3.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na ACADEMIA (e no CENTRO), lenda nível 3 (23x28, papel mais claro da luz fria; gym_clipping_spot / center_clipping_black_cat_spot). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "gym_clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_gym_l4": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l4.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na ACADEMIA (e no CENTRO), lenda nível 4 (23x28, papel mais claro da luz fria; gym_clipping_spot / center_clipping_black_cat_spot). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "gym_clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_gym_l5": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l5.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na ACADEMIA (e no CENTRO), lenda nível 5 (23x28, papel mais claro da luz fria; gym_clipping_spot / center_clipping_black_cat_spot). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "gym_clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_l1": {
+			"file": "res://assets/sprites/garage/wall_clipping_black_cat_l1.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na GARAGEM, lenda nível 1 (23x28, mesmo ponto do da 7a2: clipping_spot). Manchete curta 3x5 legível em 1x e foto do que o bairro conta neste nível. O texto inteiro vai no hover (clipping_text_by_level). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				304,
+				100
+			],
+			"point": "clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_l2": {
+			"file": "res://assets/sprites/garage/wall_clipping_black_cat_l2.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na GARAGEM, lenda nível 2 (23x28, mesmo ponto do da 7a2: clipping_spot). Manchete curta 3x5 legível em 1x e foto do que o bairro conta neste nível. O texto inteiro vai no hover (clipping_text_by_level). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				304,
+				100
+			],
+			"point": "clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_l3": {
+			"file": "res://assets/sprites/garage/wall_clipping_black_cat_l3.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na GARAGEM, lenda nível 3 (23x28, mesmo ponto do da 7a2: clipping_spot). Manchete curta 3x5 legível em 1x e foto do que o bairro conta neste nível. O texto inteiro vai no hover (clipping_text_by_level). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				304,
+				100
+			],
+			"point": "clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_l4": {
+			"file": "res://assets/sprites/garage/wall_clipping_black_cat_l4.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na GARAGEM, lenda nível 4 (23x28, mesmo ponto do da 7a2: clipping_spot). Manchete curta 3x5 legível em 1x e foto do que o bairro conta neste nível. O texto inteiro vai no hover (clipping_text_by_level). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				304,
+				100
+			],
+			"point": "clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_l5": {
+			"file": "res://assets/sprites/garage/wall_clipping_black_cat_l5.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: recorte do Gato Preto na GARAGEM, lenda nível 5 (23x28, mesmo ponto do da 7a2: clipping_spot). Manchete curta 3x5 legível em 1x e foto do que o bairro conta neste nível. O texto inteiro vai no hover (clipping_text_by_level). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				304,
+				100
+			],
+			"point": "clipping_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"hood_on_nail_center": {
+			"file": "res://assets/sprites/gym/hood_on_nail_gym.png",
+			"frame_size": [
+				16,
+				22
+			],
+			"frames": 2,
+			"fps": 0.0,
+			"pivot": [
+				8,
+				1
+			],
+			"note": "Ronda: no centro usa o mesmo arquivo de hood_on_nail_gym (mesma luz fria). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				352,
+				95
+			],
+			"point": "center_hood_spot",
+			"layer": "wall",
+			"z": -44,
+			"anim": {
+				"idle": [
+					0
+				],
+				"hover": [
+					1
+				]
+			}
+		},
+		"wall_clipping_black_cat_center_l1": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l1.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: no centro usa o arquivo da academia (nível 1). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "center_clipping_black_cat_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_center_l2": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l2.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: no centro usa o arquivo da academia (nível 2). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "center_clipping_black_cat_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_center_l3": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l3.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: no centro usa o arquivo da academia (nível 3). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "center_clipping_black_cat_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_center_l4": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l4.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: no centro usa o arquivo da academia (nível 4). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "center_clipping_black_cat_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"wall_clipping_black_cat_center_l5": {
+			"file": "res://assets/sprites/gym/wall_clipping_black_cat_gym_l5.png",
+			"frame_size": [
+				23,
+				28
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"note": "Ronda: no centro usa o arquivo da academia (nível 5). Gerador: tools/art/make_arte_ronda.gd (+ manifest_ronda.py). direcao-visual.md §36, docs/arte/ronda-manifest.md.",
+			"pos": [
+				340,
+				60
+			],
+			"point": "center_clipping_black_cat_spot",
+			"layer": "wall",
+			"z": -45
+		},
+		"ronda_thief_bike_fake": {
+			"action": "fake",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_fake.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": false,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. aviso falso: estava no AVISO, dá um tapa no mosquito na nuca, coça e volta ao trabalho (o último quadro = work[0]) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_fall": {
+			"action": "fall",
+			"dust_frame": 2,
+			"facing": "esquerda",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_fall.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"hold_frames": [
+				4,
+				5
+			],
+			"loop": false,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. SUSTO: pula de susto, vira para o vulto e cai de bunda para trás (já vem virado para a ESQUERDA); 4-5 seguram sentado e tonto; fx_dust_fall nos pés no quadro 2. O prop (ronda_prop_*) sai voando no quadro 0. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_flee": {
+			"action": "flee",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_flee.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. fuga em pânico para a DIREITA (a tela move o x até sair); começa depois do fall Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_look": {
+			"action": "look",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_look.png",
+			"fps": 3,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. OLHANDO: vira a cabeça para trás, desconfiado (estado 'olhando'; não precisa espelhar) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_warn": {
+			"action": "warn",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_warn.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. AVISO: para, endireita e levanta a cabeça (estado 'aviso'; o ui_thief_warn ? fica em cima) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_work": {
+			"action": "work",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_work.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. trabalha de costas para o vulto (estado 'trabalha') Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_gate_fake": {
+			"action": "fake",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_fake.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": false,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. aviso falso: estava no AVISO, dá um tapa no mosquito na nuca, coça e volta ao trabalho (o último quadro = work[0]) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_fall": {
+			"action": "fall",
+			"dust_frame": 2,
+			"facing": "esquerda",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_fall.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"hold_frames": [
+				4,
+				5
+			],
+			"loop": false,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. SUSTO: pula de susto, vira para o vulto e cai de bunda para trás (já vem virado para a ESQUERDA); 4-5 seguram sentado e tonto; fx_dust_fall nos pés no quadro 2. O prop (ronda_prop_*) sai voando no quadro 0. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_flee": {
+			"action": "flee",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_flee.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. fuga em pânico para a DIREITA (a tela move o x até sair); começa depois do fall Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_look": {
+			"action": "look",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_look.png",
+			"fps": 3,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. OLHANDO: vira a cabeça para trás, desconfiado (estado 'olhando'; não precisa espelhar) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_warn": {
+			"action": "warn",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_warn.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. AVISO: para, endireita e levanta a cabeça (estado 'aviso'; o ui_thief_warn ? fica em cima) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_work": {
+			"action": "work",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_work.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. trabalha de costas para o vulto (estado 'trabalha') Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_tire_fake": {
+			"action": "fake",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_fake.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": false,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. aviso falso: estava no AVISO, dá um tapa no mosquito na nuca, coça e volta ao trabalho (o último quadro = work[0]) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_fall": {
+			"action": "fall",
+			"dust_frame": 2,
+			"facing": "esquerda",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_fall.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"hold_frames": [
+				4,
+				5
+			],
+			"loop": false,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. SUSTO: pula de susto, vira para o vulto e cai de bunda para trás (já vem virado para a ESQUERDA); 4-5 seguram sentado e tonto; fx_dust_fall nos pés no quadro 2. O prop (ronda_prop_*) sai voando no quadro 0. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_flee": {
+			"action": "flee",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_flee.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. fuga em pânico para a DIREITA (a tela move o x até sair); começa depois do fall Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_look": {
+			"action": "look",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_look.png",
+			"fps": 3,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. OLHANDO: vira a cabeça para trás, desconfiado (estado 'olhando'; não precisa espelhar) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_warn": {
+			"action": "warn",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_warn.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. AVISO: para, endireita e levanta a cabeça (estado 'aviso'; o ui_thief_warn ? fica em cima) Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_work": {
+			"action": "work",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_work.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. trabalha de costas para o vulto (estado 'trabalha') Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_vulto_freeze": {
+			"action": "freeze",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_body.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. congelar (estátua num pé só quando o ladrão olha; só o pé no ar treme 1 px) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_roof": {
+			"action": "roof",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_roof_disc_body.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_roof_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_roof_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_roof_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_roof_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_roof_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. pose no telhado com a lua (pés em rooftop_pose.feet) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_scare": {
+			"action": "scare",
+			"air_frames": [
+				1,
+				2,
+				3
+			],
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_scare_disc_body.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 7,
+			"hold_frames": [
+				5,
+				6
+			],
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_scare_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_scare_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_scare_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_scare_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_scare_disc_top_tee.png"
+				}
+			},
+			"loop": false,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. SUSTO: 0 antecipa no muro, 1 impulso, 2 ápice, 3 descendo, 4 aterrissa em land, 5 SUSTO!, 6 segura (5-6 em loop no letreiro). A tela leva o nó de (end, walk_y) até land nos quadros 1-3. Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_seen": {
+			"action": "seen",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_seen_disc_body.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"hold_frames": [
+				3
+			],
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_seen_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_seen_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_seen_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_seen_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_seen_disc_top_tee.png"
+				}
+			},
+			"loop": false,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. visto/recuar (ESCAPOU: o vulto se assusta, pula para trás e se encolhe; a tela recua o x nos quadros 1-2) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_sneak_idle": {
+			"action": "sneak_idle",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_body.png",
+			"fps": 5,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. espreitar parado (agachado na capa do muro; respira, o vento mexe a faixa e a capa) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_sneak_walk": {
+			"action": "sneak_walk",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_body.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. avançar agachado (passo na ponta dos pés, no lugar: a tela move o x de start a end enquanto segura) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask. Gerador: tools/art/make_sprites_ronda.gd; registro: manifest_ronda_personagens.py.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
 		}
 	},
 	"fight_layout": {
@@ -145632,6 +147503,200 @@
 			],
 			"pedestrian_head_top": -67,
 			"pedestrian_note": "Quem quer: walk -> tell (quadros 0-2 uma vez, 3-5 em loop enquanto durar o tell_s) -> walk; clicou certo: flyer até sair. Quem não quer: a folha 'no' do tipo a travessia toda (fone, braço cruzado, pressa, celular). Sinal falso: walk -> false -> walk. Clicou errado: refuse -> volta ao que fazia. O ? (ui_tell_mark) fica em y = pés - 71."
+		},
+		"ronda": {
+			"_nota": "Ronda (Diretor de Arte): contrato da tela 'Estátua no telhado' (1x, 640x360). Posições de HUD são sugestão (a final é do UI/UX); pés, trechos, luz e faixas livres são do cenário e valem para o Artista. Mockups: docs/arte/mockups/ronda_*.png. Mudar aqui e nas constantes do make_arte_ronda.gd juntos.",
+			"bg": "ronda_bg",
+			"layers": {
+				"graffiti": "ronda_layer_graffiti",
+				"banner": "ronda_layer_banner",
+				"kid_ears": "ronda_layer_kid_ears",
+				"whole_street": "ronda_layer_whole_street"
+			},
+			"layers_rule": "desenhar por cima do ronda_bg, na ordem de street_layers_by_level do ronda.json (cumulativas); todas em 0,0, z -90",
+			"hud_band": [
+				0,
+				0,
+				640,
+				36
+			],
+			"bottom_band": [
+				0,
+				336,
+				640,
+				24
+			],
+			"walk_y": 196,
+			"facade_base_y": 262,
+			"thief_feet_y": 314,
+			"track": {
+				"y": 206,
+				"h": 6,
+				"x_from": "start - 4",
+				"x_to": "end + 4",
+				"zone_from": 0.8,
+				"sprites": {
+					"frame": "ui_ronda_track",
+					"fill": "ui_ronda_fill",
+					"zone": "ui_ronda_zone"
+				}
+			},
+			"occurrences": {
+				"tire": {
+					"start": 26,
+					"end": 146,
+					"thief": [
+						192,
+						314
+					],
+					"land": [
+						166,
+						314
+					],
+					"prop": [
+						212,
+						314
+					],
+					"prop_sprite": "ronda_prop_tire",
+					"prop_rule": "no chão, à direita do ladrão, enquanto ele trabalha; no SUSTO voa (o ladrão larga o estepe)",
+					"walk_on": "capa do muro do terreno baldio",
+					"light": [
+						196,
+						308
+					]
+				},
+				"bike": {
+					"start": 256,
+					"end": 346,
+					"thief": [
+						392,
+						314
+					],
+					"land": [
+						366,
+						314
+					],
+					"prop": [
+						408,
+						288
+					],
+					"prop_sprite": "ronda_prop_pliers",
+					"prop_rule": "na mão do ladrão (a folha do Artista desenha a mão; este prop é só o que voa no SUSTO). A bicicleta é do fundo",
+					"walk_on": "marquise da borracharia",
+					"light": [
+						400,
+						306
+					]
+				},
+				"gate": {
+					"start": 494,
+					"end": 546,
+					"thief": [
+						592,
+						314
+					],
+					"land": [
+						566,
+						314
+					],
+					"prop": [
+						606,
+						282
+					],
+					"prop_sprite": "ronda_prop_crowbar",
+					"prop_rule": "na mão do ladrão, forçando o portão; no SUSTO voa",
+					"walk_on": "capa do muro verde da casa 15",
+					"light": [
+						590,
+						306
+					]
+				}
+			},
+			"occurrence_order": [
+				"tire",
+				"bike",
+				"gate"
+			],
+			"vulto": {
+				"feet": "x = lerp(start, end, distancia), y = walk_y",
+				"facing": "direita (anda para a direita)",
+				"frame_hint": "agachado ~46 px de altura (gente em pé ~64); o dublê do gerador é 52x50 com os pés em (26,49)",
+				"intro": "entre trechos (intro_s 0,8): corte para o começo do próximo trecho com o pulo/pouso do Artista",
+				"scare": "SUSTO: arco de (end, walk_y) até land; a capa cai reta (nunca abre em asa)"
+			},
+			"thief": {
+				"facing_working": "direita (de costas para o vulto)",
+				"facing_look": "esquerda (espelhar)",
+				"frame_hint": "como os pedestres da Panfletagem (48x76, pés em 24,71)",
+				"warn_anchor": "x do ladrão + 2, y = thief_feet_y - 70 (pivô de baixo do ui_thief_warn)"
+			},
+			"near_banner": {
+				"sprite": "ui_banner_scare_near",
+				"anchor": "x do vulto, walk_y - 50"
+			},
+			"scare_banner": {
+				"sprite": "ui_banner_scare",
+				"pos": [
+					320,
+					118
+				],
+				"scale": 2
+			},
+			"escaped_banner": {
+				"sprite": "ui_banner_escaped",
+				"anchor": "x do ladrão, thief_feet_y - 90"
+			},
+			"dust": "fx_dust_fall (o que já existe) nos pés do vulto em land e do ladrão quando cai sentado",
+			"rooftop_pose": {
+				"feet": [
+					552,
+					114
+				],
+				"moon": [
+					552,
+					70
+				],
+				"moon_r": 24,
+				"rule": "pose no telhado com a lua (tela de prêmio ou fim da ronda): o vulto em pé na cumeeira da casa 15, a silhueta dele cobre a lua"
+			},
+			"hud_suggestion": {
+				"legend_icon": [
+					8,
+					8
+				],
+				"legend_label": [
+					28,
+					8
+				],
+				"legend_pips": [
+					28,
+					18
+				],
+				"pip_step": 9,
+				"occurrence_box": [
+					252,
+					4,
+					136,
+					22
+				],
+				"timer_box": [
+					586,
+					4,
+					48,
+					18
+				],
+				"exit_button": [
+					8,
+					334,
+					48,
+					18
+				],
+				"tip_center": [
+					340,
+					343
+				]
+			},
+			"light_rule": "cada ladrão numa poça de luz (poste, arandela, luminária do pilar); o vulto anda na sombra do alto, com meio-tom atrás (parede da casa de fundos, chapa da borracharia, casa 15)"
 		}
 	}
 }

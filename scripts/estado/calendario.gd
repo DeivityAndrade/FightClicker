@@ -12,7 +12,7 @@ func _init(g: EstadoJogo) -> void:
 ## A ÚNICA condição de tick: relógio da campanha, equipe, Metrônomo, assistido, clique, luva dourada e Jiu-jitsu
 ## só andam com ela. Perder foco ou minimizar NÃO desliga; janela, luta, escolha da arte e dia da luta sim.
 func sala_ativa() -> bool:
-	return gs.fim.is_empty() and gs.sucessao == "none" and gs.cena_sala == "" and gs.luta.is_empty() and not gs.escolha_arte_pendente() and not gs.modal_aberto and gs.treino_fora == "" and not no_dia_da_luta()
+	return gs.fim.is_empty() and gs.sucessao == "none" and gs.cena_sala == "" and gs.luta.is_empty() and not gs.escolha_arte_pendente() and not gs.modal_aberto and gs.treino_fora == "" and gs.ronda_ativa == "" and not no_dia_da_luta()
 
 
 func calendario_ligado() -> bool:
@@ -57,7 +57,8 @@ func _alvo_relogio() -> float:
 func _prep_do_indice(i: int) -> int:
 	if i < 0 or i >= gs.lutas.adversarios.size():
 		return 14
-	return int(gs.lutas.adversarios[i].get("prep_days", 14)) + int(gs._arvore._b("prep_days_bonus"))
+	var liga: int = int(gs._arvore._b("league_prep_days_bonus")) if str(gs.lutas.adversarios[i].get("league", "")) != "" else 0  # Ronda: só nas lutas da liga
+	return int(gs.lutas.adversarios[i].get("prep_days", 14)) + int(gs._arvore._b("prep_days_bonus")) + liga
 
 
 ## Data da próxima luta contada a partir do dia de hoje (-1 se a escada acabou).

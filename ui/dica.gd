@@ -11,7 +11,7 @@ extends Control
 ## Quem desenha o próprio cartão (mapa da árvore) usa só `Dica.posicionar(...)` para a mesma regra de posição.
 
 const MAX_LARG := 150.0  # largura máxima do texto de uma linha (px da base 640x360)
-const TELA := Rect2(2, 2, 636, 356)  # limite: o balão nunca passa daqui
+const TELA := Rect2(4, 4, 632, 352)  # limite: o balão nunca passa daqui (margem mínima de 4 px da borda)
 const FOLGA := 3.0  # espaço entre o balão e o item apontado
 
 static var instancia: Dica = null

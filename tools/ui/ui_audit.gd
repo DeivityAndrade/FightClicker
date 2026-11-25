@@ -156,6 +156,8 @@ const ESTADOS_TODOS := [
 	"f8a2_calcao_sem_marca", "f8a2_cartaz_vencido", "f8a2_cartaz_vencido_marca", "f8a2_cartaz_vencido_zoom", "f8a2_cartaz_vencido_zoom_marca",
 	"f8a2_academia_boxe_pera", "f8a2_recorte_centro", "f8a2_recorte_centro_zoom", "f8a2_foto_centro", "f8a2_mapa_centro_fechado",
 	"f8a2_mapa_centro_aberto", "f8a2_fim_retire_centro",
+	# Ronda Noturna do Gato Preto (capuz, noite, prêmio, recortes por nível, região GATO PRETO)
+	"ronda_capuz_garagem", "ronda_capuz_hover", "ronda_capuz_academia", "ronda_capuz_centro", "ronda_capuz_janela", "ronda_contagem", "ronda_aviso", "ronda_perto", "ronda_susto", "ronda_visto", "ronda_sair", "ronda_premio_sobe", "ronda_premio_normal", "ronda_premio_max", "ronda_premio_sem_susto", "ronda_voltar", "ronda_recorte_n1", "ronda_recorte_n3", "ronda_recorte_n5", "ronda_recorte_n5_zoom", "ronda_recorte_academia_n3", "ronda_mapa_lacrado", "ronda_mapa_aberto",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -164,6 +166,7 @@ const NOS_TODOS := ["body_jab", "body_muscle_memory", "body_heavy_hands", "body_
 
 var gs: Node
 var saida := ProjectSettings.globalize_path(SAIDA_PADRAO)
+var sem_captura := false  # --sem-captura: roda só as conferências (modo --headless, que não desenha: não salva PNG)
 var pedidos: Array = []
 var estados_feitos := 0
 var problemas: Array[String] = []
@@ -185,6 +188,7 @@ var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
 var _f7b2 = preload("res://tools/ui/audit/estados_f7b2.gd").new(self)
 var _f8a1 = preload("res://tools/ui/audit/estados_f8a1.gd").new(self)
 var _f8a2 = preload("res://tools/ui/audit/estados_f8a2.gd").new(self)
+var _ronda = preload("res://tools/ui/audit/estados_ronda.gd").new(self)
 
 
 func _initialize() -> void:
@@ -195,6 +199,8 @@ func _initialize() -> void:
 		if args[i] == "--estados" and i + 1 < args.size():
 			sel = args[i + 1]
 			i += 1
+		elif args[i] == "--sem-captura":
+			sem_captura = true
 		elif args[i] == "--saida" and i + 1 < args.size():
 			saida = args[i + 1]
 			i += 1
@@ -417,6 +423,7 @@ func _rodar() -> void:
 	await _f7b2._rodar_fase7b2()
 	await _f8a1._rodar_fase8a1()
 	await _f8a2._rodar_fase8a2()
+	await _ronda._rodar_fase_ronda()
 	_fechar_cena()
 
 
@@ -596,6 +603,9 @@ func _ver(nome: String) -> void:
 	await _esperar(0.1)
 	_auditar(_cena)
 	_auditar_mapa()
+	if sem_captura:
+		estados_feitos += 1
+		return
 	await process_frame
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()

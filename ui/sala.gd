@@ -37,6 +37,9 @@ signal envelope_clicado
 ## 7a2: clique no Osmar com o balão do convite aberto (o Garagem decide se vai).
 signal osmar_convite
 
+## Ronda: o capuz no prego foi clicado (a sala só avisa; o Fluxo abre a tela da Ronda).
+signal capuz_clicado
+
 var sfx: Sfx
 var _area := area()  # 6d2: a sala ocupa a tela (manifest.room_rect = 0,18,640,312)
 var _mural: AnimSprite  # mural da escola na parede (garagem e academia), ao lado da foto
@@ -116,6 +119,11 @@ var _clipvale_rect := Rect2()
 var _clipvale_zoom: TextureRect
 var _envelope: AnimSprite  # 8a2: envelope PROPOSTA no chão (garagem, academia e centro) enquanto o patrocínio está "offered"
 var _envelope_rect := Rect2()
+var _capuz: AnimSprite  # Ronda: o capuz no prego (parede; hover com o texto do capuz; clique abre a Ronda)
+var _capuz_rect := Rect2()
+var _capuz_sobre := false
+var _capuz_clicavel := false
+var _capuz_t := 0.0
 var _prox_brilho_envelope := 3.0
 var _patro_anterior := ""
 
@@ -197,6 +205,8 @@ func _ready() -> void:
 	_patro_anterior = GameState.patrocinio_estado
 	GameState.patrocinio_mudou.connect(_ao_patrocinio)  # 8a2: envelope, cartaz com a marca, aviso da proposta
 	GameState.arte_mudou.connect(_ao_arte)
+	GameState.capuz_mudou.connect(func(_n: String) -> void: _atualizar_capuz())  # Ronda
+	GameState.lenda_mudou.connect(func(_n: int) -> void: _atualizar_recorte())  # Ronda: o recorte troca de manchete e de desenho
 	GameState.gesto_pedido.connect(_ao_gesto_pedido)
 	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
 	GameState.marco_gravado.connect(func(_id: String) -> void:
@@ -550,6 +560,12 @@ func _clique_em(p: Vector2) -> void:
 		if caixa_liberada():
 			sfx.foco()
 			envelope_clicado.emit()
+		return
+	# Ronda: o capuz no prego abre a Ronda (só com a sala livre: o GameState diz se está clicável).
+	if _capuz != null and _capuz.visible and _capuz_rect.has_point(p):
+		if bool(GameState.capuz_info().get("clickable", false)) and caixa_liberada():
+			sfx.foco()
+			capuz_clicado.emit()
 		return
 	# 6c2: o mural da parede abre a janela do mural (qualquer hora com a sala livre).
 	if _mural != null and _mural.visible and _mural_rect.has_point(p):
@@ -1249,12 +1265,15 @@ func _hover_em(p: Vector2) -> void:
 		tip = _texto_caixa(cx)
 	elif _envelope != null and _envelope.visible and _envelope_rect.has_point(p):
 		tip = str(GameState.patrocinio().get("envelope", "PROPOSTA"))  # 8a2
+	elif _capuz_dica(p) != "":
+		tip = _capuz_dica(p)
 	elif _mentor2_visivel and _cam_escala == 1 and _area_mentor2().has_point(p):
 		tip = UiTema.txt("disc_mentor2_hint", "{nome}: já passou o posto.", {"nome": _mentor2_nome})
 		sobre_mentor2 = true
 	elif _texto_parede(p) != "":
 		tip = _texto_parede(p)
 	_ancorar_dica_mentor2(sobre_mentor2)
+	_capuz_hover(_capuz_dica(p) != "")
 	_zoom_recorte(_recorte != null and _recorte.visible and _recorte_rect.has_point(p) and cx == "")
 	_zoom_cartaz(_cartaz != null and _cartaz.visible and _cartaz_rect.has_point(p) and cx == "")
 	_zoom_clipvale(_clipvale != null and _clipvale.visible and _clipvale_rect.has_point(p) and cx == "")
@@ -1277,6 +1296,7 @@ func _ancorar_dica_mentor2(sobre: bool) -> void:
 
 
 func _sair_hover() -> void:
+	_capuz_hover(false)
 	_zoom_recorte(false)
 	_zoom_cartaz(false)
 	_zoom_clipvale(false)
@@ -1797,6 +1817,11 @@ func _montar_parede() -> void:
 	_envelope.visible = false
 	_envelope.z_index = -10
 	_mundo.add_child(_envelope)
+	# Ronda: o capuz no prego, na camada da parede.
+	_capuz = AnimSprite.new()
+	_capuz.visible = false
+	_capuz.z_index = -42
+	_mundo.add_child(_capuz)
 	_atualizar_parede()
 
 
@@ -1832,13 +1857,34 @@ func _atualizar_mural() -> void:
 	_mural_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
 
 
+## Ronda: ficha do recorte do local atual no manifest (sprite_by_level / zoom_by_level).
+func _info_recorte() -> Dictionary:
+	var chave := "clipping_spot_info"
+	if GameState.local_id == "gym":
+		chave = "gym_clipping_spot_info"
+	elif GameState.local_id == "center":
+		chave = "center_clipping_black_cat_spot_info"
+	var d = UiTema.manifest().get("layout", {}).get(chave, {})
+	return d if d is Dictionary else {}
+
+
+## Nome da folha do recorte (ou do zoom) para o nível da lenda; sem lista no manifest, a folha de sempre (nível 0).
+func _folha_por_nivel(campo: String, padrao: String) -> String:
+	var lista = _info_recorte().get(campo, [])
+	var n := int(GameState.lenda().get("level", 0))
+	if lista is Array and n < lista.size() and not UiTema.sprite(str(lista[n])).is_empty():
+		return str(lista[n])
+	return padrao
+
+
 ## 7a2: recorte de jornal do vulto no ponto de `recorte_gato_preto()`; sem ele (campanha 1, sem o marco), nada é desenhado.
+## Ronda: a folha troca pelo nível da lenda (sprite_by_level).
 func _atualizar_recorte() -> void:
 	if _recorte == null:
 		return
 	var r: Dictionary = GameState.recorte_gato_preto() if not ("wall_objects" in _cena_oculta) else {}
 	var spot: Array = r.get("spot", [])
-	var nome := UiTema.com_local("wall_clipping_black_cat")  # garagem, academia (_gym) ou centro (_center)
+	var nome := _folha_por_nivel("sprite_by_level", UiTema.com_local("wall_clipping_black_cat"))  # garagem, academia (_gym) ou centro (_center)
 	if r.is_empty() or spot.size() != 2 or UiTema.sprite(nome).is_empty():
 		_recorte.visible = false
 		_recorte_rect = Rect2()
@@ -1850,17 +1896,57 @@ func _atualizar_recorte() -> void:
 	_recorte_rect = Rect2(_recorte.position, UiTema.tamanho_quadro(nome))
 
 
+## Ronda: o capuz no prego do local atual. Fica desenhado com janela/fala (aí sem hover e sem clique); só some quando o GameState diz.
+func _atualizar_capuz() -> void:
+	if _capuz == null:
+		return
+	var c: Dictionary = GameState.capuz_info() if not ("wall_objects" in _cena_oculta) else {}
+	var spot: Array = c.get("spot", [])
+	var nome := UiTema.com_local("hood_on_nail")
+	if c.is_empty() or spot.size() != 2 or UiTema.sprite(nome).is_empty():
+		_capuz.visible = false
+		_capuz_rect = Rect2()
+		_capuz_clicavel = false
+		return
+	_capuz.definir(nome)
+	_capuz.position = Vector2(float(spot[0]), float(spot[1]))
+	var info = UiTema.manifest().get("layout", {}).get(str(c.get("spot_name", "")) + "_info", {})
+	var cr: Array = info.get("click_rect", [spot[0] - 10, spot[1] - 1, 20, 24]) if info is Dictionary else [spot[0] - 10, spot[1] - 1, 20, 24]
+	_capuz_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
+	_capuz_clicavel = bool(c.get("clickable", false))
+	_capuz.visible = true
+	_capuz.parar(1 if (_capuz_sobre and _capuz_clicavel) else 0)
+
+
+## Texto do hover do capuz sob o ponto (só com o capuz clicável: sem clique não há hover), ou "".
+func _capuz_dica(p: Vector2) -> String:
+	if _capuz == null or not _capuz.visible or not _capuz_rect.has_point(p):
+		return ""
+	var c: Dictionary = GameState.capuz_info()
+	return str(c.get("hover_text", "")) if bool(c.get("clickable", false)) and caixa_liberada() else ""
+
+
+## Quadro 1 (hover) enquanto o mouse está em cima do capuz clicável.
+func _capuz_hover(sobre: bool) -> void:
+	_capuz_sobre = sobre
+	if _capuz != null and _capuz.visible:
+		_capuz.parar(1 if sobre else 0)
+
+
 ## Dica de zoom do recorte: a imagem grande ao lado dele, só enquanto o mouse está em cima (nunca cobre a zona do alvo).
 func _zoom_recorte(sobre: bool) -> void:
-	if not sobre or _recorte_rect.size == Vector2.ZERO or UiTema.sprite("ui_clipping_black_cat_zoom").is_empty():
+	var nome_zoom := _folha_por_nivel("zoom_by_level", "ui_clipping_black_cat_zoom")  # Ronda: o zoom também sobe com a lenda
+	if not sobre or _recorte_rect.size == Vector2.ZERO or UiTema.sprite(nome_zoom).is_empty():
 		if _recorte_zoom != null:
 			_recorte_zoom.visible = false
 		return
 	if _recorte_zoom == null:
-		_recorte_zoom = UiTema.textura_rect(self, "ui_clipping_black_cat_zoom", 0, 0)
+		_recorte_zoom = UiTema.textura_rect(self, nome_zoom, 0, 0)
 		_recorte_zoom.z_index = 3000
 		UiTema.alinhar(_recorte_zoom, "ignore")
-	var q := UiTema.tamanho_quadro("ui_clipping_black_cat_zoom")
+	_recorte_zoom.texture = UiTema.textura(nome_zoom)
+	_recorte_zoom.size = UiTema.tamanho_quadro(nome_zoom)
+	var q := UiTema.tamanho_quadro(nome_zoom)
 	var x := _recorte_rect.end.x + 6.0
 	var y := clampf(_recorte_rect.position.y - 8.0, 22.0, 178.0 - q.y)
 	if x + q.x > 500.0:
@@ -2012,6 +2098,7 @@ func _atualizar_envelope() -> void:
 
 
 func _atualizar_parede() -> void:
+	_atualizar_capuz()
 	_atualizar_cartaz()
 	_atualizar_clipvale()
 	_atualizar_envelope()
@@ -2105,6 +2192,11 @@ func _texto_parede(p: Vector2) -> String:
 # --- Quadro a quadro ---
 
 func _process(delta: float) -> void:
+	_capuz_t -= delta
+	if _capuz_t <= 0.0:
+		_capuz_t = 0.25
+		if _capuz != null and _capuz.visible and bool(GameState.capuz_info().get("clickable", false)) != _capuz_clicavel:
+			_atualizar_capuz()  # janela/fala abriu ou fechou: o capuz ganha ou perde o hover e o clique
 	if _evento_rect.size != Vector2.ZERO and (GameState.evento_dourado_restante <= 0.0 or GameState.modal_aberto):
 		_esconder_evento()  # venceu o tempo, alguém pegou ou abriu uma janela/luta
 	if _rotulo_frenesi != null and _rotulo_frenesi.visible:

@@ -13,6 +13,7 @@ var janela: JanelaBase  # prévia, vitória, fim ou confirmação de aposentar (
 
 var cartao: CartaoInicio  # "o que você trouxe" (Fase 4): não é janela, não bloqueia o alvo, mas pausa o Metrônomo
 
+var ronda: TelaRonda  # Ronda Noturna: a tela do minigame enquanto o jogador está na rua à noite
 var treino: TelaTreino  # 7a2: a tela do minigame (Choque ou Panfletagem) enquanto o jogador está no treino fora de hora
 
 var _barra: BarraBaixo
@@ -36,6 +37,7 @@ func _ready() -> void:
 	GameState.dia_da_luta_chegou.connect(_ao_dia_da_luta_chegou)
 	GameState.aviso_data.connect(_ao_aviso_data)
 	GameState.treino_fora_mudou.connect(_ao_treino_fora)
+	GameState.ronda_mudou.connect(_ao_ronda)
 	call_deferred("_checar_pendencias")
 
 
@@ -47,7 +49,7 @@ func ligar(barra: BarraBaixo) -> void:
 
 
 func ocupado() -> bool:
-	return janela != null or tela.visible or treino != null
+	return janela != null or tela.visible or treino != null or ronda != null
 
 
 # --- Fase 7a2: treino fora de hora (IR no balão do Osmar -> Choque ou Panfletagem -> prêmio -> VOLTAR) ---
@@ -92,6 +94,53 @@ func _fechar_treino() -> void:
 		return
 	treino.queue_free()
 	treino = null
+	if _barra != null and janela == null and not tela.visible:
+		_barra.definir_janela_aberta(false)
+	janela_mudou.emit(ocupado())
+
+
+# --- Ronda Noturna (clique no capuz -> "Estátua no telhado" -> prêmio -> VOLTAR) ---
+
+var _esperando_info_ronda := false
+
+## Clicou no capuz no prego. O GameState abre a noite e congela o jogo; a tela nasce com a resposta do IR (camadas da rua, nomes).
+func ir_para_ronda() -> void:
+	if ocupado():
+		return
+	_esperando_info_ronda = true
+	var info := GameState.ronda_ir()
+	_esperando_info_ronda = false
+	if info.is_empty():
+		return
+	if ronda == null:
+		_abrir_ronda(info)
+
+
+func _ao_ronda(id: String) -> void:
+	if id == "":
+		_fechar_ronda()
+	elif ronda == null and not _esperando_info_ronda:
+		_abrir_ronda({})  # a Ronda abriu por outro caminho (teste, atalho): a tela abre igual, com a rua do nível
+
+
+func _abrir_ronda(info: Dictionary) -> void:
+	if ronda != null or GameState.ronda_jogo() == null:
+		return
+	Dica.limpar()
+	_fechar_cartao()
+	ronda = TelaRonda.new()
+	add_child(ronda)
+	ronda.abrir(info)
+	if _barra != null:
+		_barra.definir_janela_aberta(true)
+	janela_mudou.emit(true)
+
+
+func _fechar_ronda() -> void:
+	if ronda == null:
+		return
+	ronda.queue_free()
+	ronda = null
 	if _barra != null and janela == null and not tela.visible:
 		_barra.definir_janela_aberta(false)
 	janela_mudou.emit(ocupado())

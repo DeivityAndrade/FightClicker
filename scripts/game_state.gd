@@ -88,6 +88,11 @@ signal convite_mudou(tipo: String)  # o balão do convite apareceu ("spar" | "fl
 signal treino_fora_mudou(estado: String)  # o jogador foi para o minigame ("spar" | "flyers") ou voltou para a sala ("")
 signal aquecido_mudou(ativo: bool)  # AQUECIDO guardado ou gasto (ícone perto do HUD da luta)
 
+# Ronda Noturna do Gato Preto (contrato: docs/codigo/mapa.md)
+signal capuz_mudou(noite: String)  # o capuz apareceu no prego (id da noite) ou saiu dele ("")
+signal ronda_mudou(estado: String)  # o jogador foi para a Ronda (id da noite) ou voltou para a sala ("")
+signal lenda_mudou(nivel: int)  # o nível da lenda do Gato Preto mudou
+
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
 const PASTA_SAVE_TESTES := "user://test/autoload/"
@@ -258,6 +263,16 @@ var _convite_vis := ""
 var _convite_local := ""
 var _rng_treino := RandomNumberGenerator.new()  # próprio: o minigame nunca mexe nos sorteios do jogo
 
+# Ronda Noturna do Gato Preto
+var ronda_cfg := RondaData.new()  # data/ronda.json (vazio/ausente = jogo da 8a2)
+var capuz: Dictionary = {}  # career.black_cat_hood: {hood_s, next_at, open}
+var ronda_ativa := ""  # "" | id da noite: o jogo está congelado na Ronda. Não vai para o save
+var _ronda_jogo = null  # RondaLogica em andamento
+var _ronda_premio: Dictionary = {}
+var _ronda_fim_t := 0.0
+var _capuz_vis := ""
+var _rng_ronda := RandomNumberGenerator.new()  # próprio: a Ronda nunca mexe nos sorteios do jogo
+
 # Módulos (scripts/estado/): a lógica de cada assunto mora lá e trabalha nas variáveis acima.
 const _Depuracao := preload("res://scripts/estado/depuracao.gd")
 const _Textos := preload("res://scripts/estado/textos.gd")
@@ -276,6 +291,8 @@ const _SaveValidacao := preload("res://scripts/estado/save_validacao.gd")
 const _TreinoFora := preload("res://scripts/estado/treino_fora.gd")
 const _LigaRegional := preload("res://scripts/estado/liga_regional.gd")
 const _Centro := preload("res://scripts/estado/centro.gd")
+const _Ronda := preload("res://scripts/estado/ronda.gd")
+var _ronda := _Ronda.new(self)
 var _centro := _Centro.new(self)
 var _liga := _LigaRegional.new(self)
 var _treino := _TreinoFora.new(self)
@@ -349,6 +366,8 @@ func inicializar(pasta_save: String, caminho_config: String,
 	minigames = MinigamesData.carregar()
 	_rng_treino.randomize()
 	_treino.zerar()
+	ronda_cfg = RondaData.carregar()
+	_ronda.zerar()
 	store = SaveStore.new(pasta_save)
 	_aparelhos._ajustar_assist()
 	carregar_save()
@@ -360,7 +379,9 @@ func tick(delta: float) -> void:
 	if not is_finite(delta) or delta <= 0.0:
 		return
 	# Com a tela de fim pendente (ou a sucessão em andamento, Fase 6b1) a carreira está congelada: nada produz, o tempo não anda.
-	if fim.is_empty() and sucessao == "none" and cena_sala == "":  # 6c1: a cena da academia também congela a carreira
+	if ronda_ativa != "":
+		_ronda.tick_jogo(delta)  # a Ronda congela TUDO (relógio, equipe, Metrônomo, capuz, convite): só a noite anda
+	elif fim.is_empty() and sucessao == "none" and cena_sala == "":  # 6c1: a cena da academia também congela a carreira
 		tempo_jogo += delta
 		_ocioso += delta
 		_luta._tick_risco(delta)
@@ -368,6 +389,7 @@ func tick(delta: float) -> void:
 		# `dt` é o tempo de sala deste quadro (menor que delta se o relógio travou no dia da luta).
 		var dt := _calendario._avancar_relogio(delta)
 		_treino.tick(delta, dt)  # 7a2: relógio do convite (ou, no minigame, só a equipe produzindo)
+		_ronda.tick(dt)  # Ronda: relógio do capuz (só com a sala ativa)
 		if dt > 0.0:
 			var producao := producao_total()
 			if producao > 0.0:
@@ -383,6 +405,7 @@ func tick(delta: float) -> void:
 	_calendario._checar_sala()
 	_escola._tick_falas(delta)
 	_treino.atualizar_visivel()
+	_ronda.atualizar_visivel()
 	if autosave_ativo:
 		_tempo_autosave += delta
 		if _tempo_autosave >= config.autosave_intervalo_segundos:
@@ -1119,3 +1142,22 @@ func patrocinio() -> Dictionary: return _centro.patrocinio()
 func assinar_patrocinio() -> bool: return _centro.assinar_patrocinio()
 ## Cartaz vencido e recorte do Cinturão do Vale ({} antes do 1º da linhagem): {campaign, name, poster, clipping, brand, text}.
 func recorte_do_vale() -> Dictionary: return _centro.recorte_do_vale()
+
+
+# ===== Ronda Noturna do Gato Preto: repasses para scripts/estado/ronda.gd =====
+## A Ronda existe para a linhagem nesta campanha (boato do Osmar + 1 campanha, ou a rede de segurança da campanha 5).
+func ronda_aberta() -> bool: return _ronda.ronda_aberta()
+## Id da noite que o capuz traz no prego ("" = nenhum). Continua desenhado com janela/fala (sem clique).
+func capuz_visivel() -> String: return _ronda.capuz_visivel()
+## {night, spot, spot_name, hover_text, clickable} do capuz no prego ({} sem capuz).
+func capuz_info() -> Dictionary: return _ronda.capuz_info()
+## Clicou no capuz: congela o jogo e abre a Ronda. {night, kind, name, tip, countdown_s, night_s, level, legend, layers, occurrences, occurrence_names}.
+func ronda_ir() -> Dictionary: return _ronda.ronda_ir()
+## A lógica da Ronda em andamento (RondaLogica) ou null.
+func ronda_jogo() -> Variant: return _ronda.ronda_jogo()
+## Fim ou SAIR: soma a lenda e salva (uma vez). Devolve o prêmio.
+func ronda_concluir() -> Dictionary: return _ronda.ronda_concluir()
+## VOLTAR: devolve a sala.
+func ronda_voltar() -> void: _ronda.ronda_voltar()
+## {legend, level, next_level_at, max_level, scares, rounds, shown_level}.
+func lenda() -> Dictionary: return _ronda.lenda()

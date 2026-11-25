@@ -1880,6 +1880,8 @@ func fight_frame(b: Dictionary, p: Dictionary, tag: String, size := Vector2i(112
 	var pdef := -fr * 0.35 - dn * 1.0
 	var elb := arm(b, FAR_UP, sb, hb, lu, lf, true, tag + " braço de trás", p.get("pb", pdef), b.arm_r, (O + p.eb) if p.has("eb") else null)
 	var gkb := draw_glove(FAR_GLOVE_FRONT if p.get("far_glove_front", false) else FAR_GLOVE, b, elb, hb, true, p.get("gkb", ""))
+	# Ronda (vulto): gancho opcional ENTRE o lado de trás e o tronco (capa que cobre a perna/braço de trás). Sem a chave, nada muda.
+	_hook(p, "before_torso", O, {"hip": hip, "top": top, "dn": dn, "fr": fr, "hd": hd, "sf": sf, "sb": sb, "hb": hb, "elb": elb, "nh": nh, "fh": fh, "hrot": hrot})
 	torso(b, TORSO, hip, top, "side", p.get("tw", 0.0))
 	limb(TORSO, top - dn * 1.0, hd + rotv(Vector2(-1, 4), hrot), 2.6, 2.4, b.skin)   # pescoço (mesma peça do tronco)
 	if not skip_head:

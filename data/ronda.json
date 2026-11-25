@@ -1,0 +1,90 @@
+{
+	"version": 1,
+	"_doc": "Ronda Noturna do Gato Preto (docs/fases/ronda-design.md). Dono dos valores: Designer. Textos [ROT] (Roteirista). Tempos em segundos. 'Segundos de sala' = tempo com sala_ativa() (30 s = 1 dia). A Ronda congela o jogo (relogio, equipe, Metronomo, tudo parado). Nada daqui usa rng/_rng_evento/_rng_fala/_rng_sucessao/_rng_treino: a Ronda tem o seu (_rng_ronda). Arquivo ausente = jogo da 8a2 (sem capuz, sem lenda, sem regiao GATO PRETO).",
+
+	"opening": {
+		"_doc": "Design §2. A Ronda abre na campanha seguinte a que gravou o marco do boato (7a2). Save antigo com o marco e sem a campanha gravada = abre ja na campanha atual. min_campaign e so uma trava de seguranca (a 1a carreira nunca ve).",
+		"requires_milestone": "black_cat_rumor_heard",
+		"campaigns_after_rumor": 1,
+		"min_campaign": 3,
+		"no_rumor_from_campaign": 5
+	},
+
+	"hood": {
+		"_doc": "Design §3. Capuz no prego. Relogio proprio (hood_s), anda so com a sala ativa (com ou sem Osmar), como o do convite, mas separado dele. 1o capuz da campanha com hood_s >= first_after_s; depois de usar, o proximo com hood_s >= (hood_s da volta) + interval_s. Enquanto o capuz esta no prego o relogio nao conta para o proximo (nao acumula: no maximo 1). Nunca aparece em janela, luta, cena, fala, dia da luta, treino fora ou sucessao: espera e aparece no 1o quadro em que tudo vale. Nao some sozinho.",
+		"first_after_s": 180.0,
+		"interval_s": 240.0,
+		"spot_by_location": { "garage": "hood_spot", "gym": "gym_hood_spot", "center": "center_hood_spot" },
+		"hover_text": "hood_hover",
+		"night_choice": "first_available",
+		"_doc_night_choice": "Gancho do futuro (pedido do dono): o capuz carrega um TIPO DE NOITE. first_available = o 1o de night_order que esta disponivel. Hoje so existe 'scare'."
+	},
+
+	"night_order": ["scare"],
+
+	"nights": {
+		"_doc": "Gancho do futuro: cada tipo de noite tem id, kind (qual logica/tela roda), requires (quando fica disponivel), duracao e a regra de lenda. Tipo novo = bloco novo aqui + logica nova; o capuz, o relogio, a lenda, o save e a tela de premio ja servem. Hoje so 'scare' (Estatua no telhado).",
+		"scare": {
+			"id": "scare",
+			"kind": "stealth_scare",
+			"name": "night_scare_name",
+			"tip": "night_scare_tip",
+			"requires": {},
+			"countdown_s": 2.0,
+			"night_s": 34.0,
+			"_doc_night_s": "Limite da ronda depois da contagem. Acabou o tempo: as ocorrencias que faltam contam como nao feitas (sem castigo).",
+			"intro_s": 0.8,
+			"_doc_intro": "Por ocorrencia: o vulto chega no muro e o ladrao comeca a trabalhar. Segurar nao anda no intro.",
+			"advance_per_s": 0.25,
+			"scare_zone": 0.8,
+			"_doc_track": "Distancia de 0 a 1 (fim do muro). Segurar anda advance_per_s por segundo (ate 1). Soltar = congela (estatua). Com distancia >= scare_zone o vulto esta PERTO: o proximo APERTAR (depois de soltar) e o SUSTO.",
+			"grace_s": 0.2,
+			"_doc_grace": "Tolerancia: mexer nos primeiros grace_s do OLHANDO ainda nao e visto.",
+			"scare_anim_s": 1.6,
+			"seen_anim_s": 1.2,
+			"_doc_rules": "VISTO = andar (segurando com distancia < 1) ou apertar o SUSTO enquanto ele OLHA (depois de grace_s). Visto: o ladrao foge sem largar nada (ESCAPOU), a ocorrencia acaba sem SUSTO, e vem a proxima. Sem outro castigo. SUSTO no AVISO vale (ele ainda esta de costas).",
+			"occurrences": [
+				{ "id": "tire", "name": "ronda_occ_tire", "spot": "borracharia","gap_min": 2.2, "gap_max": 3.4, "warn_s": 0.8, "look_s": 1.2, "fake_warn": 0.0 },
+				{ "id": "bike", "name": "ronda_occ_bike", "spot": "bicicleta","gap_min": 1.5, "gap_max": 2.5, "warn_s": 0.6, "look_s": 1.0, "fake_warn": 0.0 },
+				{ "id": "gate", "name": "ronda_occ_gate", "spot": "portao","gap_min": 1.8, "gap_max": 3.0, "warn_s": 0.6, "look_s": 1.4, "fake_warn": 0.3 }
+			],
+			"_doc_occurrences": "Ciclo do ladrao: TRABALHA (gap sorteado entre gap_min e gap_max) -> AVISO (warn_s; para de mexer e a cabeca vira um pouco) -> OLHANDO (look_s) -> TRABALHA... fake_warn = chance de o AVISO ser falso (ele volta a trabalhar sem olhar). Os sorteios saem todos na criacao da ocorrencia (lista de ciclos), com _rng_ronda.",
+			"legend": {
+				"_doc": "Lenda da ronda = floor + per_scare x sustos + clean_bonus (se fez SUSTO em todas). SAIR a qualquer hora leva floor + o que ja fez (o clean_bonus so com todas feitas). Fechar o jogo no meio: nada.",
+				"floor": 1,
+				"per_scare": 1,
+				"clean_bonus": 1
+			}
+		}
+	},
+
+	"legend": {
+		"_doc": "Design §4. LENDA = contador da linhagem (permanent.black_cat.legend), so cresce. Nivel = quantos limiares a lenda ja passou (0 a 5). Depois do maximo a Ronda continua (contador de ocorrencias, sem premio novo).",
+		"levels": [1, 12, 30, 52, 80],
+		"clipping_text_by_level": ["black_cat_clipping", "black_cat_clipping_1", "black_cat_clipping_2", "black_cat_clipping_3", "black_cat_clipping_4", "black_cat_clipping_5"],
+		"street_layers_by_level": [[], [], ["graffiti"], ["graffiti", "banner"], ["graffiti", "banner", "kid_ears"], ["graffiti", "banner", "kid_ears", "whole_street"]]
+	},
+
+	"skill_tree": {
+		"_doc": "Design §5. Regiao GATO PRETO. Trava 'black_cat:N' = lenda no nivel N ou mais. A regiao so aparece no mapa com nivel >= 1. Tipos de efeito: start_generator e passive_bonus (ja existem) e league_prep_days_bonus (novo, ver o design §12.2).",
+		"region": { "id": "black_cat", "name": "GATO PRETO", "lock": "black_cat:1", "icon": "region_black_cat" },
+		"_doc_texts": "Descricoes e nomes dos nos sao texto final do Roteirista (docs/fases/ronda-textos.md). Nome da regiao tambem em ui_texts: map_region_black_cat e region_black_cat. No lacrado: node_sealed (ui_texts).",
+		"nodes": [
+			{ "id": "cat_rooftop", "region": "black_cat", "kind": "small", "pos": [13, 3], "root": true, "lock": "black_cat:1",
+			  "neighbors": ["camp_extra_day", "cat_watch", "cat_thanks"], "cost": 3000,
+			  "effect": { "type": "start_generator", "value": 2, "target": "retired_uncle" },
+			  "name": "Pelos telhados", "description": "Quem conhece o bairro de cima chega antes.",
+			  "effect_text": "COMEÇA A CAMPANHA COM {n} TIOS NA EQUIPE", "icon": "skill_black_cat_roof" },
+			{ "id": "cat_watch", "region": "black_cat", "kind": "milestone", "pos": [14, 5], "root": false, "lock": "black_cat:3",
+			  "neighbors": ["cat_rooftop", "cat_thanks"], "cost": 6000,
+			  "effect": { "type": "league_prep_days_bonus", "value": 2 },
+			  "name": "O bairro de olho", "description": "Ninguém mexe na garagem enquanto treinamos.",
+			  "effect_text": "+{n} DIAS DE PREPARO NAS LUTAS DA LIGA", "icon": "skill_black_cat_watch" },
+			{ "id": "cat_thanks", "region": "black_cat", "kind": "milestone", "pos": [12, 5], "root": false, "lock": "black_cat:5",
+			  "neighbors": ["cat_rooftop", "cat_watch"], "cost": 9000,
+			  "effect": { "type": "passive_bonus", "value": 0.4 },
+			  "name": "Bairro agradece", "description": "Estepe voltou ao dono. O dono veio treinar.",
+			  "effect_text": "+{pct}% TREINO/S DA EQUIPE", "icon": "skill_black_cat_thanks" }
+		]
+	}
+}

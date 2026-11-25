@@ -255,6 +255,7 @@ func _zerar_carreira() -> void:
 	gs._luta._finalizar_motivo(false)
 	gs._motivo_cache = {}
 	gs._treino.zerar()  # 7a2: o convite e o AQUECIDO são da campanha
+	gs._ronda.zerar()  # Ronda: o capuz é da campanha (a lenda é da linhagem e fica)
 
 
 ## Lista dos nós ativos (ordem da compra): [{id, name, effect_text, icon}]. Cartão de início e resumo da garagem.

@@ -12,7 +12,7 @@ const FONTE_BALAO := "abcdefghijklmnopqrstuvwxyzáâãçéêíóõú0123456789 .
 const REPETICOES: Array[String] = ["once", "rest"]
 const CONDICOES: Array[String] = ["fighter", "first_fighter_done", "location", "milestone_present", "milestone_missing",
 	"after_line", "revenge", "record", "opponent", "item", "kind", "what", "campaign_min",
-	"mentor_line", "mentor_kind", "own"]
+	"mentor_line", "mentor_kind", "own", "legend_level"]
 # 6c2: falante que não está em `cast`: resolvido pelo GameState para o mentor sentado no caixote.
 const FALANTE_MENTOR := "mentor"
 
@@ -257,6 +257,9 @@ func _condicoes_ok(l: Dictionary, ctx: Dictionary) -> bool:
 					return false
 			"own":
 				if bool(p.get(k, false)) != bool(v):
+					return false
+			"legend_level":  # Ronda: a fala só toca no nível da lenda que acabou de subir
+				if int(p.get("legend_level", 0)) != int(v):
 					return false
 	return true
 

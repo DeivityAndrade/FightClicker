@@ -1,0 +1,626 @@
+{
+	"hood_on_nail": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			22
+		],
+		"frames": 2,
+		"pivot": [
+			8,
+			1
+		],
+		"rel": "garage/hood_on_nail.png"
+	},
+	"hood_on_nail_gym": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			22
+		],
+		"frames": 2,
+		"pivot": [
+			8,
+			1
+		],
+		"rel": "gym/hood_on_nail_gym.png"
+	},
+	"icon_legend": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_legend.png"
+	},
+	"icon_legend_16": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_legend_16.png"
+	},
+	"icon_occurrence": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_occurrence.png"
+	},
+	"icon_region_black_cat": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_region_black_cat.png"
+	},
+	"icon_region_black_cat_9": {
+		"fps": 0.0,
+		"frame_size": [
+			9,
+			9
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_region_black_cat_9.png"
+	},
+	"icon_ronda_16": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/icon_ronda_16.png"
+	},
+	"map_node_b_owned_night": {
+		"fps": 0.0,
+		"frame_size": [
+			38,
+			38
+		],
+		"frames": 1,
+		"pivot": [
+			19,
+			19
+		],
+		"rel": "ui/map/map_node_b_owned_night.png"
+	},
+	"map_node_b_sealed": {
+		"fps": 0.0,
+		"frame_size": [
+			38,
+			38
+		],
+		"frames": 1,
+		"pivot": [
+			19,
+			19
+		],
+		"rel": "ui/map/map_node_b_sealed.png"
+	},
+	"map_node_s_owned_night": {
+		"fps": 0.0,
+		"frame_size": [
+			24,
+			24
+		],
+		"frames": 1,
+		"pivot": [
+			12,
+			12
+		],
+		"rel": "ui/map/map_node_s_owned_night.png"
+	},
+	"map_node_s_sealed": {
+		"fps": 0.0,
+		"frame_size": [
+			24,
+			24
+		],
+		"frames": 1,
+		"pivot": [
+			12,
+			12
+		],
+		"rel": "ui/map/map_node_s_sealed.png"
+	},
+	"map_tile_black_cat_region": {
+		"fps": 0.0,
+		"frame_size": [
+			32,
+			32
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/map/map_tile_black_cat_region.png"
+	},
+	"ronda_bg": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "minigame/ronda_bg.png"
+	},
+	"ronda_layer_banner": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "minigame/ronda_layer_banner.png"
+	},
+	"ronda_layer_graffiti": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "minigame/ronda_layer_graffiti.png"
+	},
+	"ronda_layer_kid_ears": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "minigame/ronda_layer_kid_ears.png"
+	},
+	"ronda_layer_whole_street": {
+		"fps": 0.0,
+		"frame_size": [
+			640,
+			360
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "minigame/ronda_layer_whole_street.png"
+	},
+	"ronda_prop_crowbar": {
+		"fps": 0.0,
+		"frame_size": [
+			18,
+			7
+		],
+		"frames": 1,
+		"pivot": [
+			9,
+			3
+		],
+		"rel": "minigame/ronda_prop_crowbar.png"
+	},
+	"ronda_prop_pliers": {
+		"fps": 0.0,
+		"frame_size": [
+			12,
+			8
+		],
+		"frames": 1,
+		"pivot": [
+			6,
+			4
+		],
+		"rel": "minigame/ronda_prop_pliers.png"
+	},
+	"ronda_prop_tire": {
+		"fps": 0.0,
+		"frame_size": [
+			20,
+			20
+		],
+		"frames": 1,
+		"pivot": [
+			10,
+			19
+		],
+		"rel": "minigame/ronda_prop_tire.png"
+	},
+	"skill_black_cat_roof": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_black_cat_roof.png"
+	},
+	"skill_black_cat_thanks": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_black_cat_thanks.png"
+	},
+	"skill_black_cat_watch": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			16
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/skill_black_cat_watch.png"
+	},
+	"ui_banner_escaped": {
+		"fps": 0.0,
+		"frame_size": [
+			90,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			45,
+			14
+		],
+		"rel": "ui/ui_banner_escaped.png"
+	},
+	"ui_banner_scare": {
+		"fps": 0.0,
+		"frame_size": [
+			101,
+			40
+		],
+		"frames": 1,
+		"pivot": [
+			50,
+			20
+		],
+		"rel": "ui/ui_banner_scare.png"
+	},
+	"ui_banner_scare_near": {
+		"fps": 6.0,
+		"frame_size": [
+			70,
+			28
+		],
+		"frames": 2,
+		"pivot": [
+			35,
+			14
+		],
+		"rel": "ui/ui_banner_scare_near.png"
+	},
+	"ui_clipping_black_cat_zoom_l1": {
+		"fps": 0.0,
+		"frame_size": [
+			128,
+			96
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_clipping_black_cat_zoom_l1.png"
+	},
+	"ui_clipping_black_cat_zoom_l2": {
+		"fps": 0.0,
+		"frame_size": [
+			128,
+			96
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_clipping_black_cat_zoom_l2.png"
+	},
+	"ui_clipping_black_cat_zoom_l3": {
+		"fps": 0.0,
+		"frame_size": [
+			128,
+			96
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_clipping_black_cat_zoom_l3.png"
+	},
+	"ui_clipping_black_cat_zoom_l4": {
+		"fps": 0.0,
+		"frame_size": [
+			128,
+			96
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_clipping_black_cat_zoom_l4.png"
+	},
+	"ui_clipping_black_cat_zoom_l5": {
+		"fps": 0.0,
+		"frame_size": [
+			128,
+			96
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_clipping_black_cat_zoom_l5.png"
+	},
+	"ui_legend_pip": {
+		"fps": 0.0,
+		"frame_size": [
+			7,
+			7
+		],
+		"frames": 3,
+		"pivot": [
+			3,
+			3
+		],
+		"rel": "ui/ui_legend_pip.png"
+	},
+	"ui_map_region_label_black_cat": {
+		"fps": 0.0,
+		"frame_size": [
+			16,
+			13
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/map/ui_map_region_label_black_cat.png"
+	},
+	"ui_ronda_fill": {
+		"fps": 0.0,
+		"frame_size": [
+			4,
+			4
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_ronda_fill.png"
+	},
+	"ui_ronda_track": {
+		"fps": 0.0,
+		"frame_size": [
+			8,
+			6
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_ronda_track.png"
+	},
+	"ui_ronda_zone": {
+		"fps": 6.0,
+		"frame_size": [
+			4,
+			4
+		],
+		"frames": 2,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "ui/ui_ronda_zone.png"
+	},
+	"ui_thief_warn": {
+		"fps": 0.0,
+		"frame_size": [
+			13,
+			14
+		],
+		"frames": 3,
+		"pivot": [
+			6,
+			13
+		],
+		"rel": "ui/ui_thief_warn.png"
+	},
+	"wall_clipping_black_cat_gym_l1": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_clipping_black_cat_gym_l1.png"
+	},
+	"wall_clipping_black_cat_gym_l2": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_clipping_black_cat_gym_l2.png"
+	},
+	"wall_clipping_black_cat_gym_l3": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_clipping_black_cat_gym_l3.png"
+	},
+	"wall_clipping_black_cat_gym_l4": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_clipping_black_cat_gym_l4.png"
+	},
+	"wall_clipping_black_cat_gym_l5": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "gym/wall_clipping_black_cat_gym_l5.png"
+	},
+	"wall_clipping_black_cat_l1": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "garage/wall_clipping_black_cat_l1.png"
+	},
+	"wall_clipping_black_cat_l2": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "garage/wall_clipping_black_cat_l2.png"
+	},
+	"wall_clipping_black_cat_l3": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "garage/wall_clipping_black_cat_l3.png"
+	},
+	"wall_clipping_black_cat_l4": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "garage/wall_clipping_black_cat_l4.png"
+	},
+	"wall_clipping_black_cat_l5": {
+		"fps": 0.0,
+		"frame_size": [
+			23,
+			28
+		],
+		"frames": 1,
+		"pivot": [
+			0,
+			0
+		],
+		"rel": "garage/wall_clipping_black_cat_l5.png"
+	}
+}
