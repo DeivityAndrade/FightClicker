@@ -1531,7 +1531,11 @@ A rua é montagem por código (blocos, chapa em listras, luz em faixas com dithe
 reboco com textura, folhagem, lua com relevo, fios, gente nas janelas. As camadas são desenhos simples (a criança tem 30 px). O capuz
 tem 16x22 (à mão: volume do pano, costura legível). Os recortes contam o nível pela foto de 11x8. Tamanhos, pivôs e pontos fixos.
 
-## 37. Identidade visual (proposta, aguarda o dono)
+## 37. Identidade visual: o dono escolheu C (cartaz de luta) em 2026-11-25
+**Decisão: dono escolheu C em 2026-11-25.** A identidade do jogo passa a ser o cartaz de luta (asfalto, papel creme, faixa
+vermelha, sombra dura, carimbos). A e B ficam só como registro.
+**Menu C v2** (composição no eixo x = 320, faixa horizontal com listras que correm, intro de 860 ms com o título batendo, 3 fundos
+reais; recomendado: Ginásio Alvorada): ver "Menu C v2" em `docs/arte/identidade-direcoes.md`. Gerador `tools/art/make_mockup_identidade_c2.gd`.
 Três direções para o HUD, a barra, as janelas e o menu principal: A vidro pixelado, B lona e placa de academia, C cartaz de luta.
 Paletas, leitura, custo e recomendação (B, com o C nas telas de luta) estão em `docs/arte/identidade-direcoes.md`. Mockups em
 `mockups/identidade/`, feitos pelo gerador `tools/art/make_mockup_identidade.gd`. Até o dono escolher, a UI de hoje continua valendo.

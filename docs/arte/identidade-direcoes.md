@@ -1,5 +1,8 @@
 # Identidade visual: 3 direções para o dono escolher
 
+> **Decisão: o dono escolheu C (cartaz de luta) em 2026-11-25.** A recomendação abaixo (B com o C nas telas de luta) fica
+> só como registro. Menu v2 da C (composição no eixo, animação da faixa e 3 fundos): ver "Menu C v2" no fim deste arquivo.
+
 Diretor de Arte, 2026-11-25. O ponto de partida é a crítica de que o HUD e a barra dos focos, em marrom-acinzentado,
 têm "cara de IA". Isto é só **mockup** (nada em `ui/` ou `scenes/` mudou).
 Gerador: `tools/art/make_mockup_identidade.gd` (headless; rodar como diz o cabeçalho). Ele usa a captura real da garagem com a UI
@@ -123,3 +126,79 @@ O logo é a fonte 5x7 ampliada e tratada, e não um logotipo. A versão final pe
 própria, 10 a 14 px de altura, com acentos). A trama da lona, o papel envelhecido e as pinceladas são dither por fórmula, e à mão
 ganhariam textura de verdade. As cordas são retas, e os ilhoses e parafusos são de 5x5 e 2x2. O fundo da sala é uma captura antiga
 com retoque. Os 9-slices finais serão desenhados com os mesmos tamanhos dos mockups (HUD 18 px, barra 30 px, botões 86x20 e 102x24).
+
+---
+
+## Menu C v2 (2026-11-25): composição no eixo, animação da faixa e 3 fundos
+
+Resposta ao comentário do dono sobre `identidade_c_menu_x2.png` ("ficou meio torto", "animação nessa parada vermelha", "fundo mais
+bem pensado"). Gerador: `tools/art/make_mockup_identidade_c2.gd` (headless, de uma pasta com `project.godot` vazio, `-- --root <worktree>`).
+Imagens em `mockups/identidade/`: `identidade_c_menu_v2_{garagem,arena,cartazes}_x2.png`, prancha `identidade_c_menu_v2_comparativo.png`
+(com o v1 ao lado, para comparar) e a animação em `mockups/identidade/menu_c_anim/`.
+
+### Composição (o "torto")
+O v1 tinha três eixos brigando: a faixa caía em diagonal, o logo era itálico com sombra para a direita e o lutador estava solto
+à esquerda. No v2, tudo fica num **eixo só, x = 320**:
+- **Faixa vermelha horizontal** de ponta a ponta (y 26..113: filete creme 3 + ink 1, corpo `r2` y 30..105, ink 2 + creme 3 + ink 1,
+  1 px de sombra em dither). A inclinação continua, mas **só por dentro**: listras diagonais `r1` em meio-tom e o itálico do logo.
+- **Logo** (FIGHTCLICKER 5x, bold, itálico 1/4) centrado pela **caixa real dos pixels** (o itálico empurra a caixa; o gerador
+  centraliza o que se vê): x 149..491, centro 320,0. Sombra dura **reta para baixo** (0,4), contorno `ink`, luz `white` na 1ª linha.
+- **Subtítulo** numa etiqueta `ink` em cima do filete de baixo, no eixo.
+- **Botões** numa coluna de 152x22, passo 28, a partir de y 164, x 244..395. Sombra dura **reta para baixo** (0,3): nada puxa para
+  o lado. O foco (CONTINUAR) é `r1` com texto creme e 1 px de sombra `ink` (creme sobre `r1` = 4,8:1; o branco sobre `r2` de 3,7:1
+  não é usado). Os outros são creme com texto `ink` (11,9:1) e sombra `r1`. Duas setas creme espelhadas marcam o foco.
+- **A cena tem peso igual dos dois lados**: o que fica à esquerda é espelhado à direita (lutador e saco x treinador; lutador x
+  adversário; cartazes x cartazes), com um refletor em cada lado.
+- **Medido pelo gerador** (imprime no console): margens esq/dir do texto de cada botão 50/51, 58/59, 65/66 (o 1 px vem de largura
+  ímpar em botão par, e a regra aceita); cima/baixo 7/8 (letra de 7 px em botão de 22); subtítulo 7/7 e 3/3; logo no eixo; nenhum
+  sprite da cena sai da tela ou entra na coluna dos botões. **0 problemas nos 3 fundos.**
+
+### Os 3 fundos (todos com cenários e sprites reais do jogo)
+1. **Garagem à noite** (`garage_bg`): o saco `bag_l1` na corrente e o lutador (`fighter_punch`) batendo, à esquerda; o
+   treinador (`coach_idle`, espelhado) de braços cruzados olhando, à direita. Dois cones de luz quente. É o começo da história.
+2. **Ginásio Alvorada** (`arena_league_bg`): o lutador e o adversário da liga (`opp_gym_2`) frente a frente no tatame, cada um
+   no seu refletor. A faixa GINÁSIO ALVORADA da arena fica acesa logo abaixo do subtítulo e lê como o "local" do cartaz.
+3. **Parede de cartazes** (a parede da garagem de perto, montada em 320x180 e ampliada 2x): cartaz SOCO, LIGA DO VALE, recorte
+   do jornal do vulto, capuz no prego, quadros da Raízes e, no eixo embaixo dos botões, as luvas velhas do mentor.
+
+**Recomendo a 2 (Ginásio Alvorada).** É a única em que o fundo também é um **cartaz de luta**: dois lutadores frente a frente,
+título em cima e o nome do lugar embaixo, que é a composição clássica de cartaz e fecha com a direção C. Ela é simétrica por
+natureza, então o menu fica firme sem esforço, e não estraga surpresas (o Ginásio Alvorada é a 1ª arena de liga).
+A **1 (garagem)** é a mais afetiva e boa como alternativa, ou como fundo de "Novo jogo". A **3 (cartazes)** é a mais bonita
+como ideia, mas mostra o capuz, o recorte do vulto, o rival JAMES e a Raízes: entrega a história logo no menu. Ela também mistura
+pixel 2x no fundo com a UI em 1x. Pode servir de menu de "fim de jogo" ou de "jogo zerado", com a parede enchendo conforme o progresso.
+Para o menu ficar vivo, os lutadores do fundo rodam o idle deles (6 fps, do manifest), e na garagem o saco balança com o soco.
+
+### Animação da faixa (`menu_c_anim/`)
+Prancha com 8 quadros-chave: `menu_c_anim_prancha.png`. Prévia: `menu_c_anim_preview_x2.gif` (intro + 1 volta do loop) e
+`menu_c_anim_loop_x2.gif` (só o loop). Quadros 1x em `seq/f000..f061.png`. Tempos quadro a quadro em `tempos.txt` (o comando do
+ffmpeg que monta o GIF está no fim dele).
+
+**INTRO, toca 1 vez ao abrir o menu (860 ms):**
+| ms | dura | o quê |
+|---|---|---|
+| 0 | 120 | cena escura (ink 75%), sem UI |
+| 120 | 50+50 | a faixa entra da esquerda com a ponta cortada em diagonal e um fio de luz na borda (30%, 65%) |
+| 220 | 60 | faixa completa |
+| 280 | 50 | o título cai 16 px, com linhas de velocidade `r3` em cima |
+| 330 | 60 | **IMPACTO**: o título "bate", com 1 quadro de flash branco (contorno e miolo), tudo desce 3 px e saem lascas creme dos lados |
+| 390 | 50+50 | tremor (-2,+1) e depois (+1,-1) |
+| 490 | 90 | repouso, e o subtítulo aparece |
+| 580 | 4x40 | os botões entram um a um, subindo 6 px |
+| 740 | 120 | pronto (versão aparece) |
+
+**LOOP, enquanto o menu estiver aberto (3840 ms = 48 quadros de 80 ms):**
+- As listras diagonais da faixa **correm para a direita 1 px a cada 80 ms** (período de 16 px, 1280 ms por volta, 3 voltas no loop).
+- Um **brilho** passa pelo logo nos quadros 0..7 (640 ms): faixa diagonal com frente `y2`, miolo `white` e rastro `y1`, só dentro das letras. Depois, 3,2 s de pausa.
+- As setas do foco balançam 1 px para dentro a cada 320 ms.
+- Respeitar a opção de reduzir movimento, se existir: sem tremor e sem brilho, e as listras paradas.
+
+**Para o programador (sugestão; a cena é do UI/UX):** a faixa é uma textura de 640x88 com a região das listras em `TextureRect`
+com `UV offset` ou com um shader de scroll inteiro (1 px por passo, sem subpixel). O logo é um sprite separado (flash = 2º quadro).
+A intro é um `AnimationPlayer` com as posições inteiras da tabela acima, e o tremor é um offset no nó pai da faixa e do logo.
+
+### O que é placeholder
+O logo ainda é a fonte 5x7 ampliada: a versão final pede um logotipo desenhado à mão (letra de cartaz própria, com acentos).
+As listras são dither por fórmula, a luz dos refletores mistura alfa (sai da paleta: na versão final, uma textura de luz em degraus
+dentro da paleta) e os cartazes genéricos da opção 3 não têm texto. A animação é a proposta de tempos; quem desenha os quadros
+finais da faixa entrando (com a ponta rasgada) é um pixel artist.

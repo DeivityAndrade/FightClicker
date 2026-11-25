@@ -1,0 +1,67 @@
+Menu C v2: tempos da animação (ms). Quadros em seq/f###.png (1x, 640x360).
+
+f000.png      0 ms  +120 ms  [intro] cena escura
+f001.png    120 ms  + 50 ms  [intro] faixa entra 30%
+f002.png    170 ms  + 50 ms  [intro] faixa entra 65%
+f003.png    220 ms  + 60 ms  [intro] faixa completa
+f004.png    280 ms  + 50 ms  [intro] título cai
+f005.png    330 ms  + 60 ms  [intro] IMPACTO: flash + 3 px
+f006.png    390 ms  + 50 ms  [intro] tremor -2
+f007.png    440 ms  + 50 ms  [intro] tremor +1
+f008.png    490 ms  + 90 ms  [intro] repouso + subtítulo
+f009.png    580 ms  + 40 ms  [intro] botão 1
+f010.png    620 ms  + 40 ms  [intro] botão 2
+f011.png    660 ms  + 40 ms  [intro] botão 3
+f012.png    700 ms  + 40 ms  [intro] botão 4
+f013.png    740 ms  +120 ms  [intro] pronto
+f014.png    860 ms  + 80 ms  [loop] loop 0
+f015.png    940 ms  + 80 ms  [loop] loop 1
+f016.png   1020 ms  + 80 ms  [loop] loop 2
+f017.png   1100 ms  + 80 ms  [loop] loop 3
+f018.png   1180 ms  + 80 ms  [loop] loop 4
+f019.png   1260 ms  + 80 ms  [loop] loop 5
+f020.png   1340 ms  + 80 ms  [loop] loop 6
+f021.png   1420 ms  + 80 ms  [loop] loop 7
+f022.png   1500 ms  + 80 ms  [loop] loop 8
+f023.png   1580 ms  + 80 ms  [loop] loop 9
+f024.png   1660 ms  + 80 ms  [loop] loop 10
+f025.png   1740 ms  + 80 ms  [loop] loop 11
+f026.png   1820 ms  + 80 ms  [loop] loop 12
+f027.png   1900 ms  + 80 ms  [loop] loop 13
+f028.png   1980 ms  + 80 ms  [loop] loop 14
+f029.png   2060 ms  + 80 ms  [loop] loop 15
+f030.png   2140 ms  + 80 ms  [loop] loop 16
+f031.png   2220 ms  + 80 ms  [loop] loop 17
+f032.png   2300 ms  + 80 ms  [loop] loop 18
+f033.png   2380 ms  + 80 ms  [loop] loop 19
+f034.png   2460 ms  + 80 ms  [loop] loop 20
+f035.png   2540 ms  + 80 ms  [loop] loop 21
+f036.png   2620 ms  + 80 ms  [loop] loop 22
+f037.png   2700 ms  + 80 ms  [loop] loop 23
+f038.png   2780 ms  + 80 ms  [loop] loop 24
+f039.png   2860 ms  + 80 ms  [loop] loop 25
+f040.png   2940 ms  + 80 ms  [loop] loop 26
+f041.png   3020 ms  + 80 ms  [loop] loop 27
+f042.png   3100 ms  + 80 ms  [loop] loop 28
+f043.png   3180 ms  + 80 ms  [loop] loop 29
+f044.png   3260 ms  + 80 ms  [loop] loop 30
+f045.png   3340 ms  + 80 ms  [loop] loop 31
+f046.png   3420 ms  + 80 ms  [loop] loop 32
+f047.png   3500 ms  + 80 ms  [loop] loop 33
+f048.png   3580 ms  + 80 ms  [loop] loop 34
+f049.png   3660 ms  + 80 ms  [loop] loop 35
+f050.png   3740 ms  + 80 ms  [loop] loop 36
+f051.png   3820 ms  + 80 ms  [loop] loop 37
+f052.png   3900 ms  + 80 ms  [loop] loop 38
+f053.png   3980 ms  + 80 ms  [loop] loop 39
+f054.png   4060 ms  + 80 ms  [loop] loop 40
+f055.png   4140 ms  + 80 ms  [loop] loop 41
+f056.png   4220 ms  + 80 ms  [loop] loop 42
+f057.png   4300 ms  + 80 ms  [loop] loop 43
+f058.png   4380 ms  + 80 ms  [loop] loop 44
+f059.png   4460 ms  + 80 ms  [loop] loop 45
+f060.png   4540 ms  + 80 ms  [loop] loop 46
+f061.png   4620 ms  + 80 ms  [loop] loop 47
+
+GIF (na pasta menu_c_anim):
+  ffmpeg -y -f concat -safe 0 -i concat_preview.txt -vf "scale=1280:720:flags=neighbor,split[a][b];[a]palettegen=stats_mode=full[p];[b][p]paletteuse=dither=none" menu_c_anim_preview_x2.gif
