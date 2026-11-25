@@ -1,0 +1,225 @@
+{
+	"_sobre": "Parede de cartazes do menu (direção C). Fundo menu_parede.png em (0,0); desenhar as camadas NA ORDEM desta lista, por cima do fundo e por baixo da faixa. Cada camada só aparece se 'requires' for verdade no save carregado; requires vazio = sempre. Save novo ou sem save = só as de requires vazio. Gerador: tools/art/make_tema_c.gd. Spec: docs/arte/tema-c-spec.md.",
+	"layers": [
+		{
+			"file": "res://assets/sprites/menu/menu_item_soco.png",
+			"id": "soco",
+			"note": "o cartaz SOCO da garagem (o começo)",
+			"pos": [
+				22,
+				126
+			],
+			"requires": {},
+			"size": [
+				51,
+				66
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_luta_sabado.png",
+			"id": "luta_sabado",
+			"note": "cartaz genérico de luta de bairro",
+			"pos": [
+				567,
+				126
+			],
+			"requires": {},
+			"size": [
+				51,
+				66
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_luvas_velhas.png",
+			"id": "luvas_velhas",
+			"note": "as luvas velhas do mentor no prego, no eixo",
+			"pos": [
+				295,
+				288
+			],
+			"requires": {},
+			"size": [
+				50,
+				58
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_aluga_se.png",
+			"id": "aluga_se",
+			"note": "papel de ALUGA-SE com tirinhas (rua; parede gasta)",
+			"pos": [
+				46,
+				288
+			],
+			"requires": {},
+			"size": [
+				55,
+				42
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_recorte_vitoria.png",
+			"id": "recorte_vitoria",
+			"note": "recorte GARAGEM FAZ BARULHO (1ª vitória)",
+			"pos": [
+				88,
+				132
+			],
+			"requires": {
+				"milestone": "first_school_win"
+			},
+			"size": [
+				49,
+				38
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_raizes.png",
+			"id": "raizes",
+			"note": "quadro RAÍZES com o carimbo (garagem salva)",
+			"pos": [
+				26,
+				204
+			],
+			"requires": {
+				"milestone": "garage_saved"
+			},
+			"size": [
+				53,
+				55
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_foto_equipe.png",
+			"id": "foto_equipe",
+			"note": "foto da equipe: treinador, o 1º lutador e o discípulo",
+			"pos": [
+				152,
+				136
+			],
+			"requires": {
+				"milestone": "cena_primeira_sucessao"
+			},
+			"size": [
+				33,
+				38
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_foto_antiga.png",
+			"id": "foto_antiga",
+			"note": "foto antiga do treinador (chegada à academia)",
+			"pos": [
+				436,
+				140
+			],
+			"requires": {
+				"milestone": "cena_primeira_academia"
+			},
+			"size": [
+				43,
+				31
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_faixas_john.png",
+			"id": "faixas_john",
+			"note": "as faixas de mão do 1º lutador com etiqueta JB (saída dele)",
+			"pos": [
+				164,
+				214
+			],
+			"requires": {
+				"milestone": "cena_saida_primeiro_mentor"
+			},
+			"size": [
+				27,
+				46
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_liga.png",
+			"id": "liga",
+			"note": "cartaz LIGA DO VALE / JAMES",
+			"pos": [
+				489,
+				122
+			],
+			"requires": {
+				"milestone": "regional_league_opened"
+			},
+			"size": [
+				63,
+				82
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_liga_campeoes.png",
+			"id": "liga_campeoes",
+			"note": "tira CAMPEÕES colada sobre o cartaz da Liga (por cima do liga)",
+			"pos": [
+				487,
+				172
+			],
+			"requires": {
+				"milestone": "regional_belt_first"
+			},
+			"size": [
+				67,
+				13
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_recorte_vale.png",
+			"id": "recorte_vale",
+			"note": "recorte emoldurado DERRUBA (o cinturão do Vale; chegada ao centro)",
+			"pos": [
+				560,
+				212
+			],
+			"requires": {
+				"milestone": "center_arrival"
+			},
+			"size": [
+				53,
+				51
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_recorte_vulto.png",
+			"id": "recorte_vulto",
+			"note": "recorte VULTO (o boato do vulto de capuz)",
+			"pos": [
+				508,
+				222
+			],
+			"requires": {
+				"milestone": "black_cat_rumor_heard"
+			},
+			"size": [
+				37,
+				46
+			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_capuz.png",
+			"id": "capuz",
+			"note": "o capuz no prego (depois da 1ª Ronda Noturna)",
+			"pos": [
+				104,
+				214
+			],
+			"requires": {
+				"black_cat_rounds_min": 1
+			},
+			"size": [
+				30,
+				44
+			]
+		}
+	],
+	"requires_legenda": {
+		"black_cat_rounds_min": "GameState.lenda().rounds >= n (permanent.black_cat.rounds)",
+		"milestone": "GameState.marco(id) (school.milestones no save)"
+	}
+}

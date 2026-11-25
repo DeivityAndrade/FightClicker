@@ -236,7 +236,7 @@ func _montar(opp_id: String) -> void:
 
 	_mundo = Node2D.new()
 	_mundo.z_index = 100  # fica acima do ColorRect (os z negativos da arena não somem)
-	UiTema.alinhar(_mundo, "ignore")  # arena, lutadores, efeitos e números flutuantes: posição livre de propósito
+	UiTema.alinhar_motivo(_mundo, "ignore", "arena, lutadores, efeitos e números flutuantes: posição livre de propósito")
 	add_child(_mundo)
 
 	# Cenário (7a1): prefixo da arena da luta ("arena" = borracharia, "arena_league" = ginásio da liga). Camada que não existe

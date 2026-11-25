@@ -13,6 +13,7 @@ extends Control
 const MAX_LARG := 150.0  # largura máxima do texto de uma linha (px da base 640x360)
 const TELA := Rect2(4, 4, 632, 352)  # limite: o balão nunca passa daqui (margem mínima de 4 px da borda)
 const FOLGA := 3.0  # espaço entre o balão e o item apontado
+const MARGEM_TELA := 4.0  # folga mínima entre o balão e a borda da tela
 
 static var instancia: Dica = null
 
@@ -30,7 +31,7 @@ func _ready() -> void:
 	z_as_relative = false
 	z_index = 4096  # o teto do Godot: acima das janelas (Fluxo 3000 + janela 2000) e do cursor-luva (4000); empate = ordem da árvore
 	visible = false
-	UiTema.alinhar(self, "ignore")  # flutua junto do mouse: posição livre de propósito
+	UiTema.ignorar(self, "flutua junto do mouse (posição por Dica.posicionar); o texto muda a cada alvo apontado", true)
 	set_anchors_preset(Control.PRESET_TOP_LEFT)
 
 
@@ -59,7 +60,7 @@ func mostrar(texto: String, alvo: Control = null) -> void:
 	var linhas: Array = []
 	var i := 0
 	for l in t.split("\n"):
-		linhas.append({"texto": l, "cor": UiTema.WHITE if i == 0 and t.contains("\n") else UiTema.G3})
+		linhas.append({"texto": l, "cor": UiTema.CREAM if i == 0 and t.contains("\n") else UiTema.G3})
 		i += 1
 	if t == "":
 		linhas = []
@@ -154,7 +155,7 @@ func _montar() -> void:
 	var h := float(finas.size()) * 9.0 + 7.0
 	_caixa.size = Vector2(w, h)
 	size = _caixa.size
-	UiTema.painel(_caixa, "ui_card", Rect2(0, 0, w, h))
+	UiTema.painel(_caixa, "c_chip", Rect2(0, 0, w, h))  # tema C: tinta (ink) com luz d2; as cores das linhas já são de fundo escuro
 	for i in finas.size():
 		UiTema.rotulo(_caixa, finas[i].texto, finas[i].cor, 6, 2 + i * 9)
 
@@ -183,6 +184,7 @@ func _seguir() -> void:
 ## Rect2() = não há item, só o cursor). Testa embaixo, em cima, à direita e à esquerda do item e fica com o lugar
 ## mais perto do cursor. Se nenhum couber sem cobrir (balão enorme), fica no que cobre menos.
 static func posicionar(tam: Vector2, m: Vector2, alvo: Rect2, limite: Rect2 = TELA) -> Vector2:
+	limite = limite.grow(-MARGEM_TELA)  # ID2: o balão nunca fica a menos de 4 px da borda da tela
 	var item := alvo
 	if item.size.x <= 0.0 or item.size.y <= 0.0:
 		item = Rect2(m, Vector2(10, 12))  # só o cursor: a "luva" ocupa uns 10x12 px a partir da ponta

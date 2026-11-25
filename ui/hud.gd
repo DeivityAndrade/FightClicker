@@ -19,6 +19,8 @@ var _dica_nos: Control
 var _area_local: Control
 var _so_sala := false  # 6d2: modo "só a sala": fica só o grupo do Treino
 var _fundo: Panel
+var _etiqueta: NinePatchRect  # tema C: o papel atrás do nome do local, da Fama e do Legado (a faixa diagonal começa nele)
+var _seps: Array[TextureRect] = []  # separadores diagonais entre os grupos da esquerda
 var _aquecido: TextureRect  # 7a2: AQUECIDO guardado para a próxima luta (ícone da chama, perto do Fama e do Legado)
 var _aquecido_area: Control
 
@@ -28,20 +30,24 @@ func _ready() -> void:
 	size = Vector2(640, 18)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var ui: Dictionary = GameState.dados.ui
-	_fundo = UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, 18))
+	_fundo = UiTema.painel(self, "c_hud_faixa", Rect2(0, 0, 640, 21))  # 18 de área útil + fio e sombra que caem sobre a sala
+	_etiqueta = UiTema.nine_patch(self, "c_hud_etiqueta", Rect2(500, 0, 140, 18))
+	for i in 2:
+		var s := UiTema.textura_rect(self, "c_hud_sep", 0, 0)
+		_seps.append(s)
 
 	# Fase 5.1: Treino é o número-herói (txt_hero, verde); Dinheiro em dourado; Fama e Legado descem para o nível 3
 	# (só ícone + número pequeno à direita; o texto aparece na dica ao passar o mouse).
 	_grupos.append(_grupo("icon_treino", str(ui.get("hud_training", "TREINO")).to_upper(), UiTema.COL_TREINO, true))
 	_grupos.append(_grupo("icon_money", "", UiTema.COL_MONEY, false))
-	_grupos.append(_grupo("icon_fame", "", UiTema.COL_FAME, false))
-	_grupos.append(_grupo("icon_legacy", "", UiTema.COL_LEGACY, false))
+	_grupos.append(_grupo("icon_fame", "", UiTema.COL_FAME_CLARO, false))  # no papel da etiqueta: tons escuros da rampa
+	_grupos.append(_grupo("icon_legacy", "", UiTema.COL_LEGACY_CLARO, false))
 	_grupos[0].valor.scale = Vector2(2, 2)
 	_grupos[0].valor.position.y = -2.0
-	UiTema.alinhar(_grupos[0].valor, "ignore")  # número-herói em escala 2: o verificador não cobra a caixa do rótulo
-	_carreira = UiTema.rotulo(self, "", UiTema.COL_TEXT_2, 0, 3)
-	_local = UiTema.rotulo(self, str(ui.get("location_name", "")).to_upper(), UiTema.COL_TEXT_2, 400, 3, 234,
-		HORIZONTAL_ALIGNMENT_RIGHT)
+	UiTema.ignorar(_grupos[0].valor, "número-herói em escala 2: a caixa do rótulo não é o texto (posição calculada em _reposicionar)", true)
+	_carreira = UiTema.rotulo(self, "", UiTema.CREAM, 0, 3)
+	_local = UiTema.rotulo(self, str(ui.get("location_name", "")).to_upper(), UiTema.INK, 400, 3, 234,
+		HORIZONTAL_ALIGNMENT_RIGHT, false)  # sobre o papel da etiqueta: sem sombra
 
 	_local.autowrap_mode = TextServer.AUTOWRAP_OFF  # a largura do rótulo acompanha o texto (calculada em _reposicionar)
 	_local.custom_minimum_size = Vector2.ZERO
@@ -49,14 +55,14 @@ func _ready() -> void:
 	_local_icone.visible = false
 	_emblema = Control.new()
 	_emblema.mouse_filter = Control.MOUSE_FILTER_PASS
-	_emblema.size = Vector2(60, 11)
-	_emblema.position = Vector2(0, 3)
+	_emblema.size = Vector2(60, 13)
+	_emblema.position = Vector2(0, 2)
 	_emblema.visible = false
 	_emblema.mouse_entered.connect(_abrir_dica_nos)
 	_emblema.mouse_exited.connect(_fechar_dica_nos)
 	add_child(_emblema)
-	_emblema_fundo = UiTema.nine_patch(_emblema, "ui_legacy_nodes_badge", Rect2(0, 0, 60, 11))
-	_emblema_rotulo = UiTema.rotulo(_emblema, "", UiTema.P2, 5, 0)
+	_emblema_fundo = UiTema.nine_patch(_emblema, "c_chip", Rect2(0, 0, 60, 13))
+	_emblema_rotulo = UiTema.rotulo(_emblema, "", UiTema.P2, 5, 1)
 
 	_areas_dica()
 	_aquecido = UiTema.textura_rect(self, "icon_warm", 0, 4)
@@ -64,7 +70,7 @@ func _ready() -> void:
 	_aquecido_area = Control.new()
 	_aquecido_area.mouse_filter = Control.MOUSE_FILTER_PASS
 	_aquecido_area.visible = false
-	UiTema.alinhar(_aquecido_area, "ignore")
+	UiTema.ignorar(_aquecido_area, "área de hover sem desenho: posição calculada em _reposicionar")
 	add_child(_aquecido_area)
 	_aquecido_area.mouse_entered.connect(func() -> void:
 		Dica.pedir_linhas([{"texto": UiTema.txt("bonus_warm_name", "AQUECIDO"), "cor": UiTema.R3},
@@ -87,8 +93,8 @@ func modo_so_sala(ativo: bool) -> void:
 func _grupo(icone: String, titulo: String, cor: Color, com_taxa: bool) -> Dictionary:
 	var g := {"cor": cor, "ultimo": ""}
 	g["icone"] = UiTema.textura_rect(self, icone, 0, 4)
-	g["rotulo"] = UiTema.rotulo(self, titulo, UiTema.COL_TEXT_2, 0, 3)
-	g["valor"] = UiTema.rotulo(self, "0", cor, 0, 3)
+	g["rotulo"] = UiTema.rotulo(self, titulo, UiTema.G3, 0, 3)
+	g["valor"] = UiTema.rotulo(self, "0", cor, 0, 3, 0, HORIZONTAL_ALIGNMENT_LEFT, cor.get_luminance() >= 0.075)  # Fama e Legado ficam no papel
 	g["extra"] = UiTema.rotulo(self, "", UiTema.COL_TREINO, 0, 3) if com_taxa else null
 	return g
 
@@ -115,8 +121,8 @@ func atualizar() -> void:
 		var texto := str(legado.label).to_upper()
 		_emblema_rotulo.text = texto
 		var w := roundf(UiTema.largura_visivel(texto)) + 10.0
-		_emblema.size = Vector2(w, 11)
-		_emblema_fundo.size = Vector2(w, 11)
+		_emblema.size = Vector2(w, 13)
+		_emblema_fundo.size = Vector2(w, 13)
 	else:
 		_fechar_dica_nos()
 	for i in _grupos.size():
@@ -125,7 +131,7 @@ func atualizar() -> void:
 	_carreira.text = carreira
 	var na_academia := texto_local != ""
 	_local.text = texto_local if na_academia else str(GameState.dados.ui.get("location_name", "")).to_upper()
-	_local.add_theme_color_override("font_color", UiTema.GR3 if na_academia else UiTema.COL_TEXT_2)
+	_local.add_theme_color_override("font_color", UiTema.GR0 if na_academia else UiTema.COL_TEXT_CLARO)
 	_reposicionar()
 
 
@@ -142,11 +148,13 @@ func _reposicionar() -> void:
 	x += UiTema.largura(t.valor.text) * 2.0 + 6.0
 	t.extra.position.x = x
 	x += UiTema.largura(t.extra.text) + FOLGA
+	_seps[0].position.x = x - FOLGA  # o vão de 10 px recebe o separador de 9
 	var m: Dictionary = _grupos[1]
 	m.icone.position.x = x
 	x += 12.0
 	m.valor.position.x = x
 	x += UiTema.largura(m.valor.text) + FOLGA
+	_seps[1].position.x = x - FOLGA + 1.0  # vão de 12 px (a carreira começa 2 px depois)
 	_carreira.position.x = x + 2.0
 	var fim := _carreira.position.x + UiTema.largura(_carreira.text)
 	if _emblema.visible:
@@ -176,6 +184,9 @@ func _reposicionar() -> void:
 		xr -= 12.0
 	# O nome do local só aparece se couber (na academia, com o ícone de 9 px + 3 de folga à esquerda do texto).
 	var na_academia := GameState.em_academia()
+	var esq := xr + 8.0  # borda esquerda do grupo da direita (Fama; o Legado fica à direita dela)
+	if quente:
+		esq = _aquecido_area.position.x
 	var largura_local := UiTema.largura_visivel(_local.text) + (12.0 if na_academia else 0.0)
 	_local.visible = fim + 8.0 < xr - largura_local
 	_local_icone.visible = _local.visible and na_academia
@@ -185,11 +196,19 @@ func _reposicionar() -> void:
 	_area_local.visible = _local.visible
 	_area_local.position = Vector2(_local_icone.position.x if na_academia else _local.position.x - 2.0, 0)
 	_area_local.size = Vector2(xr + 4.0 - _area_local.position.x + 2.0, 18)
+	if _local.visible:
+		esq = _area_local.position.x
+	var x_etiqueta := maxf(esq - 10.0, fim + 1.0)  # a diagonal tem 7 px; nunca passa por cima dos grupos da esquerda
+	_etiqueta.position = Vector2(x_etiqueta, 0)
+	_etiqueta.size = Vector2(640.0 - x_etiqueta, 18)
 	_aplicar_so_sala()
 
 
 func _aplicar_so_sala() -> void:
 	_fundo.visible = not _so_sala
+	_etiqueta.visible = not _so_sala
+	for s in _seps:
+		s.visible = not _so_sala
 	if not _so_sala:
 		for i in range(1, _grupos.size()):
 			var g0: Dictionary = _grupos[i]
@@ -218,7 +237,7 @@ func _areas_dica() -> void:
 	for i in [2, 3]:
 		var a := Control.new()
 		a.mouse_filter = Control.MOUSE_FILTER_PASS
-		UiTema.alinhar(a, "ignore")
+		UiTema.ignorar(a, "área de hover sem desenho: posição calculada em _reposicionar")
 		add_child(a)
 		var chave: String = textos[i]
 		var idx: int = i
@@ -227,7 +246,7 @@ func _areas_dica() -> void:
 		_grupos[i]["area"] = a
 	_area_local = Control.new()
 	_area_local.mouse_filter = Control.MOUSE_FILTER_PASS
-	UiTema.alinhar(_area_local, "ignore")
+	UiTema.ignorar(_area_local, "área de hover sem desenho: posição calculada em _reposicionar")
 	add_child(_area_local)
 	_area_local.mouse_entered.connect(func() -> void: Dica.pedir(texto_dica_local(), _area_local))
 	_area_local.mouse_exited.connect(func() -> void: Dica.limpar())
@@ -256,7 +275,7 @@ func _abrir_dica_nos() -> void:
 	_dica_nos = CartaoInicio.montar(self, dados, x, 20.0)
 	_dica_nos.z_index = 3500  # acima da sala (os números flutuantes chegam a ~2900)
 	_dica_nos.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	UiTema.alinhar(_dica_nos, "ignore")
+	UiTema.ignorar(_dica_nos, "cartão flutuante de dica: x vem do emblema e o texto do GameState (muda com os nós ativos)", true)
 
 
 func _fechar_dica_nos() -> void:

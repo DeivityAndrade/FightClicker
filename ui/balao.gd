@@ -181,7 +181,7 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 		_raiz.queue_free()
 	_raiz = Control.new()
 	_raiz.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_raiz.set_meta("ui_align", "ignore")  # balão: sobreposição que escreve letra a letra (o rótulo cresce com o texto visível)
+	UiTema.ignorar(_raiz, "balão: sobreposição presa a um personagem (posição calculada por Balao.calcular); o texto escreve letra a letra", true)
 	_raiz.size = Vector2(640, 360)
 	add_child(_raiz)
 	var by_data: Dictionary = UiTema.manifest().get("by_data_id", {}).get("speech_bubble", {})

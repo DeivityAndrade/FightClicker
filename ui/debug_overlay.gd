@@ -11,11 +11,12 @@ var _t := 0.0
 
 func _ready() -> void:
 	visible = false
-	position = Vector2(134, 24)
+	z_index = 3100  # ID2/B3: acima da sala (sprites z=sort_y), dos painéis e do Fluxo (3000); abaixo da faixa de aviso (3200)
+	position = Vector2(144, 24)  # x=144: não cobre o retrato do HUD (termina em 139)
 	size = Vector2(150, 150)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	UiTema.painel(self, "ui_card", Rect2(0, 0, 150, 150))
-	UiTema.rotulo(self, "DEPURAÇÃO (F12)", UiTema.Y1, 6, 4)
+	UiTema.alinhar_motivo(UiTema.rotulo(self, "DEPURAÇÃO (F12)", UiTema.Y1, 8, 4), "left", "painel de depuração: título e linhas de dados alinhados à esquerda (8 px)")
 
 	var t: Dictionary = GameState.dados.ui
 	_botao(str(t.get("debug_add_currency", "SALDO x1000")).to_upper(), 0, GameState.debug_multiplicar_saldo)
@@ -24,7 +25,8 @@ func _ready() -> void:
 	_botao(str(t.get("debug_save", "SALVAR")).to_upper(), 2, func() -> void: GameState.salvar())
 	_botao(str(t.get("debug_reload", "RECARREGAR")).to_upper(), 3, GameState.carregar_save)
 	_apagar = _botao(str(t.get("debug_wipe_save", "APAGAR SAVE")).to_upper(), 4, _pedir_apagar)
-	_info = UiTema.rotulo(self, "", UiTema.G3, 6, 98, 140)
+	_info = UiTema.rotulo(self, "", UiTema.G3, 8, 98, 134)
+	UiTema.alinhar_motivo(_info, "left", "painel de depuração: linhas de dados alinhadas à esquerda (8 px)")
 	if AppControls != null:
 		AppControls.debug_visivel_mudou.connect(_ao_mudar_visibilidade)
 		visible = AppControls.debug_visivel and GameState.debug_disponivel()

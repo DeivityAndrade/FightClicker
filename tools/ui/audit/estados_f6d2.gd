@@ -96,7 +96,7 @@ func _rodar_fase6d2() -> void:
 		await _clicar_na_sala(Vector2(150, 200))
 		au._exigir(loja3.esta_aberto(), "f6d2_clique_fecha", "clicar de novo no saco continua aberto")
 		await au._ver("f6d2_clique_fecha")
-		loja3.get_node("Alca").get_child(loja3.get_node("Alca").get_child_count() - 1).pressed.emit()  # o botão invisível da aba
+		loja3.alternar()  # o clique na área de toque da aba chama isto
 		await au._esperar(0.4)
 		au._exigir(not loja3.esta_aberto() and not loja3.get_node("Corpo").visible, "f6d2_clique_fecha", "o clique na aba/seta fecha")
 	# --- Só a sala (tecla H) ---

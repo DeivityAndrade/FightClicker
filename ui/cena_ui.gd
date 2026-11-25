@@ -32,7 +32,6 @@ func _ready() -> void:
 	position = Vector2.ZERO
 	size = TELA
 	z_index = 1900  # acima da sala e dos painéis, abaixo das janelas (2000), do balão (2400) e do botão PULAR (2450)
-	set_meta("ui_align", "ignore")
 	_montar_barras()
 	_montar_pular()
 	player = CenaPlayer.new(GameState)
@@ -62,7 +61,7 @@ func _montar_barras() -> void:
 	_barras.size = TELA
 	_barras.modulate.a = 0.0
 	_barras.visible = false
-	_barras.set_meta("ui_align", "ignore")
+	UiTema.ignorar(_barras, "faixas pretas de cinema que cobrem a tela inteira nas cenas (ColorRects de borda a borda)")
 	add_child(_barras)
 	# Tudo fora da janela da sala fica preto (6d2: só as faixas de cima e de baixo).
 	var j := Sala.area()  # a janela da cena = a sala (6d2: a tela toda, sobram as faixas de cima e de baixo)
@@ -89,6 +88,7 @@ func _montar_pular() -> void:
 	_atlas.atlas = UiTema.textura("ui_skip_ring")
 	_atlas.region = Rect2(0, 0, 11, 11)
 	_anel.texture = _atlas
+	_anel.size = Vector2(11, 11)  # o TextureRect nasceu com a folha inteira (99 px); o quadro é de 11
 	_botao.pressed.connect(func() -> void: player.pular())
 	var txt := UiTema.txt("skip_chip", "SEGURE ESC: PULAR")
 	var lw := UiTema.largura_visivel(txt)

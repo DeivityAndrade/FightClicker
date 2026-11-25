@@ -23,9 +23,11 @@ Regra: cada fase termina **jogável**, com aprovação do dono antes da próxima
 | 7a | Lutas por arte | Boxe e Jiu-jitsu lutam diferente, habilidades passivas, arena da academia | — |
 | 7b | Muay Thai | 3ª arte | — |
 | 8a | Regional | liga + arena regional, local 3, rival | Arco 4 |
-| 8b | Nacional | liga + arena nacional, local 4 | Arco 4 (fim) |
-| 9 | Topo do mundo | liga + arena mundial, segunda arte, local 5 | Arco 5 |
-| 10 | Absurdo | torneios secretos, local 6, elenco absurdo | Arco 5 (fim) |
+| ID | Identidade visual | tema C (cartaz de luta), menu de cartazes, verificador de alinhamento duro | — |
+| R2a | Gato Preto: Ronda 2a | brigas de verdade, 1º supervilão (nível regional), primeiros prêmios | lore do Gato Preto |
+| 8b | Nacional | liga + arena nacional, local 4 + capítulo Ringue da Lua do Gato Preto | Arco 4 (fim) |
+| 9 | Topo do mundo | liga + arena mundial, segunda arte, local 5 + capítulo mundial do Gato Preto | Arco 5 |
+| 10 | Absurdo | torneios secretos, local 6, elenco absurdo + capítulo final do Gato Preto (arte marcial dele) | Arco 5 (fim) |
 | 11 | Até onde chegamos | último adversário = 1º lutador, final, créditos | Arco 6 |
 | 12 | Pós-jogo | modo infinito e torre | — |
 | 13 | Polimento | offline, sons, opções, balanço, nome final | — |

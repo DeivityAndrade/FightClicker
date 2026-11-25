@@ -34,6 +34,7 @@ func _ready() -> void:
 	_anel.position = Vector2(3, 3)
 	add_child(_anel)
 	_texto = UiTema.rotulo(self, txt, UiTema.G2, 19, 3, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
+	UiTema.alinhar_motivo(_texto, "left", "dica ao lado do botão PULAR: começa depois do ícone (19 px), por isso fica à esquerda")
 	GameState.abertura_mudou.connect(_ao_estado)
 	_ao_estado(GameState.abertura_estado())
 

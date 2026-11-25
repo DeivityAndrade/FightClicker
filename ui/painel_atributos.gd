@@ -23,7 +23,7 @@ func _ready() -> void:
 	size = Vector2(LARGURA, 43.0)
 	mouse_filter = Control.MOUSE_FILTER_STOP  # a sala fica por baixo: o clique no painel não vai para ela
 	set_meta("ui_margens", "h")  # conteúdo com a mesma margem à esquerda e à direita
-	UiTema.painel(self, "ui_panel", Rect2(0, 0, LARGURA, size.y))
+	UiTema.painel(self, "c_cartao", Rect2(0, 0, LARGURA, size.y + 2.0))  # papel; os 2 px a mais são a sombra do cartão
 
 	var i := 0
 	for id in GameState.dados.atributos:
@@ -39,14 +39,14 @@ func _ready() -> void:
 		area.mouse_filter = Control.MOUSE_FILTER_PASS
 		area.position = fundo.position
 		area.size = fundo.size
-		UiTema.alinhar(area, "ignore")
+		UiTema.ignorar(area, "área de hover sem desenho, do tamanho da linha do atributo")
 		var id_linha: String = id
 		area.mouse_entered.connect(func() -> void: Dica.pedir(_texto_dica(id_linha), area))
 		area.mouse_exited.connect(func() -> void: Dica.limpar())
 		add_child(area)
 
 		UiTema.textura_rect(self, "icon_" + id, X_ICONE, y0)
-		var valor := UiTema.rotulo(self, "0", UiTema.WHITE, X_NUMERO, y0 - 1.0, LARG_NUMERO, HORIZONTAL_ALIGNMENT_RIGHT)
+		var valor := UiTema.rotulo(self, "0", UiTema.COL_TEXT_CLARO, X_NUMERO, y0 - 1.0, LARG_NUMERO, HORIZONTAL_ALIGNMENT_RIGHT)
 		UiTema.alinhar(valor, "right")
 		var bg := NinePatchRect.new()
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -100,7 +100,7 @@ func atualizar() -> void:
 		l.valor.text = NumberFormat.fmt(v, NumberFormat.TRUNCAR)
 		l.fundo.visible = id == foco_attr
 		var trancado := _trancado(id)
-		l.valor.add_theme_color_override("font_color", UiTema.COL_DISABLED if trancado else UiTema.WHITE)
+		l.valor.add_theme_color_override("font_color", UiTema.G0 if trancado else UiTema.COL_TEXT_CLARO)
 		l.bg.modulate = Color(1, 1, 1, 0.45) if trancado else Color.WHITE
 		# Barra = parte do treino total que foi para este atributo.
 		var frac := v / total if total > 0.0 else 0.0

@@ -61,7 +61,8 @@ func _ready() -> void:
 	_caixa.size = Vector2(112, 74)
 	_caixa.add_theme_constant_override("separation", 2)
 	add_child(_caixa)
-	_nome = UiTema.rotulo(_caixa, "", UiTema.WHITE, 0, 0, 112)
+	_nome = UiTema.rotulo(_caixa, "", UiTema.COL_TEXT_CLARO, 0, 0, 112)
+	UiTema.alinhar_motivo(_nome, "left", "título do bloco: texto corrido à esquerda, quebra por palavra")
 	_montar_placa()
 	# Fita da revanche: 120 px (a largura toda do bloco, 4 px de margem em cada lado do painel), vai 4 px além da caixa.
 	_marca_area = Control.new()
@@ -74,12 +75,15 @@ func _ready() -> void:
 	_marca_area.visible = false
 	_selo_area = Control.new()
 	_selo_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_selo_area.custom_minimum_size = Vector2(112, 13)
+	_selo_area.custom_minimum_size = Vector2(112, 16)  # cabe o carimbo PERIGOSO (72x16)
 	_caixa.add_child(_selo_area)
-	_verde = UiTema.rotulo(_caixa, UiTema.txt("preview_wait_green", "ESPERE FICAR VERDE"), UiTema.COL_TEXT_2, 0, 0, 112)
+	_verde = UiTema.rotulo(_caixa, UiTema.txt("preview_wait_green", "ESPERE FICAR VERDE"), UiTema.COL_TEXT_CLARO_2, 0, 0, 112)
+	UiTema.alinhar_motivo(_verde, "left", "aviso do bloco: texto corrido à esquerda")
 	_verde.visible = false
-	_premio = UiTema.rotulo(_caixa, "", UiTema.G3, 0, 0, 112)
-	_dica_ret = UiTema.rotulo(_caixa, "", UiTema.P2, 0, 0, 112)
+	_premio = UiTema.rotulo(_caixa, "", UiTema.COL_TEXT_CLARO_2, 0, 0, 112)
+	UiTema.alinhar_motivo(_premio, "left", "linha de informação do bloco: texto corrido à esquerda, quebra por palavra")
+	_dica_ret = UiTema.rotulo(_caixa, "", UiTema.COL_LEGACY_CLARO, 0, 0, 112)
+	UiTema.alinhar_motivo(_dica_ret, "left", "dica de passar o posto: texto corrido à esquerda, quebra por palavra")
 	_dica_ret.visible = false
 	# Cartão da mudança: 120 px (como a fita da revanche, 4 px além da caixa de cada lado).
 	_cartao_area = Control.new()
@@ -92,7 +96,7 @@ func _ready() -> void:
 	_area_dica = Control.new()
 	_area_dica.mouse_filter = Control.MOUSE_FILTER_PASS
 	_area_dica.size = Vector2(120, 26)
-	UiTema.alinhar(_area_dica, "ignore")
+	UiTema.ignorar(_area_dica, "área de hover sem desenho sobre o bloco: mostra o prêmio da luta na dica")
 	add_child(_area_dica)
 	_area_dica.mouse_entered.connect(func() -> void: Dica.pedir(_texto_premio(), _area_dica))
 	_area_dica.mouse_exited.connect(func() -> void: Dica.limpar())
@@ -177,11 +181,11 @@ func atualizar() -> void:
 	if placa:
 		_mostrar_placa(dias, rotulo, str(opp.name))
 	_nome.text = UiTema.txt("hud_next_fight", "PRÓXIMA: {nome}", {"nome": str(opp.name)})
-	_nome.add_theme_color_override("font_color", UiTema.WHITE)
+	_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_CLARO)
 	_marca_area.visible = revanche
 	_selo_area.visible = rotulo != ""
 	if rotulo != "":
-		_selo = UiTema.selo_risco(_selo_area, rotulo, TEXTO_X - 2.0 if placa else 0.0, 0)
+		_selo = UiTema.selo_carimbo(_selo_area, rotulo, TEXTO_X - 2.0 if placa else 0.0, 0.0)
 		if mudou_rotulo:
 			_selo.modulate = Color(2.2, 2.2, 2.2)
 			_selo.create_tween().tween_property(_selo, "modulate", Color.WHITE, 0.4)
@@ -193,7 +197,7 @@ func atualizar() -> void:
 		_premio.text = UiTema.txt("league_regional_name", "LIGA REGIONAL DO VALE").to_upper()
 		_premio.visible = true
 	_area_dica.visible = true
-	_premio.add_theme_color_override("font_color", UiTema.Y1 if _premio.visible else UiTema.G3)
+	_premio.add_theme_color_override("font_color", UiTema.COL_MONEY_CLARO if _premio.visible else UiTema.COL_TEXT_CLARO_2)
 	_dica_ret.visible = texto_dica != ""
 	_dica_ret.text = texto_dica.to_upper()
 	_medir()
@@ -327,7 +331,9 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary, completa: bool = false) 
 		_mostrar_placa_completa()
 		_premio.visible = true
 		_premio.text = UiTema.txt("no_more_fights_gym", "CAMPANHA COMPLETA. PASSAR O POSTO VALE MAIS.")
-		_premio.add_theme_color_override("font_color", UiTema.P2)
+		_premio.custom_minimum_size.x = 116.0  # ID2: "PASSAR O POSTO VALE MAIS" mede 112 px; 4 px de folga para não quebrar por um caractere
+		_premio.size.x = 116.0
+		_premio.add_theme_color_override("font_color", UiTema.COL_LEGACY_CLARO)
 		_medir()
 		return
 	if (estado == "move" or estado == "end") and str(mud.get("state", "")) in ["ready", "missing"]:
@@ -335,11 +341,11 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary, completa: bool = false) 
 		_caixa.position.x = 4.0
 		_largura_caixa(112.0)
 		_nome.text = str(mud.get("hud_next_text", "")) if str(mud.get("hud_next_text", "")) != "" else UiTema.txt("hud_next_move", "PRÓXIMA: MUDE PARA A ACADEMIA")
-		_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
+		_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_CLARO)
 		# 8a2: no centro não há luta nova: o aviso curto fica entre o título e o cartão (a academia não tem esse texto).
 		_premio.visible = str(mud.get("no_fights_text", "")) != ""
 		_premio.text = str(mud.get("no_fights_text", "")).to_upper()
-		_premio.add_theme_color_override("font_color", UiTema.COL_TEXT_2)
+		_premio.add_theme_color_override("font_color", UiTema.COL_TEXT_CLARO_2)
 		_montar_cartao_mudanca(mud)
 		_medir()
 		return
@@ -351,13 +357,13 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary, completa: bool = false) 
 	# O ícone do cinturão fica à esquerda do título (a caixa mantém os 112 px: o texto longo da academia não sai do painel).
 	var recuo := " ".repeat(int(ceil(12.0 / maxf(1.0, UiTema.largura(" ")))))
 	_nome.text = recuo + UiTema.txt("belt_title", "CINTURÃO AMADOR")
-	_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
+	_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_CLARO)
 	if estado == "end":
 		_premio.text = UiTema.txt("no_more_fights_gym", "VOCÊ VENCEU A ACADEMIA. APOSENTAR VALE MAIS.")
-		_premio.add_theme_color_override("font_color", UiTema.P2)
+		_premio.add_theme_color_override("font_color", UiTema.COL_LEGACY_CLARO)
 	else:
 		_premio.text = UiTema.txt("no_more_fights", "SEM MAIS ADVERSÁRIOS POR ENQUANTO")
-		_premio.add_theme_color_override("font_color", UiTema.G2)
+		_premio.add_theme_color_override("font_color", UiTema.COL_TEXT_CLARO_2)
 	_medir()
 
 
@@ -383,15 +389,15 @@ func _montar_cartao_mudanca(d: Dictionary) -> void:
 	_cartao = c
 	UiTema.nine_patch(c, nome_cartao, Rect2(0, 0, LARGURA_CARTAO, ALTURA_CARTAO))
 	UiTema.textura_rect(c, str(info.get("icon", "icon_move")), 6, 5)
-	UiTema.rotulo(c, str(d.title).to_upper(), UiTema.WHITE if pronto else UiTema.G3, 26, 3, 88)
+	_a_esquerda(UiTema.rotulo(c, str(d.title).to_upper(), UiTema.WHITE if pronto else UiTema.G3, 26, 3, 88))
 	# 6d2: a quebra é no "/", não no meio de "2 LUTAS DA CASA"
 	# 8a2: uma linha por trecho do efeito, de 10 em 10 px (um rotulo so com quebra de linha deixava a 2a linha em cima do FALTA do estado apagado).
 	var y_efeito := 27.0
 	for trecho in str(d.effect_text).to_upper().split(" / ", false):
-		UiTema.rotulo(c, trecho, UiTema.GR3 if pronto else UiTema.GR2, 7, y_efeito, 106)
+		_a_esquerda(UiTema.rotulo(c, trecho, UiTema.GR3 if pronto else UiTema.GR2, 7, y_efeito, 106))
 		y_efeito += 10.0
 	if not pronto:
-		UiTema.rotulo(c, UiTema.txt("move_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, float(d.get("cost", 0.0)) - GameState.dinheiro))}), UiTema.COL_TEXT_2, 7, 47, 106)
+		_a_esquerda(UiTema.rotulo(c, UiTema.txt("move_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, float(d.get("cost", 0.0)) - GameState.dinheiro))}), UiTema.COL_TEXT_2, 7, 47, 106))
 	var b := UiTema.botao_estilizado(c, Rect2(7, 59, 106, 26), "ui_button_move")
 	b.disabled = not pronto
 	_conteudo_botao_mudar(b, str(d.button).to_upper(), str(d.price_text), pronto)
@@ -399,6 +405,11 @@ func _montar_cartao_mudanca(d: Dictionary) -> void:
 		GameState.mudar()
 		atualizar())
 	UiTema.alinhar(b, "center")
+
+
+## Linha de lista do cartão da mudança: começa na margem esquerda do cartão, de propósito (título ao lado do ícone, efeitos e falta embaixo).
+func _a_esquerda(l: Label) -> void:
+	UiTema.alinhar_motivo(l, "left", "lista do cartão da mudança: linhas alinhadas à esquerda do cartão")
 
 
 ## Ícone + "MUDAR" + preço como um grupo centralizado na face do botão (o preço em dourado; apagado: texto cinza, preço vermelho).
