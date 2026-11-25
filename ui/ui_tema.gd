@@ -43,6 +43,7 @@ const B1 := Color("2f4a78")
 const GR0 := Color("1f3d33")
 const GR1 := Color("2f6b4a")
 const F0 := Color("7a2a52")
+const BR1 := Color("6b3f2a")
 
 # Fase 5.1: tokens de hierarquia (manifest.ui_tokens). Uma cor por moeda, igual em todo lugar. Preço sem saldo = COL_TEXT_2.
 const COL_TREINO := GR3
@@ -65,6 +66,52 @@ const COL_MONEY_CLARO := Color("6b3f2a")  # br1
 const COL_FAME_CLARO := F0
 const COL_LEGACY_CLARO := P0
 const COL_DESTAQUE_CLARO := R1
+
+## ID3: a cor de texto sobre papel claro (janelas do tema C). O código das janelas continua pedindo a cor "de fundo escuro"
+## (WHITE, Y1, P2...) e o `rotulo` troca pelo par escuro quando o rótulo está dentro de uma JanelaBase (e fora de botão e de
+## caixa escura). Segundo jogo de cores do spec: ink, g0, gr0, br1, f0, p0, r1.
+static func cor_claro(c: Color) -> Color:
+	match c.to_html(false):
+		"f2ece0", "d9cdb4":
+			return INK
+		"b8b0aa", "8f8890", "7f8c9a", "a9b4bf", "6b6570":  # g1 (apagado) sobre papel só lê com g0
+			return G0
+		"f5d26b", "fff3c4", "e0a040", "c98a4b", "9a5f36":
+			return BR1
+		"b07ad8", "7a4fa0":
+			return P0
+		"a6d86a", "5aa25a":
+			return GR0
+		"f59ac0":
+			return F0
+		"d4473a", "f07a5a":
+			return R1
+		"8fbbe0", "4d7bb3":
+			return B1
+	return c
+
+
+## O nó está sobre papel claro? Dentro de uma JanelaBase, fora de Button e fora de nó marcado `ui_fundo_escuro`.
+static func em_papel(no: Node) -> bool:
+	var n := no
+	while n != null:
+		if n is BaseButton or n.has_meta("ui_fundo_escuro"):
+			return false
+		if n is NinePatchRect and (n as NinePatchRect).texture != null and not (n as NinePatchRect).texture.resource_path.contains("/tema_c/"):
+			return false  # moldura de sprite antigo (escuro) que ainda não foi vestida: o texto dentro segue como estava
+		if n is JanelaBase:
+			return (n as JanelaBase).texto_em_papel
+		n = n.get_parent()
+	return false
+
+
+## Pinta o texto de um Label já criado; sobre papel claro troca pelo par escuro (e tira a sombra ink, que engorda letra escura).
+static func pintar(l: Label, cor: Color) -> void:
+	if em_papel(l):
+		cor = cor_claro(cor)
+		l.remove_theme_color_override("font_shadow_color")
+	l.add_theme_color_override("font_color", cor)
+
 
 static var _manifest: Dictionary = {}
 static var _fonte: Font
@@ -183,6 +230,9 @@ static func rotulo(pai: Node, texto: String, cor: Color, x: float, y: float, lar
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	l.add_theme_font_override("font", fonte_contorno() if contorno else fonte())
 	l.add_theme_font_size_override("font_size", TAMANHO_FONTE)
+	if not contorno and em_papel(pai):
+		cor = cor_claro(cor)
+		sombra = false
 	l.add_theme_color_override("font_color", cor)
 	if sombra and not contorno and (cor.get_luminance() >= 0.075 or cor == R1):  # texto escuro (ink, g0...) com sombra ink engorda a letra
 		l.add_theme_color_override("font_shadow_color", INK)
@@ -421,6 +471,23 @@ static func ignorar(no: Node, motivo: String, dinamico: bool = false) -> void:
 		no.set_meta("ui_texto_dinamico", true)
 
 
+## Texto colado à borda direita `x_borda` (a última letra termina nela): alinhamento RIGHT de verdade (o verificador exige
+## `horizontal_alignment` RIGHT quando o nó declara `right`) e declara `right` com o motivo. Texto fixo: se mudar, chame de novo.
+static func fixar_direita(l: Label, x_borda: float, motivo: String) -> void:
+	var w := largura(l.text)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	l.autowrap_mode = TextServer.AUTOWRAP_OFF
+	l.size = Vector2(w, l.size.y)
+	l.position.x = roundf(x_borda - (w - 1.0))
+	alinhar_motivo(l, "right", motivo)
+
+
+## Fileira de botões de tamanhos diferentes de propósito (o verificador não cobra larguras iguais). O motivo é obrigatório.
+static func fileira_livre(pai: Node, motivo: String) -> void:
+	pai.set_meta("ui_align_row", "free")
+	pai.set_meta("ui_align_motivo", motivo)
+
+
 ## Ponto ÚNICO para desenhar texto por código (draw_string só pode existir aqui; um teste por busca confere).
 ## Escreve `texto` centralizado em `area` (coordenadas locais de `item`, que deve estar dentro de _draw())
 ## e registra {rect, texto} na meta "ui_texto_desenhado" do item para o verificador medir o centro.
@@ -554,13 +621,15 @@ static func selo_carimbo(pai: Node, rotulo_risco: String, x: float, y: float) ->
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	c.position = Vector2(x, y)
 	pai.add_child(c)
-	if rotulo_risco == "hard":
-		c.size = Vector2(72, 16)
-		textura_rect(c, "c_carimbo_perigoso", 0, 0)
-		return c
 	var texto := nome_risco(rotulo_risco)
-	# ID2/B2: moldura de 16 px (como o PERIGOSO): miolo de 8 px de altura para letras de 7 px, traço fora das letras;
-	# 4 de moldura + 3 de folga de cada lado. Texto R1 (escuro) para ler sobre o creme do carimbo.
+	var palavra: String = {"easy": "FÁCIL", "even": "EQUILIBRADO", "hard": "PERIGOSO"}.get(rotulo_risco, "")
+	var pronto: String = {"easy": "c_selo_risco_facil", "even": "c_selo_risco_equilibrado", "hard": "c_selo_risco_perigoso"}.get(rotulo_risco, "")
+	if pronto != "" and texto == palavra and not sprite(pronto).is_empty():
+		# A palavra já vem desenhada no carimbo (fixo): PERIGOSO 68x16, EQUILIBRADO 84x16, FÁCIL 50x16.
+		c.size = tamanho_quadro(pronto)
+		textura_rect(c, pronto, 0, 0)
+		return c
+	# Texto do Roteirista diferente da palavra desenhada: carimbo 9-slice com a palavra por cima (miolo de 8 px para letras de 7).
 	var w := roundf(largura_visivel(texto)) + 14.0
 	if int(w) % 2 != 0:
 		w += 1.0

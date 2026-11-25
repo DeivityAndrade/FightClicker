@@ -38,7 +38,7 @@ func abrir_com(do_fim: bool = false) -> void:
 	add_child(sfx)
 	moldura("ui_window", JANELA)
 	faixa_titulo("neutral", Rect2(BORDA_E, 14, BORDA_D - BORDA_E, 22), UiTema.txt("mural_title", "MURAL DA ESCOLA"), UiTema.WHITE, 2)
-	var x := UiTema.botao_estilizado(painel, Rect2(592, 17, 16, 16), "ui_map_close")
+	var x := UiTema.botao_estilizado(painel, Rect2(592, 17, 16, 16), "c_mapa_fechar")
 	x.name = "Fechar"
 	x.pressed.connect(func() -> void: fechar_pedido.emit())
 	_conteudo = Control.new()
@@ -88,12 +88,12 @@ func _montar() -> void:
 func _cabecalho() -> void:
 	var saldo := UiTema.txt("mural_honor_balance", "HONRA: {n}", {"n": NumberFormat.fmt(float(_dados.honor))})
 	UiTema.textura_rect(_conteudo, "icon_honor", BORDA_E + 2.0, 43)
-	UiTema.rotulo(_conteudo, saldo, UiTema.COL_HONOR, BORDA_E + 14.0, 43)
+	UiTema.alinhar_motivo(UiTema.rotulo(_conteudo, saldo, UiTema.COL_HONOR, BORDA_E + 14.0, 43), "left", "saldo de Honra à esquerda do cabeçalho, ao lado do ícone")
 	var linha := str(_dados.bonus_line).to_upper()
 	var bonus := UiTema.rotulo(_conteudo, linha, UiTema.GR3 if int(_dados.bonus_pct) > 0 else UiTema.G2, 0, 43)
-	bonus.position.x = roundf(BORDA_D - UiTema.largura_visivel(linha))
+	UiTema.fixar_direita(bonus, BORDA_D, "bônus dos selos colado à borda direita do cabeçalho")
 	divisor(BORDA_E, 57, BORDA_D - BORDA_E)
-	fundo_cor(Rect2(434, 62, 1, 282), UiTema.D2)
+	fundo_cor(Rect2(434, 62, 1, 282), UiTema.G3)
 	if _paginas() > 1:
 		_paginador()
 
@@ -102,17 +102,24 @@ func _cabecalho() -> void:
 func _paginador() -> void:
 	var texto := "%d/%d" % [_pagina + 1, _paginas()]
 	var ant := UiTema.botao(_conteudo, Rect2(504, 16, 18, 18))
-	var glifo_a := UiTema.botao_conteudo(ant, "<", UiTema.G1 if _pagina <= 0 else UiTema.WHITE)  # desligada: o glifo apaga junto
+	var glifo_a := UiTema.botao_conteudo(ant, "<", UiTema.G2 if _pagina <= 0 else UiTema.CREAM)  # desligada: o glifo apaga junto
 	ant.name = "PaginaAnterior"
 	ant.disabled = _pagina <= 0
 	ant.pressed.connect(func() -> void: _ir_para(_pagina - 1))
 	var prox := UiTema.botao(_conteudo, Rect2(562, 16, 18, 18))
-	var glifo_p := UiTema.botao_conteudo(prox, ">", UiTema.G1 if _pagina >= _paginas() - 1 else UiTema.WHITE)
+	var glifo_p := UiTema.botao_conteudo(prox, ">", UiTema.G2 if _pagina >= _paginas() - 1 else UiTema.CREAM)
 	prox.name = "PaginaSeguinte"
 	prox.disabled = _pagina >= _paginas() - 1
 	prox.pressed.connect(func() -> void: _ir_para(_pagina + 1))
-	var pag := UiTema.rotulo_centrado(_conteudo, Rect2(522, 16, 40, 18), texto, UiTema.G3)
-	UiTema.alinhar(pag, "ignore")  # centrado entre os dois botões (522..562), não no pai
+	# O número da página fica sobre o vermelho do título (fundo escuro) e centrado entre os dois botões (522..562):
+	# um Control desse tamanho faz de pai.
+	var entre := Control.new()
+	entre.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	entre.position = Vector2(522, 16)
+	entre.size = Vector2(40, 18)
+	entre.set_meta("ui_fundo_escuro", true)
+	_conteudo.add_child(entre)
+	UiTema.rotulo_centrado(entre, Rect2(Vector2.ZERO, entre.size), texto, UiTema.CREAM)
 
 
 # --- Grade de retratos ---
@@ -123,9 +130,14 @@ func _grade() -> void:
 	var itens: Array = _dados.entries
 	if itens.is_empty():
 		# Carreira 1 (o John ainda joga): ninguém passou o posto. Chave pedida ao produtor: mural_empty.
-		var vazio := UiTema.rotulo_centrado(_conteudo, Rect2(GRADE_X, TOPO_GRADE + 60.0, CELULA_W * 5.0, 12), UiTema.txt("mural_empty", "AINDA NINGUÉM PASSOU O POSTO"), UiTema.G2)
+		# Centrado na área da grade (30..430), não na janela: um Control dessa área faz de pai.
+		var area_vazia := Control.new()
+		area_vazia.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		area_vazia.position = Vector2(GRADE_X, TOPO_GRADE + 60.0)
+		area_vazia.size = Vector2(CELULA_W * 5.0, 12)
+		_conteudo.add_child(area_vazia)
+		var vazio := UiTema.rotulo_centrado(area_vazia, Rect2(Vector2.ZERO, area_vazia.size), UiTema.txt("mural_empty", "AINDA NINGUÉM PASSOU O POSTO"), UiTema.G2)
 		vazio.name = "MuralVazio"
-		UiTema.alinhar(vazio, "ignore")  # centrado na área da grade (30..430), não na janela
 		return
 	for k in por_pagina:
 		var i := _pagina * por_pagina + k
@@ -144,8 +156,8 @@ func _cartao(e: Dictionary, x: float, y: float, primeiro: bool) -> void:
 	_conteudo.add_child(card)
 	var fx := floorf((CELULA_W - QUADRO_W) / 2.0)
 	# A moldura é a mãe: fundo e busto ficam DENTRO do furo dela (3,3), não sobre ela.
-	var moldura_t := UiTema.textura_rect(card, "ui_mural_portrait_frame_first" if primeiro else "ui_mural_portrait_frame", fx, 0)
-	UiTema.textura_rect(moldura_t, "ui_mural_portrait_bg", 3, 3)
+	var moldura_t := UiTema.textura_rect(card, "c_mural_moldura_primeiro" if primeiro else "c_mural_moldura", fx, 0)
+	UiTema.textura_rect(moldura_t, "c_mural_fundo", 3, 3)
 	var busto := TextureRect.new()
 	busto.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	busto.texture = _busto(e)
@@ -154,12 +166,12 @@ func _cartao(e: Dictionary, x: float, y: float, primeiro: bool) -> void:
 	busto.stretch_mode = TextureRect.STRETCH_SCALE
 	busto.position = Vector2(3, 3)
 	busto.size = Vector2(56, 60)  # o busto 28x30 em 2x
-	UiTema.alinhar(busto, "ignore")  # imagem dentro do furo da moldura
+	UiTema.ignorar(busto, "o busto fica empilhado de propósito sobre o fundo c_mural_fundo dentro do furo da moldura (3,3)")
 	moldura_t.add_child(busto)
 	if bool(e.sealed):
 		var selo := UiTema.textura_rect(card, "ui_mural_seal", fx + 48.0, 48)
 		selo.name = "Selo"
-		UiTema.alinhar(selo, "ignore")  # o selo sai da moldura de propósito (embaixo à direita)
+		UiTema.ignorar(selo, "o selo sai da moldura de propósito, no canto de baixo à direita do retrato")
 	for i in linhas.size():
 		var l: Dictionary = linhas[i]
 		var yy := TEXTO_Y + LINHA_H * float(i)
@@ -246,7 +258,7 @@ func _quebrar(texto: String, largura_max: float) -> Array:
 # --- Hall ---
 
 func _hall() -> void:
-	UiTema.rotulo(_conteudo, UiTema.txt("hall_title", "O QUE FICOU NA PAREDE"), UiTema.WHITE, HALL_X, 62)
+	UiTema.alinhar_motivo(UiTema.rotulo(_conteudo, UiTema.txt("hall_title", "O QUE FICOU NA PAREDE"), UiTema.WHITE, HALL_X, 62), "left", "título da lista do hall, na coluna da esquerda da lista")
 	var lista: Array = GameState.hall_lista()
 	var fechado := false
 	for n in lista:
@@ -265,22 +277,24 @@ func _no(n: Dictionary, y: float) -> void:
 	linha.name = "No_" + str(n.id)
 	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	linha.position = Vector2(HALL_X, y)
-	linha.size = Vector2(HALL_LARG, 41)
+	linha.size = Vector2(HALL_LARG, 42)
 	_conteudo.add_child(linha)
 	var icone := "icon_hall_" + str(n.id).trim_prefix("hall_")
 	UiTema.textura_rect(linha, icone if aceso else icone + "_gray", 0, 0)
 	# Nome e descrição pelas chaves do Roteirista (hall_box_name / hall_box_desc); o GameState ainda devolve os provisórios do hall.json.
 	var nome_no := UiTema.txt(str(n.id) + "_name", str(n.name))
-	UiTema.rotulo(linha, nome_no, UiTema.Y2 if estado == "buyable" else (UiTema.WHITE if aceso else UiTema.G2), 20, 1)
+	var ln := UiTema.rotulo(linha, nome_no, UiTema.Y2 if estado == "buyable" else (UiTema.WHITE if aceso else UiTema.G2), 20, 1)
+	UiTema.alinhar_motivo(ln, "left", "lista do hall: nome e descrição à esquerda, ao lado do ícone do nó")
 	if estado != "owned":
 		var custo := NumberFormat.fmt(float(n.cost))
 		var larg := UiTema.largura_visivel(custo)
 		var rc := UiTema.rotulo(linha, custo, UiTema.COL_HONOR if aceso else UiTema.G1, 0, 1)
-		rc.position.x = roundf(HALL_LARG - larg)
+		UiTema.fixar_direita(rc, HALL_LARG, "preço colado à borda direita da linha do hall")
 		UiTema.textura_rect(linha, "icon_honor", roundf(HALL_LARG - larg - 12.0), 1)
 	var desc: Array = _quebrar(UiTema.txt(str(n.id) + "_desc", str(n.effect_text)), HALL_LARG - 20.0)
 	for k in mini(2, desc.size()):
-		UiTema.rotulo(linha, str(desc[k]), UiTema.G3 if aceso else UiTema.G1, 20, 11 + 9 * k)
+		var ld := UiTema.rotulo(linha, str(desc[k]), UiTema.G3 if aceso else UiTema.G1, 20, 11 + 9 * k)
+		UiTema.alinhar_motivo(ld, "left", "lista do hall: nome e descrição à esquerda, ao lado do ícone do nó")
 	var texto := ""
 	var cor := UiTema.G1
 	match estado:
@@ -305,25 +319,24 @@ func _no(n: Dictionary, y: float) -> void:
 	area.name = "Hover"
 	area.mouse_filter = Control.MOUSE_FILTER_PASS
 	area.size = linha.size
-	UiTema.alinhar(area, "ignore")
+	UiTema.ignorar(area, "área de hover sem desenho, do tamanho da linha do hall")
 	linha.add_child(area)
 	_ligar_balao(area, linhas_dica, linha)
 	var w := roundf(UiTema.largura_visivel(texto)) + 12.0
-	var rect := Rect2(20, 30, w, 11)
+	var rect := Rect2(20, 29, w, 13)
 	if estado == "buyable":
-		var b := UiTema.botao(linha, rect, "ui_honor_chip")
-		for e in ["normal", "hover", "pressed", "disabled"]:
-			b.add_theme_stylebox_override(e, UiTema.estilo("ui_honor_chip"))
+		var b := UiTema.botao(linha, rect, "c_btn_foco")  # comprável: o botão vermelho de foco
 		b.mouse_entered.connect(func() -> void: b.modulate = Color(1.3, 1.3, 1.3))
 		b.mouse_exited.connect(func() -> void: b.modulate = Color.WHITE)
-		UiTema.botao_conteudo(b, texto, cor)
+		UiTema.botao_conteudo(b, texto, UiTema.CREAM)
 		b.name = "Comprar"
 		_ligar_balao(b, linhas_dica, linha)  # o botão fica por cima da área: também mostra o balão
 		var id := str(n.id)
 		b.pressed.connect(func() -> void: _comprar(id))
 	else:
-		var chip := UiTema.nine_patch(linha, "ui_honor_chip", rect)
-		UiTema.rotulo_centrado(chip, UiTema.area_nove("ui_honor_chip", rect.size), texto, cor)
+		var chip := UiTema.nine_patch(linha, "c_chip", rect)
+		chip.set_meta("ui_fundo_escuro", true)
+		UiTema.rotulo_centrado(chip, UiTema.area_nove("c_chip", rect.size), texto, cor if estado != "closed" else UiTema.G3)
 
 
 func _ligar_balao(c: Control, linhas: Array, alvo: Control) -> void:

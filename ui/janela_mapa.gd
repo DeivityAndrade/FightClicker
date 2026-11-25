@@ -72,6 +72,11 @@ var _tw_neblina: Tween
 var _fx_ativos := 0
 
 
+func _init() -> void:
+	super()
+	texto_em_papel = false  # o mapa é escuro; só o cartão do nó e as abas são papel (cores escolhidas em cada texto)
+
+
 func abrir_com() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
@@ -94,7 +99,7 @@ func abrir_com() -> void:
 # --- Peças fixas: moldura, barra do topo, Legado, X, janela do mapa ---
 
 func _montar_fixo() -> void:
-	var m := UiTema.nine_patch(painel, "ui_map_frame", Rect2(0, 0, 640, 360))
+	var m := UiTema.nine_patch(painel, "c_mapa_moldura", Rect2(0, 0, 640, 360))
 	m.set_meta("ui_pos", "center_h")
 	# Janela do mapa (recorta o mundo). Atrás do mundo, tinta: fora do mundo nunca aparece buraco.
 	_janela = Control.new()
@@ -113,21 +118,21 @@ func _montar_fixo() -> void:
 	_janela.add_child(fundo)
 	_mundo = Control.new()
 	_mundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	UiTema.alinhar(_mundo, "ignore")  # nós em posição livre: conferidos por diagnostico()
+	UiTema.ignorar(_mundo, "o mundo do mapa: nós, linhas, neblina e plaquinhas em posição livre, arrastados pela câmera; o que está dentro é conferido por diagnostico() (preços e plaquinhas são texto que muda, marcados ui_texto_dinamico)")
 	_janela.add_child(_mundo)
 	var borda := UiTema.nine_patch(painel, "ui_map_viewport_edge", Rect2(4, 25, 632, 331))
 	borda.set_meta("ui_pos", "center_h")
 
-	var barra := UiTema.nine_patch(painel, "ui_map_topbar", Rect2(5, 5, 630, 20))
+	var barra := UiTema.nine_patch(painel, "c_mapa_topo", Rect2(5, 5, 630, 20))
 	barra.set_meta("ui_pos", "center_h")
 	UiTema.textura_rect(painel, "icon_skill_map", 9, 7)
 	var titulo := UiTema.rotulo(painel, UiTema.txt("tree_title", "O QUE O VELHO TE ENSINOU"), UiTema.COL_TEXT_1, 29, 11)
 	UiTema.alinhar(titulo, "left")
 	_legado_icone = UiTema.textura_rect(painel, "icon_legacy_16", 0, 7)
-	_legado_rotulo = UiTema.rotulo(painel, "", UiTema.COL_LEGACY, 0, 8)
+	_legado_rotulo = UiTema.rotulo(painel, "", UiTema.COL_LEGACY, 0, 4)  # 4: a letra 2x (14 px) fica no meio da barra (6..23)
 	_legado_rotulo.scale = Vector2(2, 2)
 	_mostrar_legado(_legado_mostrado)
-	var x := UiTema.botao_estilizado(painel, Rect2(616, 7, 16, 16), "ui_map_close")
+	var x := UiTema.botao_estilizado(painel, Rect2(616, 7, 16, 16), "c_mapa_fechar")
 	x.name = "Fechar"
 	x.pressed.connect(func() -> void: fechar_pedido.emit())
 
@@ -621,9 +626,11 @@ func _montar_etiqueta(it: Dictionary, meia_altura: float) -> Control:
 	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tag.size = Vector2(w, 11)
 	tag.position = Vector2(-floorf(w / 2.0), meia_altura + 1.0)
-	UiTema.nine_patch(tag, "ui_map_price_ok" if ok else "ui_map_price_missing", Rect2(0, 0, w, 11))
+	tag.set_meta("ui_texto_dinamico", true)  # o preço e o estado (ok / falta) mudam com o Legado; a etiqueta é refeita
+	UiTema.nine_patch(tag, "c_mapa_preco_ok" if ok else "c_mapa_preco_falta", Rect2(0, 0, w, 11))
 	UiTema.textura_rect(tag, "icon_legacy", 2, 1)
-	UiTema.rotulo(tag, texto, UiTema.COL_LEGACY if ok else UiTema.COL_TEXT_2, 12, 0)
+	var lp := UiTema.rotulo(tag, texto, UiTema.P0 if ok else UiTema.G3, 12, 0)  # p0 sobre o papel (ok); g3 sobre o d2 (falta)
+	UiTema.alinhar_motivo(lp, "left", "preço ao lado do ícone do Legado, na etiqueta do nó")
 	return tag
 
 
@@ -665,9 +672,11 @@ func _desenhar_placas() -> void:
 		placa.size = escolhido.size
 		placa.name = "Placa_" + rid
 		_camada_placas.add_child(placa)
-		UiTema.nine_patch(placa, "ui_map_region_label_" + rid, Rect2(0, 0, w, 13))
+		placa.set_meta("ui_texto_dinamico", true)  # o nome da região vem do Roteirista e a plaquinha nasce quando a região é revelada
+		UiTema.nine_patch(placa, "c_mapa_aba_" + rid, Rect2(0, 0, w, 13))
 		UiTema.textura_rect(placa, "icon_region_%s_9" % rid, 5, 2)
-		UiTema.rotulo(placa, nome, UiTema.COL_TEXT_1, 17, 1)
+		var ln := UiTema.rotulo(placa, nome, UiTema.INK, 17, 1, 0.0, HORIZONTAL_ALIGNMENT_LEFT, false)
+		UiTema.alinhar_motivo(ln, "left", "nome da região ao lado do ícone, na aba")
 		_placas.append({"id": rid, "rect": escolhido})
 
 
@@ -890,6 +899,7 @@ func mostrar_cartao(id: String) -> void:
 		altura += 13.0 + 2.0
 	else:
 		altura += 1.0
+	altura += 2.0  # a sombra do c_mapa_ficha
 	var c := Control.new()
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	c.z_index = 10
@@ -908,35 +918,37 @@ func mostrar_cartao(id: String) -> void:
 	painel.add_child(c)
 	_cartao = c
 	_cartao_id = id
-	UiTema.nine_patch(c, "ui_map_card", Rect2(0, 0, CARTAO_L, altura))
+	UiTema.nine_patch(c, "c_mapa_ficha", Rect2(0, 0, CARTAO_L, altura))
 	var yy := 5.0
 	for l in linhas:
-		var r := UiTema.rotulo(c, str(l.texto), l.cor, 7, yy - 1.0, larg_txt)
+		# Cartão de papel: nome ink, efeito g0, preço p0 (as cores "de escuro" viram o par escuro).
+		var r := UiTema.rotulo(c, str(l.texto), UiTema.cor_claro(l.cor), 7, yy - 1.0, larg_txt, HORIZONTAL_ALIGNMENT_LEFT, false)
+		UiTema.alinhar_motivo(r, "left", "texto do cartão do nó, alinhado à esquerda em várias linhas")
 		r.size.y = 9.0 * float(l.n)
 		yy += 9.0 * float(l.n) + 3.0
 	# Preço (ou APRENDIDO) com o ícone do Legado.
 	if lacrado:
 		pass
 	elif estado == "owned":
-		UiTema.rotulo(c, UiTema.txt("tree_owned", "APRENDIDO"), UiTema.GR3, 7, y_preco - 1.0)
+		UiTema.alinhar_motivo(UiTema.rotulo(c, UiTema.txt("tree_owned", "APRENDIDO"), UiTema.GR0, 7, y_preco - 1.0, 0.0, HORIZONTAL_ALIGNMENT_LEFT, false), "left", "preço/estado do nó, à esquerda no cartão")
 	else:
 		UiTema.textura_rect(c, "icon_legacy", 7, y_preco)
 		var ok := bool(it.affordable)
 		var texto := NumberFormat.fmt(float(it.cost))
 		if not ok:
 			texto += "  " + UiTema.txt("tree_missing", "FALTAM {n}", {"n": NumberFormat.fmt(float(it.missing))})
-		UiTema.rotulo(c, texto, UiTema.COL_LEGACY if ok else UiTema.COL_TEXT_2, 19, y_preco - 1.0)
+		UiTema.alinhar_motivo(UiTema.rotulo(c, texto, UiTema.P0 if ok else UiTema.G0, 19, y_preco - 1.0, 0.0, HORIZONTAL_ALIGNMENT_LEFT, false), "left", "preço/estado do nó, à esquerda no cartão ao lado do ícone")
 	if com_faixa:
 		var faixa_tam := Vector2(CARTAO_L - 4.0, 13.0)
-		var faixa := UiTema.nine_patch(c, "ui_map_card_next", Rect2(Vector2(2, y_faixa), faixa_tam))
+		var faixa := UiTema.nine_patch(c, "c_mapa_ficha_proxima", Rect2(Vector2(2, y_faixa), faixa_tam))
 		faixa.name = "FaixaProxima"
-		var area := UiTema.area_nove("ui_map_card_next", faixa_tam)
+		var area := UiTema.area_nove("c_mapa_ficha_proxima", faixa_tam)
 		var texto_faixa := UiTema.txt("map_next_campaign", "VALE NA PRÓXIMA CAMPANHA")
 		var ic := UiTema.tamanho_quadro("icon_calendar")
 		var grupo := ic.x + 3.0 + UiTema.largura_visivel(texto_faixa)
 		var gx := roundf(area.position.x + (area.size.x - grupo) / 2.0)
 		UiTema.textura_rect(faixa, "icon_calendar", gx, UiTema.y_imagem(area, ic.y))
-		UiTema.rotulo(faixa, texto_faixa, UiTema.COL_TEXT_1, gx + ic.x + 3.0, UiTema.y_texto(area))
+		UiTema.alinhar_motivo(UiTema.rotulo(faixa, texto_faixa, UiTema.CREAM, gx + ic.x + 3.0, UiTema.y_texto(area)), "left", "o grupo ícone + texto é que está centralizado na faixa; o texto começa depois do ícone")
 
 
 func _esconder_cartao() -> void:
@@ -1030,7 +1042,7 @@ func _contar_legado(alvo: int) -> void:
 	if gasto > 0:
 		var flut := UiTema.rotulo(painel, "-%s" % NumberFormat.fmt(float(gasto)), UiTema.COL_LEGACY, _legado_rotulo.position.x, 26.0, 0,
 			HORIZONTAL_ALIGNMENT_LEFT, true)
-		UiTema.alinhar(flut, "ignore")
+		UiTema.ignorar(flut, "número flutuante do gasto de Legado: sobe e some; o texto muda a cada compra", true)
 		var tw := create_tween().set_parallel(true)
 		tw.tween_property(flut, "position:y", 36.0, 0.6)
 		tw.tween_property(flut, "modulate:a", 0.0, 0.6)

@@ -81,11 +81,11 @@ func _montar(linhas: PackedStringArray, _w: float, h: float, ponta: Vector2, com
 	_raiz.size = Vector2(640, 360)
 	add_child(_raiz)
 	var by_data: Dictionary = UiTema.manifest().get("by_data_id", {}).get("speech_bubble", {})
-	UiTema.nine_patch(_raiz, "ui_balloon", corpo)
+	UiTema.nine_patch(_raiz, "c_balao", corpo)
 	# Rabicho: central, ou à esquerda/direita quando a ponta fica perto da borda (a mesma regra do balão de fala).
 	var perto_e := ponta.x - corpo.position.x < 14.0
 	var perto_d := corpo.end.x - ponta.x < 15.0
-	var nome_t := str(by_data.get("tail_l", "ui_balloon_tail_l")) if perto_e else (str(by_data.get("tail_r", "ui_balloon_tail_r")) if perto_d else str(by_data.get("tail", "ui_balloon_tail")))
+	var nome_t := "c_balao_rabicho_e" if perto_e else ("c_balao_rabicho_d" if perto_d else "c_balao_rabicho")  # tema C: mesma ponta (0,5) / (6,5) / (3,5)
 	var off: Array = by_data.get("tail_rule", {}).get("tip_offset", {}).get("l" if perto_e else ("r" if perto_d else "c"), [3, 5])
 	UiTema.textura_rect(_raiz, nome_t, ponta.x - float(off[0]), corpo.position.y + h - 2.0)
 	var topo_texto := 4.0 if com_botao else 3.0
@@ -96,9 +96,9 @@ func _montar(linhas: PackedStringArray, _w: float, h: float, ponta: Vector2, com
 	var p: Dictionary = GameState.dialogos.personagem("coach")
 	var cor_nome := str(by_data.get("tag_by_speaker", {}).get("coach", "gold"))
 	var nome := str(p.get("short", "osmar"))
-	var tw := float(nome.length() * AVANCO + 6)
-	var tag := UiTema.nine_patch(_raiz, str(by_data.get("tag_by_color", {}).get(cor_nome, "ui_balloon_tag_gold")),
-		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 10.0))
+	var tw := UiTema.largura_visivel(nome) + 7.0  # tema C: largura da placa = largura visível do nome + 7 (folga 2/2)
+	var tag := UiTema.nine_patch(_raiz, "c_balao_placa_" + cor_nome,
+		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 11.0))  # 11: o verificador mede o texto com 7 px de altura (a placa tem 6 de miolo)
 	var cor_txt := UiTema.WHITE if str(by_data.get("tag_text_color", {}).get(cor_nome, "ink")) == "white" else UiTema.INK
 	var rotulo_nome := UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 	UiTema.alinhar_motivo(rotulo_nome, "left", "plaquinha do nome: 3 px de margem à esquerda; a ponta da peça ocupa o lado direito")

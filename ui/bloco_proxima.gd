@@ -16,9 +16,9 @@ extends Control
 
 signal altura_mudou(altura: int)  # quanto o bloco ocupa (a caixa de informação do painel desce junto)
 
-const ALTURA_CARTAO := 88.0  # 6d2: sem as duas linhas de garantia (move_keeps / move_per_career)
+const ALTURA_CARTAO := 92.0  # 88 + 2 da sombra do c_mudanca + 2 de ar acima do botão MUDAR  # 6d2: sem as duas linhas de garantia (move_keeps / move_per_career)
 const LARGURA_CARTAO := 120.0
-const PLACA := Vector2(116, 26)  # placa 9-slice do calendário (by_data_id.campaign_calendar.hud.plate_rect)
+const PLACA := Vector2(116, 28)  # placa 9-slice do calendário no tema C (c_contagem_*): face 26 + sombra 2
 const TEXTO_X := 28.0  # x do texto dentro da placa (text_x 35 - plate x 7)
 const LARGURA_NOME := 85.0  # 116 - 28 - 3: o nome do adversário na linha 2 (abrevia se passar)
 
@@ -193,13 +193,19 @@ func atualizar() -> void:
 	# Fase 5.1: o prêmio saiu do bloco (nível 3); ele aparece na dica do bloco e inteiro na prévia.
 	_premio.visible = false
 	# 8a1: na liga regional (depois do Kid) a 2ª informação é só o nome da liga (a data já está na placa: sem repetir o número).
+	_premio.size_flags_horizontal = Control.SIZE_FILL
 	if dias >= 0 and str(opp.get("league", "")) != "":
 		_premio.text = UiTema.txt("league_regional_name", "LIGA REGIONAL DO VALE").to_upper()
 		_premio.visible = true
+		_premio.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN  # a caixa tem 116 px; o rótulo fica com os 104 dele
+		_premio.custom_minimum_size.x = 104.0  # o nome mede 116 px: quebra em 2 linhas (LIGA REGIONAL / DO VALE) em vez de encostar na borda
+		_premio.size.x = 104.0
 	_area_dica.visible = true
 	_premio.add_theme_color_override("font_color", UiTema.COL_MONEY_CLARO if _premio.visible else UiTema.COL_TEXT_CLARO_2)
 	_dica_ret.visible = texto_dica != ""
 	_dica_ret.text = texto_dica.to_upper()
+	_dica_ret.custom_minimum_size.x = 116.0  # 4 px de folga: "PASSAR O POSTO LEVA ..." mede 112 px e quebraria por um caractere
+	_dica_ret.size.x = 116.0
 	_medir()
 
 
@@ -211,7 +217,7 @@ func _montar_placa() -> void:
 	_placa_area.visible = false
 	_caixa.add_child(_placa_area)
 	# A placa tem 116 px: 2 px além da caixa de cada lado (margem 6 | 6 no painel de 128).
-	_placa = UiTema.nine_patch(_placa_area, "ui_countdown_plate_even", Rect2(-2, 0, PLACA.x, PLACA.y))
+	_placa = UiTema.nine_patch(_placa_area, "c_contagem_even", Rect2(-2, 0, PLACA.x, PLACA.y))
 	_pagina = Control.new()
 	_pagina.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_pagina.size = Vector2(20, 22)
@@ -244,9 +250,7 @@ func _ordenar(placa: bool) -> void:
 func _mostrar_placa(dias: int, rotulo: String, nome: String) -> void:
 	var hud: Dictionary = UiTema.manifest().get("by_data_id", {}).get("campaign_calendar", {}).get("hud", {})
 	var hoje := dias <= 0
-	var por_risco: Dictionary = hud.get("plate_by_risk", {})
-	var placa_nome := str(hud.get("plate_fight_day", "ui_countdown_plate_today")) if hoje \
-		else str(por_risco.get("risk_" + rotulo, "ui_countdown_plate_even"))
+	var placa_nome: String = "c_contagem_today" if hoje else {"easy": "c_contagem_easy", "even": "c_contagem_even", "hard": "c_contagem_hard"}.get(rotulo, "c_contagem_even")
 	_placa.texture = UiTema.textura(placa_nome)
 	_placa_area.visible = true
 	_pagina_img.texture = _quadro_pagina(str(hud.get("page", "ui_calendar_page")), 1 if hoje else 0)  # quadro 1 = o dia circulado de caneta
@@ -257,23 +261,23 @@ func _mostrar_placa(dias: int, rotulo: String, nome: String) -> void:
 		_linha1.add_theme_color_override("font_color", UiTema.Y2)
 	else:
 		_linha1.text = UiTema.txt("hud_fight_date_one" if dias == 1 else "hud_fight_date", "Faltam {n} dias", {"n": dias})
-		_linha1.add_theme_color_override("font_color", UiTema.COL_TEXT_1)
+		_linha1.add_theme_color_override("font_color", UiTema.INK)  # placas de risco são de papel: ink e g0
 	_linha2.text = _nome_curto(nome.to_upper(), LARGURA_NOME)
-	_linha2.add_theme_color_override("font_color", UiTema.COL_TEXT_2)
+	_linha2.add_theme_color_override("font_color", UiTema.CREAM if hoje else UiTema.G0)
 
 
 ## Depois do Kid: folhinha dourada com estrela (sem número) e "CAMPANHA / COMPLETA" em dourado nas duas linhas.
 func _mostrar_placa_completa() -> void:
 	var hud: Dictionary = UiTema.manifest().get("by_data_id", {}).get("campaign_calendar", {}).get("hud", {})
-	_placa.texture = UiTema.textura(str(hud.get("plate_done", "ui_countdown_plate_done")))
+	_placa.texture = UiTema.textura("c_contagem_done")
 	_placa_area.visible = true
 	_pagina_img.texture = UiTema.textura(str(hud.get("page_done", "icon_campaign_complete")))
 	_pagina_num.visible = false
 	var partes := UiTema.txt("hud_campaign_complete", "CAMPANHA\nCOMPLETA").split("\n")  # o \n do texto vira quebra de linha
 	_linha1.text = partes[0]
 	_linha2.text = partes[1] if partes.size() > 1 else ""
-	_linha1.add_theme_color_override("font_color", UiTema.COL_MONEY)
-	_linha2.add_theme_color_override("font_color", UiTema.COL_MONEY)
+	_linha1.add_theme_color_override("font_color", UiTema.BR1)  # placa "feita" (faixa b1, papel): br1 nas duas linhas
+	_linha2.add_theme_color_override("font_color", UiTema.BR1)
 
 
 ## Nome que cabe na linha 2: tira palavras do fim ("BRUTÃO DO POSTO" -> "BRUTÃO") até caber; nunca termina em "DO"/"DA"/"DE".
@@ -341,6 +345,8 @@ func _mostrar_sem_luta(estado: String, mud: Dictionary, completa: bool = false) 
 		_caixa.position.x = 4.0
 		_largura_caixa(112.0)
 		_nome.text = str(mud.get("hud_next_text", "")) if str(mud.get("hud_next_text", "")) != "" else UiTema.txt("hud_next_move", "PRÓXIMA: MUDE PARA A ACADEMIA")
+		_nome.custom_minimum_size.x = 116.0  # "MUDE PARA A ACADEMIA" mede 112 px: 4 px de folga para não quebrar por um caractere
+		_nome.size.x = 116.0
 		_nome.add_theme_color_override("font_color", UiTema.COL_TEXT_CLARO)
 		# 8a2: no centro não há luta nova: o aviso curto fica entre o título e o cartão (a academia não tem esse texto).
 		_premio.visible = str(mud.get("no_fights_text", "")) != ""
@@ -379,7 +385,7 @@ func _largura_textos(w: float) -> void:
 func _montar_cartao_mudanca(d: Dictionary) -> void:
 	var pronto := str(d.state) == "ready"
 	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("move_gym", {})
-	var nome_cartao := str(info.get("card", {}).get("ready" if pronto else "dim", "ui_move_card"))
+	var nome_cartao := "c_mudanca_pronto" if pronto else "c_mudanca_apagado"  # tema C: papel nos dois, texto ink
 	_cartao_area.visible = true
 	var c := Control.new()
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -389,16 +395,16 @@ func _montar_cartao_mudanca(d: Dictionary) -> void:
 	_cartao = c
 	UiTema.nine_patch(c, nome_cartao, Rect2(0, 0, LARGURA_CARTAO, ALTURA_CARTAO))
 	UiTema.textura_rect(c, str(info.get("icon", "icon_move")), 6, 5)
-	_a_esquerda(UiTema.rotulo(c, str(d.title).to_upper(), UiTema.WHITE if pronto else UiTema.G3, 26, 3, 88))
+	_a_esquerda(UiTema.rotulo(c, str(d.title).to_upper(), UiTema.INK, 26, 3, 88, HORIZONTAL_ALIGNMENT_LEFT, false))
 	# 6d2: a quebra é no "/", não no meio de "2 LUTAS DA CASA"
 	# 8a2: uma linha por trecho do efeito, de 10 em 10 px (um rotulo so com quebra de linha deixava a 2a linha em cima do FALTA do estado apagado).
 	var y_efeito := 27.0
 	for trecho in str(d.effect_text).to_upper().split(" / ", false):
-		_a_esquerda(UiTema.rotulo(c, trecho, UiTema.GR3 if pronto else UiTema.GR2, 7, y_efeito, 106))
+		_a_esquerda(UiTema.rotulo(c, trecho, UiTema.GR0 if pronto else UiTema.INK, 7, y_efeito, 106, HORIZONTAL_ALIGNMENT_LEFT, false))
 		y_efeito += 10.0
 	if not pronto:
-		_a_esquerda(UiTema.rotulo(c, UiTema.txt("move_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, float(d.get("cost", 0.0)) - GameState.dinheiro))}), UiTema.COL_TEXT_2, 7, 47, 106))
-	var b := UiTema.botao_estilizado(c, Rect2(7, 59, 106, 26), "ui_button_move")
+		_a_esquerda(UiTema.rotulo(c, UiTema.txt("move_no_money", "FALTA ${n}", {"n": NumberFormat.fmt(maxf(0.0, float(d.get("cost", 0.0)) - GameState.dinheiro))}), UiTema.INK, 7, 47, 106, HORIZONTAL_ALIGNMENT_LEFT, false))
+	var b := UiTema.botao(c, Rect2(7, 59, 106, 26), "c_btn_foco")
 	b.disabled = not pronto
 	_conteudo_botao_mudar(b, str(d.button).to_upper(), str(d.price_text), pronto)
 	b.pressed.connect(func() -> void:
@@ -422,8 +428,8 @@ func _conteudo_botao_mudar(b: Button, texto: String, preco: String, pronto: bool
 	var total := iw + 4.0 + lt + 8.0 + lp
 	var x0 := roundf(a.position.x + (a.size.x - total) / 2.0)
 	UiTema.textura_rect(b, "icon_move", x0, UiTema.y_imagem(a, ih))
-	UiTema.rotulo(b, texto, UiTema.Y2 if pronto else UiTema.G1, x0 + iw + 4.0, UiTema.y_texto(a))
-	UiTema.rotulo(b, preco, UiTema.COL_MONEY if pronto else UiTema.COL_TEXT_2, x0 + iw + 4.0 + lt + 8.0, UiTema.y_texto(a))
+	UiTema.rotulo(b, texto, UiTema.CREAM if pronto else UiTema.G2, x0 + iw + 4.0, UiTema.y_texto(a))
+	UiTema.rotulo(b, preco, UiTema.Y1 if pronto else UiTema.G2, x0 + iw + 4.0 + lt + 8.0, UiTema.y_texto(a))
 
 
 ## Largura dos rótulos da caixa. Com a caixa deslocada para dar lugar ao ícone, a largura diminui junto (fim em x=120).

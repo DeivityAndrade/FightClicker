@@ -48,12 +48,11 @@ func montar(bloco: Dictionary, arte: String, animar: bool) -> void:
 	var y_ind := y
 	y += ALT_INDICADOR + 4.0
 	var y_share := y
-	y += float(partilha.size()) * PASSO_LINHA + 4.0
+	y += float(partilha.size()) * PASSO_LINHA + 6.0  # 4 de margem + 2 da sombra do c_cartao
 	_altura = y
 	size = Vector2(LARG, _altura)
 	_corpo.size = size
-	var fundo := UiTema.nine_patch(_corpo, "ui_card", Rect2(0, 0, LARG, _altura))
-	fundo.set_meta("ui_align", "ignore")
+	UiTema.nine_patch(_corpo, "c_cartao", Rect2(0, 0, LARG, _altura))
 	var boxe := str(bloco.get("kind", "")) == "fast_hands"
 	var cor_arte := UiTema.R3 if arte == "boxing" else (UiTema.BR3 if arte == "muay_thai" else UiTema.B3)
 	_cabecalho(arte, str(bloco.get("name", "")).to_upper(), cor_arte, y_nome, tipo if segunda else "")

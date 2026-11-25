@@ -20,18 +20,18 @@ static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 	var nos: Array = dados.get("nodes", [])
 	var arte_texto := str(dados.get("art_text", ""))  # Fase 5: "ARTE: BOXE" como 1ª linha
 	var mural_texto := str(dados.get("mural_text", ""))  # 6c2: "O MURAL: +N% DE TREINO" (só com bônus)
-	var altura := 26.0 + 14.0 * (nos.size() + (1 if arte_texto != "" else 0) + (1 if mural_texto != "" else 0))
+	var altura := 28.0 + 14.0 * (nos.size() + (1 if arte_texto != "" else 0) + (1 if mural_texto != "" else 0))  # 26 + 2 da sombra do c_cartao
 	var c := Control.new()
 	c.position = Vector2(x, y)
 	c.size = Vector2(LARGURA, altura)
 	pai.add_child(c)
-	UiTema.nine_patch(c, "ui_career_card", Rect2(0, 0, LARGURA, altura))
+	UiTema.nine_patch(c, "c_cartao", Rect2(0, 0, LARGURA, altura))
 	var larg_int := LARGURA - 10.0
 	# Faixa do título: [ícone do Legado + título] como grupo centralizado na faixa.
-	UiTema.nine_patch(c, "ui_career_card_title", Rect2(5, 5, larg_int, 14))
+	UiTema.nine_patch(c, "c_chip", Rect2(5, 5, larg_int, 13))  # tema C: o título é o chip escuro (texto cream)
 	# A fonte pixel não tem o travessão longo (—): o separador vira ":" (e o ":" final some, para não ficar dois).
 	var titulo := str(dados.get("title", "")).to_upper().replace(" — ", ": ").replace("—", ":").trim_suffix(":")
-	var area_t := UiTema.area_nove("ui_career_card_title", Vector2(larg_int, 14))
+	var area_t := UiTema.area_nove("c_chip", Vector2(larg_int, 13))
 	var ic := UiTema.tamanho_quadro("icon_legacy")
 	var grupo := ic.x + 4.0 + UiTema.largura_visivel(titulo)
 	var gx := roundf(5.0 + area_t.position.x + (area_t.size.x - grupo) / 2.0)
@@ -45,9 +45,9 @@ static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 		la.position = Vector2(5, yy)
 		la.size = Vector2(larg_int, 14)
 		c.add_child(la)
-		UiTema.nine_patch(la, "ui_career_card_row", Rect2(0, 0, larg_int, 14))
+		_fio(la, larg_int)
 		UiTema.textura_rect(la, "art_" + str(dados.get("art", "")), 2, -1)
-		UiTema.rotulo(la, arte_texto.to_upper(), UiTema.P2, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
+		UiTema.rotulo(la, arte_texto.to_upper(), UiTema.P0, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
 		yy += 14.0
 	if mural_texto != "":
 		var lm := Control.new()
@@ -55,9 +55,9 @@ static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 		lm.position = Vector2(5, yy)
 		lm.size = Vector2(larg_int, 14)
 		c.add_child(lm)
-		UiTema.nine_patch(lm, "ui_career_card_row", Rect2(0, 0, larg_int, 14))
+		_fio(lm, larg_int)
 		UiTema.textura_rect(lm, "icon_honor_16", 2, -1)
-		UiTema.rotulo(lm, mural_texto.to_upper(), UiTema.COL_HONOR, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
+		UiTema.rotulo(lm, mural_texto.to_upper(), UiTema.G0, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
 		yy += 14.0
 	for n in nos:
 		# Cada linha é um Control: o ícone de 16 px "encosta 1 px acima" (a arte pede) e não se sobrepõe ao da linha vizinha.
@@ -66,13 +66,23 @@ static func montar(pai: Node, dados: Dictionary, x: float, y: float) -> Control:
 		linha.position = Vector2(5, yy)
 		linha.size = Vector2(larg_int, 14)
 		c.add_child(linha)
-		UiTema.nine_patch(linha, "ui_career_card_row", Rect2(0, 0, larg_int, 14))
+		_fio(linha, larg_int)
 		UiTema.textura_rect(linha, str(n.get("icon", "")), 2, -1)
 		var ramo := str(GameState.lutas.no_da_arvore(str(n.get("id", ""))).get("branch", ""))
-		var cor := UiTema.R3 if ramo == "body" else UiTema.Y1
+		var cor := UiTema.R1 if ramo == "body" else UiTema.BR1  # texto sobre o papel: r1 e br1
 		UiTema.rotulo(linha, str(n.get("effect_text", "")).to_upper(), cor, 22, UiTema.y_texto(Rect2(0, 0, larg_int, 14)))
 		yy += 14.0
 	return c
+
+
+## Fio g3 embaixo de cada linha do cartão (a linha 1x14 de papel com a divisória).
+static func _fio(linha: Control, larg: float) -> void:
+	var f := ColorRect.new()
+	f.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	f.color = UiTema.G3
+	f.position = Vector2(0, 13)
+	f.size = Vector2(larg, 1)
+	linha.add_child(f)
 
 
 ## Abre o cartão no meio de cima da sala e programa a saída (1,5 s parado + 0,3 s de fade = 1,8 s).
