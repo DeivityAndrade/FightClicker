@@ -365,6 +365,32 @@ static func alinhar(no: Node, modo: String) -> void:
 	no.set_meta("ui_align", modo)
 
 
+## ignore COM MOTIVO (obrigatório): o nó e tudo abaixo dele ficam fora da conferência de alinhamento.
+## Proibido em Button e em Label de texto fixo (o verificador acusa). `dinamico = true` diz que o texto
+## muda em tempo de jogo (balão que escreve letra a letra, números flutuantes): só então o Label é aceito.
+static func ignorar(no: Node, motivo: String, dinamico: bool = false) -> void:
+	no.set_meta("ui_align", "ignore")
+	no.set_meta("ui_align_motivo", motivo)
+	if dinamico:
+		no.set_meta("ui_texto_dinamico", true)
+
+
+## Ponto ÚNICO para desenhar texto por código (draw_string só pode existir aqui; um teste por busca confere).
+## Escreve `texto` centralizado em `area` (coordenadas locais de `item`, que deve estar dentro de _draw())
+## e registra {rect, texto} na meta "ui_texto_desenhado" do item para o verificador medir o centro.
+static func desenhar_texto_centro(item: CanvasItem, area: Rect2, texto: String, cor: Color, escala: int = 1) -> void:
+	var f := fonte()
+	var lw := f.get_string_size(texto, HORIZONTAL_ALIGNMENT_LEFT, -1, TAMANHO_FONTE).x - 1.0
+	var x0 := roundf(area.position.x + (area.size.x - lw * escala) / 2.0)
+	var y0 := roundf(area.position.y + (area.size.y - 7.0 * escala) / 2.0) + 7.0 * escala  # linha de base
+	item.draw_set_transform(Vector2(x0, y0), 0.0, Vector2(escala, escala))
+	item.draw_string(f, Vector2.ZERO, texto, HORIZONTAL_ALIGNMENT_LEFT, -1, TAMANHO_FONTE, cor)
+	item.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	var reg: Dictionary = item.get_meta("ui_texto_desenhado", {})  # chave = texto+área: não cresce a cada redesenho
+	reg[texto + str(area)] = {"area": area, "x0": x0, "texto": texto, "escala": escala, "lw": lw}
+	item.set_meta("ui_texto_desenhado", reg)
+
+
 ## Área útil do botão em coordenadas locais: sem as margens do estilo (o "degrau" de baixo não é conteúdo).
 static func area_botao(b: Button) -> Rect2:
 	var sb: StyleBox = b.get_theme_stylebox("normal")

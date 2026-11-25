@@ -40,6 +40,14 @@ O verificador salva capturas de cada estado em `C:\Users\deivi\AppData\Local\Tem
 ### 4. Corrija e repita até zerar
 Corrija na causa (container certo, `size_flags`, `alignment`, margens simétricas), não com deslocamento manual de pixel. Rode de novo até **0 problemas**. Se um caso for intencional, marque `ui_align="ignore"` e diga por quê no relatório. Depois rode `tools\run_tests.ps1`.
 
+### Regras estritas (fase Identidade; ligue com `--estrito`)
+- `ignore` exige motivo: `UiTema.ignorar(no, "motivo", dinamico=false)`. Sem motivo: `IGNORE_SEM_MOTIVO`.
+- `ignore` é proibido em `Button` e em `Label` de texto fixo (inclusive nos descendentes): `IGNORE_PROIBIDO`. Texto que muda em jogo: `dinamico = true`.
+- Janela fora do centro de 640x360 (`JANELA_ASSIM`), conteúdo de janela com margens desiguais (`JANELA_MARGEM`), Label sozinho na linha com margens desiguais (`TXT_SOZINHO`).
+- Nada opaco sai de 640x360, nem Sprite2D/Node2D (`OPACO_FORA`; isenção = `ui_align_motivo`).
+- Texto desenhado por código só por `UiTema.desenhar_texto_centro` (`DRAW_TEXTO`); `tests/test_sem_draw_string.gd` acusa `draw_string` fora dele.
+- Placar de `ignore` no fim do relatório (meta: no máximo 15). `-- --torta` prova que cada regra reprova.
+
 ## Como corrigir no Godot (atalhos que resolvem 90%)
 - **Texto no botão:** `alignment = HORIZONTAL_ALIGNMENT_CENTER`; o texto não deve estar num `Label` solto por cima do botão. Com ícone, use `icon_alignment` + `expand_icon`, ou um `HBoxContainer` com `alignment = CENTER` dentro de um `CenterContainer`.
 - **Botão no espaço dele:** coloque num `CenterContainer` ou use `size_flags_horizontal = SIZE_SHRINK_CENTER` dentro do container pai. Evite `position` fixa.

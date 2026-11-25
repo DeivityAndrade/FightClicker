@@ -41,6 +41,13 @@ foreach ($t in $testes) {
 	}
 }
 
+# 2b) Cena torta do verificador de alinhamento (cada regra nova tem de reprovar).
+Write-Host "== verificador: cena torta =="
+if ((Rodar @("--script", "res://tools/ui/ui_audit.gd", "--", "--torta")) -ne 0) {
+	$falhas++
+	Write-Host "!! FALHOU: cena torta do verificador" -ForegroundColor Red
+}
+
 # 3) Cena principal por 120 frames, com save de teste, procurando erros no console.
 Write-Host "== cena principal (--quit-after 120) =="
 $saida = & $Godot --headless --path $projeto --quit-after 120 -- --save-dir=user://test/cena_principal/ 2>&1 | Out-String
