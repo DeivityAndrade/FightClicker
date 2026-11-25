@@ -74,9 +74,15 @@ func _varrer(n: Node, sob_ignore: bool, estado: String) -> void:
 
 func _regra_ignore(n: Node, estado: String) -> void:
 	var motivo := str(n.get_meta("ui_align_motivo", "")).strip_edges()
-	var chave := _arquivo(n) + "|" + _caminho(n)
+	var cam_placar := _caminho(n)
+	var aspas := cam_placar.find(' "')
+	if aspas >= 0:
+		cam_placar = cam_placar.substr(0, aspas)  # o texto do Label muda (números, avisos): o placar conta o ignore, não cada valor
+	var re := RegEx.create_from_string("_\\d+")
+	cam_placar = re.sub(cam_placar, "_N", true)  # Retrato_1, Retrato_2...: o mesmo ignore repetido por item conta uma vez
+	var chave := _arquivo(n) + "|" + cam_placar
 	if not placar.has(chave):
-		placar[chave] = {"arquivo": _arquivo(n), "caminho": _caminho(n), "motivo": motivo, "classe": n.get_class()}
+		placar[chave] = {"arquivo": _arquivo(n), "caminho": cam_placar, "motivo": motivo, "classe": n.get_class()}
 	if motivo == "":
 		_achado("IGNORE_SEM_MOTIVO", n, estado, "ignore sem motivo escrito (ui_align_motivo)")
 	var ofensores: Array[String] = []

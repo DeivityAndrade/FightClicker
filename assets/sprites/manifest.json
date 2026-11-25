@@ -2418,7 +2418,7 @@
 					35,
 					160
 				],
-				"page": "ui_calendar_page",
+				"page": "c_folhinha",
 				"page_frame_normal": 0,
 				"page_frame_fight_day": 1,
 				"plate_by_risk": {
@@ -148366,6 +148366,20 @@
 				"top": 0
 			},
 			"note": "Tema C (cartaz). ladrilho na horizontal dentro da moldura (área 8 de altura). Spec: docs/arte/tema-c-spec.md",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"c_folhinha": {
+			"file": "res://assets/sprites/ui/tema_c/c_folhinha.png",
+			"fps": 0.0,
+			"frame_size": [
+				20,
+				22
+			],
+			"frames": 2,
+			"note": "Tema C (cartaz). 2 quadros 20x22 lado a lado (0 normal, 1 dia circulado), no lugar da ui_calendar_page; número 1x ink em Rect2(2,10,15,9) (miolo só papel). Spec: docs/arte/tema-c-spec.md",
 			"pivot": [
 				0,
 				0

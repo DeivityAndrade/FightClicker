@@ -236,7 +236,7 @@ func _montar(opp_id: String) -> void:
 
 	_mundo = Node2D.new()
 	_mundo.z_index = 100  # fica acima do ColorRect (os z negativos da arena não somem)
-	UiTema.alinhar_motivo(_mundo, "ignore", "arena, lutadores, efeitos e números flutuantes: posição livre de propósito")
+	UiTema.ignorar(_mundo, "arena, lutadores, efeitos e números flutuantes: posição livre de propósito (todo texto aqui dentro é número/aviso que aparece e some)", true)
 	add_child(_mundo)
 
 	# Cenário (7a1): prefixo da arena da luta ("arena" = borracharia, "arena_league" = ginásio da liga). Camada que não existe
@@ -266,7 +266,6 @@ func _montar(opp_id: String) -> void:
 		_ropes_side.texture = UiTema.textura(nome_cordas)
 		_ropes_side.position = UiTema.pos(nome_cordas)
 		_ropes_side.z_index = 330  # acima dos lutadores (318/320) e abaixo dos efeitos (400); 0 px no meio, então só vale na entrada
-		_ropes_side.set_meta("ui_align", "ignore")
 		_mundo.add_child(_ropes_side)
 	var nome_facho := pre + "_spot"
 	if not UiTema.sprite(nome_facho).is_empty():
@@ -386,7 +385,6 @@ func _montar_letreiros_2() -> void:
 		b.scale = Vector2(2, 2)
 		b.z_index = ZLETREIRO
 		b.visible = false
-		b.set_meta("ui_align", "ignore")
 		_mundo.add_child(b)
 		_banners_fim[finish] = b
 	var pequenos: Dictionary = info.get("small", {})
@@ -398,7 +396,6 @@ func _montar_letreiros_2() -> void:
 		sp.texture = UiTema.textura(nome2)
 		sp.z_index = ZLETREIRO - 1500
 		sp.visible = false
-		sp.set_meta("ui_align", "ignore")
 		_mundo.add_child(sp)
 		_sinais[chave] = sp
 
@@ -425,7 +422,6 @@ func _montar_sinais_adversario() -> void:
 		sp.texture = UiTema.textura(nome)
 		sp.z_index = ZSINAL_OPP
 		sp.visible = false
-		sp.set_meta("ui_align", "ignore")
 		_mundo.add_child(sp)
 		_opp_sinais[chave] = sp
 
@@ -439,7 +435,6 @@ func _montar_cinturao_erguido(opp_id: String) -> void:
 	_cinturao.definir("belt_regional_raised")
 	_cinturao.z_index = 405
 	_cinturao.visible = false
-	_cinturao.set_meta("ui_align", "ignore")
 	_mundo.add_child(_cinturao)
 
 
@@ -513,14 +508,14 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	hud.z_index = 500
 	add_child(hud)
 	var faixa: Array = lay.get("hud_band", [0, 0, 640, 46])
-	UiTema.painel(hud, "ui_panel", Rect2(float(faixa[0]), float(faixa[1]), float(faixa[2]), float(faixa[3])))
+	UiTema.painel(hud, "c_faixa_tela", Rect2(float(faixa[0]), float(faixa[1]), float(faixa[2]), float(faixa[3]) + 3.0))  # +3: fio r1 e sombra em dither por cima da arena
 
 	# Jogador (esquerda)
 	var pf: Array = lay.get("player_portrait_frame", [6, 6])
-	var quadro_j := UiTema.textura_rect(hud, "ui_portrait_frame", float(pf[0]), float(pf[1]))
+	var quadro_j := UiTema.textura_rect(hud, "c_retrato_moldura", float(pf[0]), float(pf[1]))
 	UiTema.textura_rect(quadro_j, UiTema.nome_retrato_jogador(), 2, 2).texture = UiTema.textura_disc(UiTema.nome_retrato_jogador())  # o retrato fica dentro da moldura
 	var pn: Array = lay.get("player_name", [46, 6])
-	UiTema.rotulo(hud, UiTema.txt("preview_you", "VOCÊ"), UiTema.WHITE, float(pn[0]), float(pn[1]))
+	UiTema.rotulo(hud, UiTema.txt("preview_you", "VOCÊ"), UiTema.CREAM, float(pn[0]), float(pn[1]))
 	var bj: Array = lay.get("player_hp_bar", [46, 16, 236, 12])
 	_barras.append(Barra.new(self, hud, Rect2(float(bj[0]), float(bj[1]), float(bj[2]), float(bj[3])), 0))
 	var pt: Array = lay.get("player_tactic", [46, 32])
@@ -549,13 +544,13 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	# Adversário (direita, espelhado)
 	var info_o: Dictionary = by.get(opp_id, {})
 	var of: Array = lay.get("opponent_portrait_frame", [598, 6])
-	var quadro_o := UiTema.textura_rect(hud, str(info_o.get("portrait_frame", "ui_portrait_frame")), float(of[0]), float(of[1]))
+	var quadro_o := UiTema.textura_rect(hud, UiTema.moldura_retrato(str(info_o.get("portrait_frame", "ui_portrait_frame"))), float(of[0]), float(of[1]))
 	var ret := UiTema.textura_rect(quadro_o, str(info_o.get("portrait", "")), 2, 2)
 	ret.flip_h = true
 	var opp: Dictionary = GameState.lutas.adversario(opp_id)
 	var on: Array = lay.get("opponent_name_right", [594, 6])
 	var nome_o := str(opp.get("name", opp_id)).to_upper()
-	var l_nome := UiTema.rotulo(hud, nome_o, UiTema.WHITE, 0, float(on[1]))
+	var l_nome := UiTema.rotulo(hud, nome_o, UiTema.CREAM, 0, float(on[1]))
 	l_nome.position.x = roundf(float(on[0]) - UiTema.largura(nome_o))
 	var bo: Array = lay.get("opponent_hp_bar", [358, 16, 236, 12])
 	_barras.append(Barra.new(self, hud, Rect2(float(bo[0]), float(bo[1]), float(bo[2]), float(bo[3])), 1))
@@ -575,13 +570,13 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 
 	# Relógio
 	var tb: Array = lay.get("timer_box", [292, 4, 56, 32])
-	UiTema.painel(hud, "ui_card", Rect2(float(tb[0]), float(tb[1]), float(tb[2]), float(tb[3])))
+	UiTema.painel(hud, "c_cartao", Rect2(float(tb[0]), float(tb[1]), float(tb[2]), float(tb[3]) + 2.0))  # +2: a sombra do cartão
 	# Round (7 px) + 3 px + tempo 2x (14 px) = 24 px, centralizados na área útil do cartão (3 px de borda).
-	var area_rel := UiTema.area_nove("ui_card", Vector2(float(tb[2]), float(tb[3])))
+	var area_rel := UiTema.area_nove("c_cartao", Vector2(float(tb[2]), float(tb[3]) + 2.0))
 	var y0 := float(tb[1]) + area_rel.position.y + roundf((area_rel.size.y - 24.0) / 2.0)
 	var col := Rect2(float(tb[0]), 0.0, float(tb[2]), 0.0)
-	_rotulo_round = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0, col.size.x, 7.0), "", UiTema.G3, 1, false, "center_h")
-	_rotulo_tempo = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0 + 10.0, col.size.x, 14.0), "0:16", UiTema.Y1, 2, false,
+	_rotulo_round = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0, col.size.x, 7.0), "", UiTema.G0, 1, false, "center_h")
+	_rotulo_tempo = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0 + 10.0, col.size.x, 14.0), "0:16", UiTema.INK, 2, false,
 		"center_h")
 
 
@@ -665,20 +660,22 @@ func _montar_sinal_fixo(hud: Control, y_tatica: float, icone: String, textos: Ar
 		larg = maxf(larg, UiTema.largura_visivel(str(t)))
 	var x0 := 282.0 - (larg + 12.0)
 	_sinal_icone = UiTema.textura_rect(hud, icone, x0, y_tatica - 1.0)
-	_sinal_rotulo = UiTema.rotulo(hud, str(textos[0]), UiTema.G2, x0 + 12.0, y_tatica)
+	_sinal_rotulo = UiTema.rotulo(hud, str(textos[0]), UiTema.G3, x0 + 12.0, y_tatica)
 	_sinal_icone.modulate = Color(1, 1, 1, 0.45)
 
 
 func _cor_tatica(nome_cor: String) -> Color:
 	match nome_cor:
 		"r2":
-			return UiTema.R2
+			return UiTema.R3  # r2 sobre a faixa d1 dava 3,46:1; r3 passa de 4,5:1
 		"y1":
 			return UiTema.Y1
 		"b3", "b2":
 			return UiTema.B3
 		"gr2":
 			return UiTema.GR3
+	if nome_cor == "st2":
+		return UiTema.COL_HONOR  # aço do Kid: st2 sobre a faixa d1 dava 4,42:1; st3 passa
 	return UiTema.cor_nome(nome_cor, UiTema.WHITE)  # p1 (Tonhão), st2 (Kid): cores novas da Fase 5
 
 
@@ -1706,7 +1703,7 @@ func _hud_sinal(aceso: bool, sinal: String) -> void:
 	_sinal_aceso = aceso
 	_sinal_icone.modulate = Color.WHITE if aceso else Color(1, 1, 1, 0.45)
 	_sinal_rotulo.text = str(_sinal_textos[1 if aceso else 0])
-	_sinal_rotulo.add_theme_color_override("font_color", UiTema.WHITE if aceso else UiTema.G2)
+	_sinal_rotulo.add_theme_color_override("font_color", UiTema.WHITE if aceso else UiTema.G3)
 	_sinal_rotulo.modulate = Color(2, 2, 2)
 	_sinal_rotulo.create_tween().tween_property(_sinal_rotulo, "modulate", Color.WHITE, 0.25)
 	if (sinal == "clinch" and aceso) or (sinal == "stood_up" and antes and not aceso):
@@ -2350,9 +2347,9 @@ class Barra extends RefCounted:
 		lado = lado_
 		x = r.position.x + 2.0
 		largura = r.size.x - 4.0
-		UiTema.nine_patch(pai, "ui_hp_frame", r)
-		_trail = UiTema.nine_patch(pai, "ui_hp_trail", Rect2(x, r.position.y + 2, largura, 8))
-		_fill = UiTema.nine_patch(pai, "ui_hp_fill", Rect2(x, r.position.y + 2, largura, 8))
+		UiTema.nine_patch(pai, "c_vida_moldura", r)
+		_trail = UiTema.nine_patch(pai, "c_vida_rastro", Rect2(x, r.position.y + 2, largura, 8))
+		_fill = UiTema.nine_patch(pai, "c_vida_cheia", Rect2(x, r.position.y + 2, largura, 8))
 		_w_fill = largura
 		_w_trail = largura
 
@@ -2387,7 +2384,7 @@ class Barra extends RefCounted:
 		var baixa := pct <= 0.25
 		if baixa != _baixa:
 			_baixa = baixa
-			_fill.texture = UiTema.textura("ui_hp_fill_low" if baixa else "ui_hp_fill")
+			_fill.texture = UiTema.textura("c_vida_baixa" if baixa else "c_vida_cheia")
 
 	# Vida baixa (<= 25%) pisca.
 	func passo(t: float) -> void:

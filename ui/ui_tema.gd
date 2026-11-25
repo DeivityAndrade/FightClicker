@@ -97,8 +97,6 @@ static func em_papel(no: Node) -> bool:
 	while n != null:
 		if n is BaseButton or n.has_meta("ui_fundo_escuro"):
 			return false
-		if n is NinePatchRect and (n as NinePatchRect).texture != null and not (n as NinePatchRect).texture.resource_path.contains("/tema_c/"):
-			return false  # moldura de sprite antigo (escuro) que ainda não foi vestida: o texto dentro segue como estava
 		if n is JanelaBase:
 			return (n as JanelaBase).texto_em_papel
 		n = n.get_parent()
@@ -434,6 +432,13 @@ static func nine_patch(pai: Node, nome: String, rect: Rect2) -> NinePatchRect:
 	n.size = rect.size
 	pai.add_child(n)
 	return n
+
+
+## Moldura de retrato 36x36 no tema C: os nomes antigos (ui_portrait_frame, ui_portrait_frame_gold) viram a peça C; o resto passa direto.
+static func moldura_retrato(nome: String) -> String:
+	if nome.begins_with("ui_portrait_frame"):
+		return "c_retrato_moldura_ouro" if nome.ends_with("gold") else "c_retrato_moldura"
+	return nome
 
 
 ## Área útil (coordenadas locais) de um sprite 9-slice de tamanho `tam`: sem as bordas do 9-slice.

@@ -148,7 +148,7 @@ func _montar_hud() -> void:
 	var tt: Rect2 = retangulo(L.get("tug_track", [190, 28, 260, 16]))
 	_trilho_pos = tt.position
 	_barra_no = Node2D.new()
-	UiTema.alinhar(_barra_no, "ignore")
+	UiTema.ignorar(_barra_no, "trilho, agulha e X2 do cabo de guerra: a barra treme com o clique e a agulha anda pelo trilho (sprites)")
 	_hud.add_child(_barra_no)
 	var trilho := Sprite2D.new()
 	trilho.centered = false
@@ -195,7 +195,7 @@ func _montar_hud() -> void:
 	_folego_grupo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_folego_grupo.position = bb.position
 	_folego_grupo.size = bb.size
-	UiTema.alinhar(_folego_grupo, "ignore")  # moldura + enchimento por dentro dela: o verificador não cobra o encaixe
+	UiTema.ignorar(_folego_grupo, "barra de fôlego: moldura + enchimento por dentro dela (sem texto), o encaixe é do desenho")
 	_hud.add_child(_folego_grupo)
 	UiTema.nine_patch(_folego_grupo, "ui_breath_bar", Rect2(Vector2.ZERO, bb.size))
 	_folego_fill = imagem_quadro(_folego_grupo, "ui_breath_fill", 0, 1, 1)
@@ -218,7 +218,7 @@ func _montar_hud_muay_thai(trilho: Rect2) -> void:
 	_faixa.size = Vector2(FaixaBatida.LARG, alt)
 	_faixa.beat_s = float(v.get("beat_s", 0.5))
 	_faixa.janela_s = float(v.get("window_s", 0.12))
-	UiTema.alinhar(_faixa, "ignore")  # desenho livre dentro da faixa
+	UiTema.ignorar(_faixa, "faixa da batida: desenho livre por código dentro da faixa (sem Label)")
 	_hud.add_child(_faixa)
 	var larg := 36.0
 	var passo := larg + 4.0
@@ -231,9 +231,8 @@ func _montar_hud_muay_thai(trilho: Rect2) -> void:
 		q.position = Vector2(x0 + passo * float(i), y)
 		q.size = Vector2(larg, alt)
 		q.color = UiTema.D1
-		q.set_meta("ui_align", "ignore")
 		_hud.add_child(q)
-		UiTema.rotulo_centrado(q, Rect2(0, 0, larg, alt), kick_txt if i == 2 else str(i + 1), UiTema.G2, 1, false, "center")
+		UiTema.rotulo_centrado(q, Rect2(0, 0, larg, alt), kick_txt if i == 2 else str(i + 1), UiTema.G3, 1, false, "center")
 		_degraus.append(q)
 
 
@@ -316,10 +315,10 @@ func _atualizar_muay_thai(e: Dictionary, delta: float) -> void:
 		for i in _degraus.size():
 			var aceso := i < combo
 			var q := _degraus[i]
-			q.color = UiTema.BR2 if aceso else (UiTema.D2 if i == 2 and combo == 2 else UiTema.D1)  # 2 degraus acesos: o CHUTE fica "armado"
+			q.color = UiTema.BR3 if aceso else (UiTema.D2 if i == 2 and combo == 2 else UiTema.D1)  # 2 degraus acesos: o CHUTE fica "armado"
 			for l in q.get_children():
-				if l is Label:
-					(l as Label).add_theme_color_override("font_color", UiTema.WHITE if aceso or (i == 2 and combo == 2) else UiTema.G2)
+				if l is Label:  # aceso: ink sobre o couro claro (br3), 6:1; o resto: claro sobre o asfalto
+					(l as Label).add_theme_color_override("font_color", UiTema.INK if aceso else (UiTema.WHITE if i == 2 and combo == 2 else UiTema.G3))
 
 
 ## Aviso acima do parceiro: rajada (estrela vermelha), pausa (balão branco) e finta (começa vermelho e vira branco na metade).
@@ -477,6 +476,9 @@ func _evento(ev: String, _e: Dictionary) -> void:
 				_flutuar(UiTema.txt("spar_beat_kick", "CHUTE!"), UiTema.Y2, Vector2(250.0, 226.0), 2, 16.0, 0.8)
 				for q in _degraus:
 					q.color = UiTema.Y1
+					for l in q.get_children():
+						if l is Label:
+							(l as Label).add_theme_color_override("font_color", UiTema.INK)  # o clarão amarelo pede texto escuro
 				get_tree().create_timer(0.3).timeout.connect(func() -> void: _combo_ant = -1)
 			_trans_jogador("kick", 0.45)
 			_trans_parceiro("recoil", 0.4)

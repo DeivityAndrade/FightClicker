@@ -54,6 +54,7 @@ func _main() -> void:
 	_balao()
 	print("== ID3: calendário, mudança, selos")
 	_contagem()
+	_folhinha()
 	_mudanca()
 	_selos()
 	print("== ID3: telas cheias (fundo, faixa, vida, mapa, retratos)")
@@ -67,6 +68,19 @@ func _main() -> void:
 	for p in pecas:
 		print("  %-36s %-9s %s %s" % [p[0], p[1], p[2], p[3]])
 	print("== TOTAL: %d aviso(s) %s" % [avisos.size(), str(avisos) if avisos.size() > 0 else ""])
+
+
+## O manifest do tema grava 1 quadro do tamanho da PNG; a folhinha tem 2 quadros de 20x22 (o bloco_proxima recorta pelo frame_size).
+func _manifest_tema() -> void:
+	super._manifest_tema()
+	var caminho := UI_OUT + "manifest_tema_c.json"
+	var d = JSON.parse_string(FileAccess.get_file_as_string(caminho))
+	var sp: Dictionary = _inteiros(d["sprites"])
+	sp["c_folhinha"]["frame_size"] = [20, 22]
+	sp["c_folhinha"]["frames"] = 2
+	var f := FileAccess.open(caminho, FileAccess.WRITE)
+	f.store_string(JSON.stringify({"_sobre": d["_sobre"], "sprites": sp}, "	"))
+	f.close()
 
 
 # ================================================================= ajudantes
@@ -185,6 +199,68 @@ func _contagem() -> void:
 				px(im, x, y, a[0])
 			px(im, 4, y, "ink")
 		salvar_ui(im, "c_contagem_" + r, "L5 T2 R2 B4", "uso 116x28 (face 26 + sombra 2); faixa da esquerda " + str(a[0]))
+
+
+## Folhinha do HUD (no lugar da `ui_calendar_page`): os mesmos 2 quadros 20x22 lado a lado (0 normal, 1 dia circulado de caneta).
+## O número (UiTema, 1x) vai em FOLHA_NUM; esse miolo é só papel nos dois quadros, e a caneta passa POR FORA dele.
+## O verificador mede o contraste do número contra a MÉDIA dos pixels opacos do quadro inteiro: por isso a folha é quase toda
+## papel white (mais claro que o cartaz cream), cabeçalho de 4 linhas, argolas pequenas, sombra de 1 linha e caneta de 1 px.
+## Número: `ink` nos dois quadros (o `r0` passa só no quadro 0; no quadro 1 a caneta escurece a média e ele cai para 3,9:1).
+const FOLHA_NUM := Rect2i(2, 10, 15, 9)
+const FOLHA_NUM_COR := "ink"
+const CANETA := "r2"
+
+
+func _folhinha_quadro(circulado: bool) -> Image:
+	var im := novo(20, 22)
+	# face 19x19 em (0,2) (x 0..18, y 2..20), sombra ink de 1 linha reta para baixo (y 21); x 19 fica vazio, como antes
+	var folha := func(x: int, y: int) -> String: return "cream" if papel_px(x - 1, y - 6, 8) == "g3" else "white"
+	var face := caixa(19, 19, 1, folha, "r3")
+	for y in range(1, 5):  # cabeçalho vermelho: luz r3, corpo r2, base r1 (linhas 3..6 da folha)
+		for x in range(1, 18):
+			px(face, x, y, "r3" if y == 1 else ("r1" if y == 4 else "r2"))
+	for x in range(1, 18):  # picote da folha arrancada (linha 7)
+		if x % 2 == 1:
+			px(face, x, 5, "cream")
+	hl(face, 1, 17, 17, "cream")  # pé da folha (linha 19): o bloco de folhas embaixo
+	blit(im, face, 0, 2)
+	for x in [5, 13]:  # argolas de arame: laço em cima, entram no cabeçalho por um furo
+		hl(im, x - 1, 0, 3, "ink")
+		px(im, x - 1, 1, "ink"); px(im, x, 1, "st3"); px(im, x + 1, 1, "ink")
+		px(im, x, 2, "st2")
+		px(im, x, 3, "ink")
+	if circulado:
+		# caneta de 1 px em volta do miolo (x 1 e 17, y 9 e 19), cantos redondos; mais grossa em cima à esquerda
+		# e a ponta passando do começo em cima à direita
+		hl(im, 2, 9, 15, CANETA)
+		hl(im, 2, 19, 15, CANETA)
+		vl(im, 1, 10, 9, CANETA)
+		vl(im, 17, 10, 9, CANETA)
+		hl(im, 3, 8, 4, CANETA)
+		px(im, 17, 8, CANETA)
+		px(im, 16, 8, CANETA)
+	return im
+
+
+func _folhinha() -> void:
+	var q := [_folhinha_quadro(false), _folhinha_quadro(true)]
+	var s := novo(40, 22)
+	for i in 2:
+		blit(s, q[i], i * 20, 0)
+	salvar_ui(s, "c_folhinha", "", "2 quadros 20x22 lado a lado (0 normal, 1 dia circulado), no lugar da ui_calendar_page; número 1x ink em Rect2(2,10,15,9) (miolo só papel)")
+
+
+## Cor média dos pixels opacos (a mesma conta do verificador de telas, regras_estritas.gd `_media`).
+func media_opaca(img: Image) -> Color:
+	var soma := Vector3.ZERO
+	var n := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			var p := img.get_pixel(x, y)
+			if p.a >= 0.5:
+				soma += Vector3(p.r, p.g, p.b)
+				n += 1
+	return Color(soma.x / n, soma.y / n, soma.z / n, 1.0)
 
 
 func _mudanca() -> void:
@@ -477,6 +553,21 @@ func _medir_id3() -> void:
 		var a: Array = CONTAGEM[r]
 		conferir_contraste("contagem %s linha 1" % r, a[2], a[1])
 		conferir_contraste("contagem %s linha 2" % r, a[3], a[1])
+	print("-- folhinha 20x22 (número em Rect2(2,10,15,9); contraste contra a MÉDIA do quadro, como o verificador)")
+	var fs := peca("c_folhinha")
+	for i in 2:
+		var q := fs.get_region(Rect2i(i * 20, 0, 20, 22))
+		var sujo := 0
+		for y in range(FOLHA_NUM.position.y, FOLHA_NUM.end.y):
+			for x in range(FOLHA_NUM.position.x, FOLHA_NUM.end.x):
+				if not chave(q.get_pixel(x, y)) in ["white", "cream"]:
+					sujo += 1
+		print("  %-30s miolo: %d px fora do papel %s" % ["c_folhinha quadro %d" % i, sujo, "ok" if sujo == 0 else "AVISO"])
+		if sujo > 0:
+			avisos.append("folhinha quadro %d: miolo sujo" % i)
+		var m := media_opaca(q)
+		conferir_contraste("folhinha q%d (média #%s)" % [i, m.to_html(false)], FOLHA_NUM_COR, m)
+		print("  %-30s (só informação) r0 sobre a média = %.1f:1" % ["", contraste("r0", m)])
 	print("-- mapa e cartões")
 	var ab := novo(80, 13)
 	nove_peca(ab, "c_mapa_aba_garage", Rect2i(0, 0, 80, 13))

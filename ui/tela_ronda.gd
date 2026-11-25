@@ -119,7 +119,7 @@ func _montar() -> void:
 	add_child(fundo)
 	_mundo = Node2D.new()
 	_mundo.z_index = Z_MUNDO
-	UiTema.alinhar(_mundo, "ignore")  # ignore: o mundo da rua (cenário + atores) tem posição própria, não é UI
+	UiTema.ignorar(_mundo, "o mundo da rua (cenário + atores + avisos que sobem e somem, como SOLTE!): posição própria, não é UI", true)
 	add_child(_mundo)
 	var bg := Sprite2D.new()
 	bg.centered = false
@@ -162,7 +162,7 @@ func _montar_barra() -> void:
 	_barra = Control.new()
 	_barra.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_barra.z_index = 30
-	UiTema.alinhar(_barra, "ignore")  # ignore: a barra acompanha o vulto no muro (posição livre de propósito)
+	UiTema.ignorar(_barra, "a barra acompanha o vulto no muro: posição livre de propósito, só moldura e enchimento (sem texto)")
 	_mundo.add_child(_barra)
 	var fr := str(sp.get("frame", "ui_ronda_track"))
 	var fi := str(sp.get("fill", "ui_ronda_fill"))
@@ -277,9 +277,9 @@ func _montar_hud() -> void:
 	# Caixa da ocorrência: o nome de quem está no muro e as 3 marcas de SUSTO (a lenda de cada ocorrência).
 	var ob := retangulo(HS.get("occurrence_box", [252, 4, 136, 22]))
 	ob.size.y = maxf(ob.size.y, 28.0)
-	var cartao := UiTema.painel(_hud, "ui_card", ob)
-	var area := UiTema.area_nove("ui_card", ob.size)
-	_rotulo_ocorrencia = UiTema.rotulo_centrado(cartao, Rect2(area.position.x, area.position.y + 1.0, area.size.x, 10.0), "", UiTema.WHITE, 1, false, "center_h")
+	var cartao := UiTema.painel(_hud, "c_cartao", Rect2(ob.position, ob.size + Vector2(0, 2)))  # +2: a sombra do cartão
+	var area := UiTema.area_nove("c_cartao", ob.size + Vector2(0, 2))
+	_rotulo_ocorrencia = UiTema.rotulo_centrado(cartao, Rect2(area.position.x, area.position.y + 1.0, area.size.x, 10.0), "", UiTema.INK, 1, false, "center_h")
 	var iw := 9.0
 	var gap := 4.0
 	var gw := iw * 3.0 + gap * 2.0
@@ -295,9 +295,9 @@ func _montar_hud() -> void:
 		_pips_sustos.append(ic)
 	# Tempo da noite: "27 S" no meio do cartão do canto.
 	var tb := retangulo(HS.get("timer_box", [586, 4, 48, 18]))
-	var tcard := UiTema.painel(_hud, "ui_card", tb)
-	var ta := UiTema.area_nove("ui_card", tb.size)
-	_rotulo_tempo = UiTema.rotulo_centrado(tcard, ta, "", UiTema.WHITE, 1, false, "center_h")
+	var tcard := UiTema.painel(_hud, "c_cartao", Rect2(tb.position, tb.size + Vector2(0, 2)))  # +2: a sombra do cartão
+	var ta := UiTema.area_nove("c_cartao", tb.size + Vector2(0, 2))
+	_rotulo_tempo = UiTema.rotulo_centrado(tcard, ta, "", UiTema.INK, 1, false, "center_h")
 	# SAIR: em qualquer momento; leva a lenda do que já fez.
 	var sb := retangulo(HS.get("exit_button", [8, 334, 48, 18]))
 	_botao_sair = UiTema.botao(_hud, sb)
