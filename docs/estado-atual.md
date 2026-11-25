@@ -1,8 +1,28 @@
-# Onde paramos (atualizado em 2026-11-23)
+# Onde paramos (atualizado em 2026-11-25)
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-23) — PAUSADO NO MEIO DA RONDA NOTURNA
+## Situação agora (2026-11-25) — RONDA NOTURNA FECHADA
+A **Ronda Noturna do Gato Preto** foi terminada, testada pelo QA (`docs/fases/ronda-qa.md`, com reteste) e aprovada com
+ressalvas pelo Diretor (`docs/fases/ronda-revisao.md`). Integrada na main pelo PR da branch `ronda-noturna`.
+- Elenco completo (vulto em camadas por discípulo, faixa vermelha aprovada pelo dono; 3 ladrões), tela da Ronda, capuz no prego,
+  prêmio, recortes por nível, região GATO PRETO no mapa. Audit `ronda_*`: 23 estados, 0 problemas, com checagens novas
+  (margens do prêmio, ESCAPOU centrado, PREPARAR acima da placa, dica longe da borda, vulto inteiro dentro da tela).
+- Falas do Osmar sobre a lenda (`cl_lenda_1..5`) cortadas desta fase e guardadas em `ronda-textos.md` para a Ronda 2.
+- Pendências não bloqueantes: D2–D6 da revisão (quem só segura o botão; medir teto de 10% com tudo junto na Ronda 2; teste
+  do dono com pessoa real; teste instável do QA; capturas do recorte no CENTRO).
+
+### Ordem combinada com o dono (o Produtor escolhe o momento de cada item)
+1. **Identidade visual + menu principal + varredura de alinhamento**: 3 direções em mockup (vidro pixelado estilo Apple,
+   placa/lona de academia, cartaz de luta) com cores da história; **o dono escolhe**. Varredura: revisar todo `ui_align=ignore`
+   (motivo escrito, nunca em botão/texto fixo), conferir centro de texto desenhado por código.
+2. **Ronda 2 do Gato Preto**: noites de briga de verdade como o vulto (motor de luta), torneio clandestino "Ringue da Lua" para
+   lenda alta, tensão de identidade (Osmar desconfia, James pode ligar as tramas). Opcional, relógio parado, tom mais sujo sem
+   violência gráfica. Medir teto de 10% com tudo junto no simulador.
+3. **8b (Nacional)**. Primeira coisa: destino do Legado que sobra.
+- Ainda com o dono: confirmar D1–D12 da 8a2 e testar 8a1/8a2 (saves em `tools/teste/`).
+
+## Situação anterior (2026-11-23) — PAUSADO NO MEIO DA RONDA NOTURNA
 O dono pediu para parar tudo. Trabalho em andamento está no branch **`ronda-noturna`** (commit WIP, NÃO integrado na main;
 a main tem tudo até a 8a2, PR #30). Para retomar: `git switch ronda-noturna` (ou abrir o worktree) e seguir a lista abaixo.
 

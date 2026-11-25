@@ -234,6 +234,7 @@ func tick_jogo(delta: float) -> void:
 	if j.fase == "fim":
 		if gs._ronda_premio.is_empty():
 			ronda_concluir()  # a lenda entra no fim, mesmo que a tela de prêmio nunca chame
+			return  # o quadro do fim não conta para a trava: o prêmio sempre aparece (mesmo após um hitch longo)
 		gs._ronda_fim_t += delta
 		if gs._ronda_fim_t > _TEMPO_MAX_PREMIO:
 			ronda_voltar()
@@ -282,8 +283,6 @@ func ronda_concluir() -> Dictionary:
 	if nivel != int(antes.level):
 		gs.lenda_mudou.emit(nivel)
 	gs.permanente_mudou.emit()
-	if subiu and nivel >= 1:
-		gs.disparar_gatilho("legend_level_up", {"legend_level": nivel})  # o Osmar comenta na volta da sala
 	return premio
 
 

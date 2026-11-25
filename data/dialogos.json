@@ -51,7 +51,6 @@
 		"passive2_muay_thai_unlocked": { "priority": 9, "defer": true },
 		"regional_league_opened": { "priority": 9, "defer": true },
 		"regional_belt_first": { "priority": 9, "defer": true },
-		"legend_level_up": { "priority": 5, "defer": true },
 		"james_intro": { "priority": 10, "defer": false },
 		"james_after": { "priority": 10, "defer": true }
 	},
@@ -77,11 +76,6 @@
 		{ "id": "cl_primeira_academia", "speaker": "coach", "text": "a garagem vai junto,\nmesmo sem a lâmpada.", "trigger": "gym_arrival", "repeat": "once", "conditions": { "location": "gym", "milestone_present": ["cena_primeira_academia"] } },
 		{ "id": "cl_liga_regional", "speaker": "coach", "text": "é o blindado. já ouvi\nfalar da academia dele.", "trigger": "regional_league_opened", "repeat": "once", "conditions": { "milestone_present": ["regional_league_opened"] } },
 		{ "id": "cl_cinturao_regional", "speaker": "coach", "text": "o cinturão é do vale.\no resto a gente vê.", "trigger": "regional_belt_first", "repeat": "once", "conditions": { "milestone_present": ["regional_belt_first"] } },
-		{ "id": "cl_lenda_1", "speaker": "coach", "text": "jornal diz: gato preto.\nserá o gato do vizinho?", "trigger": "legend_level_up", "repeat": "once", "conditions": { "legend_level": 1 } },
-		{ "id": "cl_lenda_2", "speaker": "coach", "text": "estepe, bicicleta, portão.\no bairro tá animado.", "trigger": "legend_level_up", "repeat": "once", "conditions": { "legend_level": 2 } },
-		{ "id": "cl_lenda_3", "speaker": "coach", "text": "tem faixa pintada na rua.\nnem a nossa tem faixa.", "trigger": "legend_level_up", "repeat": "once", "conditions": { "legend_level": 3 } },
-		{ "id": "cl_lenda_4", "speaker": "coach", "text": "tem criança de orelhinha.\nnão olha pra mim, não.", "trigger": "legend_level_up", "repeat": "once", "conditions": { "legend_level": 4 } },
-		{ "id": "cl_lenda_5", "speaker": "coach", "text": "parou o busão com uma mão.\ndevia treinar aqui.", "trigger": "legend_level_up", "repeat": "once", "conditions": { "legend_level": 5 } },
 		{ "id": "cl_passar_posto", "speaker": "coach", "text": "a escola não para.\nquem sai ensina.", "trigger": "retire", "repeat": "once", "enabled": false, "conditions": { "location": "garage" } },
 
 		{ "id": "cl_compra_1", "speaker": "coach", "text": "a sala tá ficando gente.", "trigger": "big_purchase", "repeat": "rest", "group": "compra" },

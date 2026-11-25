@@ -3,8 +3,12 @@ extends SceneTree
 ##   VULTO (o discípulo da vez com o traje do Gato Preto), EM CAMADAS como o discípulo do jogo:
 ##     body (corpo em cores-chave + traje em cor fixa: capa, pontas da faixa), top.tank / top.tee, socks e head.<corte>
 ##     (o capuz: 4 variantes, uma por corte). Troca de cor = by_data_id.disciple_palette (a mesma do discípulo).
-##     Montagem: body -> top (se look.top != none) -> socks (se on) -> head.<look.hair_style>. Sem band, sem símbolo e sem
-##     front_mask (o traje não tem símbolo; braço na frente do capuz já fica no body porque o head só tem o que a cabeça muda).
+##     Montagem: body -> top (se look.top != none) -> socks (se on) -> school_symbol.leg (se o lutador mostra o símbolo e está
+##     sem parte de cima) -> head.<look.hair_style>. O R de raiz sai do desenho virado para a direita e a folha nunca é
+##     espelhada (§29.2). Sem chest (no perfil o carimbo fica nas costas, sob a capa), sem band e sem front_mask (braço na
+##     frente do capuz já fica no body porque o head só tem o que a cabeça muda). A sombra que o colarinho do capuz faz no
+##     corpo vai para body/top (vdraw), então montado == desenhado direto (o gerador confere e conta os px diferentes).
+##   Cor da faixa: constante BAND (vermelha, APROVADA pelo dono em 2026-11-25).
 ##   3 LADRÕES (estepe, bicicleta, portão), paleta fixa, rosto/roupa/corpo próprios.
 ## Padrão: .claude/skills/padrao-personagem. Corpo = personagem_lib.gd (perfil, fight_frame) com as medidas da garagem
 ## (~64 px em pé), igual às pessoas da tela da Ronda. Contrato da tela: docs/arte/ronda-manifest.md (minigame_layout.ronda).
@@ -37,6 +41,9 @@ func V(x: float, y: float) -> Vector2:
 ## Capuz de perfil (virado à direita), 16x18, âncora (8,11) (= HEAD_SIDE (7,7) + 1 coluna e 4 linhas: orelhas e volume).
 ## K/k/j capuz (d1/d2/g0), n costura (g1), r = beira clara da abertura e da aba (g1: lê "pano" e não "cabelo" em 1x),
 ## F/G faixa da escola (r2/r1), w = olho de gato pela fresta (y2). S/s/l/m pele e boca, H/h cabelo (chaves do discípulo).
+## Melhoria (2026-11-25): o capuz agora DESCE pela nuca e abre num colarinho de pano sobre os ombros (linhas 18-21), em vez
+## de acabar no queixo: em 1x isso separa "capuz" de "capacete com orelhas" (o pescoço de pele sumiu atrás do pano). A beira
+## da abertura do rosto (r, g1) desce até o queixo e encontra o colarinho; uma prega (k->K) na nuca marca o pano dobrando.
 const HOOD := [
 	"..K........j....",
 	"..KK......jj....",
@@ -51,11 +58,15 @@ const HOOD := [
 	"GGGGGGGGGGwGGG..",
 	".KkkkkkrSsssl...",
 	".KkkkkkrSsssll..",
-	".KkkkkkrSsssss..",
-	"..KkkkkrSssss...",
-	"..KkkkkrSsmSs...",
-	"..KKkkkrSsss....",
-	"...KKkkrSSs.....",
+	".KkkKkkrSsssss..",
+	".KkkKkkrSssss...",
+	".KkkkKkrSsmSs...",
+	".KkkkKkrSsss....",
+	".KKkkkkrSSs.....",
+	".KkkkkkkrK......",
+	"KKkkkkkkkrK.....",
+	"KkkkKkkkkkrK....",
+	"KKkkkKkkkkkK....",
 ]
 const HOOD_ANCHOR := Vector2i(8, 11)
 const HOOD_CUTS := {
@@ -70,17 +81,30 @@ const HOOD_FACES := {
 	"scare": {15: "..KkkkkrSxxSs...", 16: "..KKkkkrSxs....."},
 	"oops": {15: "..KkkkkrSsxSs...", 16: "..KKkkkrSxs....."},
 }
-const HOOD_LEGEND := {"K": "d1", "k": "d2", "j": "g0", "n": "g1", "r": "g1", "F": "r2", "G": "r1", "w": "y2"}
+## Cor da FAIXA da escola (máscara e pontas): [sombra, base, luz]. VERMELHA, aprovada pelo dono em 2026-11-25 (amostra do
+## vulto). Se um dia mudar, trocar só aqui e rodar de novo: capuz, pontas e a conferência mudam juntos.
+const BAND := ["r1", "r2", "r3"]
+func hood_legend() -> Dictionary:
+	return {"K": "d1", "k": "d2", "j": "g0", "n": "g1", "r": "g1", "F": BAND[1], "G": BAND[0], "w": "y2"}
 const KNOT := Vector2(-8, -1)
 
-## Garra (mão aberta com os dedos curvos e as unhas claras), para cima, virada à direita; âncora = palma.
-const CLAW_UP := ["w.w.w", "s.s.l", "sslsl", "Sssss", ".SSs."]
-const CLAW_ANCHOR := Vector2i(2, 3)
+## Garra do SUSTO (melhoria 2026-11-25): mão aberta GRANDE, 4 dedos abertos em leque e curvos na ponta, com a unha clara
+## (w = cream) e a palma em 3 tons; 7x7, para cima, virada à direita; âncora = palma. A antiga (5x5, pontinhos) lia como punho.
+const CLAW_UP := [
+	".w.w.w.",
+	"s.s.s.w",
+	"s.s.s.s",
+	"sssssss",
+	"Sssslll",
+	".Sssss.",
+	"..SSs..",
+]
+const CLAW_ANCHOR := Vector2i(3, 4)
 
 ## Discípulos da conferência (opções reais do data/disciples.json).
 const LOOKS := [
-	{"id": "a", "nome": "A: PADRAO (PELE 3, CURTO CASTANHO, SEM CAMISA, CALCAO VERDE)",
-		"skin": "skin_3", "hair_color": "brown", "hair_style": "short", "top": "none", "top_color": "white", "shorts_color": "green", "socks": "none"},
+	{"id": "a", "nome": "A: PADRAO (PELE 3, CURTO CASTANHO, SEM CAMISA, CALCAO VERDE, R DA ESCOLA NA COXA)",
+		"skin": "skin_3", "hair_color": "brown", "hair_style": "short", "top": "none", "top_color": "white", "shorts_color": "green", "socks": "none", "symbol": true},
 	{"id": "b", "nome": "B: PELE 1, VOLUME RUIVO, REGATA AMARELA, CALCAO ROXO",
 		"skin": "skin_1", "hair_color": "copper", "hair_style": "volume", "top": "tank", "top_color": "yellow", "shorts_color": "purple", "socks": "none"},
 	{"id": "c", "nome": "C: PELE 5, COQUE PRETO, CAMISETA BRANCA, CALCAO AZUL, MEIAO",
@@ -90,6 +114,8 @@ const LOOKS := [
 ]
 
 ## Vulto: corpo do discípulo em cores-chave, medidas da garagem em perfil. top/socks/cut = variante a desenhar.
+var SYM_ON := false   # desenhar o símbolo da escola na coxa (camada school_symbol.leg)
+
 func vbuild(cut: String, top: String, socks: bool, hood := true) -> Dictionary:
 	var o: Dictionary = P.identidade("disc")
 	o.merge({"lu": 10.0, "lf": 10.5, "lt": 14.2, "ls": 13.2, "arm_r": [2.6, 2.0, 2.2, 1.7], "leg_r": [3.6, 2.7, 2.5, 1.5],
@@ -99,6 +125,8 @@ func vbuild(cut: String, top: String, socks: bool, hood := true) -> Dictionary:
 		"tee": o["top"] = "tshirt"; o["sleeve_t"] = 0.45; o["sleeve_add"] = 0.0
 		_: o["top"] = "none"
 	o["sock_on"] = socks
+	if SYM_ON:
+		o["school_symbol"] = "leg"   # R de raiz na coxa da frente (sem parte de cima); nunca espelhado
 	if hood:
 		var rows: Array = HOOD.duplicate()
 		var c: Dictionary = HOOD_CUTS[cut]
@@ -107,7 +135,7 @@ func vbuild(cut: String, top: String, socks: bool, hood := true) -> Dictionary:
 		o["head_side"] = rows
 		o["faces_side"] = HOOD_FACES
 		o["head_anchor_side"] = HOOD_ANCHOR
-		o["head_legend_extra"] = HOOD_LEGEND
+		o["head_legend_extra"] = hood_legend()
 	else:
 		var dc: Dictionary = P.DISC_CUTS[cut]
 		o["head_side"] = dc.side
@@ -163,25 +191,26 @@ func draw_cape(lib, O: Vector2, ctx: Dictionary, cp: Dictionary) -> void:
 				continue
 			done[key] = true
 			var c: String = CAPE[1]
-			# dois vincos longos (posição que deriva devagar) + ruído baixo: as dobras não ficam em listras regulares
-			var v1 := 0.15 + 0.25 * sin(t * 3.1 + ph * 0.7)
-			var v2 := -0.45 + 0.2 * sin(t * 2.3 + 1.7 + ph * 0.5)
-			var nz := h01(i / 3, int((un + 1.0) * 4.0)) - 0.5
-			if absf(un - v1) < 0.13 and h01(i / 5, 7) > 0.18:
-				c = CAPE[0]
-			elif absf(un - (v1 + 0.2)) < 0.11 and h01(i / 4, 3) > 0.3:
+			# Melhoria (2026-11-25): PREGAS de verdade. O pano sai franzido do colarinho e abre em 3 pregas que descem em
+			# leque (posição fixa na largura, que só ondula devagar com o vento): crista clara (st1) com o lado de baixo da
+			# luz escuro (d1) logo atrás, como pano grosso dobrado. Perto da nuca as pregas somem (pano esticado nos ombros).
+			# A barra acompanha as pregas: sobe nos vales e desce nas cristas (barra recortada, não serrilhado aleatório).
+			var pl := sin((un + 1.0) * PI * 1.5 + 0.5 * sin(t * 2.0 + ph) + 0.6)
+			var fold_on := smoothstep(0.08, 0.3, t)
+			if pl * fold_on > 0.62:
 				c = CAPE[2]
-			elif absf(un - v2) < 0.12 and t > 0.25 and h01(i / 6, 11) > 0.25:
+			elif pl * fold_on < -0.55:
 				c = CAPE[0]
-			elif un > 0.55 + nz * 0.3 and t < 0.7:
-				c = CAPE[2]
+			elif pl * fold_on > 0.35 and un > 0.3 and t < 0.6:
+				c = CAPE[2]   # a luz da lua pega mais nas pregas de fora, em cima
 			if un < -0.74:
-				c = CAPE[0]
-			var hem := 1.0 + h01(q.x, 5) * 1.4
-			if (1.0 - t) * ln < hem:
-				c = CAPE[0]
-				if h01(q.x, q.y) < 0.28:
-					continue
+				c = CAPE[0]   # junto das costas: sombra de contato
+			var hem := 0.9 + 1.6 * maxf(0.0, -pl) * fold_on
+			var left := (1.0 - t) * ln
+			if left < hem - 0.9:
+				continue      # vale da prega: a barra sobe
+			if left < hem + 0.4:
+				c = CAPE[0]   # barra (1 px escuro, segue o recorte)
 			if t > 0.46 and t < 0.6 and un > 0.05 and un < 0.6:
 				c = "d2"
 				if (absf(un - 0.05) < 0.12 or absf(un - 0.6) < 0.12 or absf(t - 0.46) * ln < 0.6) and (q.x + q.y) % 2 == 0:
@@ -190,7 +219,7 @@ func draw_cape(lib, O: Vector2, ctx: Dictionary, cp: Dictionary) -> void:
 
 func draw_tips(lib, O: Vector2, ctx: Dictionary, tp: Dictionary) -> void:
 	var K: Vector2 = (ctx.hd as Vector2) + KNOT + Vector2(0.5, 0.5)
-	var specs := [[tp.a0, tp.get("l0", 8.0), "r2", 0.0], [tp.a1, tp.get("l1", 6.0), "r1", 1.7]]
+	var specs := [[tp.a0, tp.get("l0", 8.0), BAND[1], 0.0], [tp.a1, tp.get("l1", 6.0), BAND[0], 1.7]]
 	var ph: float = tp.get("phase", 0.0)
 	var amp: float = tp.get("amp", 1.1)
 	for s in specs:
@@ -204,7 +233,7 @@ func draw_tips(lib, O: Vector2, ctx: Dictionary, tp: Dictionary) -> void:
 			lib.put(int(floor(p.x)), int(floor(p.y)), s[2], 42)
 			if d < Ln * 0.45:
 				var p2 := p + N * 0.9
-				lib.put(int(floor(p2.x)), int(floor(p2.y)), "r1", 42)
+				lib.put(int(floor(p2.x)), int(floor(p2.y)), BAND[0], 42)
 			d += 0.3
 
 ## Garra: palma no ponto da mão; para cima se o antebraço sobe, deitada (dedos para a frente) se vai para a frente.
@@ -246,7 +275,7 @@ func vulto_poses() -> Dictionary:
 		var br := 0.0 if i in [0, 3] else -1.0
 		idle.append(vpose({"hip": V(-3, -15), "top": V(8, -29 + br), "head": V(14, -37 + br), "face": "smirk",
 			"toef": V(9, -1), "shoef": "flat", "kf": V(0.6, -1), "toeb": V(-9, -1), "shoeb": "ball", "kb": V(1, 0.4),
-			"hf": V(15, -19), "pf": V(-0.3, 1), "hb": V(0, -3), "pb": V(-1, 0.3), "glove": "open"},
+			"hf": V(15, -19), "pf": V(-0.3, 1), "hb": V(2, -10), "pb": V(-1, 0.3), "glove": "open"},
 			cape_down(i * PI * 0.5, 33.0), tips_wind(i)))
 	A["sneak_idle"] = idle
 	# --- avançar agachado (6 q, loop 10 fps): passo na ponta dos pés de desenho animado, joelho alto, as mãos como
@@ -284,11 +313,11 @@ func vulto_poses() -> Dictionary:
 			{"dir": V(0.5, 0.6), "len": 24.0, "w0": 2.6, "w1": 5.5, "wave": 1.0, "ground": false, "side": -1.0},
 			{"a0": 120.0, "a1": 140.0, "l0": 8.0, "l1": 6.0, "phase": 1.5}),
 		vpose({"hip": V(-6, -15), "top": V(1, -30), "head": V(6, -38), "face": "oops", "toef": V(6, -1), "shoef": "flat", "kf": V(0.6, -1),
-			"toeb": V(-13, -1), "shoeb": "ball", "kb": V(1, 0.5), "hf": V(11, -24), "pf": V(0, 1), "hb": V(8, -26), "pb": V(0, 1), "glove": "fist"},
+			"toeb": V(-12, -2), "shoeb": "ball", "kb": V(1, -0.7), "hf": V(11, -24), "pf": V(0, 1), "hb": V(8, -26), "pb": V(0, 1), "glove": "fist"},
 			{"dir": V(-0.3, 1), "len": 30.0, "w0": 2.6, "w1": 7.0, "wave": 0.8, "bulge": 3.0, "phase": 2.0},
 			{"a0": 196.0, "a1": 180.0, "l0": 8.0, "l1": 6.0, "phase": 2.5}),
 		vpose({"hip": V(-6, -13), "top": V(0, -27), "head": V(4, -34), "face": "oops", "toef": V(5, -1), "shoef": "flat", "kf": V(0.6, -1),
-			"toeb": V(-13, -1), "shoeb": "ball", "kb": V(1, 0.5), "hf": V(9, -21), "pf": V(0, 1), "hb": V(6, -23), "pb": V(0, 1), "glove": "fist"},
+			"toeb": V(-12, -2), "shoeb": "ball", "kb": V(1, -0.7), "hf": V(9, -21), "pf": V(0, 1), "hb": V(6, -23), "pb": V(0, 1), "glove": "fist"},
 			{"dir": V(-0.3, 1), "len": 28.0, "w0": 2.6, "w1": 7.5, "wave": 0.6, "bulge": 4.0, "phase": 2.6},
 			{"a0": 192.0, "a1": 178.0, "l0": 8.0, "l1": 6.0, "phase": 3.0}),
 	]
@@ -351,7 +380,22 @@ func vdraw(p: Dictionary, cut: String, top: String, socks: bool, no_head: bool, 
 	P.skip_head = no_head
 	var im: Image = P.fight_frame(b, p, tag, Vector2i(FW, FH), PIV)
 	P.skip_head = false
-	return [im, P.ids.duplicate()]
+	var idn: PackedInt32Array = P.ids.duplicate()
+	if not no_head:
+		return [im, idn]
+	# Sem cabeça, mas COM a sombra de contato que o capuz (colarinho) faz no corpo: desenha de novo com o capuz e copia só os
+	# pixels de corpo (não capuz, não o contorno do capuz no vazio). Assim a sombra cai na cor certa de cada camada (pele,
+	# regata, camiseta), e a camada head fica só com o capuz e o contorno dele.
+	var nlog: int = P.log_lines.size()
+	var full: Image = P.fight_frame(b, p, tag, Vector2i(FW, FH), PIV)
+	P.log_lines.resize(nlog)
+	var idh: PackedInt32Array = P.ids.duplicate()
+	for y in FH:
+		for x in FW:
+			var i := y * FW + x
+			if idh[i] != P.HEAD and idn[i] != 0:
+				im.set_pixel(x, y, full.get_pixel(x, y))
+	return [im, idn]
 
 func keyset() -> Dictionary:
 	return P._key_set()
@@ -385,6 +429,17 @@ func vlayers(p: Dictionary, tag: String) -> Dictionary:
 			var c: Color = (S[0] as Image).get_pixel(x, y)
 			if c != body.get_pixel(x, y) and ((S[1] as PackedInt32Array)[y * w + x] in P.LEG_IDS):
 				socks.set_pixel(x, y, c)
+	# símbolo da escola (6c2/6d3): só a coxa. O R de perfil (3x5) sai do desenho virado para a direita e a folha NUNCA é
+	# espelhada (§29.2), então ele lê certo. Peito: no perfil o carimbo fica nas costas, que a capa cobre -> sem camada chest.
+	SYM_ON = true
+	var Y: Array = vdraw(p, "short", "none", false, true, tag + " symbol")
+	SYM_ON = false
+	var sym: Image = L.blank(FW, FH)
+	for y in FH:
+		for x in FW:
+			var c: Color = (Y[0] as Image).get_pixel(x, y)
+			if c != body.get_pixel(x, y):
+				sym.set_pixel(x, y, c)
 	var keys := keyset()
 	var heads := {}
 	var moved := 0
@@ -405,7 +460,7 @@ func vlayers(p: Dictionary, tag: String) -> Dictionary:
 					continue
 				lay.set_pixel(x, y, c)
 		heads[cut] = lay
-	return {"body": body, "tops": tops, "socks": socks, "heads": heads, "shadow_px": moved}
+	return {"body": body, "tops": tops, "socks": socks, "sym": sym, "heads": heads, "shadow_px": moved}
 
 func compose(ly: Dictionary, look: Dictionary) -> Image:
 	var top = null
@@ -414,7 +469,30 @@ func compose(ly: Dictionary, look: Dictionary) -> Image:
 	elif look.top == "tee":
 		top = ly.tops.tee
 	var socks = ly.socks if look.socks == "on" else null
-	return P.compose_full(ly.body, top, socks, ly.heads[look.hair_style], null, null, keymap(look))
+	var base: Image = ly.body
+	if look.get("symbol", false) and look.top == "none":
+		base = ly.body.duplicate()
+		var sm := symmap(look)
+		for y in FH:
+			for x in FW:
+				var c: Color = (ly.sym as Image).get_pixel(x, y)
+				if c.a > 0.0:
+					base.set_pixel(x, y, sm.get(c.to_html(false), c))
+	return P.compose_full(base, top, socks, ly.heads[look.hair_style], null, null, keymap(look))
+
+## Cor do R na coxa pela disciple_palette.school_symbol_source.leg (como o DiscVisual faz).
+func symmap(look: Dictionary) -> Dictionary:
+	var src: Dictionary = PAL.school_symbol_source.leg
+	var oid: String = src.map.get(look.shorts_color, "yellow")
+	var ramp := {}
+	for o in PAL.options.school_symbol:
+		if o.id == oid:
+			ramp = o.ramp
+	var m := {}
+	for slot in PAL.keys.school_symbol:
+		if ramp.has(slot):
+			m[(PAL.keys.school_symbol[slot] as String).trim_prefix("#").to_lower()] = Color.html(ramp[slot])
+	return m
 
 # ------------------------------------------------------------------------------------------------ paleta
 func keymap(look: Dictionary) -> Dictionary:
@@ -517,7 +595,7 @@ func tbuild(tid: String, face: String, look_back: bool) -> Dictionary:
 			o = {"lu": 10.0, "lf": 10.5, "lt": 13.5, "ls": 12.5, "arm_r": [2.7, 2.1, 2.3, 1.8], "leg_r": [3.8, 2.9, 2.6, 1.6],
 				"shoulder": 1.0, "hip_w": 1.0, "belly": 3.2, "hair": ["d1", "d2"], "brow": "d1", "skin": ["br0", "sk0", "sk1"],
 				"mustache": "ink",
-				"top": "tshirt", "sleeve_t": 0.42, "shirt_detail": "social", "shirt": ["br1", "br2", "br3"],
+				"top": "tshirt", "sleeve_t": 0.42, "shirt_detail": "social", "shirt": ["st1", "st2", "st3"],
 				"bottom": "pants", "shorts": ["b0", "b1", "b2"], "band": "br0",
 				"shoes": ["br0", "br1", "br2", "y0", "ink"], "shoe_maps": {"flat": P.SHOES["34"], "ball": P.SHOES["34ball"]}}
 	var hd: Dictionary = TH_HEAD[tid]
@@ -578,7 +656,7 @@ func line_px(lib, a: Vector2, b: Vector2, c: String, id: int) -> void:
 		lib.put(int(q.x), int(q.y), c, id)
 
 func draw_tool(lib, O: Vector2, ctx: Dictionary, tool: Dictionary) -> void:
-	var id := P.NEAR_GLOVE_TOP + 6
+	var id: int = P.NEAR_GLOVE_TOP + 6
 	match tool.kind:
 		"wrench":   # chave de roda em cruz girando no cubo do estepe
 			var hub: Vector2 = O + (tool.hub as Vector2) + Vector2(0.5, 0.5)
@@ -619,8 +697,8 @@ func thief_poses(tid: String) -> Dictionary:
 	var A := {}
 	match tid:
 		"tire":
-			var base := {"hip": V(-3, -12), "top": V(4, -27), "head": V(9, -34), "toef": V(6, -1), "shoef": "flat", "kf": V(0.5, -1),
-				"toeb": V(-12, -1), "shoeb": "ball", "kb": V(0.4, 1), "pf": V(0, 1), "pb": V(0, 1)}
+			var base := {"hip": V(3, -10), "top": V(12, -22), "head": V(17, -28), "toef": V(12, -1), "shoef": "flat", "kf": V(0.5, -1),
+				"toeb": V(-6, -1), "shoeb": "ball", "kb": V(0.4, 1), "pf": V(0, 1), "pb": V(0, 1)}
 			var hub := V(20, -10)
 			var work := []
 			var angs := [-90.0, -60.0, -30.0, -60.0]
@@ -628,19 +706,19 @@ func thief_poses(tid: String) -> Dictionary:
 				var a := deg_to_rad(angs[i])
 				var u := Vector2(cos(a), sin(a)) * 4.0
 				var p := base.duplicate()
-				p.merge({"hf": hub - u * 0.2 + V(-2, 0) + u * 0.5, "hb": hub - u - V(1, 0), "face": "effort" if i in [1, 2] else "normal"}, true)
+				p.merge({"hb": hub + V(-2, 3), "face": "effort" if i in [1, 2] else "normal"}, true)
 				p["hf"] = hub + u * 0.9 + V(-1, 0)
 				work.append(tpose(p, {"kind": "wrench", "hub": hub, "ang": angs[i]}))
 			A["work"] = work
 			var still := base.duplicate()
-			still.merge({"hf": hub + V(-1, -4), "hb": hub + V(-1, 4)}, true)
-			A["warn"] = [tpose(_m(still, {"face": "alert", "head": V(9, -35)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
-				tpose(_m(still, {"face": "alert", "head": V(8, -36), "top": V(4, -28)}), {"kind": "wrench", "hub": hub, "ang": -90.0})]
-			A["look"] = [tpose(_m(still, {"face": "squint", "look_back": true, "head": V(6, -36), "top": V(3, -28), "tw": -1.0}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
-				tpose(_m(still, {"face": "alert", "look_back": true, "head": V(6, -36), "top": V(3, -28), "tw": -1.0}), {"kind": "wrench", "hub": hub, "ang": -90.0})]
-			A["fake"] = [tpose(_m(still, {"face": "alert", "head": V(9, -35)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
-				tpose(_m(still, {"face": "wince", "hb": V(2, -32), "pb": V(-1, 0.5)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
-				tpose(_m(still, {"face": "normal", "hb": V(3, -30), "pb": V(-1, 0.5)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
+			still.merge({"hf": hub + V(-1, -4), "hb": hub + V(-2, 3)}, true)
+			A["warn"] = [tpose(_m(still, {"face": "alert", "head": V(16, -29), "top": V(11, -23)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
+				tpose(_m(still, {"face": "alert", "head": V(15, -31), "top": V(10, -24)}), {"kind": "wrench", "hub": hub, "ang": -90.0})]
+			A["look"] = [tpose(_m(still, {"face": "squint", "look_back": true, "head": V(12, -31), "top": V(9, -24), "tw": -1.0}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
+				tpose(_m(still, {"face": "alert", "look_back": true, "head": V(12, -31), "top": V(9, -24), "tw": -1.0}), {"kind": "wrench", "hub": hub, "ang": -90.0})]
+			A["fake"] = [tpose(_m(still, {"face": "alert", "head": V(16, -29), "top": V(11, -23)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
+				tpose(_m(still, {"face": "wince", "hb": V(12, -27), "pb": V(-1, 0.5)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
+				tpose(_m(still, {"face": "normal", "hb": V(13, -25), "pb": V(-1, 0.5)}), {"kind": "wrench", "hub": hub, "ang": -90.0}),
 				work[0]]
 		"bike":
 			var base := {"hip": V(-2, -29), "top": V(9, -49), "head": V(15, -57), "toef": V(9, -1), "shoef": "flat", "kf": V(1, -0.2),
@@ -691,7 +769,8 @@ func _m(a: Dictionary, b: Dictionary) -> Dictionary:
 	return r
 
 ## Medidas de cada ladrão para adaptar as poses de corpo inteiro (queda e fuga) desenhadas no corpo médio.
-const TH_SCALE := {"tire": [0.8, 0.88], "bike": [1.13, 1.15], "gate": [0.95, 1.0]}
+## [pernas, tronco, braços] (braços = alcance do ladrão / alcance do corpo médio 20,5, com 5% de folga)
+const TH_SCALE := {"tire": [0.8, 0.88, 0.86], "bike": [1.13, 1.15, 1.09], "gate": [0.95, 1.0, 0.95]}
 
 func fit(tid: String, p: Dictionary) -> Dictionary:
 	var fl: float = TH_SCALE[tid][0]
@@ -703,9 +782,13 @@ func fit(tid: String, p: Dictionary) -> Dictionary:
 	var nt: Vector2 = nh + ((p.top as Vector2) - hip) * ft
 	q["top"] = nt
 	var dtop: Vector2 = nt - (p.top as Vector2)
-	for k in ["head", "hf", "hb", "ef", "eb"]:
+	var fa: float = TH_SCALE[tid][2] if (TH_SCALE[tid] as Array).size() > 2 else 1.0
+	for k in ["head", "ef", "eb"]:
 		if p.has(k):
 			q[k] = (p[k] as Vector2) + dtop
+	for k in ["hf", "hb"]:
+		if p.has(k):
+			q[k] = nt + ((p[k] as Vector2) - (p.top as Vector2)) * fa
 	for k in ["toef", "toeb"]:
 		if p.has(k):
 			var t: Vector2 = p[k]
@@ -795,6 +878,8 @@ func sky(w: int, h: int) -> Image:
 	return im
 
 func ground_strip(im: Image, y: int, c1: String, c2: String) -> void:
+	if y < 0 or y >= im.get_height():
+		return   # quadro no ar: o recorte não chega ao chão
 	L.R(im, 0, y, im.get_width(), 1, c1)
 	L.R(im, 0, y + 1, im.get_width(), im.get_height() - y - 1, c2)
 
@@ -832,7 +917,7 @@ func row_anim(out: Image, frames: Array, crop: Rect2i, x: int, y: int, k: int, l
 		cx += c.get_width() + 2
 	return y + crop.size.y * k + 6
 
-func sheet(V_: Dictionary, VL: Dictionary, T_: Dictionary, path: String, repo: String, checks: Dictionary) -> void:
+func sheet(V_: Dictionary, VL: Dictionary, T_: Dictionary, path: String, repo: String, checks: Dictionary, before_dir := "") -> void:
 	var W := 2200
 	var out: Image = L.blank(W, 9000)
 	out.fill(L.col("d1"))
@@ -841,6 +926,8 @@ func sheet(V_: Dictionary, VL: Dictionary, T_: Dictionary, path: String, repo: S
 	y += 10
 	L.text(out, "Vulto montado pelo jogo: body + top + socks + head.<corte>, trocado pela disciple_palette. Conferencia camadas x desenho direto: %s" % checks.text, 6, y, "g3")
 	y += 16
+	if before_dir != "":
+		y = before_after(out, y, VL, T_, before_dir)
 	# VULTO: look A em 3x, B/C/D em 1x
 	L.text(out, "VULTO (discipulo A em 3x; ao lado, B, C e D em 1x)", 6, y, "white")
 	y += 12
@@ -924,6 +1011,46 @@ func sheet(V_: Dictionary, VL: Dictionary, T_: Dictionary, path: String, repo: S
 	out.crop(W, y)
 	out.save_png(path)
 
+## ANTES (folha parcial do WIP 63bedab, seq 4x) x DEPOIS, 1x e 3x, nos quadros onde as melhorias aparecem.
+func before_after(out: Image, y: int, VL: Dictionary, T_: Dictionary, bdir: String) -> int:
+	var picks := [["vulto", "roof", 0, "capuz desce p/ os ombros"], ["vulto", "sneak_walk", 1, "capuz + R na coxa"],
+		["vulto", "scare", 2, "garras + pregas"], ["vulto", "scare", 5, "garras do SUSTO"], ["vulto", "seen", 0, "garras"],
+		["tire", "work", 0, "perto do estepe"], ["gate", "work", 0, "camisa (antes sumia na pele)"]]
+	L.text(out, "ANTES (parcial do WIP, commit 63bedab) x DEPOIS - cada par: antes | depois, em 3x e embaixo em 1x", 6, y, "y1")
+	y += 10
+	var x := 6
+	var h3 := 0
+	var row1: Array = []
+	for pk in picks:
+		var nm: String = ("vulto_%s_a_%d.png" % [pk[1], pk[2]]) if pk[0] == "vulto" else ("thief_%s_%s_%d.png" % [pk[0], pk[1], pk[2]])
+		if not FileAccess.file_exists(bdir + nm):
+			continue
+		var b4: Image = P.load_png(bdir + nm)
+		b4.resize(FW, FH, Image.INTERPOLATE_NEAREST)
+		var now: Image = (VL.a[pk[1]][pk[2]] if pk[0] == "vulto" else T_[pk[0]][pk[1]][pk[2]])
+		var cr := bbox([b4, now])
+		L.text(out, pk[3], x, y, "g3")
+		var cx := x
+		for im in [b4, now]:
+			var c := cell(im, cr, 3, true)
+			paste(out, c, cx, y + 9)
+			cx += c.get_width() + 2
+		L.text(out, "ANTES", x + 2, y + 11, "white")
+		L.text(out, "DEPOIS", x + cr.size.x * 3 + 4, y + 11, "y1")
+		row1.append([b4, now, cr, x])
+		h3 = maxi(h3, cr.size.y * 3)
+		x = cx + 10
+	y += 9 + h3 + 4
+	var h1 := 0
+	for r in row1:
+		var cx: int = r[3]
+		for im in [r[0], r[1]]:
+			var c := cell(im, r[2], 1, true)
+			paste(out, c, cx, y)
+			cx += c.get_width() + 1
+		h1 = maxi(h1, (r[2] as Rect2i).size.y)
+	return y + h1 + 12
+
 func _put(dst: Image, f: Image, feet: Vector2) -> void:
 	paste(dst, f, int(feet.x - PIV.x), int(feet.y - PIV.y))
 
@@ -951,7 +1078,7 @@ func _init() -> void:
 	var demo := {}
 	for an in VULTO_ORDER:
 		var poses: Array = VA[an]
-		var lay := {"body": [], "tank": [], "tee": [], "socks": [], "short": [], "buzz": [], "volume": [], "bun": []}
+		var lay := {"body": [], "tank": [], "tee": [], "socks": [], "sym": [], "short": [], "buzz": [], "volume": [], "bun": []}
 		for lk in LOOKS:
 			VL[lk.id][an] = []
 		for i in poses.size():
@@ -959,15 +1086,18 @@ func _init() -> void:
 			var ly := vlayers(poses[i], tag)
 			shadow_total += int(ly.shadow_px)
 			nframes += 1
-			lay.body.append(ly.body); lay.tank.append(ly.tops.tank); lay.tee.append(ly.tops.tee); lay.socks.append(ly.socks)
+			lay.body.append(ly.body); lay.tank.append(ly.tops.tank); lay.tee.append(ly.tops.tee); lay.socks.append(ly.socks); lay.sym.append(ly.sym)
 			for c in CUTS:
 				lay[c].append(ly.heads[c])
 			for lk in LOOKS:
 				var comp := compose(ly, lk)
 				# conferência: o mesmo look desenhado direto
+				SYM_ON = lk.get("symbol", false) and lk.top == "none"
 				var d: Array = vdraw(poses[i], lk.hair_style, lk.top, lk.socks == "on", false, tag + " direto " + lk.id)
+				SYM_ON = false
 				var full: Image = d[0]
 				var km := keymap(lk)
+				km.merge(symmap(lk))
 				var nd := 0
 				for yy in FH:
 					for xx in FW:
@@ -977,6 +1107,8 @@ func _init() -> void:
 						if c0 != comp.get_pixel(xx, yy):
 							nd += 1
 				bad_total += nd
+				if nd > 0:
+					report.append("NOTA camadas %s %s: %d px montado x desenhado" % [tag, lk.id, nd])
 				(VL[lk.id][an] as Array).append(comp)
 				check_border(comp, tag + " " + lk.id)
 			if an == "scare" and i == 5:
@@ -986,17 +1118,21 @@ func _init() -> void:
 		P.strip(lay.tank).save_png(out_dir + "minigame/%s_disc_top_tank.png" % base)
 		P.strip(lay.tee).save_png(out_dir + "minigame/%s_disc_top_tee.png" % base)
 		P.strip(lay.socks).save_png(out_dir + "minigame/%s_disc_socks.png" % base)
+		P.strip(lay.sym).save_png(out_dir + "minigame/%s_disc_symbol_leg.png" % base)
 		for c in CUTS:
 			P.strip(lay[c]).save_png(out_dir + "minigame/%s_disc_head_%s.png" % [base, c])
 		var meta: Dictionary = VULTO_ANIMS[an]
 		var e := {"file": "res://assets/sprites/minigame/%s_disc_body.png" % base, "frame_size": [FW, FH], "frames": poses.size(),
 			"fps": meta.fps, "pivot": [int(PIV.x), int(PIV.y)], "loop": meta.loop, "facing": "direita", "who": "vulto",
-			"palette_swap": "disciple_palette", "action": an,
-			"layers": {"order": ["body", "top", "socks", "head"],
+			"palette_swap": "disciple_palette", "action": an, "mirror_ok": false,
+			# body é obrigatório: DiscVisual.textura() monta a partir de layers.body (sem ele devolve a folha crua, sem capuz).
+			"layers": {"order": ["body", "top", "socks", "school_symbol", "head"],
+				"body": "res://assets/sprites/minigame/%s_disc_body.png" % base,
 				"top": {"tank": "res://assets/sprites/minigame/%s_disc_top_tank.png" % base, "tee": "res://assets/sprites/minigame/%s_disc_top_tee.png" % base},
 				"socks": "res://assets/sprites/minigame/%s_disc_socks.png" % base,
+				"school_symbol": {"leg": "res://assets/sprites/minigame/%s_disc_symbol_leg.png" % base},
 				"head": {}},
-			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. " + meta.note + " Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). Sem band, símbolo ou front_mask."}
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. " + meta.note + " Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask."}
 		for c in CUTS:
 			e.layers.head[c] = "res://assets/sprites/minigame/%s_disc_head_%s.png" % [base, c]
 		for k in ["hold", "air"]:
@@ -1035,7 +1171,7 @@ func _init() -> void:
 	var chk_text := "%d quadros x 4 discipulos, %d px diferentes (sombra da cabeca sob a roupa fica de fora em %d px)" % [nframes, bad_total, shadow_total]
 	report.append("camadas: " + chk_text)
 	var by := {"ronda_characters": {
-		"_nota": "Ronda (Artista de Personagens): elenco da tela. Quadro 96x100, pivô (50,94) = chão (pés do vulto em walk_y/land/rooftop_pose.feet; do ladrão em occurrences.<id>.thief). Nada precisa de espelho. Vulto em camadas pela disciple_palette (ver o 'note' de cada ronda_vulto_*). Detalhes: docs/arte/ronda-personagens.md.",
+		"_nota": "Ronda (Artista de Personagens): elenco da tela. Quadro 96x100, pivô (50,94) = chão (pés do vulto em walk_y/land/rooftop_pose.feet; do ladrão em occurrences.<id>.thief). Nada precisa de espelho. Vulto em camadas pela disciple_palette (ver o 'note' de cada ronda_vulto_*). Detalhes: docs/arte/ronda-personagens-manifest.md.",
 		"vulto": {"sneak_idle": "ronda_vulto_sneak_idle", "sneak_walk": "ronda_vulto_sneak_walk", "freeze": "ronda_vulto_freeze",
 			"seen": "ronda_vulto_seen", "roof": "ronda_vulto_roof", "scare": "ronda_vulto_scare"},
 		"vulto_by_state": {"parado": "sneak_idle", "segurando": "sneak_walk", "ladrao_olhando_parado": "freeze", "visto": "seen", "susto": "scare", "fim": "roof"},
@@ -1052,7 +1188,8 @@ func _init() -> void:
 	f.store_string(JSON.stringify(META, "\t"))
 	f.close()
 	if args.size() > 2:
-		sheet({"layers_demo": demo, "demo_looks": demo_looks}, VL, TT, args[2], repo, {"text": chk_text})
+		sheet({"layers_demo": demo, "demo_looks": demo_looks}, VL, TT, args[2], repo, {"text": chk_text},
+			(args[3].replace("\\", "/").trim_suffix("/") + "/") if args.size() > 3 else "")
 	var rf := FileAccess.open(out_dir + "relatorio.txt", FileAccess.WRITE)
 	for l in P.log_lines:
 		rf.store_line(l)

@@ -13,11 +13,15 @@ const TELA := Vector2(640, 360)
 const Z_MUNDO := 100
 const Z_HUD := 500
 ## Folhas do vulto por estado e do ladrão por ocorrência/estado. Preencher quando o Artista registrar (ronda-personagens-manifest.md).
-const NOMES_VULTO := {"walk": "ronda_vulto_walk", "still": "ronda_vulto_still", "scare": "ronda_vulto_scare"}
-const NOMES_LADRAO := {"tire": "ronda_thief_tire", "bike": "ronda_thief_bike", "gate": "ronda_thief_gate"}
+const NOMES_VULTO := {"walk": "ronda_vulto_sneak_walk", "still": "ronda_vulto_sneak_idle", "freeze": "ronda_vulto_freeze",
+	"seen": "ronda_vulto_seen", "scare": "ronda_vulto_scare", "roof": "ronda_vulto_roof"}
+## Ladrão: uma folha por estado, `ronda_thief_<id>_<anim>` [fps, loop]. Já vêm viradas: nunca espelhar.
+const ANIM_LADRAO := {"work": [6.0, true], "warn": [4.0, true], "look": [3.0, true], "fake": [6.0, false], "fall": [10.0, false], "flee": [12.0, true]}
 const DUBLE_LADRAO := {"tire": "ped_trabalhador_walk", "bike": "ped_estudante_walk", "gate": "ped_trabalhador_walk"}
 const COR_LADRAO := Color(0.55, 0.55, 0.68)
-const PULO_S := 0.3  # o vulto salta do muro até a calçada
+const MARGEM_TELA := 4.0  # folga do pixel opaco do vulto até a borda da tela
+const PULO_S := 0.25  # o vulto salta do muro até a calçada (quadros 1 a 3 da folha do SUSTO, a 12 fps)
+const PULO_ATRASO := 0.083  # o quadro 0 antecipa
 const FUGA_S := 0.75
 
 var info: Dictionary = {}
@@ -37,6 +41,9 @@ var _dica: Label
 var _titulo: Label
 var _centro: Label
 var _fase := ""
+var _pose_vulto_atual := ""
+var _x_min_cache := -1.0
+var _anim_ladrao_atual := ""
 var _oc_atual := -1
 var _oc_fase_antes := ""
 var _ladrao_antes := ""
@@ -112,7 +119,7 @@ func _montar() -> void:
 	add_child(fundo)
 	_mundo = Node2D.new()
 	_mundo.z_index = Z_MUNDO
-	UiTema.alinhar(_mundo, "ignore")
+	UiTema.alinhar(_mundo, "ignore")  # ignore: o mundo da rua (cenário + atores) tem posição própria, não é UI
 	add_child(_mundo)
 	var bg := Sprite2D.new()
 	bg.centered = false
@@ -155,7 +162,7 @@ func _montar_barra() -> void:
 	_barra = Control.new()
 	_barra.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_barra.z_index = 30
-	UiTema.alinhar(_barra, "ignore")
+	UiTema.alinhar(_barra, "ignore")  # ignore: a barra acompanha o vulto no muro (posição livre de propósito)
 	_mundo.add_child(_barra)
 	var fr := str(sp.get("frame", "ui_ronda_track"))
 	var fi := str(sp.get("fill", "ui_ronda_fill"))
@@ -300,8 +307,9 @@ func _montar_hud() -> void:
 	_dica = UiTema.rotulo(_hud, str(info.get("tip", "")).to_upper(), UiTema.CREAM, 0.0, 338.0, 0, HORIZONTAL_ALIGNMENT_CENTER, false, true)
 	_dica.size = Vector2(TELA.x, 12.0)
 	UiTema.alinhar(_dica, "center_h")
-	_titulo = UiTema.rotulo_centrado(_hud, Rect2(0, 108, TELA.x, 12), str(info.get("name", "")).to_upper(), UiTema.CREAM, 1, true, "center_h")
-	_centro = UiTema.rotulo_centrado(_hud, Rect2(0, 130, TELA.x, 28), UiTema.txt("mini_ready", "PREPARAR"), UiTema.Y2, 2, true, "center_h")
+	_titulo = UiTema.rotulo_centrado(_hud, Rect2(0, 62, TELA.x, 12), str(info.get("name", "")).to_upper(), UiTema.CREAM, 1, true, "center_h")
+	# No céu, entre o cartão do topo e os telhados: nunca em cima da placa 24H da borracharia (A3 do QA).
+	_centro = UiTema.rotulo_centrado(_hud, Rect2(0, 76, TELA.x, 28), UiTema.txt("mini_ready", "PREPARAR"), UiTema.Y2, 2, true, "center_h")
 
 
 # ---------------------------------------------------------------- ocorrência (trecho do muro)
@@ -321,7 +329,7 @@ func _nova_ocorrencia(i: int) -> void:
 	_ladrao.modulate = Color.WHITE
 	_ladrao.flip_h = false
 	_ladrao.visible = true
-	_pose_ladrao(id, "work")
+	_anim_ladrao("work", true)
 	_aviso.position = Vector2(_ladrao_base.x + 2.0, float(layout().get("thief_feet_y", 314)) - 70.0)
 	_aviso.visible = false
 	var tipo_estepe := str(D.get("prop_sprite", "")) == "ronda_prop_tire" and id == "tire"
@@ -336,7 +344,7 @@ func _nova_ocorrencia(i: int) -> void:
 	_vulto.modulate = Color.WHITE
 	_vulto.z_index = int(layout().get("walk_y", 196))
 	_vulto.position = Vector2(_x_vulto(id, 0.0), float(layout().get("walk_y", 196)))
-	_pose_vulto("still")
+	_pose_vulto("still", true)
 	_banner_fugiu.visible = false
 	_ajustar_barra(id)
 	if _oc_atual > 0:
@@ -355,7 +363,47 @@ func _entrada_vulto() -> void:
 
 func _x_vulto(id: String, dist: float) -> float:
 	var D := _dados_oc(id)
-	return roundf(lerpf(float(D.get("start", 26)), float(D.get("end", 146)), dist))
+	return maxf(roundf(lerpf(float(D.get("start", 26)), float(D.get("end", 146)), dist)), x_min_vulto())
+
+
+## Menor x do pivô do vulto para nenhum pixel opaco (de qualquer pose) sair da tela: margem de 4 px. Calculado das folhas, em cache.
+func x_min_vulto() -> float:
+	if _x_min_cache >= 0.0:
+		return _x_min_cache
+	var m := 0.0
+	for estado in NOMES_VULTO:
+		m = maxf(m, MARGEM_TELA - _borda_esq(str(NOMES_VULTO[estado])))
+	_x_min_cache = m
+	return m
+
+
+## Distância (px, <= 0) do pivô até a coluna opaca mais à esquerda de qualquer quadro da folha.
+func _borda_esq(nome: String) -> float:
+	if UiTema.sprite(nome).is_empty():
+		return 0.0
+	var tex: Texture2D = UiTema.textura(nome)
+	var look: Dictionary = GameState.visual_lutador()
+	if not look.is_empty():
+		tex = DiscVisual.textura(nome, look, GameState.simbolo_no_lutador())
+	if tex == null:
+		return 0.0
+	var img := tex.get_image()
+	if img == null:
+		return 0.0
+	var n := maxi(1, int(UiTema.sprite(nome).get("frames", 1)))
+	var fw := img.get_width() / n
+	var melhor := fw
+	for q in n:
+		var achou := false
+		for x in mini(fw, melhor):
+			for y in img.get_height():
+				if img.get_pixel(q * fw + x, y).a > 0.1:
+					melhor = mini(melhor, x)
+					achou = true
+					break
+			if achou:
+				break
+	return float(melhor) - UiTema.pivo(nome).x
 
 
 func _id_atual() -> String:
@@ -383,32 +431,70 @@ func _ajustar_barra(id: String) -> void:
 
 
 # ---------------------------------------------------------------- poses (folha do Artista ou dublê)
-func _pose_vulto(estado: String) -> void:
+## Folha do vulto com o visual do discípulo da vez (camadas pela paleta, como na sala). Sem a folha, o dublê de código.
+func _pose_vulto(estado: String, forcar: bool = false) -> void:
+	if estado == _pose_vulto_atual and not forcar:
+		return
+	_pose_vulto_atual = estado
 	var nome := str(NOMES_VULTO.get(estado, ""))
 	var tem := nome != "" and not UiTema.sprite(nome).is_empty()
 	_vulto_anim.visible = tem
 	_vulto_dub.visible = not tem
 	if not tem:
 		return
+	_vulto_anim.nome_sprite = ""
 	_vulto_anim.definir(nome)
+	var look: Dictionary = GameState.visual_lutador()
+	if not look.is_empty():
+		_vulto_anim.texture = DiscVisual.textura(nome, look, GameState.simbolo_no_lutador())
 	var n := int(UiTema.sprite(nome).get("frames", 1))
 	var seq: Array = []
-	for i in n:
-		seq.append(i)
-	_vulto_anim.tocar(seq, float(UiTema.sprite(nome).get("fps", 8.0)), bool(UiTema.sprite(nome).get("loop", false)))
-
-
-func _pose_ladrao(id: String, _estado: String) -> void:
-	var nome := str(NOMES_LADRAO.get(id, ""))
-	if nome == "" or UiTema.sprite(nome).is_empty():
-		nome = str(DUBLE_LADRAO.get(id, "ped_trabalhador_walk"))
-		_ladrao.definir(nome)
-		_ladrao.parar(0)
-		_ladrao.self_modulate = COR_LADRAO  # dublê escurecido; a folha do Artista vem com as cores dela
+	for k in n:
+		seq.append(k)
+	var fps := float(UiTema.sprite(nome).get("fps", 8.0))
+	if bool(UiTema.sprite(nome).get("loop", false)):
+		_vulto_anim.tocar(seq, fps, true)
 	else:
-		_ladrao.definir(nome)
-		_ladrao.self_modulate = Color.WHITE
+		var segura: Array = UiTema.sprite(nome).get("hold_frames", [n - 1])
+		_vulto_anim.tocar(seq, fps, false, func() -> void:
+			if _vulto_anim.nome_sprite == nome:
+				if segura.size() > 1:
+					_vulto_anim.tocar(segura, 6.0, true)
+				else:
+					_vulto_anim.parar(int(segura[0])))
+
+
+## Anima o ladrão com a folha do estado (idempotente). Sem a folha, o dublê escurecido.
+func _anim_ladrao(anim: String, forcar: bool = false) -> void:
+	if anim == _anim_ladrao_atual and not forcar:
+		return
+	_anim_ladrao_atual = anim
+	var id := _id_atual()
+	var nome := "ronda_thief_%s_%s" % [id, anim]
+	if UiTema.sprite(nome).is_empty():
+		_ladrao.definir(str(DUBLE_LADRAO.get(id, "ped_trabalhador_walk")))
 		_ladrao.parar(0)
+		_ladrao.self_modulate = COR_LADRAO
+		return
+	_ladrao.self_modulate = Color.WHITE
+	_ladrao.nome_sprite = ""
+	_ladrao.definir(nome)
+	var n := int(UiTema.sprite(nome).get("frames", 1))
+	var seq: Array = []
+	for k in n:
+		seq.append(k)
+	var cfg: Array = ANIM_LADRAO.get(anim, [6.0, true])
+	if bool(cfg[1]):
+		_ladrao.tocar(seq, float(cfg[0]), true)
+	else:
+		_ladrao.tocar(seq, float(cfg[0]), false, func() -> void:
+			if _ladrao.nome_sprite == nome:
+				if anim == "fall":
+					_ladrao.tocar([4, 5], 4.0, true)
+				elif anim == "fake":
+					_anim_ladrao("work", true)
+				else:
+					_ladrao.parar(n - 1))
 
 
 # ---------------------------------------------------------------- andamento
@@ -525,10 +611,17 @@ func _atualizar_palco(e: Dictionary, delta: float) -> void:
 		_aviso.parar(f)
 	else:
 		_aviso.visible = false
-	# Ladrão: de costas trabalhando (balança de leve), virado para trás no OLHANDO.
+	# Ladrão: uma folha por estado (trabalha de costas, AVISO, OLHANDO); o aviso falso (tapa no mosquito) toca inteiro.
 	if oc_fase in ["intro", "jogando"]:
-		_ladrao.flip_h = lad == "olhando"
-		_ladrao.position.y = _ladrao_base.y - (1.0 if lad == "trabalha" and int(_t * 5.0) % 2 == 0 else 0.0)
+		if _anim_ladrao_atual != "fake":
+			_anim_ladrao("work" if lad == "trabalha" else ("warn" if lad == "aviso" else "look"))
+		# Vulto: segurando anda agachado; ladrão olhando = estátua; senão parado agachado.
+		if lad == "olhando" and not bool(e.segurando):
+			_pose_vulto("freeze")
+		elif andando:
+			_pose_vulto("walk")
+		else:
+			_pose_vulto("still")
 	# Dica de "estátua": soltou o botão com o ladrão olhando.
 	var seg := bool(e.segurando)
 	if _segurava and not seg and lad == "olhando" and oc_fase == "jogando":
@@ -539,6 +632,8 @@ func _atualizar_palco(e: Dictionary, delta: float) -> void:
 func _evento(ev: String, e: Dictionary) -> void:
 	var id := _id_atual()
 	match ev:
+		"aviso_falso":
+			_anim_ladrao("fake", true)
 		"aviso":
 			sfx.foco()
 			_flutuar(UiTema.txt("ronda_warn_text", "SOLTE!"), UiTema.Y1, Vector2(_ladrao_base.x + 2.0, float(layout().get("thief_feet_y", 314)) - 90.0), 1, 8.0, 0.7)
@@ -568,35 +663,27 @@ func _susto(id: String) -> void:
 	_perto.visible = false
 	if _tween_vulto != null and _tween_vulto.is_valid():
 		_tween_vulto.kill()
-	_pose_vulto("scare")
+	_pose_vulto("scare", true)
 	_vulto.z_index = int(fim.y) + 10
+	_anim_ladrao("fall", true)  # pula de susto, vira e cai de bunda; o objeto voa no quadro 0 e a poeira sai no quadro 2
+	_largar_objeto(id, _dados_oc(id))
+	get_tree().create_timer(0.2).timeout.connect(func() -> void: _poeira(_ladrao_base))
 	_tween_vulto = create_tween()
+	_tween_vulto.tween_interval(PULO_ATRASO)
 	_tween_vulto.tween_method(func(k: float) -> void:
 		var q := ini.lerp(fim, k)
 		_vulto.position = Vector2(roundf(q.x), roundf(q.y - 58.0 * sin(k * PI))), 0.0, 1.0, PULO_S).set_trans(Tween.TRANS_SINE)
 	_tween_vulto.tween_callback(func() -> void: _pousou(id, fim))
-	_ladrao.flip_h = true
 
 
-func _pousou(id: String, fim: Vector2) -> void:
-	var D := _dados_oc(id)
+func _pousou(_id: String, fim: Vector2) -> void:
 	_tremer(3, 0.28)
 	_piscar(Color.WHITE, 0.45, 0.22)
 	sfx.golpe("punching_bag", true)
 	sfx.queda()
 	_poeira(fim)
-	_poeira(_ladrao_base)
 	_letreiro(_banner_susto, 2.0, 1.25)
-	_pose_vulto("still")
-	# O ladrão cai sentado e larga o que estava fazendo (o objeto voa), depois foge.
-	_tween_ladrao = create_tween()
-	_tween_ladrao.tween_property(_ladrao, "rotation", deg_to_rad(-70.0), 0.12)
-	_tween_ladrao.tween_interval(0.3)
-	_tween_ladrao.tween_callback(func() -> void:
-		_ladrao.rotation = 0.0
-		_ladrao.flip_h = false)
-	_fugir_ladrao(0.0)
-	_largar_objeto(id, D)
+	_fugir_ladrao(0.35)  # o vulto segura a pose do SUSTO; o ladrão cai, levanta e foge
 
 
 func _largar_objeto(id: String, D: Dictionary) -> void:
@@ -625,14 +712,11 @@ func _largar_objeto(id: String, D: Dictionary) -> void:
 
 
 ## Ladrão correndo para a direita, para fora da tela (some no fim). `atraso` espera antes de sair correndo.
-func _fugir_ladrao(atraso: float) -> void:
+func _fugir_ladrao(espera: float) -> void:
 	var tw := create_tween()
 	_tween_fuga = tw
-	tw.tween_interval(0.3 + atraso)
-	tw.tween_callback(func() -> void:
-		_ladrao.flip_h = false
-		if _ladrao.nome_sprite.ends_with("_walk"):
-			_ladrao.tocar([0, 1, 2, 3, 4, 5, 6, 7], 14.0, true))
+	tw.tween_interval(espera)
+	tw.tween_callback(func() -> void: _anim_ladrao("flee", true))
 	tw.tween_method(func(k: float) -> void:
 		_ladrao.position = Vector2(roundf(_ladrao_base.x + 150.0 * k), _ladrao_base.y)
 		_ladrao.modulate.a = 1.0 - maxf(0.0, (k - 0.6) / 0.4), 0.0, 1.0, FUGA_S).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -642,11 +726,19 @@ func _fugir_ladrao(atraso: float) -> void:
 func _visto(id: String) -> void:
 	var feet := float(layout().get("thief_feet_y", 314))
 	_perto.visible = false
-	_banner_fugiu.position = Vector2(_ladrao_base.x, feet - 90.0)
+	_banner_fugiu.position = Vector2(320.0, feet - 90.0)  # no meio da tela, como o SUSTO! (A2 do QA)
 	sfx.bloqueio()
 	_letreiro(_banner_fugiu, 1.0, 0.9)
-	_ladrao.flip_h = true
-	_fugir_ladrao(0.05)
+	_anim_ladrao("look", true)
+	_fugir_ladrao(0.3)
+	# O vulto leva o susto: pula para trás e se encolhe atrás da capa (a folha anda no lugar; a tela recua o x).
+	_pose_vulto("seen", true)
+	if _tween_vulto != null and _tween_vulto.is_valid():
+		_tween_vulto.kill()
+	var x0 := _vulto.position.x
+	_tween_vulto = create_tween()
+	_tween_vulto.tween_interval(0.1)
+	_tween_vulto.tween_method(func(k: float) -> void: _vulto.position.x = maxf(roundf(x0 - 10.0 * k), x_min_vulto()), 0.0, 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
 ## Letreiro que dá um "pop" de escala e some.

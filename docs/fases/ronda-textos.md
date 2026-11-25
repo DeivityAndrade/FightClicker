@@ -71,7 +71,7 @@ Comprimento: a maior tem 56 caracteres (a de hoje, 51). O `ui_audit` decide se q
 | `cat_thanks` | O bairro agradece | Tem estepe que voltou para o dono. O dono veio treinar. | +{pct}% TREINO/S DA EQUIPE |
 Alterei só as `description` (tirei o "[ROT]"; "você" virou "a gente" no `cat_watch`, para casar com o jeito da Raízes). Os `effect_text` ficaram como o Designer escreveu.
 
-## 6. Osmar e falas (proposta, NÃO gravada)
+## 6. Osmar e falas (CORTADO da Ronda 1: ver 'Guardado para a Ronda 2' no fim)
 O design não nomeia nenhuma fala nem gatilho. Para o Osmar não saber quem é, sugiro 1 balão na volta da sala quando a lenda sobe de nível (gatilho novo `legend_level_up`, prioridade 5, adiado, uma vez por nível). Não gravei em `dialogos.json` porque exige uma condição nova (`legend_level`) e eu não quero deixar linhas elegíveis sem o código; o Programador decide se vale. Falas prontas (2 linhas, ≤ 26 caracteres):
 | Nível | Fala (coach) |
 |---|---|
@@ -90,3 +90,13 @@ O design não nomeia nenhuma fala nem gatilho. Para o Osmar não saber quem é, 
 - `ronda_warn_text`, `ronda_looking_text`, `ronda_still_hint` são opcionais (a UI/UX decide se cabem no HUD).
 - Nó lacrado: título `node_sealed_name`, subtítulo `node_sealed` com `{n}` = nível da trava; só para travas `black_cat:N`.
 - As falas do Osmar (§6) dependem de decisão e de gatilho novo.
+
+## Guardado para a Ronda 2
+Decisão do Produtor (2026-11-25, BUG-2 do QA): as falas do Osmar sobre a subida da lenda saíram desta fase (o escopo §8 as deixa de fora e faziam o `_rng_fala` divergir). Foram removidos o gatilho `legend_level_up` e as 5 linhas `cl_lenda_1..5` de `data/dialogos.json` e a chamada em `ronda.gd`. A condição `legend_level` do `DialogosData` continua no código, sem uso, pronta para a Ronda 2 (o Osmar desconfiar do vulto). Textos (coach, `repeat: "once"`, gatilho `legend_level_up` prioridade 5 adiado, condição `legend_level` = N):
+| Nível | Fala (coach) |
+|---|---|
+| 1 | jornal diz: gato preto.\nserá o gato do vizinho? |
+| 2 | estepe, bicicleta, portão.\no bairro tá animado. |
+| 3 | tem faixa pintada na rua.\nnem a nossa tem faixa. |
+| 4 | tem criança de orelhinha.\nnão olha pra mim, não. |
+| 5 | parou o busão com uma mão.\ndevia treinar aqui. |

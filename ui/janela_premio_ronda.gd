@@ -21,7 +21,7 @@ func abrir_com(premio: Dictionary, _info: Dictionary = {}) -> void:
 	_premio = premio
 	var sobe := bool(premio.get("level_up", false)) and int(premio.get("level", 0)) >= 1
 	var linhas: Array = _linhas(sobe)
-	var altura := 36.0 + 12.0
+	var altura := 36.0 + 6.0  # 6 em cima (borda ao título) = 6 embaixo (botão à borda)
 	for l in linhas:
 		altura += float(l.h)
 	var topo := roundf((360.0 - altura) / 2.0)
@@ -75,7 +75,7 @@ func _linhas(sobe: bool) -> Array:
 			var n3 := _linhas_de(linha)
 			r.append({"h": 9.0 * float(n3) + 8.0, "f": func(y: float) -> void: _texto(linha, UiTema.G3, y, n3)})
 	r.append({"h": 28.0, "f": func(y: float) -> void: _bolinhas(y, nivel, sobe)})
-	r.append({"h": 36.0, "f": func(y: float) -> void: _botao_voltar(y + 4.0)})
+	r.append({"h": 28.0, "f": func(y: float) -> void: _botao_voltar(y)})
 	return r
 
 

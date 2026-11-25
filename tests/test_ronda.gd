@@ -26,7 +26,7 @@ func rodar_testes() -> void:
 	_teste_efeitos()
 	_teste_saves()
 	_teste_quem_nao_joga()
-	_teste_falas_do_osmar()
+	_teste_hitch_longo()
 
 
 func _novo(nome: String, campanha: int = 3, com_marco: bool = true) -> Node:
@@ -76,9 +76,7 @@ func _teste_dados() -> void:
 		checar_igual(str(n.get("effect_type", "")), str(casos.nos[id].effect.type), "efeito do no %s" % id)
 	var d := DialogosData.carregar()
 	checar(d.erros.is_empty(), "DialogosData.carregar() sem erros (%s)" % str(d.erros))
-	checar(not d.gatilho("legend_level_up").is_empty(), "gatilho legend_level_up existe")
-	for n in range(1, 6):
-		checar(not d.linha("cl_lenda_%d" % n).is_empty() and d.linha("cl_lenda_%d" % n).enabled, "fala cl_lenda_%d ligada" % n)
+	checar(d.gatilho("legend_level_up").is_empty() and d.linha("cl_lenda_1").is_empty(), "sem falas do Osmar sobre a lenda (cortadas, vao para a Ronda 2)")
 	# dado ruim: noite com kind desconhecido sai com aviso
 	var ruim := RondaData.new()
 	ruim._ler({"night_order": ["x"], "nights": {"x": {"kind": "bandidos", "occurrences": [{"id": "a"}]}}})
@@ -537,7 +535,6 @@ func _corrida(nome: String, vai: bool) -> String:
 	var e: Dictionary = gs.para_save()
 	e.career.erase("black_cat_hood")
 	e.permanent.erase("black_cat")
-	e.school.erase("lines_seen")  # o Osmar comenta a subida da lenda (decisao do Produtor): so isso muda na escola
 	var r := JSON.stringify(e, "", true)
 	var rondas: int = int(gs.lenda().rounds)
 	_liberar(gs)
@@ -553,15 +550,17 @@ func _teste_quem_nao_joga() -> void:
 	checar(ra[1] == rb[1], "mesma campanha indo em todas ou nunca: save igual campo a campo (sem lenda/capuz)")
 
 
-func _teste_falas_do_osmar() -> void:
-	var gs := _novo("ronda_falas")
-	var ctx := {"campaign": 3, "first_campaign": 1, "lutador": "disciple", "location": "garage", "milestones": gs.escola.milestones,
-		"lines_seen": {}, "params": {"legend_level": 2}}
-	var c: Array = gs.dialogos.candidatas("legend_level_up", ctx)
-	checar(c.size() == 1 and str(c[0].id) == "cl_lenda_2", "so a fala do nivel 2 e candidata no nivel 2")
-	ctx.params = {"legend_level": 5}
-	c = gs.dialogos.candidatas("legend_level_up", ctx)
-	checar(c.size() == 1 and str(c[0].id) == "cl_lenda_5", "so a fala do nivel 5 no nivel 5")
-	ctx.params = {}
-	checar(gs.dialogos.candidatas("legend_level_up", ctx).is_empty(), "sem nivel nenhuma fala")
+# Um quadro unico com delta enorme (PC suspenso) nao pode pular o premio: a janela de premio sempre aparece.
+func _teste_hitch_longo() -> void:
+	var gs := _novo("ronda_hitch")
+	_andar(gs, 180)
+	gs.ronda_ir()
+	gs.tick(5000.0)
+	checar(gs.ronda_ativa == "scare" and not gs._ronda_premio.is_empty(), "hitch de 5000 s: a Ronda fecha mas o premio fica esperando")
+	checar(int(gs.lenda().rounds) == 1 and int(gs.lenda().legend) >= 1, "hitch: a lenda entrou uma vez")
+	gs.tick(0.5)
+	checar(gs.ronda_ativa == "scare", "quadro seguinte curto: ainda na tela de premio")
+	gs.tick(5000.0)
+	checar(gs.ronda_ativa == "", "depois de ver o premio, outro hitch longo devolve a sala (trava de 120 s)")
+	checar(int(gs.lenda().rounds) == 1, "a lenda nao entrou duas vezes")
 	_liberar(gs)

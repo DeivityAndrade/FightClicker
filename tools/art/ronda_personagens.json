@@ -1,8 +1,159 @@
 {
+	"by_data_id": {
+		"ronda_characters": {
+			"_nota": "Ronda (Artista de Personagens): elenco da tela. Quadro 96x100, pivô (50,94) = chão (pés do vulto em walk_y/land/rooftop_pose.feet; do ladrão em occurrences.<id>.thief). Nada precisa de espelho. Vulto em camadas pela disciple_palette (ver o 'note' de cada ronda_vulto_*). Detalhes: docs/arte/ronda-personagens-manifest.md.",
+			"thief_by_state": {
+				"aviso": "warn",
+				"aviso_falso": "fake",
+				"fuga": "flee",
+				"olhando": "look",
+				"susto": "fall",
+				"trabalha": "work"
+			},
+			"thieves": {
+				"bike": {
+					"fake": "ronda_thief_bike_fake",
+					"fall": "ronda_thief_bike_fall",
+					"flee": "ronda_thief_bike_flee",
+					"look": "ronda_thief_bike_look",
+					"warn": "ronda_thief_bike_warn",
+					"work": "ronda_thief_bike_work"
+				},
+				"gate": {
+					"fake": "ronda_thief_gate_fake",
+					"fall": "ronda_thief_gate_fall",
+					"flee": "ronda_thief_gate_flee",
+					"look": "ronda_thief_gate_look",
+					"warn": "ronda_thief_gate_warn",
+					"work": "ronda_thief_gate_work"
+				},
+				"tire": {
+					"fake": "ronda_thief_tire_fake",
+					"fall": "ronda_thief_tire_fall",
+					"flee": "ronda_thief_tire_flee",
+					"look": "ronda_thief_tire_look",
+					"warn": "ronda_thief_tire_warn",
+					"work": "ronda_thief_tire_work"
+				}
+			},
+			"vulto": {
+				"freeze": "ronda_vulto_freeze",
+				"roof": "ronda_vulto_roof",
+				"scare": "ronda_vulto_scare",
+				"seen": "ronda_vulto_seen",
+				"sneak_idle": "ronda_vulto_sneak_idle",
+				"sneak_walk": "ronda_vulto_sneak_walk"
+			},
+			"vulto_by_state": {
+				"fim": "roof",
+				"ladrao_olhando_parado": "freeze",
+				"parado": "sneak_idle",
+				"segurando": "sneak_walk",
+				"susto": "scare",
+				"visto": "seen"
+			}
+		}
+	},
 	"sprites": {
-		"ronda_vulto_roof": {
+		"ronda_thief_bike_fake": {
+			"action": "fake",
 			"facing": "direita",
-			"file": "res://assets/sprites/minigame/ronda_vulto_roof.png",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_fake.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": false,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. aviso falso: estava no AVISO, dá um tapa no mosquito na nuca, coça e volta ao trabalho (o último quadro = work[0])",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_fall": {
+			"action": "fall",
+			"dust_frame": 2,
+			"facing": "esquerda",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_fall.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"hold_frames": [
+				4,
+				5
+			],
+			"loop": false,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. SUSTO: pula de susto, vira para o vulto e cai de bunda para trás (já vem virado para a ESQUERDA); 4-5 seguram sentado e tonto; fx_dust_fall nos pés no quadro 2. O prop (ronda_prop_*) sai voando no quadro 0.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_flee": {
+			"action": "flee",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_flee.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. fuga em pânico para a DIREITA (a tela move o x até sair); começa depois do fall",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_look": {
+			"action": "look",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_look.png",
+			"fps": 3,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. OLHANDO: vira a cabeça para trás, desconfiado (estado 'olhando'; não precisa espelhar)",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_warn": {
+			"action": "warn",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_warn.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. AVISO: para, endireita e levanta a cabeça (estado 'aviso'; o ui_thief_warn ? fica em cima)",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_bike_work": {
+			"action": "work",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_bike_work.png",
 			"fps": 6,
 			"frame_size": [
 				96,
@@ -10,21 +161,336 @@
 			],
 			"frames": 4,
 			"loop": true,
-			"note": "AMOSTRA (aguarda o dono). Vulto agachado na beira do telhado contra a lua; o traje por cima do discípulo da vez.",
+			"note": "ladrão da bicicleta: magrelo comprido, boné para trás, cavanhaque, corta-vento roxo, calça de moletom; alicate. trabalha de costas para o vulto (estado 'trabalha')",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_bike"
+		},
+		"ronda_thief_gate_fake": {
+			"action": "fake",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_fake.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": false,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. aviso falso: estava no AVISO, dá um tapa no mosquito na nuca, coça e volta ao trabalho (o último quadro = work[0])",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_fall": {
+			"action": "fall",
+			"dust_frame": 2,
+			"facing": "esquerda",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_fall.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"hold_frames": [
+				4,
+				5
+			],
+			"loop": false,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. SUSTO: pula de susto, vira para o vulto e cai de bunda para trás (já vem virado para a ESQUERDA); 4-5 seguram sentado e tonto; fx_dust_fall nos pés no quadro 2. O prop (ronda_prop_*) sai voando no quadro 0.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_flee": {
+			"action": "flee",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_flee.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. fuga em pânico para a DIREITA (a tela move o x até sair); começa depois do fall",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_look": {
+			"action": "look",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_look.png",
+			"fps": 3,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. OLHANDO: vira a cabeça para trás, desconfiado (estado 'olhando'; não precisa espelhar)",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_warn": {
+			"action": "warn",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_warn.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. AVISO: para, endireita e levanta a cabeça (estado 'aviso'; o ui_thief_warn ? fica em cima)",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_gate_work": {
+			"action": "work",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_gate_work.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do portão: barrigudo, careca de bigodão, camisa social marrom, calça jeans e botina; pé de cabra. trabalha de costas para o vulto (estado 'trabalha')",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_gate"
+		},
+		"ronda_thief_tire_fake": {
+			"action": "fake",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_fake.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": false,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. aviso falso: estava no AVISO, dá um tapa no mosquito na nuca, coça e volta ao trabalho (o último quadro = work[0])",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_fall": {
+			"action": "fall",
+			"dust_frame": 2,
+			"facing": "esquerda",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_fall.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"hold_frames": [
+				4,
+				5
+			],
+			"loop": false,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. SUSTO: pula de susto, vira para o vulto e cai de bunda para trás (já vem virado para a ESQUERDA); 4-5 seguram sentado e tonto; fx_dust_fall nos pés no quadro 2. O prop (ronda_prop_*) sai voando no quadro 0.",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_flee": {
+			"action": "flee",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_flee.png",
+			"fps": 12,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. fuga em pânico para a DIREITA (a tela move o x até sair); começa depois do fall",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_look": {
+			"action": "look",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_look.png",
+			"fps": 3,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. OLHANDO: vira a cabeça para trás, desconfiado (estado 'olhando'; não precisa espelhar)",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_warn": {
+			"action": "warn",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_warn.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. AVISO: para, endireita e levanta a cabeça (estado 'aviso'; o ui_thief_warn ? fica em cima)",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_thief_tire_work": {
+			"action": "work",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_thief_tire_work.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"loop": true,
+			"note": "ladrão do estepe: baixinho e largo, gorro de lã, bigode, regata encardida, bermuda jeans e chinelo; chave de roda em cruz. trabalha de costas para o vulto (estado 'trabalha')",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "ladrao_tire"
+		},
+		"ronda_vulto_freeze": {
+			"action": "freeze",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_body.png",
+			"fps": 4,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 2,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_freeze_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. congelar (estátua num pé só quando o ladrão olha; só o pé no ar treme 1 px) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask.",
 			"palette_swap": "disciple_palette",
 			"pivot": [
 				50,
 				94
-			]
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_roof": {
+			"action": "roof",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_roof_disc_body.png",
+			"fps": 6,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_roof_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_roof_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_roof_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_roof_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_roof_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_roof_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. pose no telhado com a lua (pés em rooftop_pose.feet) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
 		},
 		"ronda_vulto_scare": {
+			"action": "scare",
 			"air_frames": [
 				1,
 				2,
 				3
 			],
 			"facing": "direita",
-			"file": "res://assets/sprites/minigame/ronda_vulto_scare.png",
+			"file": "res://assets/sprites/minigame/ronda_vulto_scare_disc_body.png",
 			"fps": 12,
 			"frame_size": [
 				96,
@@ -35,13 +501,174 @@
 				5,
 				6
 			],
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_scare_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_scare_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_scare_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_scare_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_scare_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_scare_disc_top_tee.png"
+				}
+			},
 			"loop": false,
-			"note": "AMOSTRA (aguarda o dono). SUSTO: 0 antecipa, 1 impulso, 2 ápice, 3 descendo, 4 aterrissa, 5 SUSTO, 6 segura. A tela move o nó do muro à calçada nos quadros 1-3.",
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. SUSTO: 0 antecipa no muro, 1 impulso, 2 ápice, 3 descendo, 4 aterrissa em land, 5 SUSTO!, 6 segura (5-6 em loop no letreiro). A tela leva o nó de (end, walk_y) até land nos quadros 1-3. Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask.",
 			"palette_swap": "disciple_palette",
 			"pivot": [
 				50,
 				94
-			]
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_seen": {
+			"action": "seen",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_seen_disc_body.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"hold_frames": [
+				3
+			],
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_seen_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_seen_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_seen_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_seen_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_seen_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_seen_disc_top_tee.png"
+				}
+			},
+			"loop": false,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. visto/recuar (ESCAPOU: o vulto se assusta, pula para trás e se encolhe; a tela recua o x nos quadros 1-2) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_sneak_idle": {
+			"action": "sneak_idle",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_body.png",
+			"fps": 5,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 4,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_sneak_idle_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. espreitar parado (agachado na capa do muro; respira, o vento mexe a faixa e a capa) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
+		},
+		"ronda_vulto_sneak_walk": {
+			"action": "sneak_walk",
+			"facing": "direita",
+			"file": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_body.png",
+			"fps": 10,
+			"frame_size": [
+				96,
+				100
+			],
+			"frames": 6,
+			"layers": {
+				"body": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_body.png",
+				"head": {
+					"bun": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_bun.png",
+					"buzz": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_buzz.png",
+					"short": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_short.png",
+					"volume": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_head_volume.png"
+				},
+				"order": [
+					"body",
+					"top",
+					"socks",
+					"school_symbol",
+					"head"
+				],
+				"school_symbol": {
+					"leg": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_symbol_leg.png"
+				},
+				"socks": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_socks.png",
+				"top": {
+					"tank": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_top_tank.png",
+					"tee": "res://assets/sprites/minigame/ronda_vulto_sneak_walk_disc_top_tee.png"
+				}
+			},
+			"loop": true,
+			"mirror_ok": false,
+			"note": "Vulto (Gato Preto) = o discípulo da vez com o traje. avançar agachado (passo na ponta dos pés, no lugar: a tela move o x de start a end enquanto segura) Montagem: body -> top.<tank|tee> se look.top != none -> socks se look.socks == on -> head.<look.hair_style>; trocar as cores-chave pela disciple_palette (como o discípulo). school_symbol.leg (o R de raiz, chaves keys.school_symbol, cor pela school_symbol_source.leg) só quando o lutador mostra o símbolo E está sem parte de cima (com parte de cima não há camada: no perfil o carimbo do peito fica nas costas, sob a capa). Nunca espelhar (o R não é simétrico, §29.2). Sem band e sem front_mask.",
+			"palette_swap": "disciple_palette",
+			"pivot": [
+				50,
+				94
+			],
+			"who": "vulto"
 		}
 	}
 }

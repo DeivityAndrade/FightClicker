@@ -1469,7 +1469,7 @@ Textos das manchetes e do recorte = provisórios [ROT] (`TXT_*` no topo do gerad
 
 ### 36.2 O traje (regra de cor para o Artista e para todo objeto do vulto)
 Capuz e capa: `d1` base, `d2` luz, `ink` contorno; luz da lua por trás = 1 passo (`g0`) só na borda de cima. Orelhas **largas e
-baixas**, com 2 pontos de costura `g1`. **Faixa vermelha `r2`** (luz `r3`, sombra `r1`), a mesma da amostra do Artista (`mockups/ronda_amostra_vulto.png`), nó atrás e as duas pontas voando para trás. No gerador é uma constante só (`BAND`): se o dono pedir a faixa azul da escola, troca em tudo de uma vez.
+baixas**, com 2 pontos de costura `g1`. **Faixa vermelha `r2`** (luz `r3`, sombra `r1`), a mesma da amostra do Artista (`mockups/ronda_amostra_vulto.png`), nó atrás e as duas pontas voando para trás. No gerador é uma constante só (`BAND`): se o dono pedir a faixa azul da escola, troca em tudo de uma vez. **Aprovado (2026-11-25): o dono aprovou a amostra do vulto com a faixa VERMELHA**; `BAND` fica vermelha (`r1/r2/r3`). Elenco completo (vulto em camadas + 3 ladrões): `tools/art/make_sprites_ronda.gd`, `docs/arte/ronda-personagens-manifest.md`, `mockups/ronda_elenco.png`.
 Pele só na boca/queixo. Capa de lona com remendo `g0`, **caindo reta** (nunca aberta em asa). Sem símbolo no peito, sem cinto.
 O dublê do gerador (52x50, agachado ~46 px) só mede o cenário: a folha é do Artista de Personagens (skill `padrao-personagem`).
 
