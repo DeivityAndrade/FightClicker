@@ -15,12 +15,21 @@ extends RefCounted
 ##                      do cartão ou a menos de FOLGA_BOTAO px de um botão vizinho; rótulo com autowrap sem FOLGA_BORDA de sobra na largura.
 ##   TXT_NA_MOLDURA     (R2) texto sobre moldura (NinePatchRect ou carimbo) que não cabe na área interna (moldura menos margens do 9-slice).
 ##   TXT_CONTRASTE      (R3) texto habilitado com contraste < 4,5:1 contra a cor média do fundo logo atrás (estilo/textura/ColorRect).
+##   FOLGA_VIZINHO     (ID3) texto a menos de FOLGA_VIZ px de um Button vizinho da mesma janela/cartão ou de uma tarja/faixa (Panel, NinePatch,
+##                      ColorRect com desenho, irmã dele ou de um ancestral) que o cobre ou encosta nele (< 1 px); botão de baixo de janela com folga até a borda
+##                      interna diferente do padrão (PADRAO_BASE_JANELA ± TOL_BASE_JANELA).
+## Isenções por tipo (não exigem `ignore`, não entram no placar): área de hover sem desenho, ReferenceRect, peça sem texto dentro de
+## moldura/textura, Node2D de mundo. Continuam sujeitas ao OPACO_FORA.
 ## Placar: todo `ignore` visto é contado em `placar` (meta do estúdio: no máximo 15 no fim da fase).
 
 const BASE := Vector2(640, 360)
 const TOL := 1.0
 const CODIGOS := ["IGNORE_SEM_MOTIVO", "IGNORE_PROIBIDO", "TXT_SOZINHO", "JANELA_ASSIM", "JANELA_MARGEM", "OPACO_FORA", "DRAW_TEXTO",
-	"TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE"]
+	"TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE", "FOLGA_VIZINHO"]
+const FOLGA_VIZ := 2.0  # px entre o texto e um botão vizinho ou uma tarja
+const PADRAO_BASE_JANELA := 12.0  # px entre o botão de baixo e a borda interna da janela (medido nas janelas certas)
+const TOL_BASE_JANELA := 2.0
+const LIMITE_BASE_JANELA := 40.0  # botão a mais disso da borda de baixo não é "o botão de baixo"
 const FOLGA_BORDA := 4.0  # px entre o texto e a borda interna do cartão (depois das margens do 9-slice)
 const FOLGA_BOTAO := 2.0  # px entre o texto e um botão vizinho
 const CONTRASTE_MIN := 4.5
@@ -49,8 +58,11 @@ func auditar(raiz: Node, estado: String) -> void:
 		if n is Label and n.text != "":
 			_regra_cartao(n, estado)
 			_regra_contraste(n, estado)
+			_regra_folga_vizinho(n, estado)
 		elif n is NinePatchRect or n is Panel:
 			_regra_moldura(n, estado)
+		if n is Button:
+			_regra_base_janela(n, estado)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -74,6 +86,7 @@ func _varrer(n: Node, sob_ignore: bool, estado: String) -> void:
 
 func _regra_ignore(n: Node, estado: String) -> void:
 	var motivo := str(n.get_meta("ui_align_motivo", "")).strip_edges()
+	var isento := _isento_por_tipo(n)  # tipos que não precisam de ignore: não contam no placar nem exigem motivo
 	var cam_placar := _caminho(n)
 	var aspas := cam_placar.find(' "')
 	if aspas >= 0:
@@ -81,9 +94,9 @@ func _regra_ignore(n: Node, estado: String) -> void:
 	var re := RegEx.create_from_string("_\\d+")
 	cam_placar = re.sub(cam_placar, "_N", true)  # Retrato_1, Retrato_2...: o mesmo ignore repetido por item conta uma vez
 	var chave := _arquivo(n) + "|" + cam_placar
-	if not placar.has(chave):
+	if not isento and not placar.has(chave):
 		placar[chave] = {"arquivo": _arquivo(n), "caminho": cam_placar, "motivo": motivo, "classe": n.get_class()}
-	if motivo == "":
+	if motivo == "" and not isento:
 		_achado("IGNORE_SEM_MOTIVO", n, estado, "ignore sem motivo escrito (ui_align_motivo)")
 	var ofensores: Array[String] = []
 	if n is Button:
@@ -98,6 +111,30 @@ func _regra_ignore(n: Node, estado: String) -> void:
 			ofensores.append('Label "%s"' % l.text.replace("\n", " ").left(16))
 	if not ofensores.is_empty():
 		_achado("IGNORE_PROIBIDO", n, estado, "ignore engole %d botão/texto fixo: %s" % [ofensores.size(), ", ".join(ofensores.slice(0, 3))])
+
+
+## Isenção por tipo: nós que o verificador reconhece sem declaração (continuam sujeitos ao OPACO_FORA).
+func _isento_por_tipo(n: Node) -> bool:
+	if n is ReferenceRect or n is Node2D:  # Node2D: raiz de mundo (sala, rua, efeitos), arte e não interface
+		return true
+	if not (n is Control):
+		return false
+	var visiveis := 0
+	for c in n.get_children():
+		if not (c is CanvasItem) or c.visible:
+			visiveis += 1
+	# Área de hover/toque sem desenho: Control puro, com mouse ativo, sem texto, textura nem filhos visíveis.
+	if n.get_class() == "Control" and n.mouse_filter != Control.MOUSE_FILTER_IGNORE and visiveis == 0:
+		return true
+	if bool(n.get_meta("ui_area_hover", false)) and visiveis == 0:
+		return true
+	# Peça sem texto dentro de moldura ou textura.
+	if (n is TextureRect or n is NinePatchRect or n is ColorRect) and (n.get_parent() is NinePatchRect or n.get_parent() is TextureRect or n.get_parent() is Panel):
+		for l in n.find_children("*", "Label", true, false):
+			if l.text != "":
+				return false
+		return true
+	return false
 
 
 ## O Label (ou um ancestral até o nó ignorado) declarou que o texto muda em tempo de jogo?
@@ -528,6 +565,124 @@ func _media(tex: Texture2D, regiao: Rect2i, m: Variant) -> Variant:
 			r = Color(soma.x / n, soma.y / n, soma.z / n, 1.0)
 	_medias[chave] = r
 	return r
+
+
+# ---------------------------------------------------------------------------------------------
+# FOLGA_VIZINHO: texto x botão vizinho, texto x tarja, botão de baixo x borda da janela
+# ---------------------------------------------------------------------------------------------
+
+func _eh_janela_base(n: Node) -> bool:
+	var s: Script = n.get_script()
+	while s != null:
+		if s.get_global_name() == "JanelaBase":
+			return true
+		s = s.get_base_script()
+	return false
+
+
+## Janela que contém o nó: a JanelaBase ancestral.
+func _janela_de(n: Node) -> Control:
+	var p := n.get_parent()
+	while p != null:
+		if p is Control and _eh_janela_base(p):
+			return p
+		p = p.get_parent()
+	return null
+
+
+## Moldura (c_janela) dentro da janela: a maior NinePatchRect/Panel com textura c_janela.
+func _moldura_da_janela(j: Control) -> Control:
+	var melhor: Control = null
+	for c in j.find_children("*", "Control", true, false):
+		if (c is NinePatchRect or c is Panel) and c.visible and _nome_textura(c) == "c_janela":
+			if melhor == null or c.size.x * c.size.y > melhor.size.x * melhor.size.y:
+				melhor = c
+	return melhor
+
+
+func _tem_desenho(n: Node) -> bool:
+	if not (n is Control) or n is Label or n is Button or not n.visible:
+		return false
+	if n is ColorRect:
+		return n.color.a >= 0.2
+	if n is NinePatchRect:
+		return n.texture != null
+	if n is Panel:
+		return not (n.get_theme_stylebox("panel") is StyleBoxEmpty)
+	return false
+
+
+func _regra_folga_vizinho(l: Label, estado: String) -> void:
+	if _dentro_de_botao(l) or a._ignorado(l):
+		return
+	var vr: Rect2 = a._rect_texto(l)
+	if vr.size.x <= 0.0 or vr.size.y <= 0.0:
+		return
+	var inf := vr.grow(FOLGA_VIZ)
+	# (1) Botão vizinho da mesma janela ou cartão.
+	var escopo: Node = _janela_de(l)
+	if escopo == null:
+		var cartao := _cartao_de(l, vr.get_center())
+		if cartao != null:
+			escopo = cartao.get_parent()
+	if escopo != null:
+		for b in escopo.find_children("*", "Button", true, false):
+			if not b.is_visible_in_tree() or b.is_ancestor_of(l) or a._ignorado(b):
+				continue
+			var br: Rect2 = a._rect(b)
+			if br.has_point(vr.get_center()):
+				continue  # texto sobre o botão (decoração)
+			if inf.intersects(br):
+				var gx := maxf(br.position.x - vr.end.x, vr.position.x - br.end.x)
+				var gy := maxf(br.position.y - vr.end.y, vr.position.y - br.end.y)
+				_achado("FOLGA_VIZINHO", l, estado, 'a %.1fpx do botão "%s" (mínimo %.0f)' % [maxf(gx, gy), a._texto_botao(b).left(14), FOLGA_VIZ])
+				break
+	# (2) Tarja ou faixa irmã dele ou de um ancestral que o cobre em parte (ou chega a menos de FOLGA_VIZ).
+	var filho: Node = l
+	var p := l.get_parent()
+	while p != null and p is Control and not (p is Button):
+		for c in p.get_children():
+			if c == filho or not _tem_desenho(c) or a._ignorado(c):
+				continue
+			var cr: Rect2 = a._rect(c)
+			if cr.size.x * cr.size.y >= BASE.x * BASE.y * 0.5:
+				continue  # fundo de tela inteira
+			# Sobrepõe o texto de verdade (sem a folga) e não é um fundo que o envolve com FOLGA_VIZ de sobra.
+			# Encostou ou cobriu (folga < 1 px): barra e tarja coladas com 1 px de ar (HUD compacto) são desenho de propósito.
+			# Fio fino (divisor, sublinhado de 1-3 px) encosta de propósito: só conta se atravessar o texto.
+			var alvo := vr if minf(cr.size.x, cr.size.y) < 4.0 else vr.grow(1.0)
+			if alvo.intersects(cr) and not cr.encloses(inf):
+				_achado("FOLGA_VIZINHO", l, estado, "a tarja %s %s texto %s (folga mínima %.0fpx)" % [
+					str(c.name), "cobre o" if c.get_index() > filho.get_index() else "encosta no", a._fmt(vr), FOLGA_VIZ])
+				return
+		if p.size.x >= BASE.x - 0.5 and p.size.y >= BASE.y - 0.5:
+			break
+		filho = p
+		p = p.get_parent()
+
+
+## Botão mais baixo da janela: a folga até a borda interna (moldura menos a sombra) é a mesma das outras janelas.
+func _regra_base_janela(b: Button, estado: String) -> void:
+	if not b.is_visible_in_tree() or a._ignorado(b) or _recortado_por_pai(b):
+		return  # botão de lista rolável não é o botão de baixo da janela
+	var j := _janela_de(b)
+	if j == null:
+		return
+	var m := _moldura_da_janela(j)
+	if m == null:
+		return
+	var br: Rect2 = a._rect(b)
+	var mr: Rect2 = a._rect(m)
+	if not mr.encloses(br) or br.position.y < mr.position.y + mr.size.y * 0.5:
+		return  # botão fora da moldura ou na metade de cima (fechar no canto): não é o botão de baixo
+	for o in j.find_children("*", "Button", true, false):  # só o(s) botão(ões) mais baixo(s)
+		if o != b and o.is_visible_in_tree() and not a._ignorado(o) and not _recortado_por_pai(o) and mr.encloses(a._rect(o)) and a._rect(o).end.y > br.end.y + 0.5:
+			return
+	var folga := (mr.end.y - 3.0) - br.end.y  # a c_janela tem 3 px de sombra embaixo
+	if folga > LIMITE_BASE_JANELA:
+		return  # longe da borda: é conteúdo da janela (botão de lista), não o botão de baixo
+	if absf(folga - PADRAO_BASE_JANELA) > TOL_BASE_JANELA + 0.01:
+		_achado("FOLGA_VIZINHO", b, estado, "botão de baixo a %.1fpx da borda interna da janela (padrão %.0f ± %.0f)" % [folga, PADRAO_BASE_JANELA, TOL_BASE_JANELA])
 
 
 # ---------------------------------------------------------------------------------------------

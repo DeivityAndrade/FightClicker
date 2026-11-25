@@ -19,7 +19,7 @@ const LARG_VALOR := 119.0
 var sfx: Sfx
 var _origem := Vector2.ZERO
 var _nome: LineEdit
-var _nome_caixa: Panel
+var _nome_caixa: NinePatchRect
 ## Uma entrada por linha com seta: {campo, kind, rotulo, valor, esq, dir, chips: Array[ColorRect], contador: Label, texto: Label, n}
 var _campos: Array = []
 var _grupos_setas: Dictionary = {}  # coluna (2 em diante) -> Control que guarda as setas dela
@@ -102,32 +102,31 @@ func _montar_linhas(ativos: Array) -> void:
 	_rotulo_linha(0, UiTema.txt("disc_label_name", "NOME"))
 	var x_sel := _x_coluna(0) + 56.0
 	var larg_sel := 151.0  # 56 px de rótulo + 151 de seletor: termina a 12 px da borda direita da janela
-	# A caixa (borda) tem 18 px como as outras linhas; o LineEdit fica dentro, mais alto, e a caixa recorta (a fonte pede 24 px).
-	_nome_caixa = Panel.new()
-	_nome_caixa.position = Vector2(x_sel, _y_linha(0))
-	_nome_caixa.size = Vector2(larg_sel, ALT_LINHA)
+	# Tema C: o campo é um cartão de papel (c_cartao) de 18 px como as outras linhas, texto ink dentro da área útil do 9-slice.
+	_nome_caixa = UiTema.nine_patch(painel, "c_cartao", Rect2(x_sel, _y_linha(0), larg_sel, ALT_LINHA))
 	_nome_caixa.clip_contents = true
-	_nome_caixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_nome_caixa.add_theme_stylebox_override("panel", _caixa(UiTema.G1))
-	UiTema.ignorar(_nome_caixa, "campo de nome: caixa de texto editável (LineEdit) maior que a borda, recortada pela caixa")
-	painel.add_child(_nome_caixa)
+	_nome_caixa.modulate = Color(0.9, 0.9, 0.9)  # sem foco um pouco apagado; com foco, papel cheio
 	_nome = LineEdit.new()
-	_nome.position = Vector2(0, -3)
-	_nome.size = Vector2(larg_sel, 24)
+	var area_c := UiTema.area_nove("c_cartao", _nome_caixa.size)
+	# A fonte pede um LineEdit de 24 px de altura: ele fica mais alto que o cartão e o cartão recorta; o texto cai no meio da área de papel.
+	_nome.position = Vector2(area_c.position.x, -4.0)
+	_nome.size = Vector2(area_c.size.x, 24.0)
 	_nome.focus_mode = Control.FOCUS_ALL
 	_nome.context_menu_enabled = false
 	_nome.virtual_keyboard_enabled = false
 	_nome.add_theme_font_override("font", UiTema.fonte())
 	_nome.add_theme_font_size_override("font_size", UiTema.TAMANHO_FONTE)
-	_nome.add_theme_color_override("font_color", UiTema.WHITE)
-	_nome.add_theme_color_override("caret_color", UiTema.Y1)
-	_nome.add_theme_color_override("selection_color", UiTema.P1)
+	_nome.add_theme_color_override("font_color", UiTema.INK)
+	_nome.add_theme_color_override("caret_color", UiTema.R1)
+	_nome.add_theme_color_override("selection_color", Color(UiTema.R1, 0.35))
 	var vazio := StyleBoxEmpty.new()
-	vazio.content_margin_left = 5.0
+	vazio.content_margin_left = 3.0
+	vazio.content_margin_top = 0.0
+	vazio.content_margin_bottom = 0.0
 	_nome.add_theme_stylebox_override("normal", vazio)
 	_nome.add_theme_stylebox_override("focus", vazio)
-	_nome.focus_entered.connect(func() -> void: _nome_caixa.add_theme_stylebox_override("panel", _caixa(UiTema.Y1)))
-	_nome.focus_exited.connect(func() -> void: _nome_caixa.add_theme_stylebox_override("panel", _caixa(UiTema.G1)))
+	_nome.focus_entered.connect(func() -> void: _nome_caixa.modulate = Color.WHITE)
+	_nome.focus_exited.connect(func() -> void: _nome_caixa.modulate = Color(0.9, 0.9, 0.9))
 	_nome.text_changed.connect(_ao_digitar)
 	_nome.text_submitted.connect(func(_t: String) -> void: _confirmar())
 	_nome_caixa.add_child(_nome)
@@ -135,18 +134,6 @@ func _montar_linhas(ativos: Array) -> void:
 	for i in ativos.size():
 		var c: Dictionary = ativos[i]
 		_montar_campo(i + 1, str(c.field), UiTema.txt(str(c.label)), str(c.kind), int(c.chips))
-
-
-func _caixa(borda: Color) -> StyleBoxFlat:
-	var e := StyleBoxFlat.new()
-	e.bg_color = UiTema.D1
-	e.border_color = borda
-	e.set_border_width_all(1)
-	e.content_margin_left = 5.0
-	e.content_margin_right = 3.0
-	e.content_margin_top = 0.0
-	e.content_margin_bottom = 0.0
-	return e
 
 
 func _x_coluna(i: int) -> float:

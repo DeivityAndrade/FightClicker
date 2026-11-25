@@ -130,12 +130,12 @@ func _montar() -> void:
 
 	# --- Táticas ---
 	UiTema.rotulo(painel, UiTema.txt("tactic_label", "TÁTICA"), UiTema.G3, X0, y)
-	y += 10.0 + ar
+	y += 12.0 + ar  # 2 px a mais entre TÁTICA e os botões (folga mínima do verificador); saem do respiro de baixo
 	var x := X0
 	for t in GameState.lutas.taticas:
 		_montar_tatica(t, x, y)
 		x += 107.0
-	y += 22.0 + 2.0 + 13.0 + 4.0  # 4 px de respiro entre a linha de risco e a dica
+	y += 22.0 + 2.0 + 13.0 + 2.0  # 2 px de respiro entre a linha de risco e a dica
 	_dica = UiTema.rotulo(painel, "", UiTema.G3, X0, y, X1 - X0, HORIZONTAL_ALIGNMENT_CENTER)
 	y += 14.0 + g4 + 2.0 * ar  # respiro antes do que está em jogo
 	if nota:
@@ -172,7 +172,7 @@ func _montar() -> void:
 
 	# --- Botões ---
 	# Dois botões do mesmo tamanho, com 4 px entre eles, ocupando a largura útil da janela.
-	var yb := 310.0 + ex + oy + float(folga) - topo
+	var yb := 303.0 + ex + oy + float(folga) - topo  # 7 px acima do que era: o botão fica a 12 px da borda de baixo (a janela já está no limite dos 360 px)
 	if dia_da_luta:
 		# Prévia do dia: PASSAR O POSTO (contorno roxo, menos peso) e LUTAR! (vermelho cheio), 12 px entre eles para não
 		# apertar um pelo outro. Sem botão de voltar.

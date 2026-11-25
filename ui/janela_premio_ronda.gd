@@ -11,6 +11,7 @@ const RESPIRO := 0.5
 const JANELA_X := 176.0
 const JANELA_L := 288.0
 const TEXTO_L := 264.0
+const TOPO_EXTRA := 4.0
 
 var _t := 0.0
 var _premio: Dictionary = {}
@@ -21,14 +22,14 @@ func abrir_com(premio: Dictionary, _info: Dictionary = {}) -> void:
 	_premio = premio
 	var sobe := bool(premio.get("level_up", false)) and int(premio.get("level", 0)) >= 1
 	var linhas: Array = _linhas(sobe)
-	var altura := 36.0  # a faixa do título encosta a 2 px da borda de cima; o botão fica a ~2 px da de baixo
+	var altura := 36.0 + TOPO_EXTRA  # a faixa do título + 4 px de ar antes do primeiro conteúdo; o botão fica a 12 px da borda de baixo (como as outras janelas)
 	for l in linhas:
 		altura += float(l.h)
 	var topo := roundf((360.0 - altura) / 2.0)
 	moldura("ui_window", Rect2(JANELA_X, topo, JANELA_L, altura))
 	var titulo := UiTema.txt("ronda_level_up", "A LENDA CRESCEU") if sobe else UiTema.txt("ronda_reward_title", "RONDA FEITA")
 	faixa_titulo("victory" if sobe else "neutral", Rect2(182, topo + 6.0, 276, 22), titulo, UiTema.Y2 if sobe else UiTema.WHITE, 2)
-	var y := topo + 36.0
+	var y := topo + 36.0 + TOPO_EXTRA
 	for l in linhas:
 		l.f.call(y)
 		y += float(l.h)
@@ -74,8 +75,8 @@ func _linhas(sobe: bool) -> Array:
 		if linha != "":
 			var n3 := _linhas_de(linha)
 			r.append({"h": 9.0 * float(n3) + 8.0, "f": func(y: float) -> void: _texto(linha, UiTema.G3, y, n3)})
-	r.append({"h": 28.0, "f": func(y: float) -> void: _bolinhas(y, nivel, sobe)})
-	r.append({"h": 28.0, "f": func(y: float) -> void: _botao_voltar(y)})
+	r.append({"h": 32.0, "f": func(y: float) -> void: _bolinhas(y, nivel, sobe)})  # 4 px de ar entre "NÍVEL N" e o botão
+	r.append({"h": 40.0, "f": func(y: float) -> void: _botao_voltar(y)})  # botão de 28 + 12 de margem de baixo
 	return r
 
 

@@ -49,6 +49,7 @@ var _rotulo_combo: Label
 # Barra de ESPECIAL (só visual, nunca muda o resultado da luta): cada golpe que entra enche a barra; levar soco esvazia metade;
 # na barra cheia o golpe seguinte vira o SUPER UPPERCUT, com efeitos. O cálculo é feito antes da luta, na ordem dos eventos.
 var _esp_fundo: ColorRect
+var _area_sinal := Rect2()  # área do sinal pequeno (CLINCH!) enquanto aparece: os números de dano não nascem nela
 var _esp_cheio: ColorRect
 var _esp_rotulo: Label
 var _tween_esp: Tween
@@ -527,17 +528,27 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	_rotulo_combo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]), float(pt[1]) + 13.0)
 	_rotulo_combo.scale = Vector2(2, 2)  # o combo precisa ser lido no meio da luta
 	_rotulo_combo.position.y += 9.0
+	# Medidor do SUPER: sobe de baixo da faixa para dentro dela (a barra preta de 6 px passava da faixa e parecia sobra). Moldura cinza
+	# de 1 px, vazio escuro e o enchimento amarelo dentro; 110 x 4 px logo abaixo do nome da tática.
 	_esp_fundo = ColorRect.new()
-	_esp_fundo.color = Color(0.05, 0.04, 0.09, 0.85)
-	_esp_fundo.position = Vector2(float(pt[0]), float(pt[1]) + 12.0)
-	_esp_fundo.size = Vector2(110, 6)
+	_esp_fundo.color = UiTema.G1
+	_esp_fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_esp_fundo.position = Vector2(float(pt[0]), float(pt[1]) + 10.0)
+	_esp_fundo.size = Vector2(110, 4)
 	hud.add_child(_esp_fundo)
+	var esp_vazio := ColorRect.new()
+	esp_vazio.color = UiTema.INK
+	esp_vazio.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	esp_vazio.position = Vector2(1, 1)
+	esp_vazio.size = Vector2(108, 2)
+	_esp_fundo.add_child(esp_vazio)
 	_esp_cheio = ColorRect.new()
 	_esp_cheio.color = UiTema.Y1
+	_esp_cheio.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_esp_cheio.position = Vector2(1, 1)
-	_esp_cheio.size = Vector2(0, 4)
+	_esp_cheio.size = Vector2(0, 2)
 	_esp_fundo.add_child(_esp_cheio)
-	_esp_rotulo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]) + 114.0, float(pt[1]) + 10.0)
+	_esp_rotulo = UiTema.rotulo(hud, "", UiTema.Y1, float(pt[0]) + 114.0, float(pt[1]) + 8.0)
 	_rotulo_combo.modulate.a = 0.0
 	_montar_hud_passiva(hud, float(pt[1]))
 
@@ -1579,6 +1590,8 @@ func _banner_ko_mostrar(finish: String = "") -> void:
 
 ## Número novo que nasceria dentro (ou logo embaixo) da área do letreiro de fim: não nasce (o letreiro tem que ler limpo).
 func _bloqueado(p: Vector2) -> bool:
+	if _area_sinal.size != Vector2.ZERO and _area_sinal.has_point(p):
+		return true
 	return _area_letreiro.size != Vector2.ZERO and _area_letreiro.grow(32.0).has_point(p)
 
 
@@ -1719,13 +1732,20 @@ func _sinal_pequeno(chave: String) -> void:
 	var sp: Sprite2D = _sinais[chave]
 	var p := _ponto_cabeca(1) + Vector2(0, -22)
 	sp.position = Vector2(roundf(p.x), roundf(p.y))
+	# ID3 B5: como no sinal do adversário, os números de dano que passam pela área do letreiro somem (o sinal lê limpo, sem número por baixo).
+	var tam_s := sp.texture.get_size()
+	var area_s := Rect2(sp.position - tam_s / 2.0 - Vector2(0, 10), tam_s + Vector2(0, 10)).grow(6.0)
+	_limpar_numeros_em(area_s)
+	_area_sinal = area_s  # enquanto o letreiro dura, número novo não nasce em cima dele (ver _bloqueado)
 	sp.visible = true
 	sp.modulate = Color(1.6, 1.6, 1.6, 1.0)
 	var tw := create_tween()
 	tw.tween_property(sp, "modulate", Color.WHITE, 0.15)
 	tw.tween_interval(0.7)
 	tw.tween_property(sp, "modulate:a", 0.0, 0.25)
-	tw.tween_callback(func() -> void: sp.visible = false)
+	tw.tween_callback(func() -> void:
+		sp.visible = false
+		_area_sinal = Rect2())
 
 
 # --- 8a1: passiva dele (sinais e guarda), cinturão erguido ---
@@ -2199,10 +2219,10 @@ func _posicionar_banner(escala: int, y: float) -> void:
 
 # Faixa escura atrás do letreiro (abaixo da placa da arena, nunca sobre ela).
 func _fundo_banner(texto: String, escala: int) -> void:
-	var w := roundf(UiTema.largura(texto) * escala) + 24.0
-	var h := 8.0 * escala + 10.0
+	var w := roundf(UiTema.largura(texto) * float(escala + 1)) + 24.0  # largura do pulo (escala + 1): o texto não passa da faixa no 1º quadro
+	var h := 8.0 * escala + 18.0  # ID3: folga em cima e embaixo; cobre também o pulo do texto (escala + 1, 1º quadro) sem encostar na borda
 	_banner_fundo.size = Vector2(w, h)
-	_banner_fundo.position = Vector2(roundf(320.0 - w / 2.0), 148.0 - escala * 3 - 5.0)
+	_banner_fundo.position = Vector2(roundf(320.0 - w / 2.0), 148.0 - escala * 3 - 7.0)
 	_banner_fundo.visible = true
 
 

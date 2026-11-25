@@ -98,7 +98,7 @@ func _montar(linhas: PackedStringArray, _w: float, h: float, ponta: Vector2, com
 	var nome := str(p.get("short", "osmar"))
 	var tw := UiTema.largura_visivel(nome) + 7.0  # tema C: largura da placa = largura visível do nome + 7 (folga 2/2)
 	var tag := UiTema.nine_patch(_raiz, "c_balao_placa_" + cor_nome,
-		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 11.0))  # 11: o verificador mede o texto com 7 px de altura (a placa tem 6 de miolo)
+		Rect2(corpo.position.x + 6.0, corpo.position.y - 10.0, tw, 11.0))  # y -10: a placa fica 4 px mais alta, o texto da fala não encosta nela; 11: o verificador mede o texto com 7 px de altura (a placa tem 6 de miolo)
 	var cor_txt := UiTema.WHITE if str(by_data.get("tag_text_color", {}).get(cor_nome, "ink")) == "white" else UiTema.INK
 	var rotulo_nome := UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 	UiTema.alinhar_motivo(rotulo_nome, "left", "plaquinha do nome: 3 px de margem à esquerda; a ponta da peça ocupa o lado direito")

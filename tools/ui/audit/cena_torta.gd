@@ -4,10 +4,10 @@ extends RefCounted
 
 ## Regras que a cena torta TEM de reprovar (código no começo da linha do relatório).
 const ESPERADOS := ["TXT_OFFCENTER", "CLIPPED", "IGNORE_SEM_MOTIVO", "IGNORE_PROIBIDO", "OPACO_FORA", "JANELA_ASSIM", "JANELA_MARGEM",
-	"TXT_SOZINHO", "DRAW_TEXTO", "TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE"]
+	"TXT_SOZINHO", "DRAW_TEXTO", "TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE", "FOLGA_VIZINHO"]
 ## As regras novas (as de ESPERADOS que não existiam antes): no modo padrão elas NÃO podem virar problema.
 const NOVAS := ["IGNORE_SEM_MOTIVO", "IGNORE_PROIBIDO", "OPACO_FORA", "JANELA_ASSIM", "JANELA_MARGEM", "TXT_SOZINHO", "DRAW_TEXTO",
-	"TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE"]
+	"TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE", "FOLGA_VIZINHO"]
 
 
 static func montar(raiz: Control) -> void:
@@ -32,6 +32,7 @@ static func montar(raiz: Control) -> void:
 	var sem_motivo := Control.new()
 	sem_motivo.position = Vector2(20, 60)
 	sem_motivo.size = Vector2(10, 10)
+	sem_motivo.mouse_filter = Control.MOUSE_FILTER_IGNORE  # com mouse ativo e sem filhos seria área de hover (isenta)
 	sem_motivo.set_meta("ui_align", "ignore")
 	raiz.add_child(sem_motivo)
 
@@ -107,3 +108,24 @@ static func montar(raiz: Control) -> void:
 	fundo.size = Vector2(80, 20)
 	raiz.add_child(fundo)
 	T.rotulo(fundo, "BAIXO", Color("8f8890"), 10, 6)
+
+	# 13. (FOLGA_VIZINHO) réplicas do B1 e do B2 da ID3, numa janela de verdade (JanelaBase, moldura c_janela).
+	var JB = load("res://ui/janela_base.gd")
+	var jan_b = JB.new()
+	jan_b.name = "JanelaTorta"
+	raiz.add_child(jan_b)
+	jan_b.moldura("", Rect2(410, 170, 220, 160))
+	var painel_j: Control = jan_b.painel
+	# B1 (Ronda): botão VOLTAR a 0 px da borda interna e "NÍVEL 2" a 1 px dele.
+	T.rotulo(painel_j, "NÍVEL 2", cor, 456, 300)
+	var voltar: Button = T.botao(painel_j, Rect2(450, 310, 140, 20))
+	T.rotulo(voltar, "VOLTAR", cor, 50, 6)
+	# B2 (mural): descrição de 2 linhas e a tarja (desenhada depois) cobrindo a 2ª linha.
+	var desc: Label = T.rotulo(painel_j, "COMPRA NO FIM\nDA CAMPANHA", cor, 420, 184)
+	desc.autowrap_mode = TextServer.AUTOWRAP_OFF
+	var tarja := ColorRect.new()
+	tarja.color = Color("3d3346")
+	tarja.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tarja.position = Vector2(418, 195)
+	tarja.size = Vector2(120, 12)
+	painel_j.add_child(tarja)

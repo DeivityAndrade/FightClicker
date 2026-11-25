@@ -158,7 +158,7 @@ func mostrar(id_: String, speaker_: String, texto: String, cabeca: Vector2, faix
 			w = clampf(float(maior * AVANCO + 16), 40.0, 172.0)
 			h = 26.0
 			c = calcular(cabeca, w, h, evitar, zona)
-	if not bool(c.ok) or (faixa_base_y >= 0.0 and Rect2(c.corpo).position.y - 6.0 < faixa_base_y):
+	if not bool(c.ok) or (faixa_base_y >= 0.0 and Rect2(c.corpo).position.y - 10.0 < faixa_base_y):
 		push_warning("Balao: a fala '%s' não cabe sem cobrir o alvo; descartada." % id_)
 		return false
 	corpo = c.corpo
@@ -218,7 +218,7 @@ func _montar(w: float, h: float, ponta: Vector2) -> void:
 		nome = str(GameState.mentor_do_caixote().get("name", "")).split(" ")[0].to_lower()  # só o primeiro nome, minúsculo, como as outras plaquinhas
 	var tw := UiTema.largura_visivel(nome) + 7.0  # tema C: largura da placa = largura visível do nome + 7 (folga 2/2)
 	var tag := UiTema.nine_patch(_raiz, "c_balao_placa_" + cor_nome,
-		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 11.0))  # 11: o verificador mede o texto com 7 px de altura (a placa tem 6 de miolo)
+		Rect2(corpo.position.x + 6.0, corpo.position.y - 10.0, tw, 11.0))  # y -10 (antes -6): a placa fica 4 px mais alta e o texto da fala não encosta nela; 11: o verificador mede o texto com 7 px de altura (a placa tem 6 de miolo)
 	var cor_txt := UiTema.WHITE if str(by_data.get("tag_text_color", {}).get(cor_nome, "ink")) == "white" else UiTema.INK
 	UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
 	_timbre = str(p.get("voice", speaker))
