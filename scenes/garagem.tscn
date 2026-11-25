@@ -31,6 +31,8 @@ color = Color(0.0784314, 0.0627451, 0.101961, 1)
 layout_mode = 0
 script = ExtResource("2_sala")
 metadata/ui_align = "ignore"
+metadata/ui_align_motivo = "a sala é o palco do jogo: sprites, aparelhos e números flutuantes (+1 FORÇA, TOC!) com posição livre"
+metadata/ui_texto_dinamico = true
 
 [node name="FaixaAssistido" type="Control" parent="."]
 layout_mode = 0

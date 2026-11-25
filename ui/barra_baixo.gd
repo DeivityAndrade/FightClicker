@@ -33,6 +33,8 @@ var _focos: Control  # a fileira dos botões de foco (iguais entre si); LUTAR, P
 var _dica_aposentar := false  # a dica da academia está no ar: o botão de passar o posto "respira" em roxo
 var _t_poll := 0.0
 var _lutar: Button
+var _lutar_texto: Label
+var _posto_icone: TextureRect
 var _aposentar: Button
 var _dica_ativa := false
 var _janela_aberta := false
@@ -49,17 +51,20 @@ func _ready() -> void:
 	z_index = 1200
 	size = Vector2(640, ALTURA)
 	mouse_filter = Control.MOUSE_FILTER_STOP  # a faixa segura o clique: nada por baixo (a sala) recebe
-	_fundo = UiTema.painel(self, "ui_panel", Rect2(0, 0, 640, ALTURA))
+	_fundo = UiTema.painel(self, "c_barra", Rect2(0, 0, 640, ALTURA))
+	UiTema.textura_rect(_fundo, "c_barra_faixa", 480, 0)  # a faixa diagonal vermelha atrás do LUTAR! e do POSTO
 
-	_por_clique = UiTema.rotulo(self, "+1", UiTema.COL_TREINO, 6, 4)  # txt_hero
+	# Tudo aqui está sobre o papel da barra: texto no segundo jogo de cores (tinta, sem sombra).
+	_por_clique = UiTema.rotulo(self, "+1", UiTema.COL_TREINO_CLARO_G, 6, 4, 0, HORIZONTAL_ALIGNMENT_LEFT, false)  # txt_hero
 	_por_clique.scale = Vector2(2, 2)
-	UiTema.alinhar(_por_clique, "ignore")
-	_sufixo = UiTema.rotulo(self, UiTema.txt("per_click_short", "/CLIQUE"), UiTema.G2, 20, 13)
-	UiTema.alinhar(_sufixo, "ignore")
-	_salvo = UiTema.rotulo(self, "", UiTema.COL_DISABLED, X_SALVO, UiTema.y_texto(Rect2(0, 0, 640, ALTURA)), 30, HORIZONTAL_ALIGNMENT_RIGHT)
+	UiTema.alinhar_motivo(_por_clique, "left", "número do clique em escala 2, colado à esquerda da barra (x 6); a largura do texto muda")
+	_sufixo = UiTema.rotulo(self, UiTema.txt("per_click_short", "/CLIQUE"), UiTema.COL_TEXT_CLARO_2, 20, 13, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
+	UiTema.alinhar_motivo(_sufixo, "left", "cola no fim do número do clique (x = 6 + largura do +N + 2), por isso é calculado")
+	_salvo = UiTema.rotulo(self, "", UiTema.COL_TEXT_CLARO_2, X_SALVO, UiTema.y_texto(Rect2(0, 0, 640, ALTURA)), 30, HORIZONTAL_ALIGNMENT_RIGHT, false)
 	_salvo.modulate.a = 0.0
-	UiTema.alinhar(_salvo, "ignore")
+	UiTema.alinhar_motivo(_salvo, "right", "termina em x 460, logo antes do botão SEGURAR; some em 2 s")
 	set_meta("ui_align_row", "free")
+	set_meta("ui_align_motivo", "a barra mistura fileiras de tamanhos próprios (focos 86x20, '?' 16x16, LUTAR 102x24, POSTO 22x22)")
 	_focos = Control.new()
 	_focos.name = "Focos"
 	_focos.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -69,8 +74,8 @@ func _ready() -> void:
 	_reconstruir_botoes()
 
 	# Dica da primeira vez (some no primeiro treino): ao lado dos botões, em até 2 linhas.
-	_dica = UiTema.rotulo(self, "", UiTema.Y1, 364, 5, 88, HORIZONTAL_ALIGNMENT_LEFT)
-	UiTema.alinhar(_dica, "ignore")
+	_dica = UiTema.rotulo(self, "", UiTema.COL_TEXT_CLARO, 364, 5, 88, HORIZONTAL_ALIGNMENT_LEFT, false)
+	UiTema.alinhar_motivo(_dica, "left", "começa 2 px depois do último botão de foco (x calculado em _posicionar_dica); o texto vem do aparelho em foco")
 	_posicionar_dica()
 	_montar_lutar()
 	_montar_aposentar()
@@ -128,7 +133,7 @@ func _posicionar_dica() -> void:
 
 func _montar_botao(ap: Dictionary, i: int) -> Dictionary:
 	var x := X_BOTOES + float(i) * PASSO_BOTAO
-	var b := UiTema.botao(_focos, Rect2(x, Y_BOTAO, LARG_BOTAO, ALTURA_BOTAO))
+	var b := UiTema.botao(_focos, Rect2(x, Y_BOTAO, LARG_BOTAO, ALTURA_BOTAO), "c_btn_normal")
 	# Aparelho da arte: ícone da arte (art_boxing_9 / art_bjj_9) no lugar do ícone do atributo (ele treina os três).
 	var arte_ap := str(ap.get("art", ""))
 	var icone_foco := "art_%s_9" % arte_ap if arte_ap != "" else "icon_" + str(ap.attribute)
@@ -137,10 +142,10 @@ func _montar_botao(ap: Dictionary, i: int) -> Dictionary:
 	var linhas: Array = ap.get("focus_label", ["", ""])
 	var nome := str(linhas[1] if linhas.size() > 1 else linhas[0]).to_upper()
 	# Aparelho comprado: ícone do atributo + nome, como grupo centralizado. O botão não tem texto próprio.
-	var r_dono := UiTema.botao_conteudo(b, nome, UiTema.WHITE, 1, icone_foco, 4.0)
+	var r_dono := UiTema.botao_conteudo(b, nome, UiTema.CREAM, 1, icone_foco, 4.0)
 	var dono: Array = [r_dono, b.get_meta("icone")]
 	# Aparelho que ainda não chegou: cadeado + nome (o preço e o motivo vêm no balão). Um segundo grupo, mesmo centro.
-	var r_tr := UiTema.botao_conteudo(b, GameState.nome_curto_aparelho(str(ap.id)).to_upper(), UiTema.WHITE, 1, "mark_padlock", 4.0)
+	var r_tr := UiTema.botao_conteudo(b, GameState.nome_curto_aparelho(str(ap.id)).to_upper(), UiTema.G3, 1, "mark_padlock", 4.0)
 	var trancado: Array = [r_tr, b.get_meta("icone")]
 	b.set_meta("icone", dono[1])
 	var id: String = ap.id
@@ -153,7 +158,7 @@ func _montar_botao(ap: Dictionary, i: int) -> Dictionary:
 		else:
 			compra_pedida.emit(id)  # trancado: não troca o foco, só pede a compra no painel
 	)
-	return {"botao": b, "estilo": "ui_button_normal", "dono": dono, "trancado": trancado, "id": id,
+	return {"botao": b, "estilo": "c_btn_normal", "dono": dono, "trancado": trancado, "id": id,
 		"m": UiTema.manifest().get("by_data_id", {}).get(str(GameState.desbloqueio(str(ap.id)).get("id", "")), {})}
 
 
@@ -182,23 +187,23 @@ func _texto_foco(id: String) -> String:
 ## "?" pequeno da faixa: as teclas (Espaço, Shift, 1 a 4, L, E, H, F11) aparecem no balão.
 func _montar_ajuda() -> void:
 	_ajuda = UiTema.botao(self, Rect2(X_AJUDA, 7, 16, 16))
-	UiTema.botao_conteudo(_ajuda, "?", UiTema.COL_TEXT_1, 1)
+	UiTema.botao_conteudo(_ajuda, "?", UiTema.CREAM, 1)
 	_ajuda.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_keys"), _ajuda))
 	_ajuda.mouse_exited.connect(func() -> void: Dica.limpar())
 
 
 func _montar_lutar() -> void:
-	_lutar = UiTema.botao_estilizado(self, LUTAR, "ui_button_fight")
-	UiTema.botao_conteudo(_lutar, UiTema.txt("fight_button", "LUTAR!"), UiTema.Y2, 2)
+	_lutar = UiTema.botao_estilizado(self, LUTAR, "c_lutar")
+	_lutar_texto = UiTema.botao_conteudo(_lutar, UiTema.txt("fight_button", "LUTAR!"), UiTema.R0, 2)  # r0 sobre a chapa de papel, sombra ink
 	_lutar.pressed.connect(func() -> void: lutar_pedido.emit())
 
 
 ## PASSAR O POSTO: só o ícone da luva que passa; o nome e o Legado que ele leva vêm no balão ao passar o mouse.
 func _montar_aposentar() -> void:
-	_aposentar = UiTema.botao_estilizado(self, POSTO, "ui_button_retire")
+	_aposentar = UiTema.botao(self, POSTO, "c_btn_normal")
 	var a := UiTema.area_botao(_aposentar)
 	var q := UiTema.tamanho_quadro("icon_pass_post")
-	UiTema.textura_rect(_aposentar, "icon_pass_post", roundf(a.position.x + (a.size.x - q.x) / 2.0), UiTema.y_imagem(a, q.y))
+	_posto_icone = UiTema.textura_rect(_aposentar, "icon_pass_post", roundf(a.position.x + (a.size.x - q.x) / 2.0), UiTema.y_imagem(a, q.y))
 	_aposentar.pressed.connect(func() -> void: aposentar_pedido.emit())
 	_aposentar.mouse_entered.connect(func() -> void: Dica.pedir(_texto_posto(), _aposentar))
 	_aposentar.mouse_exited.connect(func() -> void: Dica.limpar())
@@ -252,9 +257,14 @@ func atualizar() -> void:
 	var pode_aposentar := GameState.pode_aposentar() and not _janela_aberta
 	_lutar.disabled = not pode_lutar
 	_aposentar.disabled = not pode_aposentar
-	UiTema.escurecer(_aposentar, pode_aposentar)
+	UiTema.escurecer(_posto_icone, pode_aposentar)
 	if not pode_lutar:
-		_lutar.modulate = Color(0.62, 0.6, 0.66)
+		_lutar.modulate = Color.WHITE  # o estado desabilitado já é uma peça própria (c_lutar_disabled)
+	_lutar_texto.add_theme_color_override("font_color", UiTema.R0 if pode_lutar else UiTema.D2)
+	if pode_lutar:
+		_lutar_texto.add_theme_color_override("font_shadow_color", UiTema.INK)
+	else:
+		_lutar_texto.remove_theme_color_override("font_shadow_color")  # desabilitado: sem sombra
 
 	var foco := GameState.foco
 	var estados := ""
@@ -272,10 +282,10 @@ func atualizar() -> void:
 func _atualizar_por_clique() -> void:
 	var texto := "+%s" % NumberFormat.fmt(GameState.por_clique())
 	_por_clique.text = texto
-	_por_clique.add_theme_color_override("font_color", UiTema.COL_TREINO)
 	var w2 := UiTema.largura_visivel(texto) * 2.0
 	var ws := UiTema.largura_visivel(_sufixo.text)
 	var escala := 2 if w2 <= REGIAO_CLIQUE else 1
+	_por_clique.add_theme_color_override("font_color", UiTema.COL_TREINO_CLARO_G if escala == 2 else UiTema.COL_TREINO_CLARO)  # 4,0:1 só vale em 2x
 	_por_clique.scale = Vector2(escala, escala)
 	_por_clique.position = Vector2(6, UiTema.y_texto(Rect2(0, 0, 640, ALTURA), escala))
 	var w := w2 if escala == 2 else UiTema.largura_visivel(texto)
@@ -294,35 +304,42 @@ func _aplicar_botao(d: Dictionary, foco: String) -> void:
 		(n as CanvasItem).visible = not montado
 	if montado:
 		var ativo: bool = id == foco
-		var atributo := GameState.atributo_do_aparelho(id)
-		var estilo := "ui_button_focus_" + atributo if ativo else "ui_button_normal"
-		if ativo and str(GameState.dados.aparelho(id).get("art", "")) != "":
-			estilo = "ui_button_focus_art"  # aparelho da arte: botão roxo (treina os 3 atributos)
+		var estilo := "c_btn_foco" if ativo else "c_btn_normal"  # o atributo fica no ícone; a cor do tema é uma só (vermelho)
+		(d.dono[0] as Label).add_theme_color_override("font_color", UiTema.CREAM)
 		if estilo != d.estilo:
 			d.estilo = estilo
 			UiTema.aplicar_estilo_botao(d.botao, estilo)
 		return
-	var cor_nome := UiTema.COL_TEXT_1 if estado == "buyable" else (UiTema.COL_TEXT_2 if estado in ["missing", "boxed"] else UiTema.COL_DISABLED)
-	(d.trancado[0] as Label).add_theme_color_override("font_color", cor_nome)
 	_estilo_trancado(d, "locked" if estado == "boxed" else estado, false)
 
 
-## Moldura do botão trancado. O comprável alterna com o quadro de pulso (3 fps) para chamar a atenção.
+## Moldura do botão trancado: comprável = asfalto com texto dourado (pisca o tom a 3 fps para chamar a atenção);
+## o resto (sem Treino, depois do anterior, na caixa) = desabilitado, texto g2 sem sombra. Clicar não "afunda":
+## não treina nem troca foco, só pede a compra.
 func _estilo_trancado(d: Dictionary, estado: String, pulso: bool) -> void:
-	var fotos: Dictionary = d.m.get("focus_button", {})
-	var chave_estilo := "buyable_pulse" if estado == "buyable" and pulso else estado
-	var estilo := str(fotos.get(chave_estilo, "ui_button_focus_locked_" + chave_estilo))
-	if estilo == d.estilo:
+	var compravel := estado == "buyable"
+	var chave := ("pulso_" if pulso else "base_") + estado if compravel else estado
+	var rotulo: Label = d.trancado[0]
+	if compravel:
+		rotulo.add_theme_color_override("font_color", UiTema.Y2 if pulso else UiTema.Y1)
+		rotulo.add_theme_color_override("font_shadow_color", UiTema.INK)
+	else:
+		rotulo.add_theme_color_override("font_color", UiTema.G3)
+		rotulo.remove_theme_color_override("font_shadow_color")
+	if chave == d.estilo:
 		return
-	d.estilo = estilo
-	UiTema.aplicar_estilo_botao(d.botao, estilo)
-	d.botao.add_theme_stylebox_override("pressed", UiTema.estilo(estilo))  # clicar não "afunda": não treina nem troca foco
+	d.estilo = chave
+	var base := "c_btn_normal" if compravel else "c_btn_desabilitado"
+	UiTema.aplicar_estilo_botao(d.botao, base)
+	d.botao.add_theme_stylebox_override("hover", UiTema.estilo("c_btn_foco" if compravel else base))
+	d.botao.add_theme_stylebox_override("pressed", UiTema.estilo(base))
 
 
 func _process(delta: float) -> void:
 	_t += delta
 	var ap := GameState.dados.aparelho(GameState.foco)
 	_dica.visible = _dica_ativa and not _so_sala and _dica_livre
+	_salvo.visible = not _dica.visible  # a dica da primeira vez ocupa o mesmo trecho da barra que o SALVO
 	# A dica de passar o posto da academia depende de relógio (1 leitura por segundo).
 	_t_poll += delta
 	if _t_poll >= 1.0:
@@ -344,4 +361,4 @@ func _process(delta: float) -> void:
 	# LUTAR! "respira" de leve quando está disponível (convite sem gritar).
 	if not _lutar.disabled:
 		var k := 0.5 + 0.5 * sin(_t * 3.0)
-		_lutar.modulate = Color.WHITE.lerp(Color(1.18, 1.1, 1.1), k)
+		_lutar.modulate = Color.WHITE.lerp(Color(1.1, 1.06, 1.06), k)

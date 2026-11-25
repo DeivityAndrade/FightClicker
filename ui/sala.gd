@@ -977,6 +977,7 @@ func _esconder_evento() -> void:
 func _ao_frenesi_mudou(restante: float) -> void:
 	if _rotulo_frenesi == null:
 		_rotulo_frenesi = UiTema.rotulo_centrado(self, Rect2(_area.position.x, _area.position.y + 2.0, _area.size.x, 9.0), "", UiTema.Y1, 1, false, "ignore")
+		UiTema.ignorar(_rotulo_frenesi, "aviso do FRENESI: texto com o tempo restante, muda a cada segundo", true)
 		_rotulo_frenesi.z_index = 980
 	_rotulo_frenesi.visible = restante > 0.0
 	# Durante o FRENESI o lutador (e as luvas) brilham em dourado, pulsando.
@@ -1943,7 +1944,7 @@ func _zoom_recorte(sobre: bool) -> void:
 	if _recorte_zoom == null:
 		_recorte_zoom = UiTema.textura_rect(self, nome_zoom, 0, 0)
 		_recorte_zoom.z_index = 3000
-		UiTema.alinhar(_recorte_zoom, "ignore")
+		UiTema.ignorar(_recorte_zoom, "recorte ampliado ao lado do mural: posição calculada a partir do recorte, por cima da sala")
 	_recorte_zoom.texture = UiTema.textura(nome_zoom)
 	_recorte_zoom.size = UiTema.tamanho_quadro(nome_zoom)
 	var q := UiTema.tamanho_quadro(nome_zoom)
@@ -2005,7 +2006,7 @@ func _zoom_cartaz(sobre: bool) -> void:
 		_cartaz_zoom.stretch_mode = TextureRect.STRETCH_KEEP
 		_cartaz_zoom.z_index = 3000
 		add_child(_cartaz_zoom)
-		UiTema.alinhar(_cartaz_zoom, "ignore")
+		UiTema.ignorar(_cartaz_zoom, "cartaz ampliado ao lado do mural: posição calculada a partir do cartaz, por cima da sala")
 	var q := UiTema.tamanho_quadro(nome)
 	_cartaz_zoom.texture = _textura_quadro(nome, quadro)
 	_cartaz_zoom.size = q
@@ -2050,7 +2051,7 @@ func _zoom_clipvale(sobre: bool) -> void:
 		_clipvale_zoom.size = UiTema.tamanho_quadro(nome)
 		_clipvale_zoom.z_index = 3000
 		add_child(_clipvale_zoom)
-		UiTema.alinhar(_clipvale_zoom, "ignore")
+		UiTema.ignorar(_clipvale_zoom, "recorte do Vale ampliado: posição calculada a partir do recorte, por cima da sala")
 	var q := UiTema.tamanho_quadro(nome)
 	var x := _clipvale_rect.end.x + 6.0
 	var y := clampf(_clipvale_rect.position.y - 8.0, 22.0, 178.0 - q.y)

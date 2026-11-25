@@ -37,6 +37,12 @@ const P2 := Color("b07ad8")
 
 const STEEL2 := Color("7f8c9a")  # aço (perfil do Kid Navalha)
 const F2 := Color("f59ac0")  # rosa da Fama (rampa nova f0/f1/f2, só de UI)
+# Tema C (cartaz de luta, docs/arte/tema-c-spec.md): o que faltava da paleta.
+const B0 := Color("1f2a44")
+const B1 := Color("2f4a78")
+const GR0 := Color("1f3d33")
+const GR1 := Color("2f6b4a")
+const F0 := Color("7a2a52")
 
 # Fase 5.1: tokens de hierarquia (manifest.ui_tokens). Uma cor por moeda, igual em todo lugar. Preço sem saldo = COL_TEXT_2.
 const COL_TREINO := GR3
@@ -45,9 +51,20 @@ const COL_FAME := F2
 const COL_LEGACY := P2
 const COL_HONOR := Color("a9b4bf")  # Honra: prata/aço (st3), nunca no HUD
 const COL_TEXT_1 := WHITE
-const COL_TEXT_2 := G2
+const COL_TEXT_2 := G3  # ID2: G2 sobre D2 dava 3,46:1; G3 passa de 4,5:1
 const COL_DISABLED := G1
 const COL_BUYABLE := Y2
+
+# Tema C, texto sobre CLARO (papel `cream`: barra de baixo, etiqueta do local, cartões, balões). O segundo jogo de cores:
+# o texto de cima (COL_TREINO...) é para fundo escuro. Nunca `white`/`cream` sobre `r2`; `r2` é só fundo e carimbo.
+const COL_TEXT_CLARO := INK
+const COL_TEXT_CLARO_2 := G0
+const COL_TREINO_CLARO := GR0  # texto 1x
+const COL_TREINO_CLARO_G := GR0  # texto 2x ou maior (4,0:1 só vale para texto grande)
+const COL_MONEY_CLARO := Color("6b3f2a")  # br1
+const COL_FAME_CLARO := F0
+const COL_LEGACY_CLARO := P0
+const COL_DESTAQUE_CLARO := R1
 
 static var _manifest: Dictionary = {}
 static var _fonte: Font
@@ -167,7 +184,7 @@ static func rotulo(pai: Node, texto: String, cor: Color, x: float, y: float, lar
 	l.add_theme_font_override("font", fonte_contorno() if contorno else fonte())
 	l.add_theme_font_size_override("font_size", TAMANHO_FONTE)
 	l.add_theme_color_override("font_color", cor)
-	if sombra and not contorno:
+	if sombra and not contorno and (cor.get_luminance() >= 0.075 or cor == R1):  # texto escuro (ink, g0...) com sombra ink engorda a letra
 		l.add_theme_color_override("font_shadow_color", INK)
 		l.add_theme_constant_override("shadow_offset_x", 0)
 		l.add_theme_constant_override("shadow_offset_y", 1)
@@ -198,6 +215,9 @@ static func textura_rect(pai: Node, nome: String, x: float, y: float) -> Texture
 static func estilo(nome: String, margem_extra: Vector4 = Vector4.ZERO) -> StyleBoxTexture:
 	var e := StyleBoxTexture.new()
 	e.texture = textura(nome)
+	if nome.begins_with("c_"):  # tema C: o papel e o asfalto têm grão; esticado ele borra, então ladrilha
+		e.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
+		e.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
 	var ns: Dictionary = sprite(nome).get("nine_slice", {})
 	e.texture_margin_left = float(ns.get("left", 2))
 	e.texture_margin_top = float(ns.get("top", 2))
@@ -235,8 +255,25 @@ static func botao(pai: Node, rect: Rect2, estilo_base: String = "ui_button_norma
 
 
 static func aplicar_estilo_botao(b: Button, estilo_base: String) -> void:
+	# Tema C: o botão padrão é o asfalto com sombra vermelha (c_btn_normal); o de papel (c_btn_papel_normal) é o secundário
+	# sobre fundo escuro. Hover é sempre o vermelho de foco, apertado é a face 2 px mais baixa. Bases antigas (ui_button_focus_*,
+	# hold, move...) seguem como estavam até a tela delas ser vestida.
+	if estilo_base == "ui_button_normal":
+		estilo_base = "c_btn_normal"
+	if estilo_base.begins_with("c_btn_"):
+		var papel := estilo_base == "c_btn_papel_normal"
+		b.add_theme_stylebox_override("normal", estilo(estilo_base))
+		b.add_theme_stylebox_override("hover", estilo("c_btn_foco"))
+		b.add_theme_stylebox_override("pressed", estilo("c_btn_apertado"))
+		b.add_theme_stylebox_override("disabled", estilo("c_btn_papel_desabilitado" if papel else "c_btn_desabilitado"))
+		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		b.add_theme_color_override("font_color", INK if papel else CREAM)
+		for c in ["font_hover_color", "font_pressed_color", "font_focus_color"]:
+			b.add_theme_color_override(c, CREAM)
+		b.add_theme_color_override("font_disabled_color", G1 if papel else G2)
+		return
 	b.add_theme_stylebox_override("normal", estilo(estilo_base))
-	b.add_theme_stylebox_override("hover", estilo("ui_button_hover" if estilo_base == "ui_button_normal" else estilo_base))
+	b.add_theme_stylebox_override("hover", estilo(estilo_base))
 	b.add_theme_stylebox_override("pressed", estilo("ui_button_pressed"))
 	b.add_theme_stylebox_override("disabled", estilo("ui_button_disabled"))
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
@@ -335,6 +372,9 @@ static func nine_patch(pai: Node, nome: String, rect: Rect2) -> NinePatchRect:
 	var n := NinePatchRect.new()
 	n.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	n.texture = textura(nome)
+	if nome.begins_with("c_"):
+		n.axis_stretch_horizontal = NinePatchRect.AXIS_STRETCH_MODE_TILE
+		n.axis_stretch_vertical = NinePatchRect.AXIS_STRETCH_MODE_TILE
 	var ns: Dictionary = sprite(nome).get("nine_slice", {})
 	n.patch_margin_left = int(ns.get("left", 1))
 	n.patch_margin_top = int(ns.get("top", 1))
@@ -363,6 +403,12 @@ static func largura_visivel(texto: String) -> float:
 ## center, center_h, center_v, left, right ou ignore (ignore vale para o nó e tudo abaixo dele).
 static func alinhar(no: Node, modo: String) -> void:
 	no.set_meta("ui_align", modo)
+
+
+## Declara uma intenção (left, right, center...) e o porquê: o verificador só lê o modo; o motivo fica para quem ler o código.
+static func alinhar_motivo(no: Node, modo: String, motivo: String) -> void:
+	no.set_meta("ui_align", modo)
+	no.set_meta("ui_align_motivo", motivo)
 
 
 ## ignore COM MOTIVO (obrigatório): o nó e tudo abaixo dele ficam fora da conferência de alinhamento.
@@ -435,7 +481,7 @@ static func folga_centro(escala: int) -> float:
 ## Conteúdo do botão (ícone opcional + texto) centralizado como grupo na face do botão. Devolve o Label;
 ## o ícone (se houver) fica em b.get_meta("icone"). Texto fixo: se o texto mudar, monte o botão de novo.
 static func botao_conteudo(b: Button, texto: String, cor: Color, escala: int = 1, icone: String = "",
-		folga: float = 3.0, contorno: bool = false) -> Label:
+		folga: float = 3.0, contorno: bool = false, afundar: bool = true) -> Label:
 	var a := area_botao(b)
 	var lt := largura_visivel(texto) * escala
 	var iw := 0.0
@@ -449,10 +495,30 @@ static func botao_conteudo(b: Button, texto: String, cor: Color, escala: int = 1
 	if icone != "":
 		var t := textura_rect(b, icone, roundf(x0), y_imagem(a, ih))
 		b.set_meta("icone", t)
+		if afundar:
+			t.set_meta("y_base", t.position.y)
 	var l := rotulo(b, texto, cor, roundf(x0 + (iw + folga if icone != "" else 0.0)), y_texto(a, escala), 0,
 		HORIZONTAL_ALIGNMENT_LEFT, true, contorno)
 	l.scale = Vector2(escala, escala)
+	if afundar:
+		_afundar_conteudo(b, l)
 	return l
+
+
+## Botão apertado: a face desce (o estilo `pressed` tem a margem de cima maior) e o conteúdo desce junto.
+## Só o desenho muda (posição dos filhos); o centro medido pelo verificador é o do botão solto.
+static func _afundar_conteudo(b: Button, l: Label) -> void:
+	l.set_meta("y_base", l.position.y)
+	if b.has_meta("afundar_ligado"):
+		return
+	b.set_meta("afundar_ligado", true)
+	b.draw.connect(func() -> void:
+		var d := 0.0
+		if b.get_draw_mode() in [BaseButton.DRAW_PRESSED, BaseButton.DRAW_HOVER_PRESSED]:
+			d = b.get_theme_stylebox("pressed").get_margin(SIDE_TOP) - b.get_theme_stylebox("normal").get_margin(SIDE_TOP)
+		for c in b.get_children():
+			if c is Control and c.has_meta("y_base"):
+				c.position.y = float(c.get_meta("y_base")) + d)
 
 
 ## Rótulo de uma linha centralizado em cx (sem quebra). O Label ocupa a faixa simétrica em torno de cx e
@@ -478,6 +544,29 @@ static func selo_risco(pai: Node, rotulo_risco: String, x: float, y: float) -> C
 	nine_patch(c, "ui_risk_" + rotulo_risco, Rect2(0, 0, w, 13))
 	textura_rect(c, "icon_risk_" + rotulo_risco, 3, 2)
 	rotulo(c, texto, WHITE, 15, 3)
+	return c
+
+
+## Tema C: selo de risco como carimbo. "hard" = a palavra PERIGOSO inteira (72x16); os outros, a moldura dupla falhada com o
+## texto por cima em r2 (é carimbo: fica fora da regra de contraste). A cor de cada risco já não carrega o recado; a palavra carrega.
+static func selo_carimbo(pai: Node, rotulo_risco: String, x: float, y: float) -> Control:
+	var c := Control.new()
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.position = Vector2(x, y)
+	pai.add_child(c)
+	if rotulo_risco == "hard":
+		c.size = Vector2(72, 16)
+		textura_rect(c, "c_carimbo_perigoso", 0, 0)
+		return c
+	var texto := nome_risco(rotulo_risco)
+	# ID2/B2: moldura de 16 px (como o PERIGOSO): miolo de 8 px de altura para letras de 7 px, traço fora das letras;
+	# 4 de moldura + 3 de folga de cada lado. Texto R1 (escuro) para ler sobre o creme do carimbo.
+	var w := roundf(largura_visivel(texto)) + 14.0
+	if int(w) % 2 != 0:
+		w += 1.0
+	c.size = Vector2(w, 16)
+	nine_patch(c, "c_carimbo_moldura", Rect2(0, 0, w, 16))
+	rotulo_centrado(c, Rect2(0, 0, w, 16), texto, R1, 1, false, "center")
 	return c
 
 

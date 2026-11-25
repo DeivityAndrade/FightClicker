@@ -100,7 +100,8 @@ func _montar(linhas: PackedStringArray, _w: float, h: float, ponta: Vector2, com
 	var tag := UiTema.nine_patch(_raiz, str(by_data.get("tag_by_color", {}).get(cor_nome, "ui_balloon_tag_gold")),
 		Rect2(corpo.position.x + 6.0, corpo.position.y - 6.0, tw, 10.0))
 	var cor_txt := UiTema.WHITE if str(by_data.get("tag_text_color", {}).get(cor_nome, "ink")) == "white" else UiTema.INK
-	UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
+	var rotulo_nome := UiTema.rotulo(tag, nome, cor_txt, 3.0, 0.0, 0, HORIZONTAL_ALIGNMENT_LEFT, false)
+	UiTema.alinhar_motivo(rotulo_nome, "left", "plaquinha do nome: 3 px de margem à esquerda; a ponta da peça ocupa o lado direito")
 	if not com_botao:
 		return
 	# Botão IR: o 9-slice `ui_invite_go` (3 quadros lado a lado: normal, hover, apertado), na 2ª linha, à direita.

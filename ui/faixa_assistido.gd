@@ -19,7 +19,7 @@ const FOLGA := 4.0  # entre o chip e o botão
 const BOTAO_NA_BARRA := Vector2(464, 337)  # 6d3: o botão SEGURAR mora na faixa de baixo (moldura de UI), não solto no chão da sala
 const MARGEM_CANTO := 18.0  # 6d2: x 146, à direita do vizinho 2 (126,322) da sala larga
 const PULSO := 0.15
-const CORES := {"g2": UiTema.G2, "y1": UiTema.Y1, "gr3": UiTema.GR3, "white": UiTema.WHITE}
+const CORES := {"g2": UiTema.G3, "y1": UiTema.Y1, "gr3": UiTema.GR3, "white": UiTema.CREAM}  # chip escuro (c_chip): texto no primeiro jogo de cores
 
 var _chip: Control
 var _chip_fundo: NinePatchRect
@@ -47,14 +47,13 @@ func _ready() -> void:
 	size = FAIXA.size
 	z_index = 1250  # 6d3: acima da faixa de baixo (1200, onde mora o botão) e abaixo das janelas do Fluxo (3000)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_meta("ui_align", "ignore")  # Fase 5.1: o grupo chip + botão fica no canto esquerdo da faixa, de propósito
 	_info = UiTema.manifest().get("by_data_id", {}).get("assist", {})
 
 	_chip = Control.new()
 	_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_chip.set_meta("ui_margens", "h")  # ícone + texto com a mesma margem dos dois lados do chip
 	add_child(_chip)
-	_chip_fundo = UiTema.nine_patch(_chip, "ui_assist_chip_hint", Rect2(0, 0, 40, ALTURA_CHIP))
+	_chip_fundo = UiTema.nine_patch(_chip, "c_chip", Rect2(0, 0, 40, ALTURA_CHIP))
 	_chip_icone = UiTema.textura_rect(_chip, "icon_key_shift", 3, 2)
 	_chip_texto = UiTema.rotulo(_chip, "", UiTema.G2, 15, 1)
 	UiTema.alinhar(_chip, "left")  # a posição do grupo (chip + botão) é calculada em _atualizar(); o verificador confere pelas margens
@@ -77,14 +76,11 @@ func _ready() -> void:
 
 
 func _montar_botao() -> void:
-	var b := UiTema.botao(self, Rect2(0, 1, LARG_BOTAO, ALTURA_BOTAO), "ui_button_hold_normal")
+	var b := UiTema.botao(self, Rect2(0, 1, LARG_BOTAO, ALTURA_BOTAO), "c_btn_normal")
 	_botao = b
 	var botao_info: Dictionary = _info.get("button", {})
-	var normal := str(botao_info.get("normal", "ui_button_hold_normal"))
-	b.add_theme_stylebox_override("pressed", UiTema.estilo(str(botao_info.get("pressed", "ui_button_hold_pressed"))))
-	b.add_theme_stylebox_override("disabled", UiTema.estilo(normal))
-	b.add_theme_stylebox_override("hover", UiTema.estilo(normal))
-	_botao_texto = UiTema.botao_conteudo(b, "", UiTema.WHITE, 1, str(botao_info.get("icon", "icon_key_shift")), 0.0)
+	b.add_theme_stylebox_override("disabled", UiTema.estilo("c_btn_normal"))
+	_botao_texto = UiTema.botao_conteudo(b, "", UiTema.CREAM, 1, str(botao_info.get("icon", "icon_key_shift")), 0.0, false, false)  # o afundar é manual (o Shift também aperta)
 	_botao_texto.visible = false
 	b.mouse_entered.connect(func() -> void: Dica.pedir(GameState.texto_ui("hint_assist"), b))
 	b.mouse_exited.connect(func() -> void: Dica.limpar())
@@ -202,7 +198,6 @@ func _atualizar() -> void:
 	if estado == "off":
 		texto = UiTema.txt("hint_assist_first")  # Fase 5.1: o chip fixo saiu; só a dica curta, nas primeiras vezes
 
-	_chip_fundo.texture = UiTema.textura(estilo)
 	_chip_icone.texture = UiTema.textura(str(icones.get(estado, "icon_key_shift")))
 	_chip_texto.text = texto
 	_chip_texto.reset_size()
@@ -231,11 +226,8 @@ func _afundar_botao(afundado: bool) -> void:
 	if afundado == _botao_afundado:
 		return
 	_botao_afundado = afundado
-	var info_botao: Dictionary = _info.get("button", {})
-	var estilo := str(info_botao.get("pressed", "ui_button_hold_pressed")) if afundado \
-		else str(info_botao.get("normal", "ui_button_hold_normal"))
-	_botao.add_theme_stylebox_override("normal", UiTema.estilo(estilo))
-	var d := 1.0 if afundado else -1.0
+	_botao.add_theme_stylebox_override("normal", UiTema.estilo("c_btn_apertado" if afundado else "c_btn_normal"))
+	var d := 2.0 if afundado else -2.0  # a face do c_btn_apertado fica 2 px mais baixa
 	_botao_icone.position.y += d
 	_botao_texto.position.y += d
-	_botao_texto.add_theme_color_override("font_color", UiTema.GR3 if afundado else UiTema.WHITE)
+	_botao_texto.add_theme_color_override("font_color", UiTema.GR3 if afundado else UiTema.CREAM)

@@ -10,6 +10,8 @@ extends Control
 const Y_FINAL := 22.0
 const ALTURA := 18.0
 const TEMPO_VISIVEL := 6.0
+const FACE := Rect2(2, 2, 0, 12)  # a face do c_btn_* em 18 px: 2 de cima, 4 de sombra embaixo (a largura vem do tamanho)
+const Y_TEXTO := 3.0  # topo do rótulo: o texto (7 px) fica no meio da face
 
 var urgente := false
 var _fundo: NinePatchRect
@@ -27,9 +29,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 3200  # acima da sala e dos números flutuantes, abaixo das janelas (o Fluxo vai a 3000 + 2000)
 	set_meta("ui_margens", "h")
-	_fundo = UiTema.nine_patch(self, "ui_warn_strip_3d", Rect2(0, 0, 40, ALTURA))
+	_fundo = UiTema.nine_patch(self, "c_btn_normal", Rect2(0, 0, 40, ALTURA))  # tema C: calma = asfalto; urgente = vermelho de foco
 	_icone = UiTema.textura_rect(self, "icon_calendar", 7, 3)
-	_texto = UiTema.rotulo(self, "", UiTema.COL_TEXT_1, 23, 5)
+	_texto = UiTema.rotulo(self, "", UiTema.CREAM, 23, Y_TEXTO)
 	_sfx = Sfx.new()
 	add_child(_sfx)
 	GameState.aviso_data.connect(_ao_aviso)
@@ -64,15 +66,13 @@ func mostrar(forte: bool, nome: String) -> void:
 	set_meta("ui_pos", "center_h")
 	_fundo.size = size
 	_quadro_aceso = false
-	_fundo.texture = UiTema.textura("ui_warn_strip_1d" if forte else "ui_warn_strip_3d")
-	var ns: Dictionary = UiTema.sprite("ui_warn_strip_1d" if forte else "ui_warn_strip_3d").get("nine_slice", {})
-	_fundo.patch_margin_left = int(ns.get("left", 4))
-	_fundo.patch_margin_right = int(ns.get("right", 4))
+	_fundo.texture = UiTema.textura("c_btn_foco" if forte else "c_btn_normal")
 	_icone.texture = UiTema.textura("icon_calendar_alert" if forte else "icon_calendar")
-	_icone.position = Vector2(ic_x, 3)
+	var q := UiTema.tamanho_quadro("icon_calendar_alert" if forte else "icon_calendar")
+	_icone.position = Vector2(ic_x, UiTema.y_imagem(Rect2(FACE.position, Vector2(w, FACE.size.y)), q.y))
 	_texto.text = texto
-	_texto.position = Vector2(tx, 5)
-	_texto.add_theme_color_override("font_color", UiTema.Y2 if forte else UiTema.COL_TEXT_1)
+	_texto.position = Vector2(tx, Y_TEXTO)
+	_texto.add_theme_color_override("font_color", UiTema.Y2 if forte else UiTema.CREAM)
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	visible = true
@@ -108,4 +108,4 @@ func _process(delta: float) -> void:
 	var aceso := int(_t * 2.0) % 2 == 1  # 2 fps: troca de quadro, sem alpha
 	if aceso != _quadro_aceso:
 		_quadro_aceso = aceso
-		_fundo.texture = UiTema.textura("ui_warn_strip_1d_hi" if aceso else "ui_warn_strip_1d")
+		_fundo.texture = UiTema.textura("c_btn_normal" if aceso else "c_btn_foco")  # 2 fps: vermelho <-> asfalto

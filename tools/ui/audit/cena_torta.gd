@@ -4,9 +4,10 @@ extends RefCounted
 
 ## Regras que a cena torta TEM de reprovar (código no começo da linha do relatório).
 const ESPERADOS := ["TXT_OFFCENTER", "CLIPPED", "IGNORE_SEM_MOTIVO", "IGNORE_PROIBIDO", "OPACO_FORA", "JANELA_ASSIM", "JANELA_MARGEM",
-	"TXT_SOZINHO", "DRAW_TEXTO"]
+	"TXT_SOZINHO", "DRAW_TEXTO", "TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE"]
 ## As regras novas (as de ESPERADOS que não existiam antes): no modo padrão elas NÃO podem virar problema.
-const NOVAS := ["IGNORE_SEM_MOTIVO", "IGNORE_PROIBIDO", "OPACO_FORA", "JANELA_ASSIM", "JANELA_MARGEM", "TXT_SOZINHO", "DRAW_TEXTO"]
+const NOVAS := ["IGNORE_SEM_MOTIVO", "IGNORE_PROIBIDO", "OPACO_FORA", "JANELA_ASSIM", "JANELA_MARGEM", "TXT_SOZINHO", "DRAW_TEXTO",
+	"TXT_COLADO", "TXT_NA_MOLDURA", "TXT_CONTRASTE"]
 
 
 static func montar(raiz: Control) -> void:
@@ -79,3 +80,30 @@ static func montar(raiz: Control) -> void:
 	des.size = Vector2(100, 20)
 	des.set_meta("ui_texto_desenhado", {"x": {"area": Rect2(0, 0, 100, 20), "x0": 0.0, "texto": "TORTO", "escala": 1, "lw": 30.0}})
 	raiz.add_child(des)
+
+	# 10. (R1) O caso B1 da ID2: cartão sem ui_indent, contador "0/4" centralizado, colado na borda, com autowrap de largura igual
+	# ao texto e a 1 px do botão logo abaixo: TXT_COLADO.
+	var cartao := Control.new()
+	cartao.position = Vector2(240, 20)
+	cartao.size = Vector2(120, 44)
+	raiz.add_child(cartao)
+	T.painel(cartao, "ui_card", Rect2(0, 0, 120, 44))
+	T.rotulo(cartao, "0/4", cor, 4, 18, 18, HORIZONTAL_ALIGNMENT_CENTER)
+	T.botao(cartao, Rect2(4, 28, 112, 14))
+
+	# 11. (R2) O caso B2: selo carimbo com a moldura de 12 px de altura (margens de 4): o texto de 7 px não cabe nos 4 px internos:
+	# TXT_NA_MOLDURA.
+	var selo := Control.new()
+	selo.position = Vector2(240, 100)
+	selo.size = Vector2(80, 12)
+	raiz.add_child(selo)
+	T.nine_patch(selo, "c_carimbo_moldura", Rect2(0, 0, 80, 12))
+	T.rotulo(selo, "EQUILIBRADO", cor, 6, 2)
+
+	# 12. (R3) G2 sobre D2 (o contador 0/4 da loja): 3,46:1, abaixo de 4,5:1: TXT_CONTRASTE.
+	var fundo := ColorRect.new()
+	fundo.color = Color("3d3346")
+	fundo.position = Vector2(240, 140)
+	fundo.size = Vector2(80, 20)
+	raiz.add_child(fundo)
+	T.rotulo(fundo, "BAIXO", Color("8f8890"), 10, 6)
