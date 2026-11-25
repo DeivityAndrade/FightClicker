@@ -151,7 +151,7 @@ itens só funcionam na posição deles. Mudou a posição? Rode o gerador de nov
 |---|---|---|
 | `menu_faixa_moldura.png` | 16x88 | ladrilho horizontal em (0, 26), 640 de largura: filetes creme/ink em cima e embaixo, 2 linhas de sombra em dither; o meio é transparente |
 | `menu_faixa_listras.png` | 16x76 | ladrilho em (0, 30), 640x76, por baixo da moldura: `r2` com listras `r1` em diagonal. **Scroll:** a região da textura anda **-1 px em x a cada 80 ms** (as listras correm para a direita), passo inteiro, período 16 |
-| `menu_logo.png` | 358x40 | em **(148, 47)**; o centro dos pixels visíveis fica em x = 320,0 (o itálico já está compensado). **Provisório** (ver §6) |
+| `menu_logo.png` | 358x40 | em **(148, 47)**; o centro dos pixels visíveis fica em x = 320,0 (o itálico já está compensado). **Provisório** (ver §7) |
 | `menu_logo_flash.png` | 358x40 | mesmo lugar; 1 quadro no impacto |
 | `menu_logo_mascara.png` | 358x40 | mesmo lugar; só as letras (branco). Para o brilho do loop: faixa diagonal `y1 → white → y2` de 4+2 px, recortada por esta máscara |
 | `menu_logo_velocidade.png` | 356x8 | linhas `r3` acima do título caindo: em logo + (1, -11), só no quadro "título cai" |
@@ -196,10 +196,98 @@ da animação). Referência quadro a quadro: `mockups/identidade/menu_c_anim/tem
   o `ui_dim_dither`. Texto da janela no **segundo jogo** (sobre claro).
 - **Botões em geral (`ui_tema.gd`):** ver o fim do §3.
 - **Carimbos:** `c_carimbo_perigoso` e `c_carimbo_moldura` no selo de risco; `c_carimbo_raizes` na vitória e no mural.
-- Peças que este pacote **não** cobre (continuam como estão até a ID3): balão, dica (tooltip), mapa, telas de luta e minigames.
-  As peças acima bastam para vesti-las (janela, título, chip, cartão, botões).
+- Balão, calendário, cartão da mudança, selo de risco 16 px, telas cheias, mapa e retratos: ver **§6 (ID3)**. A dica (tooltip)
+  continua sem peça própria: use `c_chip` (texto `cream`).
 
-## 6. O que é placeholder (precisa de pixel artist)
+## 6. ID3: as peças que faltavam
+- **Gerador:** `tools/art/make_tema_c_id3.gd` (irmão: herda os ajudantes do `make_tema_c.gd` e só troca o `_main`). Mesmo comando
+  do cabeçalho, trocando o nome do script. Última rodada: **0 avisos**. O `make_tema_c.gd` agora **junta** o `manifest_tema_c.json`
+  (cada gerador só reescreve as entradas dele; as 25 do ID2 ficaram idênticas).
+- **Prancha:** `docs/arte/mockups/identidade/tema_c_pecas_id3_x2.png` (montada com as PNGs gravadas, no tamanho de uso, 2x só para ver).
+- Tudo em 1x, paleta fechada, sem alfa parcial, sombra dura reta para baixo (regras do §1). Texto: **segundo jogo** (escuro sobre
+  papel) em tudo que é papel.
+
+### 6.1 Peça antiga → peça C
+| Antiga (`assets/sprites/ui/…`) | Nova (`ui/tema_c/…`) | Quem usa hoje | O que muda no uso |
+|---|---|---|---|
+| `ui_balloon` | `c_balao` | `balao.gd`, `balao_convite.gd` | mesmo rect (17/26 de altura). A sombra agora é só a última **linha** (antes: linha + coluna): o corpo é simétrico em w |
+| `ui_balloon_tail` / `_l` / `_r` | `c_balao_rabicho` / `_e` / `_d` | idem | mesmos 7x6, mesma ponta (`tip_offset` c [3,5], l [0,5], r [6,5]), mesma regra (linha 0 em by + h - 2) |
+| `ui_balloon_next` | `c_balao_seta` | `balao.gd` (modo cena) | mesmos 2 quadros 5x4 a 2 fps, mesma posição |
+| `ui_balloon_tag_<cor>` (7 cores) | `c_balao_placa_<cor>` (red, gold, blue, green, purple, gray, steel) | `balao.gd`, `balao_convite.gd` | 8x10, 9-slice 2/2/2/2, texto em (3,2). **Largura nova: `largura_visivel(nome) + 7`** (ver 6.3) |
+| `ui_countdown_plate_easy/even/hard/today/done` | `c_contagem_easy/even/hard/today/done` | `bloco_proxima.gd` (+ `by_data_id.campaign_calendar.hud`) | rect **116x28** (face 26 + sombra 2); a folhinha (`ui_calendar_page`) e o texto em x 35 ficam |
+| `ui_move_card` / `_ready` / `_dim` | `c_mudanca` / `c_mudanca_pronto` / `c_mudanca_apagado` | `bloco_proxima.gd` | rect **+2 px de altura** (sombra); texto `ink` nos três |
+| `ui_risk_*` + `icon_risk_*` (13 px, `UiTema.selo_risco`) e `selo_carimbo` | `c_selo_risco_perigoso` / `_equilibrado` / `_facil` (fixos) e `…_base` (9-slice) | `janela_previa.gd` (prévia do cinturão), `bloco_proxima.gd`, `cartao_adversario.gd` | **16 px** de altura (face 14 + sombra 2), ícone já pintado. `hard`→perigoso, `even`→equilibrado, `easy`→facil. O carimbo (`c_carimbo_*`) fica para o que é carimbo (mural, vitória) |
+| `ui_panel` (faixa do HUD da luta, 640x46) | `c_faixa_tela` | `tela_luta.gd` (`hud_band`) | rect **640x49** (46 + fio ink, fio r1 e sombra em dither por cima da arena); nomes `cream` |
+| `ui_window` como tela inteira, fundo sem cenário | `c_tela_fundo` (640x360) ou `c_tela_asfalto` (ladrilho) | `tela_criar_discipulo.gd` (atrás da janela); qualquer tela cheia sem cenário | a janela continua `c_janela`; minigames com cenário (`spar_bg`, `flyers_bg`, `ronda_bg`) **não** trocam o cenário |
+| `ui_card` (caixas do HUD dos minigames e da luta) | `c_cartao` (já existia, ID2) | `tela_luta.gd`, `tela_treino.gd`, `tela_panfleto.gd`, `tela_ronda.gd` | rect +2 px; texto no segundo jogo |
+| `ui_card_dim` | `c_cartao_apagado` | `tela_criar_discipulo.gd` (prévia e caixas de valor) | rect +2 px; texto **`ink`** (antes era claro sobre escuro) |
+| `ui_hp_frame` | `c_vida_moldura` | `tela_luta.gd` (`Barra`) | mesmo rect (236x12), mesma área (2 px de margem, 8 de altura) |
+| `ui_hp_fill` / `ui_hp_fill_low` / `ui_hp_trail` | `c_vida_cheia` / `c_vida_baixa` / `c_vida_rastro` | idem | 18x8, 9-slice 1/0/1/0 (ladrilho: a hachura tem período 16 = miolo) |
+| `ui_portrait_frame` / `_gold` | `c_retrato_moldura` / `c_retrato_moldura_ouro` | `tela_luta.gd`, `janela_previa.gd`, `janela_vitoria.gd`, `janela_fim.gd` | mesmos 36x36, furo 32x32 em (2,2) |
+| `ui_mural_portrait_frame` / `_first` | `c_mural_moldura` / `c_mural_moldura_primeiro` | `janela_mural.gd` | mesmos 62x66, furo 56x60 em (3,3) |
+| `ui_mural_portrait_bg` | `c_mural_fundo` | `janela_mural.gd` | mesmos 56x60 |
+| `ui_map_frame` | `c_mapa_moldura` | `janela_mapa.gd` | 24x24, 9-slice 5, miolo vazio |
+| `ui_map_topbar` | `c_mapa_topo` | `janela_mapa.gd` | mesmas margens 1/1/1/2; texto `cream` |
+| `ui_map_card` | `c_mapa_ficha` | `janela_mapa.gd` (cartão do nó) | margens **3/3/3/5** (antes 2/2/2/2), rect +2 px; texto passa a **`ink`/`g0`** (antes claro sobre d1) |
+| `ui_map_card_next` | `c_mapa_ficha_proxima` | `janela_mapa.gd` | mesmas margens 1/1/1/1; texto `cream` |
+| `ui_map_region_label_<rid>` (8 regiões) | `c_mapa_aba_<rid>` | `janela_mapa.gd` | mesmas margens 5/2/2/2, ícone em (5,2), texto em (17,3) passa a **`ink`** |
+| `ui_map_price_ok` / `_missing` | `c_mapa_preco_ok` / `c_mapa_preco_falta` | `janela_mapa.gd` | mesmas margens 2/2/2/1; número `p0` (ok) e `g3` (falta) |
+| `ui_map_close_normal/hover/pressed` | `c_mapa_fechar_normal/hover/pressed` | `janela_mapa.gd`, `janela_mural.gd` | mesmos 16x16 em (616,7) |
+| `ui_map_viewport_edge` | — (fica) | `janela_mapa.gd` | já é fio ink + sombra pontilhada: serve no tema C |
+| `ui_honor_chip`, `ui_mural_seal`, barras e marcadores dos minigames (`ui_tug_*`, `ui_breath_*`, `ui_point_pip`, `ui_ronda_*`, `ui_legend_pip`, `ui_warn_*`), faixas `ui_banner_*`, `ui_skip_ring` | — (ficam) | telas de luta e minigames | peças de jogo, não de moldura; ficam para uma passada própria se o dono quiser |
+
+### 6.2 Margens do 9-slice e cores de texto (contraste medido pelo gerador)
+| Peça | Tamanho | 9-slice L T R B | Texto | Contraste |
+|---|---|---|---|---|
+| `c_balao` | 16x16 | 5 5 5 5 | `ink`, topo da maiúscula em by + 5, bloco centrado em w | 11,9:1 |
+| `c_balao_rabicho` / `_e` / `_d` | 7x6 | fixo | — | — |
+| `c_balao_seta` | 10x4 (2 quadros 5x4) | fixo | — | — |
+| `c_balao_placa_red` | 8x10 | 2 2 2 2 | minúsculas `white` (`tag_text_color` = white, como hoje) | 6,4:1 (r1) |
+| `c_balao_placa_gold` / `blue` / `green` / `purple` / `gray` | 8x10 | 2 2 2 2 | `ink` | 12,8 / 9,3 / 11,3 / 5,9 / 8,8:1 |
+| `c_balao_placa_steel` | 8x10 | 2 2 2 2 | `white` | 8,4:1 (st0) |
+| `c_contagem_easy/even/hard` | 16x18 | 5 2 2 4 | linha 1 `ink`, linha 2 `g0` | 11,9:1 e 5,9:1 |
+| `c_contagem_today` (corpo r1) | 16x18 | 5 2 2 4 | linha 1 `y2`, linha 2 `cream` | 6,8:1 e 4,8:1 |
+| `c_contagem_done` (faixa b1) | 16x18 | 5 2 2 4 | as duas `br1` (cor do dinheiro no claro) | 5,6:1 |
+| `c_mudanca`, `c_mudanca_pronto` | 26x22 | 5 5 5 7 | `ink`; preço `br1` | 11,9:1; 5,6:1 |
+| `c_mudanca_apagado` | 26x22 | 5 5 5 7 | `ink` nas duas linhas (o `br1` dá 4,1:1 no g3: não usar) | 8,8:1 |
+| `c_selo_risco_perigoso` | 68x16 | fixo | (pintado) `cream` + sombra ink | 4,8:1 |
+| `c_selo_risco_equilibrado` | 84x16 | fixo | (pintado) `ink` | 12,8:1 |
+| `c_selo_risco_facil` | 50x16 | fixo | (pintado) `ink` | 11,3:1 |
+| `c_selo_risco_*_base` | 24x16 | 16 3 3 5 | o mesmo do fixo; área do texto = de x 16 até w - 3, face 14 (texto `ycap` = y + 3) | idem |
+| `c_tela_fundo` | 640x360 | fixo | — (fundo) | — |
+| `c_tela_asfalto` | 16x16 | ladrilho inteiro | `cream` / `g3` por cima | 9,7 / 7,1:1 |
+| `c_faixa_tela` | 16x20 | 0 1 0 3 | `cream` (nomes), rótulos `g3` | 9,7:1 |
+| `c_vida_moldura` | 16x12 | 2 2 2 2 | — | — |
+| `c_vida_cheia` / `_baixa` / `_rastro` | 18x8 | 1 0 1 0 | — | — |
+| `c_retrato_moldura` / `_ouro` | 36x36 | fixo | — | — |
+| `c_mural_moldura` / `_primeiro` | 62x66 | fixo | — | — |
+| `c_mural_fundo` | 56x60 | fixo | — | — |
+| `c_mapa_moldura` | 24x24 | 5 5 5 5 (miolo vazio) | — | — |
+| `c_mapa_topo` | 16x20 | 1 1 1 2 | `cream`; Legado `p2` | 9,7:1; 4,8:1 |
+| `c_mapa_ficha` | 16x18 | 3 3 3 5 | nome `ink`, efeito `g0`, preço `p0` | 11,9 / 5,9 / 7,0:1 |
+| `c_mapa_ficha_proxima` | 16x13 | 1 1 1 1 | `cream` | 7,0:1 (p0) |
+| `c_mapa_aba_<rid>` | 16x13 | 5 2 2 2 | `ink` | 11,9:1 |
+| `c_mapa_preco_ok` | 12x11 | 2 2 2 1 | `p0` | 7,0:1 |
+| `c_mapa_preco_falta` | 12x11 | 2 2 2 1 | `g3` (nunca vermelho) | 5,6:1 (d2) |
+| `c_mapa_fechar_*` | 16x16 | fixo | (X pintado) | 11,9 / 4,8:1 |
+| `c_cartao_apagado` | 12x14 | 2 2 2 4 | `ink` | 8,8:1 |
+
+Cores das faixas das abas do mapa (tiradas das plaquinhas antigas, a cor do anel): garage `g2` (o giz `g3` sumia no papel), gym `gr2`,
+boxing `r2`, bjj `b2`, muay_thai `br2`, campaign `y0`, center `b2`, black_cat `b1`. Faixas da placa do calendário: easy `gr2`,
+even `y0`, hard `r2`, today `y1` (corpo r1), done `b1`.
+
+### 6.3 Pedidos de código (para o UI/UX; eu não mexi em `ui/`)
+1. **Plaquinha do nome:** largura `UiTema.largura_visivel(nome) + 7` em vez de `nome x 6 + 6`. Com a regra antiga, a folga da direita
+   variava de 2 a 4 px (as minúsculas têm larguras diferentes); com a nova fica 2/2 em todos os nomes medidos (téo, osmar, james, zé,
+   john). A ponta da direita da placa é serrilhada (fita rasgada): a face lida termina em w - 2.
+2. **Balão:** o bloco de texto já pode ser centrado no w inteiro (a sombra da direita saiu). Topo da maiúscula continua em by + 5.
+3. **Selo de risco:** `selo_risco()` passa a pôr o PNG fixo `c_selo_risco_<nome>` (16 px); para outra palavra, `…_base` em 9-slice
+   com o texto centrado na área de x 16 até w - 3. Medido: 5/5 px dos lados e 3/4 em cima/embaixo nos três.
+4. **Retângulos que ganham a sombra:** placa do calendário 116x28, cartão da mudança, `c_mapa_ficha`, `c_cartao_apagado` (+2 px);
+   faixa do HUD da luta 640x49 (+3, por cima da arena).
+5. Depois de aplicar, rodar a skill `alinhamento-ui` como sempre (o verificador é a palavra final no jogo).
+
+## 7. O que é placeholder (precisa de pixel artist)
 - **Logo:** ainda é a fonte 5x7 ampliada 5x, em negrito e itálico. O final é um logotipo desenhado à mão (letra de cartaz própria,
   com acentos), no mesmo retângulo (358x40, centro em x 320) para trocar sem mexer no layout.
 - **Itens da parede:** desenhos simples por código, de 30 a 64 px. À mão ganhariam papel amassado, tinta de serigrafia falhada, fotos
@@ -207,3 +295,7 @@ da animação). Referência quadro a quadro: `mockups/identidade/menu_c_anim/tem
 - **Grão do papel e do asfalto:** fórmula em dither. À mão: fibra de papel, cola de lambe-lambe, asfalto com pedrisco.
 - **Faixa entrando:** a ponta é um corte reto com fio de luz; o final pede a ponta rasgada e 2 a 3 quadros a mais.
 - A luz da parede é por passos de rampa com borda em dither (certa para pixel art), mas o cone é geométrico.
+- **Peças da ID3:** o fundo de tela cheia é asfalto em fórmula com duas faixas geométricas; à mão ganharia faixa de cartaz rasgada,
+  marcas de rua de verdade e sujeira. Molduras de retrato e do mural são filetes simples (cabem 2 a 3 px); um artista pode trocar por
+  papel de foto com fita, no mesmo tamanho e com o mesmo furo. A serrilha da plaquinha do nome e a orelha da ficha do mapa são o mínimo
+  em 1 px. Todas as peças são uma PNG cada, com o tamanho e as margens da §6: troca direta.

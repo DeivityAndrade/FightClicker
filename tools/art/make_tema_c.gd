@@ -65,6 +65,7 @@ var icons := {}
 var logo_L: Image
 var logo_used: Rect2i
 var pecas: Array = []  # [nome, tamanho, margens ou "", nota]
+var nove_map := {}  # NOVE + as margens dos geradores irmãos
 
 
 func _init() -> void:
@@ -78,6 +79,13 @@ func _init() -> void:
 	for d in [UI_OUT, MENU_OUT, MOCK_OUT]:
 		DirAccess.make_dir_recursive_absolute(d)
 	_load_font()
+	nove_map = NOVE.duplicate()
+	_main()
+	quit()
+
+
+## Corpo do gerador. O gerador irmão (make_tema_c_id3.gd) herda deste arquivo e troca só esta função.
+func _main() -> void:
 	print("== TEMA C: peças da UI")
 	_tema()
 	print("== MENU: parede, faixa, logo, intro")
@@ -91,7 +99,6 @@ func _init() -> void:
 	for p in pecas:
 		print("  %-34s %-9s %s %s" % [p[0], p[1], p[2], p[3]])
 	print("== TOTAL: %d aviso(s) %s" % [avisos.size(), str(avisos) if avisos.size() > 0 else ""])
-	quit()
 
 
 # ================================================================= base
@@ -182,7 +189,12 @@ func salvar_ui(img: Image, nome: String, margens := "", nota := "") -> void:
 
 ## Entradas prontas para o manifest (assets/sprites/manifest.json -> sprites): o UI/UX copia para lá ao aplicar o tema.
 func _manifest_tema() -> void:
+	# Junta com o que já está no arquivo: cada gerador (este e o make_tema_c_id3.gd) só reescreve as entradas dele.
 	var sp := {}
+	if FileAccess.file_exists(UI_OUT + "manifest_tema_c.json"):
+		var velho = JSON.parse_string(FileAccess.get_file_as_string(UI_OUT + "manifest_tema_c.json"))
+		if velho is Dictionary and velho.get("sprites") is Dictionary:
+			sp = _inteiros(velho["sprites"])
 	for p in pecas:
 		var caminho: String = p[0]
 		if not caminho.begins_with("ui/tema_c/"):
@@ -191,13 +203,30 @@ func _manifest_tema() -> void:
 		var tam: PackedStringArray = str(p[1]).split("x")
 		var e := {"file": "res://assets/sprites/" + caminho + ".png", "frame_size": [int(tam[0]), int(tam[1])], "frames": 1, "fps": 0.0,
 			"pivot": [0, 0], "note": "Tema C (cartaz). " + str(p[3]) + ". Spec: docs/arte/tema-c-spec.md"}
-		if NOVE.has(nome):
-			var m: Array = NOVE[nome]
+		if nove_map.has(nome):
+			var m: Array = nove_map[nome]
 			e["nine_slice"] = {"left": m[0], "top": m[1], "right": m[2], "bottom": m[3]}
 		sp[nome] = e
 	var f := FileAccess.open(UI_OUT + "manifest_tema_c.json", FileAccess.WRITE)
-	f.store_string(JSON.stringify({"_sobre": "Entradas do tema C para assets/sprites/manifest.json -> sprites. Gerado por tools/art/make_tema_c.gd.", "sprites": sp}, "	"))
+	f.store_string(JSON.stringify({"_sobre": "Entradas do tema C para assets/sprites/manifest.json -> sprites. Gerado por tools/art/make_tema_c.gd e make_tema_c_id3.gd.", "sprites": sp}, "	"))
 	f.close()
+
+
+## O JSON lido volta com números em float (16.0): devolve os inteiros como int, menos o "fps" (que é float de propósito).
+func _inteiros(v, chave_ := ""):
+	if v is Dictionary:
+		var o := {}
+		for k in v:
+			o[k] = _inteiros(v[k], str(k))
+		return o
+	if v is Array:
+		var o: Array = []
+		for e in v:
+			o.append(_inteiros(e, chave_))
+		return o
+	if v is float and chave_ != "fps" and v == floorf(v):
+		return int(v)
+	return v
 
 
 func salvar_menu(img: Image, nome: String, nota := "") -> void:
@@ -677,7 +706,7 @@ const NOVE := {
 
 
 func nove_peca(dst: Image, nome: String, r: Rect2i) -> void:
-	var m: Array = NOVE[nome]
+	var m: Array = nove_map[nome]
 	nove(dst, peca(nome), r, m[0], m[1], m[2], m[3])
 
 
@@ -685,7 +714,7 @@ func nove_peca(dst: Image, nome: String, r: Rect2i) -> void:
 ## Devolve [face, caixa do conteúdo].
 func botao_em(img: Image, nome: String, r: Rect2i, s: String, cor, ic = null, gap := 4) -> Array:
 	nove_peca(img, nome, r)
-	var m: Array = NOVE[nome]
+	var m: Array = nove_map[nome]
 	var area := Rect2i(r.position.x + m[0], r.position.y + m[1], r.size.x - m[0] - m[2], r.size.y - m[1] - m[3])
 	var face := Rect2i(r.position.x, r.position.y + (2 if nome == "c_btn_apertado" else 0), r.size.x, r.size.y - 2)
 	var sombra_txt = Vector2i(0, 1) if nome in ["c_btn_foco", "c_btn_apertado"] else null
@@ -719,7 +748,7 @@ func lutar_em(img: Image, st: String, p: Vector2i) -> Array:
 
 func titulo_em(img: Image, nome: String, r: Rect2i, s: String, sc: int) -> Array:
 	nove_peca(img, nome, r)
-	var m: Array = NOVE[nome]
+	var m: Array = nove_map[nome]
 	var area := Rect2i(r.position.x + m[0], r.position.y + m[1], r.size.x - m[0] - m[2], r.size.y - m[1] - m[3])
 	return [area, tx_c(img, s, area, "cream", sc, Vector2i(0, 1))]
 
