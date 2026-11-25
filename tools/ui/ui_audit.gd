@@ -5,6 +5,12 @@ extends SceneTree
 ##   Godot_console.exe --path E:\Fightclicker --resolution 1280x720 --script res://tools/ui/ui_audit.gd -- --estados todos [--saida <pasta>]
 ## `--estados` aceita "todos" ou nomes separados por vírgula (ex.: garagem_treino,luta_inicio).
 ##
+## Fase Identidade (ID1): regras estritas em tools/ui/audit/regras_estritas.gd. Sempre medidas; só reprovam com `--estrito`.
+##   --estrito          as regras novas contam como problema (código de saída 1) e o placar de `ignore` é listado
+##   --achados <arq>    grava os achados (TSV) e o placar
+##   --torta            audita a cena torta de propósito (tools/ui/audit/cena_torta.gd) e confere que cada regra reprova
+##   ignore agora exige motivo: UiTema.ignorar(no, motivo[, dinamico]); proibido em Button e em Label de texto fixo.
+##
 ## Leva o jogo a cada estado pela API pública do GameState / Fluxo, mede os Controls na base 640x360
 ## (tolerância 1 px), salva uma captura PNG por estado e imprime uma linha por problema.
 ## Save de teste isolado em user://test/ui_audit/ (nunca o save real). Código de saída 1 se houver problema.
@@ -189,6 +195,9 @@ var _f7b2 = preload("res://tools/ui/audit/estados_f7b2.gd").new(self)
 var _f8a1 = preload("res://tools/ui/audit/estados_f8a1.gd").new(self)
 var _f8a2 = preload("res://tools/ui/audit/estados_f8a2.gd").new(self)
 var _ronda = preload("res://tools/ui/audit/estados_ronda.gd").new(self)
+var _estr = preload("res://tools/ui/audit/regras_estritas.gd").new(self)  # regras da fase Identidade (--estrito)
+var achados_arquivo := ""  # --achados <arquivo>: grava os achados das regras estritas (TSV)
+var modo_torta := false  # --torta: audita a cena torta de propósito e confere que cada regra reprova
 
 
 func _initialize() -> void:
@@ -204,15 +213,104 @@ func _initialize() -> void:
 		elif args[i] == "--saida" and i + 1 < args.size():
 			saida = args[i + 1]
 			i += 1
+		elif args[i] == "--estrito":
+			_estr.estrito = true
+		elif args[i] == "--achados" and i + 1 < args.size():
+			achados_arquivo = args[i + 1]
+			i += 1
+		elif args[i] == "--torta":
+			modo_torta = true
 		i += 1
 	pedidos = ESTADOS_TODOS.duplicate() if sel == "todos" else Array(sel.split(","))
 	DirAccess.make_dir_recursive_absolute(saida)
 	gs = root.get_node("GameState")
 	await process_frame
+	if modo_torta:
+		await _rodar_torta()
+		return
 	await _rodar()
 	await _esperar(0.4)  # deixa o áudio esvaziar antes de sair
+	_relatorio_estrito()
 	print("ESTADOS %d | PROBLEMAS %d" % [estados_feitos, problemas.size()])
 	quit(1 if problemas.size() > 0 else 0)
+
+
+## Fim do relatório: achados por regra, placar de `ignore` (meta: no máximo 15, todos com motivo) e arquivo TSV opcional.
+func _relatorio_estrito() -> void:
+	var cont: Dictionary = _estr.contagem_por_regra()
+	var total := 0
+	var linhas: PackedStringArray = []
+	for c in cont:
+		total += int(cont[c])
+		linhas.append("%s=%d" % [c, cont[c]])
+	print("ESTRITO (%s): %d achados | %s" % ["ligado: contam como problema" if _estr.estrito else "aviso: use --estrito", total, " ".join(linhas)])
+	var sem_motivo := 0
+	for k in _estr.placar:
+		if str(_estr.placar[k].motivo) == "":
+			sem_motivo += 1
+	print("PLACAR IGNORE: total %d (meta <= 15) | com motivo %d | sem motivo %d" % [_estr.placar.size(), _estr.placar.size() - sem_motivo, sem_motivo])
+	if _estr.estrito:
+		for k in _estr.placar:
+			var e: Dictionary = _estr.placar[k]
+			print("  ignore  %s  %s  motivo: %s" % [e.arquivo, e.caminho, e.motivo if e.motivo != "" else "(SEM MOTIVO)"])
+	if achados_arquivo != "":
+		var f := FileAccess.open(achados_arquivo, FileAccess.WRITE)
+		if f != null:
+			f.store_line("codigo\tarquivo\tcaminho\tprimeiro_estado\tn\tdetalhe")
+			for k in _estr.achados:
+				var e: Dictionary = _estr.achados[k]
+				f.store_line("%s\t%s\t%s\t%s\t%d\t%s" % [e.codigo, e.arquivo, e.caminho, e.estado, e.n, e.detalhe])
+			f.store_line("#PLACAR")
+			for k in _estr.placar:
+				var e: Dictionary = _estr.placar[k]
+				f.store_line("%s\t%s\t%s\t%s" % [e.arquivo, e.caminho, e.classe, e.motivo])
+			f.close()
+
+
+## Prova que as regras pegam: monta a cena torta e confere (1) modo padrão: regras novas NÃO viram problema;
+## (2) modo estrito: cada regra de ESPERADOS reprova.
+func _rodar_torta() -> void:
+	var torta = load("res://tools/ui/audit/cena_torta.gd")
+	_cena = Control.new()
+	_cena.name = "Torta"
+	root.add_child(_cena)
+	torta.montar(_cena)
+	await process_frame
+	await process_frame
+	var falhas := 0
+	# (1) padrão
+	_estado = "torta_padrao"
+	_chaves.clear()
+	_estr.estrito = false
+	_auditar(_cena)
+	_estr.auditar(_cena, _estado)
+	for c in torta.NOVAS:
+		var vazou := false
+		for p in problemas:
+			if p.begins_with(c + "  "):
+				vazou = true
+		print("%s  modo padrão não acusa %s" % ["FAIL" if vazou else "PASS", c])
+		if vazou:
+			falhas += 1
+	# (2) estrito
+	problemas.clear()
+	_chaves.clear()
+	_estado = "torta_estrito"
+	_estr.estrito = true
+	_auditar(_cena)
+	_estr.auditar(_cena, _estado)
+	for c in torta.ESPERADOS:
+		var achou := false
+		for p in problemas:
+			if p.begins_with(c + "  "):
+				achou = true
+		print("%s  cena torta reprova em %s" % ["PASS" if achou else "FAIL", c])
+		if not achou:
+			falhas += 1
+	print("TORTA: %s (%d falhas)" % ["OK" if falhas == 0 else "FALHOU", falhas])
+	_cena.queue_free()
+	await process_frame
+	quit(1 if falhas > 0 else 0)
 
 
 func _quer(nome: String) -> bool:
@@ -603,6 +701,7 @@ func _ver(nome: String) -> void:
 	await _esperar(0.1)
 	_auditar(_cena)
 	_auditar_mapa()
+	_estr.auditar(_cena, nome)  # regras estritas: só viram problema com --estrito
 	if sem_captura:
 		estados_feitos += 1
 		return
