@@ -1530,3 +1530,8 @@ O nível 1 não muda a rua (só o jornal dá o nome). Corte (escopo §9): as cam
 A rua é montagem por código (blocos, chapa em listras, luz em faixas com dither, poças de luz redondas); à mão: chapa amassada,
 reboco com textura, folhagem, lua com relevo, fios, gente nas janelas. As camadas são desenhos simples (a criança tem 30 px). O capuz
 tem 16x22 (à mão: volume do pano, costura legível). Os recortes contam o nível pela foto de 11x8. Tamanhos, pivôs e pontos fixos.
+
+## 37. Identidade visual (proposta, aguarda o dono)
+Três direções para o HUD, a barra, as janelas e o menu principal: A vidro pixelado, B lona e placa de academia, C cartaz de luta.
+Paletas, leitura, custo e recomendação (B, com o C nas telas de luta) estão em `docs/arte/identidade-direcoes.md`. Mockups em
+`mockups/identidade/`, feitos pelo gerador `tools/art/make_mockup_identidade.gd`. Até o dono escolher, a UI de hoje continua valendo.
