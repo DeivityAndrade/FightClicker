@@ -2,6 +2,7 @@
 
 > **Decisão: o dono escolheu C (cartaz de luta) em 2026-11-25.** A recomendação abaixo (B com o C nas telas de luta) fica
 > só como registro. Menu v2 da C (composição no eixo, animação da faixa e 3 fundos): ver "Menu C v2" no fim deste arquivo.
+> **Peças finais da C e a parede de cartazes do menu (fundo escolhido pelo dono, enche com o save):** `docs/arte/tema-c-spec.md`.
 
 Diretor de Arte, 2026-11-25. O ponto de partida é a crítica de que o HUD e a barra dos focos, em marrom-acinzentado,
 têm "cara de IA". Isto é só **mockup** (nada em `ui/` ou `scenes/` mudou).

@@ -1539,3 +1539,11 @@ reais; recomendado: Ginásio Alvorada): ver "Menu C v2" em `docs/arte/identidade
 Três direções para o HUD, a barra, as janelas e o menu principal: A vidro pixelado, B lona e placa de academia, C cartaz de luta.
 Paletas, leitura, custo e recomendação (B, com o C nas telas de luta) estão em `docs/arte/identidade-direcoes.md`. Mockups em
 `mockups/identidade/`, feitos pelo gerador `tools/art/make_mockup_identidade.gd`. Até o dono escolher, a UI de hoje continua valendo.
+
+## 38. Tema C: peças finais em 1x e a parede de cartazes do menu (2026-11-25)
+Peças do tema (HUD, barra, LUTAR!, botões nos 4 estados com sombra dura reta, janela, título, cartão, chip, etiqueta, carimbos) em
+`assets/sprites/ui/tema_c/`, e o menu (parede de cartazes em camadas que enche com os marcos do save, faixa com listras em scroll,
+logo provisório, quadros da intro) em `assets/sprites/menu/`. Tudo em 1x, na paleta, gerado por `tools/art/make_tema_c.gd`.
+Margens de 9-slice, os dois jogos de cor (sobre escuro e sobre claro), regras de contraste (nunca texto claro sobre `r2`), onde
+cada peça entra na UI atual, a lista de marcos da parede e os tempos da animação: `docs/arte/tema-c-spec.md`.
+
