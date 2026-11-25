@@ -20,6 +20,7 @@ var _botao: Button
 var _anel: TextureRect
 var _atlas: AtlasTexture
 var _chip: Label
+var _chip_fundo: NinePatchRect
 var _fala_resta := 0.0
 var _fala_id := ""
 var _ui_escondida := false
@@ -92,7 +93,13 @@ func _montar_pular() -> void:
 	_botao.pressed.connect(func() -> void: player.pular())
 	var txt := UiTema.txt("skip_chip", "SEGURE ESC: PULAR")
 	var lw := UiTema.largura_visivel(txt)
-	_chip = UiTema.rotulo(self, txt, UiTema.G2, BOTAO.position.x - 8.0 - lw, UiTema.y_texto(BOTAO))
+	_chip = UiTema.rotulo(self, txt, UiTema.CREAM, BOTAO.position.x - 8.0 - lw, UiTema.y_texto(BOTAO))
+	# Tema C: a dica fica numa etiqueta c_chip (asfalto), para ler sobre qualquer cena (antes G2 sobre a imagem: 1,87:1).
+	_chip_fundo = UiTema.nine_patch(self, "c_chip", Rect2(_chip.position + Vector2(-4, 0), Vector2(lw + 8.0, 13)))
+	_chip_fundo.visible = false
+	_chip_fundo.z_index = 600
+	_chip_fundo.set_meta("ui_fundo_escuro", true)
+	move_child(_chip_fundo, _chip.get_index())  # a etiqueta fica atrás do texto
 	_chip.visible = false
 	_chip.z_index = 600
 
@@ -130,6 +137,7 @@ func _process(_delta: float) -> void:
 	var pode := player.pode_pular()
 	_botao.visible = pode
 	_chip.visible = pode
+	_chip_fundo.visible = pode
 	if _fala_resta > 0.0:
 		_fala_resta -= _delta
 		if _fala_resta <= 0.0 and balao.ativo() and balao.id == _fala_id:

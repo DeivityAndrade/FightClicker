@@ -47,6 +47,7 @@ func abrir_com() -> void:
 	# Janela no meio da sala (centro em x 320, y 154), tamanho inteiro e posição inteira.
 	_origem = Vector2(roundf(320.0 - larg / 2.0), roundf(154.0 - alt / 2.0))
 	_janela = Rect2(_origem, Vector2(larg, alt))
+	_fundo_tela()
 	moldura("ui_window", _janela)
 	faixa_titulo("neutral", Rect2(_origem + Vector2(6, 6), Vector2(larg - 12, 16)), UiTema.txt("disc_title", "RECEBER NOVO DISCÍPULO"))
 	_montar_previa()
@@ -63,10 +64,21 @@ func abrir_com() -> void:
 	_nome.grab_focus.call_deferred()
 
 
+## Tema C: a tela cheia sem cenário é o asfalto (c_tela_fundo) por cima do escurecer; entra e sai junto com ele.
+func _fundo_tela() -> void:
+	var f := TextureRect.new()
+	f.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	f.texture = UiTema.textura("c_tela_fundo")
+	f.stretch_mode = TextureRect.STRETCH_KEEP
+	f.size = TELA
+	f.set_meta("ui_fundo_escuro", true)
+	_dim.add_child(f)
+
+
 func _montar_previa() -> void:
 	# Cartão do preview à esquerda; SORTEAR embaixo dele.
-	var cartao := UiTema.nine_patch(painel, "ui_card_dim", Rect2(_origem + Vector2(12, 30), Vector2(90, 150)))  # 6d3: cartão mais alto: a prévia agora é 2x
-	cartao.set_meta("ui_align", "ignore")
+	var cartao := UiTema.nine_patch(painel, "c_cartao_apagado", Rect2(_origem + Vector2(12, 30), Vector2(90, 150)))  # 6d3: cartão mais alto: a prévia agora é 2x
+	UiTema.ignorar(cartao, "cartão do preview: só moldura; o discípulo 2x dentro dele tem posição própria")
 	_previa = AnimSprite.new()
 	_previa.definir("fighter_idle_disc_layered")
 	_previa.scale = Vector2(2, 2)  # 6d3: 2x (pixel inteiro), como o retrato do mural
@@ -97,7 +109,7 @@ func _montar_linhas(ativos: Array) -> void:
 	_nome_caixa.clip_contents = true
 	_nome_caixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_nome_caixa.add_theme_stylebox_override("panel", _caixa(UiTema.G1))
-	_nome_caixa.set_meta("ui_align", "ignore")
+	UiTema.ignorar(_nome_caixa, "campo de nome: caixa de texto editável (LineEdit) maior que a borda, recortada pela caixa")
 	painel.add_child(_nome_caixa)
 	_nome = LineEdit.new()
 	_nome.position = Vector2(0, -3)
@@ -118,7 +130,6 @@ func _montar_linhas(ativos: Array) -> void:
 	_nome.focus_exited.connect(func() -> void: _nome_caixa.add_theme_stylebox_override("panel", _caixa(UiTema.G1)))
 	_nome.text_changed.connect(_ao_digitar)
 	_nome.text_submitted.connect(func(_t: String) -> void: _confirmar())
-	_nome.set_meta("ui_align", "ignore")  # campo de texto: o verificador mede só o desenho dos rótulos e botões
 	_nome_caixa.add_child(_nome)
 	# Linhas dos campos com seta.
 	for i in ativos.size():
@@ -164,13 +175,13 @@ func _montar_campo(i: int, campo: String, rotulo_txt: String, kind: String, n_co
 			var g := Control.new()
 			g.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			g.size = painel.size
-			g.set_meta("ui_align", "ignore")
 			painel.add_child(g)
 			_grupos_setas[coluna] = g
 		for b in [esq, dir]:
 			b.reparent(_grupos_setas[coluna], true)
-	var valor := UiTema.nine_patch(painel, "ui_card_dim", Rect2(x + 16.0, y, LARG_VALOR, ALT_LINHA))
-	valor.set_meta("ui_align", "ignore")  # o conteúdo (chips + contador, ou o nome da opção) é centralizado à mão, como grupo
+	var valor := UiTema.nine_patch(painel, "c_cartao_apagado", Rect2(x + 16.0, y, LARG_VALOR, ALT_LINHA))
+	# O conteúdo (chips + contador, ou o nome da opção) é centralizado à mão, como grupo, e o texto muda a cada seta apertada.
+	UiTema.ignorar(valor, "valor da linha: chips + contador (ou nome da opção) centralizados à mão como grupo", true)
 	var chips: Array[ColorRect] = []
 	for k in (n_cores if kind == "colors" else 0):
 		var fundo := ColorRect.new()
@@ -184,7 +195,7 @@ func _montar_campo(i: int, campo: String, rotulo_txt: String, kind: String, n_co
 		chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		fundo.add_child(chip)
 		chips.append(chip)
-	var cont := UiTema.rotulo(valor, "", UiTema.G3, 0, 0)  # contador "2/6" (cores) ou nome da opção (texto)
+	var cont := UiTema.rotulo(valor, "", UiTema.WHITE, 0, 0)  # contador "2/6" (cores) ou nome da opção (texto)
 	_campos.append({"campo": campo, "kind": kind, "rotulo": rotulo, "valor": valor, "esq": esq, "dir": dir, "chips": chips,
 		"contador": cont, "n": n_cores})
 	esq.pressed.connect(func() -> void: _trocar(campo, -1))

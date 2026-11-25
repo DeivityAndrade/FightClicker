@@ -500,7 +500,7 @@ func _montar_unlock(ap: Dictionary, y: float) -> Dictionary:
 	var atributo := str(GameState.dados.atributo_info(str(ap.attribute)).get("name", ap.attribute)).to_upper()
 	if str(ap.get("art", "")) != "":
 		atributo = _atributos_da_arte(ap)  # a pera e o boneco treinam os três: "FOR AGI RES"
-	var rotulo_atr := _esq(UiTema.rotulo(c, atributo, UiTema.COL_TEXT_2, 26, 12, 92))
+	var rotulo_atr := _esq(UiTema.rotulo(c, atributo, UiTema.CREAM, 26, 12, 92))  # CREAM: G3 sobre o cartão g0 dava 4,34:1
 	var parte := _botao_compra(c, UiTema.txt("unlock_buy", "COMPRAR"), 28)
 	var item := {"cartao": c, "fundo": fundo, "icone_item": icone, "nome": nome, "atributo": rotulo_atr, "m": m,
 		"pode": false, "tween": null, "tween_estilo": null, "id": str(ap.id)}
@@ -978,7 +978,7 @@ func _atualizar_unlock(ap: Dictionary, estado: String, bloqueado: bool) -> void:
 	var recolher := estado == "locked" or estado == "boxed"
 	_recolher(item, recolher)
 	item.icone_item.texture = UiTema.textura(str(m.get("icon_locked_buyable" if estado == "buyable" else "icon_locked", "")))
-	item.nome.add_theme_color_override("font_color", UiTema.COL_DISABLED if estado == "locked" else (UiTema.COL_TEXT_2 if recolher or estado == "missing" else UiTema.COL_TEXT_1))
+	item.nome.add_theme_color_override("font_color", UiTema.COL_DISABLED if estado == "locked" else (UiTema.CREAM if recolher or estado == "missing" else UiTema.COL_TEXT_1))
 	UiTema.escurecer(item.cartao, estado != "locked")
 	item.nome.set_meta("ui_desabilitado", estado == "locked")  # cartão trancado de propósito: fora da regra de contraste
 	if recolher:

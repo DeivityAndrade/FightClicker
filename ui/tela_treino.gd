@@ -126,7 +126,7 @@ func _montar() -> void:
 	add_child(fundo)
 	_mundo = Node2D.new()
 	_mundo.z_index = Z_MUNDO
-	UiTema.alinhar(_mundo, "ignore")
+	UiTema.ignorar(_mundo, "cenário, atores e efeitos do minigame: posição livre de propósito (treme); os textos aqui dentro são avisos que sobem e somem", true)
 	add_child(_mundo)
 	var bg := Sprite2D.new()
 	bg.centered = false
@@ -156,9 +156,9 @@ func _montar_hud_comum() -> void:
 	UiTema.rotulo(_hud, _titulo(), UiTema.Y1, 8, 8, 0, HORIZONTAL_ALIGNMENT_LEFT, true, true)
 	# Caixa do tempo: "21 S" no meio do cartão.
 	var tb := retangulo(L.get("timer_box", _caixa_do_tempo()))
-	_caixa_tempo = UiTema.painel(_hud, "ui_card", tb)
-	var area := UiTema.area_nove("ui_card", tb.size)
-	_rotulo_tempo = UiTema.rotulo_centrado(_caixa_tempo, area, "", UiTema.WHITE, 1, false, "center_h")
+	_caixa_tempo = UiTema.painel(_hud, "c_cartao", Rect2(tb.position, tb.size + Vector2(0, 2)))  # +2: a sombra do cartão
+	var area := UiTema.area_nove("c_cartao", tb.size + Vector2(0, 2))
+	_rotulo_tempo = UiTema.rotulo_centrado(_caixa_tempo, area, "", UiTema.INK, 1, false, "center_h")
 	# SAIR: em qualquer momento, leva o prêmio do que já fez.
 	var sb := retangulo(L.get("exit_button", [8, 334, 48, 18]))
 	_botao_sair = UiTema.botao(_hud, sb)

@@ -125,8 +125,7 @@ func fundo_cor(rect: Rect2, cor: Color, escuro: bool = false) -> ColorRect:
 
 ## Retrato 32x32 numa moldura 36x36 (`espelhar` vira o rosto para o lado oposto).
 func retrato(retrato_sprite: String, moldura_sprite: String, x: float, y: float, espelhar: bool) -> void:
-	if moldura_sprite.begins_with("ui_portrait_frame"):  # tema C: mesma moldura 36x36 com o furo 32x32 em (2,2)
-		moldura_sprite = "c_retrato_moldura_ouro" if moldura_sprite.ends_with("gold") else "c_retrato_moldura"
+	moldura_sprite = UiTema.moldura_retrato(moldura_sprite)  # tema C: mesma moldura 36x36 com o furo 32x32 em (2,2)
 	var quadro := UiTema.textura_rect(painel, moldura_sprite, x, y)
 	var t := UiTema.textura_rect(quadro, retrato_sprite, 2, 2)  # o retrato fica DENTRO da moldura (não é sobreposição)
 	t.texture = UiTema.textura_disc(retrato_sprite)

@@ -228,8 +228,8 @@ func _montar_placa() -> void:
 	recorte.size = Vector2(20, 22)
 	recorte.clip_contents = true
 	_pagina.add_child(recorte)
-	_pagina_img = UiTema.textura_rect(recorte, "ui_calendar_page", 0, 0)
-	_pagina_num = UiTema.rotulo_centrado(_pagina, Rect2(2, 10, 15, 9), "", UiTema.D1, 1, false, "center_h")
+	_pagina_img = UiTema.textura_rect(recorte, "c_folhinha", 0, 0)
+	_pagina_num = UiTema.rotulo_centrado(_pagina, Rect2(2, 10, 15, 9), "", UiTema.INK, 1, false, "center_h")
 	_pagina_num.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))  # número sobre papel claro: sem sombra
 	_linha1 = UiTema.rotulo(_placa, "", UiTema.COL_TEXT_1, TEXTO_X, 5)
 	_linha2 = UiTema.rotulo(_placa, "", UiTema.COL_TEXT_2, TEXTO_X, 15)
@@ -253,7 +253,7 @@ func _mostrar_placa(dias: int, rotulo: String, nome: String) -> void:
 	var placa_nome: String = "c_contagem_today" if hoje else {"easy": "c_contagem_easy", "even": "c_contagem_even", "hard": "c_contagem_hard"}.get(rotulo, "c_contagem_even")
 	_placa.texture = UiTema.textura(placa_nome)
 	_placa_area.visible = true
-	_pagina_img.texture = _quadro_pagina(str(hud.get("page", "ui_calendar_page")), 1 if hoje else 0)  # quadro 1 = o dia circulado de caneta
+	_pagina_img.texture = _quadro_pagina(str(hud.get("page", "c_folhinha")), 1 if hoje else 0)  # quadro 1 = o dia circulado de caneta
 	_pagina_num.visible = true
 	_pagina_num.text = str(mini(GameState.dia_campanha(), 99))
 	if hoje:

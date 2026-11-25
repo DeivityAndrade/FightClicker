@@ -54,6 +54,7 @@ func _ready() -> void:
 	_cursor.definir(UiTema.nome_cursor())
 	_cursor.z_index = 4000
 	_cursor.visible = false
+	_cursor.set_meta("ui_align_motivo", "cursor da luva: segue o mouse, então passa por qualquer ponto (e fora da tela quando o mouse sai)")
 	add_child(_cursor)
 
 	_botao_mapa = BotaoMapa.new()  # Fase 5.4: o mapa da árvore fica atrás deste botão (118,22), brilha quando há compra

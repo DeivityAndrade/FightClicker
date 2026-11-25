@@ -109,13 +109,13 @@ func _montar_hud() -> void:
 	var L := layout()
 	# Contador "N DE 10": o cartão do manifest, com o maço (ícone) e o texto num grupo só, no meio dele.
 	_cont_caixa = retangulo(L.get("counter_box", [264, 4, 112, 20]))
-	UiTema.painel(_hud, "ui_card", _cont_caixa)
+	UiTema.painel(_hud, "c_cartao", Rect2(_cont_caixa.position, _cont_caixa.size + Vector2(0, 2)))  # +2: a sombra do cartão
 	_contador = Control.new()
 	_contador.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiTema.alinhar(_contador, "center_h")
 	_hud.add_child(_contador)
 	_cont_icone = UiTema.textura_rect(_contador, "icon_flyer", 0, 0)
-	_cont_rotulo = UiTema.rotulo(_contador, "", UiTema.WHITE, 12, 0)
+	_cont_rotulo = UiTema.rotulo(_contador, "", UiTema.INK, 12, 0)
 	_reposicionar_contador("0")
 
 
@@ -124,7 +124,7 @@ func _reposicionar_contador(texto: String) -> void:
 	var gw := 12.0 + UiTema.largura_visivel(texto)
 	if int(gw) % 2 != 0:
 		gw += 1.0
-	var area := UiTema.area_nove("ui_card", _cont_caixa.size)
+	var area := UiTema.area_nove("c_cartao", _cont_caixa.size + Vector2(0, 2))
 	_contador.size = Vector2(gw, 9)
 	_contador.position = Vector2(_cont_caixa.position.x + roundf(_cont_caixa.size.x / 2.0 - gw / 2.0),
 		_cont_caixa.position.y + area.position.y + roundf((area.size.y - 9.0) / 2.0))

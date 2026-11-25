@@ -214,7 +214,8 @@ da animação). Referência quadro a quadro: `mockups/identidade/menu_c_anim/tem
 | `ui_balloon_tail` / `_l` / `_r` | `c_balao_rabicho` / `_e` / `_d` | idem | mesmos 7x6, mesma ponta (`tip_offset` c [3,5], l [0,5], r [6,5]), mesma regra (linha 0 em by + h - 2) |
 | `ui_balloon_next` | `c_balao_seta` | `balao.gd` (modo cena) | mesmos 2 quadros 5x4 a 2 fps, mesma posição |
 | `ui_balloon_tag_<cor>` (7 cores) | `c_balao_placa_<cor>` (red, gold, blue, green, purple, gray, steel) | `balao.gd`, `balao_convite.gd` | 8x10, 9-slice 2/2/2/2, texto em (3,2). **Largura nova: `largura_visivel(nome) + 7`** (ver 6.3) |
-| `ui_countdown_plate_easy/even/hard/today/done` | `c_contagem_easy/even/hard/today/done` | `bloco_proxima.gd` (+ `by_data_id.campaign_calendar.hud`) | rect **116x28** (face 26 + sombra 2); a folhinha (`ui_calendar_page`) e o texto em x 35 ficam |
+| `ui_countdown_plate_easy/even/hard/today/done` | `c_contagem_easy/even/hard/today/done` | `bloco_proxima.gd` (+ `by_data_id.campaign_calendar.hud`) | rect **116x28** (face 26 + sombra 2); a folhinha (agora `c_folhinha`, linha abaixo) e o texto em x 35 ficam |
+| `ui_calendar_page` (2 quadros 20x22) | `c_folhinha` (2 quadros 20x22, PNG 40x22) | `bloco_proxima.gd` (`_pagina_img`, via `by_data_id.campaign_calendar.hud.page`) | mesmos quadros (0 normal, 1 dia circulado), mesma posição (4,2) da placa, número no mesmo `Rect2(2,10,15,9)`. **Número passa de `d1` para `ink`** nos dois quadros. O miolo do número é só papel (`white` com grão `cream`); a caneta `r2` passa por fora dele |
 | `ui_move_card` / `_ready` / `_dim` | `c_mudanca` / `c_mudanca_pronto` / `c_mudanca_apagado` | `bloco_proxima.gd` | rect **+2 px de altura** (sombra); texto `ink` nos três |
 | `ui_risk_*` + `icon_risk_*` (13 px, `UiTema.selo_risco`) e `selo_carimbo` | `c_selo_risco_perigoso` / `_equilibrado` / `_facil` (fixos) e `…_base` (9-slice) | `janela_previa.gd` (prévia do cinturão), `bloco_proxima.gd`, `cartao_adversario.gd` | **16 px** de altura (face 14 + sombra 2), ícone já pintado. `hard`→perigoso, `even`→equilibrado, `easy`→facil. O carimbo (`c_carimbo_*`) fica para o que é carimbo (mural, vitória) |
 | `ui_panel` (faixa do HUD da luta, 640x46) | `c_faixa_tela` | `tela_luta.gd` (`hud_band`) | rect **640x49** (46 + fio ink, fio r1 e sombra em dither por cima da arena); nomes `cream` |
@@ -248,6 +249,7 @@ da animação). Referência quadro a quadro: `mockups/identidade/menu_c_anim/tem
 | `c_contagem_easy/even/hard` | 16x18 | 5 2 2 4 | linha 1 `ink`, linha 2 `g0` | 11,9:1 e 5,9:1 |
 | `c_contagem_today` (corpo r1) | 16x18 | 5 2 2 4 | linha 1 `y2`, linha 2 `cream` | 6,8:1 e 4,8:1 |
 | `c_contagem_done` (faixa b1) | 16x18 | 5 2 2 4 | as duas `br1` (cor do dinheiro no claro) | 5,6:1 |
+| `c_folhinha` | 40x22 (2 quadros 20x22) | fixo | número 1x **`ink`** em `Rect2(2,10,15,9)` | contra a média do quadro (conta do verificador): 6,8:1 (q0) e 5,5:1 (q1); contra o papel 11,9:1. `r0` só passa no q0 (4,8:1; q1 3,9:1): não usar |
 | `c_mudanca`, `c_mudanca_pronto` | 26x22 | 5 5 5 7 | `ink`; preço `br1` | 11,9:1; 5,6:1 |
 | `c_mudanca_apagado` | 26x22 | 5 5 5 7 | `ink` nas duas linhas (o `br1` dá 4,1:1 no g3: não usar) | 8,8:1 |
 | `c_selo_risco_perigoso` | 68x16 | fixo | (pintado) `cream` + sombra ink | 4,8:1 |
@@ -285,7 +287,9 @@ even `y0`, hard `r2`, today `y1` (corpo r1), done `b1`.
    com o texto centrado na área de x 16 até w - 3. Medido: 5/5 px dos lados e 3/4 em cima/embaixo nos três.
 4. **Retângulos que ganham a sombra:** placa do calendário 116x28, cartão da mudança, `c_mapa_ficha`, `c_cartao_apagado` (+2 px);
    faixa do HUD da luta 640x49 (+3, por cima da arena).
-5. Depois de aplicar, rodar a skill `alinhamento-ui` como sempre (o verificador é a palavra final no jogo).
+5. **Folhinha:** `_pagina_img` usa `c_folhinha` (trocar `hud.page` no manifest ou o padrão `"ui_calendar_page"` do `bloco_proxima.gd`) e o
+   `_pagina_num` passa de `UiTema.D1` para `UiTema.INK`. O recorte por quadro continua igual (`frame_size` 20x22, 2 quadros).
+6. Depois de aplicar, rodar a skill `alinhamento-ui` como sempre (o verificador é a palavra final no jogo).
 
 ## 7. O que é placeholder (precisa de pixel artist)
 - **Logo:** ainda é a fonte 5x7 ampliada 5x, em negrito e itálico. O final é um logotipo desenhado à mão (letra de cartaz própria,
