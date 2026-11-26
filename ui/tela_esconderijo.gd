@@ -5,6 +5,9 @@ extends JanelaBase
 ## de vencido), embaixo a prateleira de troféus (vazia na 2a1, com os 4 lugares marcados). Só lê `GameState.esconderijo()`; os botões IR
 ## e VOLTAR só emitem sinais: quem congela o jogo e abre a noite é o Fluxo (`GameState.ronda_ir`). VOLTAR não grava nada.
 ## Esconderijo travado (`open` falso): o cartão da briga vira o motivo e o IR dele fica desabilitado; o SUSTO segue valendo.
+## Ronda 2a2: o chefe Apagão entra como cartão CHEFE no quadro (trancado com o que falta, aberto com IR, ou DESAFIO depois de vencido), como 4ª
+## ficha da parede (silhueta e "???" até vencer) e como o capacete da prateleira (normal, ou o raro aceso no mesmo lugar). Com o chefe no quadro
+## os cartões ficam mais baixos (modo compacto) para tudo caber acima da prateleira.
 
 signal ir_pedido(noite: String, bandido: String)
 signal voltar_pedido
@@ -18,11 +21,17 @@ const Y0 := 44.0
 const ALT_SUSTO := 28.0
 const ALT_BRIGA := 62.0
 const ALT_DESAFIO := 38.0
+const ALT_DESAFIO_C := 34.0  # compacto (com o chefe no quadro)
+const ALT_CHEFE_TRANCADO := 36.0
+const ALT_CHEFE := 52.0
+const Y_PRATELEIRA := 250.0
+const ALTURA_QUADRO := 204.0  # do topo dos cartões (Y0) até a prateleira, sem o último respiro
 const ALT_FICHA := 44.0
 const GAP := 4.0
 
 var sfx: Sfx
 var _d: Dictionary = {}
+var _compacto := false  # o chefe está no quadro: cartões mais baixos e respiro de 2 px
 
 
 func abrir_com(dados: Dictionary = {}) -> void:
@@ -83,12 +92,24 @@ func _cadeado(pai: Node, x: float, gy: float) -> void:
 		pai.add_child(c)
 
 
-func _retrato(pai: Node, bandido: String, x: float, y: float, conhecido: bool) -> void:
+func _retrato(pai: Node, bandido: String, x: float, y: float, conhecido: bool, chefe: bool = false) -> void:
 	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("opp_alley_" + bandido, {})
-	var q := UiTema.textura_rect(pai, "c_retrato_moldura", x, y)
+	var q := UiTema.textura_rect(pai, "c_retrato_moldura_ouro" if chefe else "c_retrato_moldura", x, y)
+	var sil := str(info.get("portrait_silhouette", ""))
+	if chefe and not conhecido and sil != "" and not UiTema.sprite(sil).is_empty():
+		UiTema.textura_rect(q, sil, 2, 2)  # o chefe é silhueta feita à mão até vencer
+		return
 	var t := UiTema.textura_rect(q, str(info.get("portrait", "")), 2, 2)
 	if not conhecido:
 		t.modulate = UiTema.INK  # silhueta
+
+
+## Texto do desafio que cabe no cartão: o do chefe é longo e tem uma versão curta.
+func _desafio_txt(c: Dictionary, chefe: bool) -> String:
+	var t := str(c.get("challenge_text", ""))
+	if chefe:
+		t = UiTema.txt("alley_ch_apagao_short", t)
+	return t.to_upper()
 
 
 func _botao_ir(card: Control, x: float, y: float, habilitado: bool, ao_clicar: Callable) -> void:
@@ -101,28 +122,74 @@ func _botao_ir(card: Control, x: float, y: float, habilitado: bool, ao_clicar: C
 
 
 # ---------------------------------------------------------------- quadro ESTA NOITE
+func _altura_do(c: Dictionary, aberta: bool) -> float:
+	match str(c.get("night", "")):
+		"scare", "quiet":
+			return ALT_SUSTO + 2.0
+		"alley":
+			if not aberta:
+				return ALT_SUSTO + 10.0
+			if bool(c.get("challenge_only", false)):
+				return (ALT_DESAFIO_C if _compacto else ALT_DESAFIO) + 2.0
+			return ALT_BRIGA + 2.0
+		"boss":
+			if bool(c.get("challenge_only", false)):
+				return ALT_DESAFIO_C + 2.0
+			return (ALT_CHEFE_TRANCADO if bool(c.get("locked", false)) else ALT_CHEFE) + 2.0
+	return 0.0
+
+
 func _montar_quadro() -> void:
 	_cabecalho(UiTema.txt("hideout_board_title", "ESTA NOITE"), COL_E)
 	var aberta := bool(_d.get("open", false))
+	var board: Array = _d.get("board", [])
+	_compacto = false
+	for c in board:
+		if str(c.get("night", "")) == "boss":
+			_compacto = true
+	var gap := 2.0 if _compacto else GAP
+	# Sem espaço, o cartão "o beco está quieto" cede o lugar (os DESAFIO e o chefe têm o que mostrar).
+	var soma := 0.0
+	var visto_alley := false
+	for c in board:
+		var k := str(c.get("night", ""))
+		if k == "alley" and not aberta:
+			if visto_alley:
+				continue
+			visto_alley = true
+		if k == "boss" and not aberta:
+			continue
+		soma += _altura_do(c, aberta) + gap
+	var sem_quieto := soma - gap > ALTURA_QUADRO
 	var y := Y0
 	var primeiro_bandido := true
-	for c in _d.get("board", []):
+	for c in board:
 		match str(c.get("night", "")):
 			"scare":
-				y += _cartao_susto(c, y) + GAP
+				y += _cartao_susto(c, y) + gap
 			"alley":
 				if not aberta:
 					if primeiro_bandido:
-						y += _cartao_travado(y) + GAP
+						y += _cartao_travado(y) + gap
 					primeiro_bandido = false
 					continue
 				primeiro_bandido = false
 				if bool(c.get("challenge_only", false)):
-					y += _cartao_desafio(c, y) + GAP
+					y += _cartao_desafio(c, y) + gap
 				else:
-					y += _cartao_briga(c, y) + GAP
+					y += _cartao_briga(c, y) + gap
+			"boss":
+				if not aberta:
+					continue
+				if bool(c.get("challenge_only", false)):
+					y += _cartao_desafio(c, y, true) + gap
+				elif bool(c.get("locked", false)):
+					y += _cartao_chefe_trancado(c, y) + gap
+				else:
+					y += _cartao_chefe(c, y) + gap
 			"quiet":
-				y += _cartao_quieto(c, y) + GAP
+				if not sem_quieto:
+					y += _cartao_quieto(c, y) + gap
 
 
 func _cartao_susto(c: Dictionary, y: float) -> float:
@@ -190,14 +257,50 @@ func _cartao_briga(c: Dictionary, y: float) -> float:
 	return ALT_BRIGA + 2.0
 
 
-func _cartao_desafio(c: Dictionary, y: float) -> float:
-	var card := _cartao(COL_E, y, LARG_E, ALT_DESAFIO)
-	var chip := _chip(card, UiTema.txt("hideout_kind_challenge", "DESAFIO"), 6, 6)
-	_txt(card, str(c.get("nickname", "")).to_upper(), UiTema.INK, 6.0 + chip.size.x + 6.0, 9.0)
-	_txt(card, str(c.get("challenge_text", "")).to_upper(), UiTema.R1, 6.0, 26.0)
+func _cartao_desafio(c: Dictionary, y: float, chefe: bool = false) -> float:
+	var alt := ALT_DESAFIO_C if _compacto else ALT_DESAFIO
+	var card := _cartao(COL_E, y, LARG_E, alt)
+	var chip := _chip(card, UiTema.txt("hideout_kind_challenge", "DESAFIO"), 6, 5 if _compacto else 6)
+	_txt(card, str(c.get("nickname", "")).to_upper(), UiTema.INK, 6.0 + chip.size.x + 6.0, 8.0 if _compacto else 9.0)
+	_txt(card, _desafio_txt(c, chefe), UiTema.R1, 6.0, 21.0 if _compacto else 26.0)
 	var bandido := str(c.get("bandit", ""))
-	_botao_ir(card, LARG_E - 6.0 - 40.0, 9.0, true, func() -> void: ir_pedido.emit("alley", bandido))
-	return ALT_DESAFIO + 2.0
+	_botao_ir(card, LARG_E - 6.0 - 40.0, 7.0 if _compacto else 9.0, true, func() -> void: ir_pedido.emit("alley", bandido))
+	return alt + 2.0
+
+
+## Cartão do chefe trancado: "???" e o que falta (lenda, os 3 do beco ou o cinturão). IR apagado.
+func _cartao_chefe_trancado(c: Dictionary, y: float) -> float:
+	var card := _cartao(COL_E, y, LARG_E, ALT_CHEFE_TRANCADO)
+	var chip := _chip(card, UiTema.txt("hideout_kind_boss", "CHEFE"), 6, 5)
+	_txt(card, UiTema.txt("fighter_name_hidden", "???"), UiTema.G0, 6.0 + chip.size.x + 6.0, 8.0)
+	_cadeado(card, 6.0, 21.0)
+	_txt(card, str(c.get("missing_text", "")).to_upper(), UiTema.R1, 16.0, 22.0)
+	_botao_ir(card, LARG_E - 6.0 - 40.0, 8.0, false, func() -> void: pass)
+	return ALT_CHEFE_TRANCADO + 2.0
+
+
+## Cartão do chefe aberto: silhueta com a moldura dourada, o que se sabe (perfil, passiva) e o desafio; IR.
+func _cartao_chefe(c: Dictionary, y: float) -> float:
+	var card := _cartao(COL_E, y, LARG_E, ALT_CHEFE)
+	var revenge := bool(c.get("revenge", false))
+	var sabe := bool(c.get("known", false))
+	_retrato(card, str(c.get("boss", "apagao")), 6, 8, sabe, true)
+	var x := 48.0
+	var rotulo := UiTema.txt("hideout_kind_revenge", "REVANCHE") if revenge else UiTema.txt("hideout_kind_boss", "CHEFE")
+	if revenge:
+		_carimbo(card, rotulo, x, 6.0)
+	else:
+		_chip(card, rotulo, x, 6)
+	var larg_marca := UiTema.largura_visivel(rotulo) + 14.0
+	var apelido := str(c.get("nickname", "")) if sabe else UiTema.txt("alley_apagao_anon", str(c.get("nickname", "")))
+	_txt(card, apelido.to_upper(), UiTema.INK, x + roundf(larg_marca) + 6.0, 10.0 if not revenge else 12.0)
+	var perfil := str(c.get("profile", "")).to_upper()
+	_txt(card, perfil, UiTema.G0, x, 24.0)
+	_passiva_linha(card, c.get("passive", {}), x + UiTema.largura(perfil) + 8.0, 24.0)
+	_txt(card, _desafio_txt(c, true), UiTema.R1, x, 36.0)
+	var id := str(c.get("boss", "apagao"))
+	_botao_ir(card, LARG_E - 6.0 - 40.0, 16.0, true, func() -> void: ir_pedido.emit("alley", id))
+	return ALT_CHEFE + 2.0
 
 
 ## Carimbo REVANCHE (moldura dupla falhada, texto r2: carimbo fica fora da regra de contraste).
@@ -217,18 +320,21 @@ func _montar_dossie() -> void:
 	_ficha_chefe(_d.get("boss", {}), y)
 
 
-func _ficha(f: Dictionary, y: float) -> void:
+func _ficha(f: Dictionary, y: float, chefe: bool = false) -> void:
 	var card := _cartao(COL_D, y, LARG_D, ALT_FICHA)
 	var sabe := bool(f.get("known", false))
-	_retrato(card, str(f.get("bandit", "")), 4, 4, sabe)
+	var id := str(f.get("id", "")) if chefe else str(f.get("bandit", ""))
+	_retrato(card, id, 4, 4, sabe, chefe)
 	var x := 44.0
 	var nome := str(f.get("name", "")).to_upper()
 	_txt(card, nome, UiTema.INK if sabe else UiTema.G0, x, 7.0)
 	if sabe:
 		_txt(card, str(f.get("nickname", "")).to_upper(), UiTema.R1, x + UiTema.largura(nome) + 8.0, 7.0)
 		_txt(card, str(f.get("stamp", "")).to_upper(), UiTema.G0, x, 18.0)
+	elif chefe and str(f.get("missing_text", "")) == "":  # chefe aberto, ainda sem vencer: só diz o que ele é
+		_txt(card, UiTema.txt("hideout_kind_boss", "CHEFE"), UiTema.R1, x, 18.0)
 	else:
-		_cadeado(card, x, 16.0)  # o texto "LENDA {n}" sozinho é ambíguo: o cadeado diz que a ficha está trancada
+		_cadeado(card, x, 16.0)  # o cadeado diz que a ficha está trancada
 		_txt(card, str(f.get("missing_text", "")).to_upper(), UiTema.R1, x + 10.0, 18.0)
 	# B3: desafio feito = selo dourado com o gato aceso e texto escuro; por fazer = ícone e texto apagados.
 	var feito := bool(f.get("challenge", false))
@@ -243,41 +349,38 @@ func _ficha(f: Dictionary, y: float) -> void:
 			card.add_child(selo)
 	var ic := UiTema.textura_rect(card, "icon_region_black_cat_9", x, 27.0)
 	ic.modulate = Color.WHITE if feito else Color(1, 1, 1, 0.3)
-	_txt(card, str(f.get("challenge_text", "")).to_upper(), UiTema.INK if feito else Color(UiTema.G0, 0.55), x + 14.0, 29.0)
+	_txt(card, _desafio_txt(f, chefe), UiTema.INK if feito else Color(UiTema.G0, 0.55), x + 14.0, 29.0)
 	if sabe:
 		var b := UiTema.botao(card, Rect2(LARG_D - 6.0 - 36.0, 6.0, 36, 16), "c_btn_papel_normal")
 		UiTema.botao_conteudo(b, UiTema.txt("hideout_read", "LER"), UiTema.INK)
-		var id := str(f.get("bandit", ""))
 		b.pressed.connect(func() -> void:
 			sfx.foco()
 			ficha_pedida.emit(id))
 
 
-## A 4ª ficha: a silhueta do chefe da 2a2 ("???" e o que falta).
+## A 4ª ficha: o chefe (silhueta, "???" e o que falta até vencer; depois, a ficha de verdade com LER).
 func _ficha_chefe(boss: Dictionary, y: float) -> void:
-	var card := _cartao(COL_D, y, LARG_D, ALT_FICHA)
-	var q := UiTema.textura_rect(card, "c_retrato_moldura", 4, 4)
-	var fundo := ColorRect.new()
-	fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	fundo.color = UiTema.INK
-	fundo.position = Vector2(2, 2)
-	fundo.size = Vector2(32, 32)
-	q.add_child(fundo)
-	_txt(card, UiTema.txt("fighter_name_hidden", "???"), UiTema.G0, 44.0, 7.0)
-	_cadeado(card, 44.0, 16.0)
-	_txt(card, str(boss.get("missing_text", "")).to_upper(), UiTema.R1, 54.0, 18.0)
+	_ficha(boss, y, true)
 
 
-# ---------------------------------------------------------------- prateleira de troféus (vazia na 2a1)
+# ---------------------------------------------------------------- prateleira de troféus
 func _montar_prateleira() -> void:
-	var y := 244.0
-	var card := _cartao(12, y, 616, 56)
+	var card := _cartao(12, Y_PRATELEIRA, 616, 56)
 	var chip := _chip(card, UiTema.txt("hideout_shelf_title", "TROFÉUS"), 6, 6)
-	var vazio := UiTema.txt("hideout_shelf_empty", "AINDA VAZIA")
-	var l := _txt(card, vazio, UiTema.G0, 6, 32.0)
-	UiTema.alinhar(l, "left")  # embaixo do chip TROFÉUS, colada na esquerda
 	var tem: Array = _d.get("trophies", [])
-	# 4 lugares marcados (nicho ink com o filete de cima em d2), no meio da prateleira.
+	var nomes: Array = []
+	for t in tem:
+		if str(t.get("state", "empty")) != "empty" and str(t.get("name", "")) != "":
+			nomes.append(str(t.name).to_upper())
+	if nomes.is_empty():
+		var l := _txt(card, UiTema.txt("hideout_shelf_empty", "AINDA VAZIA"), UiTema.G0, 6, 32.0)
+		UiTema.alinhar(l, "left")  # embaixo do chip TROFÉUS, colada na esquerda
+	else:
+		var l2 := UiTema.rotulo(card, ", ".join(nomes), UiTema.G0, 6, 24.0, 144.0)  # quebra em 2 linhas: não passa do 1º nicho
+		l2.size.y = 18.0
+		l2.set_meta("ui_texto_dinamico", true)
+		UiTema.alinhar(l2, "left")
+	# 4 lugares (nicho ink com o filete de cima em d2), no meio da prateleira; o troféu fica em (10,7) do nicho.
 	var n := 4
 	var w := 64.0
 	var gap := 12.0
@@ -295,6 +398,24 @@ func _montar_prateleira() -> void:
 		luz.color = UiTema.D2
 		luz.size = Vector2(w, 1)
 		nicho.add_child(luz)
-		if i < tem.size():
-			UiTema.rotulo_centrado(nicho, Rect2(0, 0, w, 38), "*", UiTema.Y1)
+		var t: Dictionary = tem[i] if i < tem.size() else {}
+		var spr := str(t.get("sprite", ""))
+		if str(t.get("state", "empty")) != "empty" and spr != "" and not UiTema.sprite(spr).is_empty():
+			var img := UiTema.textura_rect(nicho, spr, 10, 7)
+			if str(t.state) == "rare":
+				_piscar_raro(img, spr)
 	chip.visible = true
+
+
+## O capacete raro pisca: a lâmpada fraca por um instante a cada ~2 s (só se a arte do quadro fraco existir).
+func _piscar_raro(img: TextureRect, spr: String) -> void:
+	var fraco := spr + "_dim"
+	if UiTema.sprite(fraco).is_empty():
+		return
+	var aceso: Texture2D = img.texture
+	var apagado: Texture2D = UiTema.textura(fraco)
+	var tw := img.create_tween().set_loops()
+	tw.tween_interval(1.9)
+	tw.tween_callback(func() -> void: img.texture = apagado)
+	tw.tween_interval(0.15)
+	tw.tween_callback(func() -> void: img.texture = aceso)

@@ -880,6 +880,7 @@
 	"alley_ch_early": "VENÇA ATÉ O 2º ROUND",
 	"alley_ch_clean": "VENÇA COM 60% DA VIDA",
 	"alley_ch_apagao": "ANTES DO APAGÃO: SUSTO E K.O. ATÉ O 2º ROUND",
+	"alley_ch_apagao_short": "SUSTO E K.O. ATÉ O 2º ROUND",
 	"alley_ch_done": "DESAFIO: FEITO",
 	"alley_ch_lost": "DESAFIO: PERDIDO",
 	"challenge_chance_line": "CHANCE DO DESAFIO: {n}%",
@@ -907,7 +908,7 @@
 	"trophy_apagao_name": "CAPACETE DA LANTERNA QUEBRADA",
 	"trophy_apagao_rare_name": "CAPACETE ACESO",
 
-	"dossier_missing_legend": "LENDA {n}",
+	"dossier_missing_legend": "PRECISA DA LENDA {n}",
 	"dossier_missing_prev": "VENÇA {nome} PRIMEIRO",
 	"dossier_missing_league": "ENTRE NA LIGA REGIONAL",
 	"dossier_missing_bandits": "VENÇA OS 3 DO BECO",

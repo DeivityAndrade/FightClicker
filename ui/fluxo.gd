@@ -241,8 +241,12 @@ func _ir_do_esconderijo(noite: String, bandido: String) -> void:
 func _abrir_ficha(bandido: String) -> void:
 	if not (janela is TelaEsconderijo):
 		return
-	for f in GameState.dossie():
-		if str(f.bandit) == bandido:
+	var fichas: Array = GameState.dossie().duplicate()
+	var chefe: Dictionary = GameState.esconderijo().get("boss", {})
+	if not chefe.is_empty() and bool(chefe.get("known", false)):
+		fichas.append(chefe)  # 2a2: a ficha do chefe (id no lugar de bandit)
+	for f in fichas:
+		if str(f.get("bandit", f.get("id", ""))) == bandido:
 			var j := JanelaFicha.new()
 			_abrir(j)
 			j.abrir_com(f)

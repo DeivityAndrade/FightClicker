@@ -69,6 +69,11 @@ var _t := 0.0
 var _opp_id := ""
 var _alley := false  # Ronda 2a1: luta da noite de briga (vulto x bandido, arena do beco; nada vai para a carreira)
 var _arte_noite: Dictionary = {}  # luta.art = {opponent, vulto, arena, portrait}
+# Ronda 2a2: o chefe Apagão. Letreiro de entrada, o apagão (só visual, 1 s, sem tocar nos eventos) e o choque do golpe forte.
+var _bg_spr: Sprite2D
+var _arena_pre := "arena"
+var _escuro: ColorRect  # o véu do apagão (dentro do mundo, acima dos lutadores e abaixo dos efeitos)
+var _fx_choque: AnimSprite
 var _escala_opp := 1.0
 var _eventos_vistos := 0
 var _ordem_numeros := 0
@@ -252,6 +257,10 @@ func _montar(opp_id: String) -> void:
 	bg.texture = UiTema.textura(pre + "_bg")
 	bg.z_index = -100
 	_mundo.add_child(bg)
+	_bg_spr = bg
+	_arena_pre = pre
+	_escuro = null
+	_fx_choque = null
 	var nome_lamp := pre + "_lamp" if not UiTema.sprite(pre + "_lamp").is_empty() else "arena_lamp"
 	_lampada = _anim(nome_lamp, UiTema.pos(nome_lamp), -50)
 	_lampada.visible = pre == "arena" or nome_lamp == pre + "_lamp"
@@ -290,6 +299,9 @@ func _montar(opp_id: String) -> void:
 			lista.append(a)
 		_fx[nome] = lista
 		_fx_i[nome] = 0
+	if bool(luta.get("boss", false)) and not UiTema.sprite("fx_apagao_choque").is_empty():
+		_fx_choque = _anim("fx_apagao_choque", Vector2.ZERO, 405)
+		_fx_choque.visible = false
 	for i in 2:
 		var suor := _anim("fx_sweat", Vector2.ZERO, 410)
 		suor.visible = false
@@ -567,7 +579,11 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	var ret := UiTema.textura_rect(quadro_o, str(info_o.get("portrait", "")), 2, 2)
 	ret.flip_h = true
 	if _alley and not _bandido_conhecido():
-		ret.modulate = UiTema.INK  # silhueta, igual à prévia: ele ainda não tem ficha
+		var sil := str(info_o.get("portrait_silhouette", ""))
+		if bool(luta.get("boss", false)) and sil != "" and not UiTema.sprite(sil).is_empty():
+			ret.texture = UiTema.textura(sil)  # 2a2: o chefe é a silhueta feita à mão até vencer
+		else:
+			ret.modulate = UiTema.INK  # silhueta, igual à prévia: ele ainda não tem ficha
 	var opp: Dictionary = GameState.lutas.adversario(opp_id)
 	if _alley:
 		opp = _dados_bandido()
@@ -607,17 +623,25 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 func _bandido_conhecido() -> bool:
 	var id := str(luta.get("bandit", ""))
 	var conhecido := false
+	var premio: Dictionary = luta.get("night_prize", {})
+	if bool(luta.get("boss", false)):  # 2a2: a ficha do chefe nasce ao LUTAR; só aparece no prêmio
+		conhecido = bool(GameState.esconderijo().get("boss", {}).get("known", false)) and not bool(premio.get("press_title_new", false))
+		return conhecido
 	for f in GameState.dossie():
 		if str(f.bandit) == id:
 			conhecido = bool(f.known)
-	if bool((luta.get("night_prize", {}) as Dictionary).get("dossier_new", false)):
+	if bool(premio.get("dossier_new", false)):
 		conhecido = false
 	return conhecido
 
 
 ## Noite de briga: o que o HUD mostra do bandido (o apelido e o perfil; o nome verdadeiro só vem com a vitória, no Dossiê).
 func _dados_bandido() -> Dictionary:
-	for b in GameState.ronda_cfg.noites.get("alley", {}).get("bandits", []):
+	var todos: Array = (GameState.ronda_cfg.noites.get("alley", {}).get("bandits", []) as Array).duplicate()
+	var chefe: Variant = GameState.ronda_cfg.noites.get("alley", {}).get("boss", {})
+	if chefe is Dictionary and not (chefe as Dictionary).is_empty():
+		todos.append(chefe)
+	for b in todos:
 		if str(b.id) == str(luta.get("bandit", "")):
 			var conhecido := _bandido_conhecido()
 			var nome := UiTema.txt(str(b.nickname), "???") if conhecido else UiTema.txt("alley_%s_anon" % str(b.id), UiTema.txt(str(b.nickname), "???"))  # 2a1 B2
@@ -784,6 +808,7 @@ func _agendar_tudo() -> void:
 	var intro := float(luta.intro_seconds)
 	var res: Dictionary = luta.result
 	_combo = 0
+	_agendar_apagao()
 	# Abertura: "1º ROUND", depois "LUTEM!" com o sino.
 	_cue(-intro + 0.05, func() -> void:
 		_texto_banner(UiTema.txt("fight_round", "{n}º ROUND", {"n": 1}), UiTema.WHITE, 2)
@@ -1412,6 +1437,8 @@ func _acertou(e: Dictionary) -> void:
 		_tocar_fx("fx_fight_hit", contato, quem == 1)
 		if tipo == "crit":
 			_tocar_fx("fx_fight_crit", contato, quem == 1)
+	if quem == 1 and _fx_choque != null and str(e.get("anim_usada", "")) in ["heavy", "ground_punch"] and not bloqueado:
+		_choque(contato)  # 2a2: o choque do Apagão no ponto do golpe forte
 
 	_hud_embalo(int(e.get("streak", 0)))
 	_hud_passiva2(e)
@@ -1464,6 +1491,55 @@ func _acertou(e: Dictionary) -> void:
 		_tremer(2, 0.2)
 	if ko and not finalizou:
 		_congelar(1.1, 0.3)  # K.O. em câmera lenta
+
+
+## 2a2: arco elétrico do golpe forte do Apagão (já virado para a esquerda, pivô no ponto do contato), ~0,15 s.
+func _choque(p: Vector2) -> void:
+	_fx_choque.position = p
+	_fx_choque.visible = true
+	var tw := _fx_choque.create_tween()
+	tw.tween_interval(0.15)
+	tw.tween_callback(func() -> void: _fx_choque.visible = false)
+
+
+## 2a2: o apagão (só visual; os eventos e o resultado são os de sempre). Começa em `blackout.t`, dura `dark_s`: o fundo vira o escuro, a
+## arandela apaga (quadro 2), um véu escurece os lutadores, e a luz volta piscando. O Apagão puxa a alavanca (`blackout`) com o pico no `t`.
+func _agendar_apagao() -> void:
+	var b: Variant = luta.get("blackout", {})
+	if not bool(luta.get("boss", false)) or not (b is Dictionary) or (b as Dictionary).is_empty():
+		return
+	var t := float((b as Dictionary).t)
+	var dur := float((b as Dictionary).get("dark_s", 1.0))
+	var s := UiTema.sprite(_nome(1, "blackout"))
+	if not s.is_empty() and _nome(1, "blackout") != "":
+		var pico := float(int(s.get("peak_frame", 2))) / maxf(float(s.get("fps", 8.0)), 1.0)
+		_cue(maxf(t - pico, 0.0), func() -> void: _tocar(1, "blackout"))
+	_cue(t, func() -> void: _apagar(true))
+	_cue(t + dur, func() -> void: _apagar(false))
+
+
+func _apagar(escuro: bool) -> void:
+	var fundo := _arena_pre + "_dark_bg"
+	if _bg_spr != null and not UiTema.sprite(fundo).is_empty():
+		_bg_spr.texture = UiTema.textura(fundo if escuro else _arena_pre + "_bg")
+	if escuro:
+		_lampada.parar(2)  # apagada
+		_lampada.visible = false  # a arandela apagada já está desenhada no fundo escuro
+		sfx.queda()
+		_tremer(1, 0.15)
+		if _escuro == null:
+			_escuro = ColorRect.new()
+			_escuro.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_escuro.color = Color(0.03, 0.04, 0.1, 0.0)
+			_escuro.size = TELA
+			_escuro.z_index = 360  # acima dos lutadores (318/320) e abaixo dos efeitos (400)
+			_mundo.add_child(_escuro)
+		create_tween().tween_property(_escuro, "color:a", 0.6, 0.08)
+	else:
+		_lampada.visible = true
+		_lampada.tocar([1, 0, 1, 2, 0], 10.0)  # a luz volta piscando
+		if _escuro != null:
+			create_tween().tween_property(_escuro, "color:a", 0.0, 0.2)
 
 
 ## Congela (ou desacelera) o jogo por `duracao_real` segundos de relógio real. Vale o efeito mais recente.
@@ -1922,6 +1998,9 @@ func _info_entrada() -> Dictionary:
 
 
 func _iniciar_pre(dados: Dictionary) -> void:
+	if bool(dados.get("boss", false)) and float(dados.get("entrance_s", 0.0)) > 0.0 and str(dados.get("entrance_banner", "")) != "":
+		_iniciar_letreiro(dados)
+		return
 	var entrada := _info_entrada()
 	_ap_falas = (dados.get("intro_falas", []) as Array).duplicate() if dados.get("intro_falas", []) is Array else []
 	_entrada_fator = 0.5 if not _ap_falas.is_empty() else 1.0
@@ -1965,7 +2044,31 @@ func _aplicar_entrada(t_real: float) -> void:
 		_facho.position = Vector2(roundf(p.x), roundf(p.y))
 
 
+## 2a2: o letreiro de entrada do chefe ("O APAGÃO", `entrance_s`): o poste pisca e o relógio da luta espera. Clique ou espaço pulam.
+func _iniciar_letreiro(dados: Dictionary) -> void:
+	_pre = "letreiro"
+	_pre_t = 0.0
+	sfx.publico(-16.0)
+	_texto_banner(str(dados.entrance_banner).to_upper(), UiTema.Y2, 3)
+	_lampada.tocar([1, 2, 0, 1, 2, 0, 1, 0], 9.0, true)
+	_tremer(1, 0.2)
+
+
+func _finalizar_letreiro() -> void:
+	if _pre != "letreiro":
+		return
+	_pre = ""
+	_esconder_banner()
+	_lampada.parar(0)
+	_soltar_gesto()
+
+
 func _passo_pre(delta: float) -> void:
+	if _pre == "letreiro":
+		_pre_t += delta
+		if _pre_t >= float(luta.get("entrance_s", 1.5)):
+			_finalizar_letreiro()
+		return
 	if _pre == "entrada":
 		_pre_t += delta
 		var dur := 0.0
@@ -2167,7 +2270,9 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _clique_geral() -> void:
-	if _pre == "entrada":
+	if _pre == "letreiro":
+		_finalizar_letreiro()
+	elif _pre == "entrada":
 		_finalizar_entrada()
 	elif _falando_apresentacao():
 		_clique_fala()
@@ -2202,6 +2307,8 @@ func _tick_esc(delta: float) -> void:
 	if _esc_t >= alvo:
 		_esc_segurando = false
 		_esc_t = 0.0
+		if _pre == "letreiro":
+			_finalizar_letreiro()
 		if _pre == "entrada":
 			_finalizar_entrada()
 		_encerrar_falas()
