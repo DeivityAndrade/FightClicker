@@ -55,6 +55,8 @@ def carregar():
             n = next(x for x in D["skill_tree"]["nodes"] if x["id"] == i)
             c, val = v.split(":")
             n["cost"], n["effect"]["value"] = int(c), (float(val) if "." in val else int(val))
+    if os.environ.get("SIM_HOOD_IV"):   # Ronda 2a2: sonda do intervalo do capuz (240 = o da Ronda 1; 300 = o pedido do dono)
+        D["hood"]["interval_s"] = float(os.environ["SIM_HOOD_IV"])
     if os.environ.get("SIM_LVLS"):
         D["legend"]["levels"] = [int(x) for x in os.environ["SIM_LVLS"].split(",")]
     return D
