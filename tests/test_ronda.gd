@@ -427,7 +427,7 @@ func _teste_arvore() -> void:
 	gs.permanente["legacy_total"] = 3000
 	checar(gs.comprar_no("cat_rooftop") and gs.permanente.legacy_total == 0, "3.000: compra e zera")
 	checar_igual(gs.texto_efeito_no(gs.lutas.no_da_arvore("cat_rooftop")), "COMEÇA A CAMPANHA COM 2 TIOS NA EQUIPE", "texto do efeito do Atalho")
-	checar_igual(gs.texto_efeito_no(gs.lutas.no_da_arvore("cat_thanks")), "+40% TREINO/S DA EQUIPE", "texto do efeito da equipe")
+	checar_igual(gs.texto_efeito_no(gs.lutas.no_da_arvore("cat_thanks")), "+20% TREINO/S DA EQUIPE", "texto do efeito da equipe")
 	_liberar(gs)
 
 
@@ -455,14 +455,14 @@ func _teste_efeitos() -> void:
 	gs._carreira._reiniciar_campanha()
 	checar_igual(int(gs.geradores.get("retired_uncle", 0)), 2, "cat_rooftop: campanha comeca com 2 Tios")
 	checar(gs.treino == 0.0 and gs.dinheiro == 0.0, "so a equipe: nada de dinheiro nem treino de graca")
-	# +40% de equipe (passive_bonus)
+	# +20% de equipe (passive_bonus; corte aprovado pelo dono na 2a1: era +40%)
 	var sem: float = gs.producao_total()
 	gs.geradores["retired_uncle"] = 10
 	var p0: float = gs.producao_total()
 	gs.nos_ativos_ids = ["cat_thanks"]
 	gs._arvore._recalcular_bonus()
 	var p1: float = gs.producao_total()
-	checar(absf(p1 / p0 - 1.4) < 1.0e-9 and sem >= 0.0, "cat_thanks: equipe +40%%")
+	checar(absf(p1 / p0 - 1.2) < 1.0e-9 and sem >= 0.0, "cat_thanks: equipe +20%%")
 	# nao mexe na chance de luta: o bonus novo nao existe em outros tipos
 	checar(gs._arvore.bonus_de(["cat_watch"])["league_prep_days_bonus"] == 2.0 and gs._arvore.bonus_de(["cat_watch"])["click_bonus"] == 0.0, "cat_watch so tem o efeito novo")
 	_liberar(gs)

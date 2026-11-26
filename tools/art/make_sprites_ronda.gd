@@ -44,11 +44,14 @@ func V(x: float, y: float) -> Vector2:
 ## Melhoria (2026-11-25): o capuz agora DESCE pela nuca e abre num colarinho de pano sobre os ombros (linhas 18-21), em vez
 ## de acabar no queixo: em 1x isso separa "capuz" de "capacete com orelhas" (o pescoço de pele sumiu atrás do pano). A beira
 ## da abertura do rosto (r, g1) desce até o queixo e encontra o colarinho; uma prega (k->K) na nuca marca o pano dobrando.
+## B5 da Ronda 2a1 (Diretor de Arte, 2026-11-26): orelhas de GATO COSTURADAS, não de morcego (o mesmo mapa da luta, em
+## make_sprites_ronda2a.gd): as pontas de 1 px viraram orelhas baixas de ponta arredondada, sem o rosa de dentro, com a
+## COSTURA (t, pontos alternados) na base. Mesmo tamanho e âncora.
 const HOOD := [
-	"..K........j....",
-	"..KK......jj....",
-	"..KnK....kjnj...",
-	"..KkkKKKkkjjjj..",
+	"................",
+	"..KK.....jj.....",
+	".KkkK...kjjj....",
+	".KtktKKKktjtjj..",
 	".KkkkkkkkkjjjjK.",
 	".Kkkkkkkkkkjjjj.",
 	"KKkkkkkkkkkkjjj.",
@@ -73,7 +76,7 @@ const HOOD_CUTS := {
 	"buzz": {},
 	"short": {8: "KKkkkkkkkkkkrrH."},
 	"volume": {6: "KKkkkkkkkkkkjjjh", 7: "KKkkkkkkkkkkkjHh", 8: "KKkkkkkkkkkkrrH."},
-	"bun": {2: ".KKnK....kjnj...", 3: "KKkkkKKKkkjjjj..", 4: "KkkkkkkkkkjjjjK.", 5: "KKkkkkkkkkkjjjj."},
+	"bun": {2: "KKkkK...kjjj....", 3: "KKtktKKKktjtjj..", 4: "KkkkkkkkkkjjjjK.", 5: "KKkkkkkkkkkjjjj."},
 }
 const HOOD_FACES := {
 	"normal": {},
@@ -85,7 +88,7 @@ const HOOD_FACES := {
 ## vulto). Se um dia mudar, trocar só aqui e rodar de novo: capuz, pontas e a conferência mudam juntos.
 const BAND := ["r1", "r2", "r3"]
 func hood_legend() -> Dictionary:
-	return {"K": "d1", "k": "d2", "j": "g0", "n": "g1", "r": "g1", "F": BAND[1], "G": BAND[0], "w": "y2"}
+	return {"K": "d1", "k": "d2", "j": "g0", "n": "g1", "r": "g1", "t": "g1", "F": BAND[1], "G": BAND[0], "w": "y2"}
 const KNOT := Vector2(-8, -1)
 
 ## Garra do SUSTO (melhoria 2026-11-25): mão aberta GRANDE, 4 dedos abertos em leque e curvos na ponta, com a unha clara
@@ -147,7 +150,11 @@ func vbuild(cut: String, top: String, socks: bool, hood := true) -> Dictionary:
 ## Faixa de pano presa na nuca. A borda de dentro encosta nas costas; a capa cresce para fora. Cai reta, ou estica para
 ## trás/para cima no ar, sempre UMA faixa (nunca asa). Dobras irregulares (2 vincos longos que somem e voltam + ruído),
 ## barra escura desfiada de forma irregular, remendo costurado. No chão amontoa para trás.
-const CAPE := ["d1", "st0", "st1"]
+## B5 da Ronda 2a1 (2026-11-26): LONA CINZA (g0/g1/g2, mais clara que o capuz preto), um pouco mais curta e pesada (comprimento
+## x0,85, metade da onda), BARRA CORTADA TORTA (corte reto inclinado com um dente, no lugar da barra que seguia as pregas e
+## fazia pontas de asa), ILHÓS de metal na beira e REMENDO de lona azul. As poses (direção, curva, no ar) são as mesmas.
+const CAPE := ["g0", "g1", "g2"]
+const CAPE_GROMMETS := [[0.38, -0.62], [0.66, -0.62], [0.86, -0.5]]
 
 func h01(a: int, b: int) -> float:
 	var n := (a * 374761393 + b * 668265263) & 0x7fffffff
@@ -159,9 +166,9 @@ func draw_cape(lib, O: Vector2, ctx: Dictionary, cp: Dictionary) -> void:
 	var dn: Vector2 = ctx.dn
 	var A: Vector2 = (ctx.top as Vector2) - fr * 3.0 - dn * 1.0 + Vector2(0.5, 0.5)
 	var D: Vector2 = (cp.dir as Vector2).normalized()
-	var ln: float = cp.len
+	var ln: float = float(cp.len) * 0.85
 	var bend: float = cp.get("bend", 0.0)
-	var wave: float = cp.get("wave", 0.0)
+	var wave: float = float(cp.get("wave", 0.0)) * 0.5
 	var ph: float = cp.get("phase", 0.0)
 	var w0: float = cp.get("w0", 2.6)
 	var w1: float = cp.get("w1", 7.0)
@@ -195,26 +202,29 @@ func draw_cape(lib, O: Vector2, ctx: Dictionary, cp: Dictionary) -> void:
 			# leque (posição fixa na largura, que só ondula devagar com o vento): crista clara (st1) com o lado de baixo da
 			# luz escuro (d1) logo atrás, como pano grosso dobrado. Perto da nuca as pregas somem (pano esticado nos ombros).
 			# A barra acompanha as pregas: sobe nos vales e desce nas cristas (barra recortada, não serrilhado aleatório).
-			var pl := sin((un + 1.0) * PI * 1.5 + 0.5 * sin(t * 2.0 + ph) + 0.6)
-			var fold_on := smoothstep(0.08, 0.3, t)
-			if pl * fold_on > 0.62:
+			# B5: lona = 2 pregas largas e duras (crista g2, vale g0)
+			var pl := sin((un + 1.0) * PI * 1.0 + 0.25 * sin(t * 2.0 + ph) + 0.4)
+			var fold_on := smoothstep(0.15, 0.4, t)
+			if pl * fold_on > 0.7:
 				c = CAPE[2]
-			elif pl * fold_on < -0.55:
+			elif pl * fold_on < -0.6:
 				c = CAPE[0]
-			elif pl * fold_on > 0.35 and un > 0.3 and t < 0.6:
-				c = CAPE[2]   # a luz da lua pega mais nas pregas de fora, em cima
 			if un < -0.74:
 				c = CAPE[0]   # junto das costas: sombra de contato
-			var hem := 0.9 + 1.6 * maxf(0.0, -pl) * fold_on
+			# B5: barra cortada torta (corte reto inclinado + 1 dente de tesoura), sem relação com as pregas
+			var hem := 1.0 + 2.6 * (un + 1.0) * 0.5 + (1.6 if (un > 0.05 and un < 0.3) else 0.0)
 			var left := (1.0 - t) * ln
 			if left < hem - 0.9:
-				continue      # vale da prega: a barra sobe
-			if left < hem + 0.4:
-				c = CAPE[0]   # barra (1 px escuro, segue o recorte)
+				continue
+			if left < hem + 0.2:
+				c = CAPE[0]   # a beira cortada
+			for g in CAPE_GROMMETS:
+				if absf(t - float(g[0])) * ln < 0.5 and absf(un - float(g[1])) * w < 0.5:
+					c = "g3"  # ilhó
 			if t > 0.46 and t < 0.6 and un > 0.05 and un < 0.6:
-				c = "d2"
+				c = "b1"      # remendo de lona azul
 				if (absf(un - 0.05) < 0.12 or absf(un - 0.6) < 0.12 or absf(t - 0.46) * ln < 0.6) and (q.x + q.y) % 2 == 0:
-					c = "g1"
+					c = "g3"   # pontos da costura do remendo
 			lib.put(q.x, q.y, c, 25)
 
 func draw_tips(lib, O: Vector2, ctx: Dictionary, tp: Dictionary) -> void:

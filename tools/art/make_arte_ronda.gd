@@ -39,6 +39,7 @@ var OUT := ""
 var MOCK := ""
 var CAPS := ""
 var NO_ASSETS := false
+var SO_CAPUZ := false   # B5 (Ronda 2a1): refaz só hood_on_nail / hood_on_nail_gym (nada mais é gravado)
 var L
 var MAN := {}
 var F := {}      # id -> Array[Image]
@@ -92,6 +93,8 @@ func _init() -> void:
 			CAPS = args[i + 1].trim_suffix("/") + "/"
 		if args[i] == "--no-assets":
 			NO_ASSETS = true
+		if args[i] == "--so-capuz":
+			SO_CAPUZ = true
 	ROOT = ROOT.replace("\\", "/")
 	if not ROOT.ends_with("/"):
 		ROOT += "/"
@@ -101,6 +104,11 @@ func _init() -> void:
 	var f := FileAccess.open(ROOT + "assets/sprites/manifest.json", FileAccess.READ)
 	MAN = JSON.parse_string(f.get_as_text())
 	f.close()
+	if SO_CAPUZ:
+		make_hood()
+		print("ronda: só o capuz no prego ", META.keys())
+		quit()
+		return
 	make_street()
 	make_props()
 	make_hud()
@@ -1179,7 +1187,7 @@ func hood_shape(gym: bool) -> Image:
 	var rows := [
 		"................",
 		".......nn.......",
-		".e.....NN.....e.",
+		".......NN.......",
 		".ee...hNNh...ee.",
 		".eee.hhHHhh.eee.",
 		".eeeehHHHHheeee.",
@@ -1209,13 +1217,16 @@ func hood_shape(gym: bool) -> Image:
 	L.P(im, 15, 10, BAND_LO); L.P(im, 15, 11, BAND_LO)
 	if gym:
 		# tubo frio em cima: o alto da cabeça e das orelhas 1 passo mais claro
-		for p in [[1, 2], [14, 2], [6, 4], [9, 4], [5, 5], [10, 5], [2, 6], [13, 6]]:
+		for p in [[1, 3], [14, 3], [6, 4], [9, 4], [5, 5], [10, 5], [2, 6], [13, 6]]:
 			L.P(im, p[0], p[1], "g0")
 	else:
 		# lâmpada à esquerda (x 300): borda esquerda das orelhas e da cabeça mais clara
-		for p in [[1, 2], [1, 3], [1, 4], [1, 5], [2, 6], [2, 7], [2, 8], [6, 4], [3, 13], [4, 16]]:
+		for p in [[1, 3], [1, 4], [1, 5], [2, 6], [2, 7], [2, 8], [6, 4], [3, 13], [4, 16]]:
 			L.P(im, p[0], p[1], "g0" if p[1] < 9 else "d2")
-	L.P(im, 3, 5, "g1"); L.P(im, 12, 5, "g1")                       # costura das orelhas
+	# B5 da Ronda 2a1 (2026-11-26): orelhas de GATO COSTURADAS, baixas e de ponta arredondada (sem a ponta de 1 px da linha 2,
+	# que lia como morcego), com a linha de costura na base (pontos alternados), como no capuz do vulto
+	for p in [[2, 5], [4, 5], [11, 5], [13, 5]]:
+		L.P(im, p[0], p[1], "g1")
 	L.P(im, 7, 14, "ink"); L.P(im, 7, 15, "ink"); L.P(im, 9, 16, "ink"); L.P(im, 6, 17, "d2")   # dobras
 	return ol_keep(im)
 

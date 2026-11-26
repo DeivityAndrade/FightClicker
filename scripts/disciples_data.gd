@@ -17,6 +17,7 @@ var passagem_tela: Dictionary = {}  # bloco `screen` (linhas da tela de criaçã
 var nomes: Array[String] = []
 var nome_padrao := "Novato"
 var erros: Array[String] = []
+var liberado: Callable = Callable()  # Ronda 2a1: Callable(requires: String) -> bool; quem decide se um estilo com `requires` já foi ganho
 
 
 static func carregar(caminho: String = CAMINHO) -> DiscipulosData:
@@ -76,11 +77,30 @@ func opcao_existe(campo: String, id: String) -> bool:
 	return false
 
 
-## Ids ligados (`enabled`) de um campo, na ordem do arquivo.
+## Opção de estilo (Ronda 2a1): tem `requires` ("black_cat_style:<id>"). Nunca entra no sorteio; só aparece na tela depois de liberada.
+func tem_requisito(campo: String, id: String) -> bool:
+	return str(_opcao(campo, id).get("requires", "")) != ""
+
+
+## O estilo desta opção já foi ganho? (sem `liberado` configurado = nunca)
+func opcao_liberada(campo: String, id: String) -> bool:
+	var req := str(_opcao(campo, id).get("requires", ""))
+	return req != "" and liberado.is_valid() and bool(liberado.call(req))
+
+
+## Marca da opção (ex.: "cat" nos estilos da noite) ou "".
+func marca_da_opcao(campo: String, id: String) -> String:
+	return str(_opcao(campo, id).get("mark", ""))
+
+
+## Ids ligados (`enabled`) de um campo, na ordem do arquivo; no fim da lista, os estilos com `requires` já liberados.
 func opcoes_ativas(campo: String) -> Array[String]:
 	var r: Array[String] = []
 	for o in opcoes(campo):
-		if bool(o.get("enabled", false)):
+		if bool(o.get("enabled", false)) and not o.has("requires"):
+			r.append(str(o.id))
+	for o in opcoes(campo):
+		if o.has("requires") and opcao_liberada(campo, str(o.id)):
 			r.append(str(o.id))
 	return r
 
@@ -93,7 +113,7 @@ func validar_look(v: Variant, avisos: Array = []) -> Dictionary:
 	var r := {}
 	for campo in look_padrao:
 		var x = origem.get(campo, null)
-		if x is String and opcao_existe(campo, x):
+		if x is String and opcao_existe(campo, x) and (not tem_requisito(campo, x) or opcao_liberada(campo, x)):
 			r[campo] = x
 		else:
 			r[campo] = look_padrao[campo]
@@ -103,10 +123,12 @@ func validar_look(v: Variant, avisos: Array = []) -> Dictionary:
 
 
 ## Liga todas as opções (contexto de teste da 6b2: a arte pode ainda não ter entrado). Só em memória.
+## Estilos com `requires` (Ronda 2a1) ficam de fora: só o jogo os libera.
 func ligar_todas_as_opcoes() -> void:
 	for campo in campos:
 		for o in opcoes(campo):
-			o["enabled"] = true
+			if not o.has("requires"):
+				o["enabled"] = true
 
 
 func _opcao(campo: String, id: String) -> Dictionary:
@@ -166,8 +188,18 @@ func linhas_tela(look: Dictionary = {}) -> Array:
 		var apagada := pai != "" and str(look.get(pai, look_padrao.get(pai, "none"))) == "none"
 		r.append({"field": campo, "label": str(linha.get("label", "")), "kind": str(linha.get("kind", "")),
 			"chips": int(linha.get("chips", 0)), "depends_on": pai, "coluna": 1 + i / por_coluna, "apagada": apagada,
-			"opcoes": opcoes_ativas(campo) if campo != "name" else ([] as Array[String])})
+			"opcoes": opcoes_ativas(campo) if campo != "name" else ([] as Array[String]),
+			"marcas": _marcas_do_campo(campo) if campo != "name" else {}})
 		i += 1
+	return r
+
+
+## {id: marca} das opções do campo que têm marca (ex.: {"night": "cat"}); a tela põe o ícone nas liberadas.
+func _marcas_do_campo(campo: String) -> Dictionary:
+	var r := {}
+	for o in opcoes(campo):
+		if str(o.get("mark", "")) != "":
+			r[str(o.id)] = str(o.mark)
 	return r
 
 
@@ -264,7 +296,7 @@ func _sortear_campo(rng: RandomNumberGenerator, look: Dictionary, campo: String,
 	var ativas: Array = []
 	var total := 0.0
 	for o in opcoes(campo):
-		if bool(o.get("enabled", false)) and (excluir == "" or str(o.get("id", "")) != excluir):
+		if bool(o.get("enabled", false)) and not o.has("requires") and (excluir == "" or str(o.get("id", "")) != excluir):
 			ativas.append(o)
 			total += maxf(0.0, float(o.get("weight", 1)))
 	if ativas.is_empty():

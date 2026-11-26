@@ -32,6 +32,7 @@ func zerar() -> void:
 	gs._ronda_premio = {}
 	gs._ronda_fim_t = 0.0
 	gs._capuz_vis = ""
+	gs._beco.zerar()
 
 
 ## career.black_cat_hood do save: ausente/ruim = padrão; `open` fora de `nights` ou com a Ronda fechada = "".
@@ -44,7 +45,8 @@ func validar(v: Variant) -> Dictionary:
 	if (typeof(na) == TYPE_FLOAT or typeof(na) == TYPE_INT) and is_finite(float(na)) and float(na) >= 0.0:
 		r["next_at"] = minf(float(na), 1.0e12)
 	var op := str(v.get("open", "")) if v.get("open", "") is String else ""
-	r["open"] = op if _cfg().noites.has(op) and ronda_aberta() else ""
+	# o prego guarda a noite do SUSTO (sem requires); "alley" salvo no prego (editado à mão) não vale
+	r["open"] = op if _cfg().noites.has(op) and _cfg().noites[op].kind == "stealth_scare" and ronda_aberta() else ""
 	return r
 
 
@@ -93,7 +95,10 @@ func validar_permanente(p: Dictionary, r: Dictionary) -> void:
 		var d := {"legend": lenda_v, "rounds": rodadas, "scares": mini(gs._inteiro_valido(v.get("scares", 0), float(_TETO)), 3 * rodadas),
 			"shown_level": mini(gs._inteiro_valido(v.get("shown_level", 0), 5.0), nivel),
 			"open_campaign": gs._inteiro_valido(v.get("open_campaign", 0), 999.0)}
-		if rodadas > 0 or d.open_campaign > 0 or lenda_v > 0:
+		var beco: Dictionary = gs._beco.validar(v.get("alley", null), r)  # 2a1: brigas de beco (opcional)
+		if not beco.is_empty():
+			d["alley"] = beco
+		if rodadas > 0 or d.open_campaign > 0 or lenda_v > 0 or not beco.is_empty():
 			r["black_cat"] = d
 	var nivel_r := _cfg().nivel_de(int(r.get("black_cat", {}).get("legend", 0))) if not _cfg().vazio else 0
 	for id in r.get("skill_nodes", []):
@@ -182,7 +187,7 @@ func capuz_info() -> Dictionary:
 	var nome := str(_cfg().capuz.spot_by_location.get(gs.local_id, ""))
 	var p: Array = gs._casa._cena_dados_pontos().ponto_caminho(nome) if nome != "" else []
 	return {"night": n, "spot": p, "spot_name": nome, "hover_text": gs.texto_ui(str(_cfg().capuz.hover_text), "SAIR DE NOITE?"),
-		"clickable": _clicavel()}
+		"clickable": _clicavel(), "hideout": gs._beco.esconderijo_ativo()}  # hideout: o clique abre o Esconderijo (2a1)
 
 
 # ---------------------------------------------------------------- IR, jogo e prêmio
@@ -192,8 +197,11 @@ func _ruas() -> Array:
 	return (camadas[n] as Array).duplicate() if n < camadas.size() and camadas[n] is Array else []
 
 
-## Clicou no capuz. NÃO grava nada (o capuz continua no prego do save); abre a Ronda e congela o jogo.
-func ronda_ir() -> Dictionary:
+## Clicou no capuz (ou no IR de um cartão do Esconderijo). NÃO grava nada (o capuz continua no prego do save); abre a Ronda
+## e congela o jogo. Sem argumento (ou "scare") = o SUSTO de sempre; ("alley", bandido) = a aproximação da briga (2a1).
+func ronda_ir(noite_id: String = "", bandido_id: String = "") -> Dictionary:
+	if noite_id == "alley":
+		return gs._beco.ir(bandido_id)
 	if not _clicavel():
 		return {}
 	var id := capuz_visivel()
@@ -230,6 +238,9 @@ func tick_jogo(delta: float) -> void:
 	var j = gs._ronda_jogo
 	if j == null:
 		return
+	if gs.ronda_ativa == "alley":
+		gs._beco.tick(delta)  # briga de beco: aproximação, prévia (sem relógio) e prêmio
+		return
 	j.avancar(delta)
 	if j.fase == "fim":
 		if gs._ronda_premio.is_empty():
@@ -246,6 +257,8 @@ func ronda_concluir() -> Dictionary:
 		return {}
 	if not gs._ronda_premio.is_empty():
 		return gs._ronda_premio
+	if gs.ronda_ativa == "alley":
+		return gs._beco.sair()  # SAIR da aproximação/prévia: nada gravado, o capuz fica no prego
 	var j: RondaLogica = gs._ronda_jogo
 	if j.fase != "fim":
 		j.sair()
@@ -296,6 +309,7 @@ func ronda_voltar() -> void:
 	gs._ronda_jogo = null
 	gs._ronda_premio = {}
 	gs._ronda_fim_t = 0.0
+	gs._beco.encerrar()
 	gs.ronda_mudou.emit("")
 
 

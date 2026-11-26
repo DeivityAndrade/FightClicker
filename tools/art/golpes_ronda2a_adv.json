@@ -1,0 +1,350 @@
+{
+	"_sobre": "Ronda 2a1: poses novas dos bandidos do beco (rig comum; make_golpes_jogador.gd só expande, make_sprites_elenco.gd alley desenha). Gerado por tools/art/poses_ronda2a.py.",
+	"moves": {},
+	"reactions": {
+		"daze_flee": {
+			"_ideia": "SAIU TONTO E FUGIU (vitória do vulto por pontos): tonto, olho em x, recua cambaleando em loop; a tela leva o x para a direita. Sem sangue, ninguém no chão.",
+			"who": [
+				"opp_alley_tire",
+				"opp_alley_bike",
+				"opp_alley_gate"
+			],
+			"n": 6,
+			"fps": 9.0,
+			"hit_frame": 0,
+			"keys": [
+				{
+					"hip": [
+						-1,
+						-36
+					],
+					"top": [
+						-4,
+						-60
+					],
+					"head": [
+						-3,
+						-70
+					],
+					"hrot": -12.0,
+					"tw": 0.1,
+					"hf": [
+						6,
+						-40
+					],
+					"hb": [
+						0,
+						-43
+					],
+					"pf": [
+						0.2,
+						1
+					],
+					"pb": [
+						0.1,
+						1
+					],
+					"far_glove_front": false,
+					"shoef": "flat",
+					"shoeb": "ball",
+					"toef": [
+						12,
+						-1
+					],
+					"toeb": [
+						-7,
+						-1
+					],
+					"kf": [
+						1,
+						0.1
+					],
+					"kb": [
+						1,
+						0.3
+					],
+					"face": "ko",
+					"fx": "",
+					"at": 0,
+					"ease": "inout"
+				},
+				{
+					"hip": [
+						-2,
+						-37
+					],
+					"top": [
+						-6,
+						-61
+					],
+					"head": [
+						-6,
+						-71
+					],
+					"hrot": -4.0,
+					"tw": 0.1,
+					"hf": [
+						4,
+						-42
+					],
+					"hb": [
+						-2,
+						-45
+					],
+					"pf": [
+						0.2,
+						1
+					],
+					"pb": [
+						0.1,
+						1
+					],
+					"far_glove_front": false,
+					"shoef": "ball",
+					"shoeb": "flat",
+					"toef": [
+						9,
+						-4
+					],
+					"toeb": [
+						-8,
+						-1
+					],
+					"kf": [
+						1,
+						-0.2
+					],
+					"kb": [
+						1,
+						0.2
+					],
+					"face": "ko",
+					"fx": "",
+					"at": 1,
+					"ease": "inout"
+				},
+				{
+					"hip": [
+						-3,
+						-36
+					],
+					"top": [
+						-4,
+						-60
+					],
+					"head": [
+						-2,
+						-70
+					],
+					"hrot": 8.0,
+					"tw": 0.1,
+					"hf": [
+						5,
+						-39
+					],
+					"hb": [
+						-1,
+						-42
+					],
+					"pf": [
+						0.2,
+						1
+					],
+					"pb": [
+						0.1,
+						1
+					],
+					"far_glove_front": false,
+					"shoef": "flat",
+					"shoeb": "flat",
+					"toef": [
+						5,
+						-1
+					],
+					"toeb": [
+						-9,
+						-1
+					],
+					"kf": [
+						1,
+						0.2
+					],
+					"kb": [
+						1,
+						0.2
+					],
+					"face": "ko",
+					"fx": "",
+					"at": 2,
+					"ease": "inout"
+				},
+				{
+					"hip": [
+						-2,
+						-36
+					],
+					"top": [
+						-3,
+						-60
+					],
+					"head": [
+						-1,
+						-70
+					],
+					"hrot": 12.0,
+					"tw": 0.1,
+					"hf": [
+						7,
+						-41
+					],
+					"hb": [
+						1,
+						-44
+					],
+					"pf": [
+						0.2,
+						1
+					],
+					"pb": [
+						0.1,
+						1
+					],
+					"far_glove_front": false,
+					"shoef": "flat",
+					"shoeb": "ball",
+					"toef": [
+						11,
+						-1
+					],
+					"toeb": [
+						-6,
+						-3
+					],
+					"kf": [
+						1,
+						0.2
+					],
+					"kb": [
+						1,
+						-0.2
+					],
+					"face": "ko",
+					"fx": "",
+					"at": 3,
+					"ease": "inout"
+				},
+				{
+					"hip": [
+						-3,
+						-37
+					],
+					"top": [
+						-7,
+						-61
+					],
+					"head": [
+						-7,
+						-71
+					],
+					"hrot": 3.0,
+					"tw": 0.1,
+					"hf": [
+						3,
+						-43
+					],
+					"hb": [
+						-3,
+						-46
+					],
+					"pf": [
+						0.2,
+						1
+					],
+					"pb": [
+						0.1,
+						1
+					],
+					"far_glove_front": false,
+					"shoef": "flat",
+					"shoeb": "flat",
+					"toef": [
+						8,
+						-1
+					],
+					"toeb": [
+						-11,
+						-1
+					],
+					"kf": [
+						1,
+						0.1
+					],
+					"kb": [
+						1,
+						0.3
+					],
+					"face": "ko",
+					"fx": "",
+					"at": 4,
+					"ease": "inout"
+				},
+				{
+					"hip": [
+						-2,
+						-36
+					],
+					"top": [
+						-5,
+						-60
+					],
+					"head": [
+						-4,
+						-70
+					],
+					"hrot": -8.0,
+					"tw": 0.1,
+					"hf": [
+						5,
+						-40
+					],
+					"hb": [
+						-1,
+						-43
+					],
+					"pf": [
+						0.2,
+						1
+					],
+					"pb": [
+						0.1,
+						1
+					],
+					"far_glove_front": false,
+					"shoef": "ball",
+					"shoeb": "flat",
+					"toef": [
+						13,
+						-3
+					],
+					"toeb": [
+						-7,
+						-1
+					],
+					"kf": [
+						1,
+						-0.2
+					],
+					"kb": [
+						1,
+						0.2
+					],
+					"face": "ko",
+					"fx": "",
+					"at": 5,
+					"ease": "inout"
+				}
+			],
+			"loop": true
+		}
+	}
+}

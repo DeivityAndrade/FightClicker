@@ -1,8 +1,26 @@
-# Onde paramos (atualizado em 2026-11-25, noite)
+# Onde paramos (atualizado em 2026-11-26)
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-25, noite): IDENTIDADE VISUAL FECHADA
+## Situação agora (2026-11-26): RONDA 2a1 FECHADA
+A **Ronda 2a1** (brigas de beco do Gato Preto) foi integrada na main. Passou no QA, com reteste, e o Diretor aprovou (`docs/fases/ronda2a1-revisao.md`).
+- **Brigas:** 3 bandidos (Zeca Estepe, Fio e Seu Pé de Cabra), com nome escondido até a vitória. Usam o motor de luta na arena do beco, com o vulto de capuz e capa de lona.
+- **Esconderijo:** quadro da noite, Dossiê, prateleira de troféus vazia, desafios e 3 estilos da noite (aparecem só na personalização). Os recortes dos bandidos vencidos ficam na parede da sala.
+- **Corte:** o "Bairro agradece" baixou de +40% para **+20%** (o dono aprovou). O teto, medido com tudo junto, ficou em 8,8%.
+- **Escolhas do dono:**
+  - supervilão da 2a2: **Apagão** (eletricista);
+  - **Capivarão** guardado para o futuro, Rei Calota de reserva;
+  - no menu, só o botão em foco fica vermelho.
+- **Próximo: Ronda 2a2**
+  - Chefe: o Apagão. A lista do que entra está no D7 de `ronda2a1-revisao.md`.
+  - Antes do elenco, mostrar ao dono uma amostra de arte do Apagão e da arena.
+  - Depois vem a 8b, com o Ringue da Lua.
+- **Pendências com o dono:**
+  - testar a 2a1 (4 testes listados na revisão);
+  - dizer se a capa nova do vulto ainda lembra morcego;
+  - confirmar D1–D12 da 8a2.
+
+## Situação anterior (2026-11-25, noite): IDENTIDADE VISUAL FECHADA
 A fase **Identidade visual** (ID1–ID4) foi integrada na main pelos PRs #32 a #40 e aprovada com ressalvas pelo Diretor
 (`docs/fases/identidade-revisao.md`).
 - O dono escolheu a **direção C (cartaz de luta)**. O jogo inteiro usa o tema C (`docs/arte/tema-c-spec.md`).

@@ -1471,6 +1471,14 @@ Textos das manchetes e do recorte = provisórios [ROT] (`TXT_*` no topo do gerad
 Capuz e capa: `d1` base, `d2` luz, `ink` contorno; luz da lua por trás = 1 passo (`g0`) só na borda de cima. Orelhas **largas e
 baixas**, com 2 pontos de costura `g1`. **Faixa vermelha `r2`** (luz `r3`, sombra `r1`), a mesma da amostra do Artista (`mockups/ronda_amostra_vulto.png`), nó atrás e as duas pontas voando para trás. No gerador é uma constante só (`BAND`): se o dono pedir a faixa azul da escola, troca em tudo de uma vez. **Aprovado (2026-11-25): o dono aprovou a amostra do vulto com a faixa VERMELHA**; `BAND` fica vermelha (`r1/r2/r3`). Elenco completo (vulto em camadas + 3 ladrões): `tools/art/make_sprites_ronda.gd`, `docs/arte/ronda-personagens-manifest.md`, `mockups/ronda_elenco.png`.
 Pele só na boca/queixo. Capa de lona com remendo `g0`, **caindo reta** (nunca aberta em asa). Sem símbolo no peito, sem cinto.
+**Ajuste B5 da Ronda 2a1 (2026-11-26, vale para a luta e para a Ronda 1):** o QA viu a silhueta da luta lembrar o morcego. Mesmo conceito
+aprovado, traços reforçados: (1) **orelhas de gato costuradas** baixas, de ponta arredondada (2 px em cima, 4–5 na base; **nenhuma ponta
+de 1 px**), sem o rosa de dentro, com a **linha de costura** (pontos `g1` alternados) na base, inclusive no capuz no prego; (2) a capa
+é **LONA CINZA** (`g0` sombra, `g1` base, `g2` crista; nunca do tom do capuz), **mais curta e pesada** (na luta vai até o alto da coxa e
+quase não ondula no golpe), **barra cortada torta** (corte reto inclinado com um dente de tesoura; a barra antiga seguia as pregas e
+fazia pontas de asa), **ilhós** de metal (`g3` com anel) na beira e **remendo de lona azul** (`b1`) com pontos `g3`; (3) a faixa da
+escola continua vermelha. Teste de aceite: a **silhueta chapada** não pode ter ponta fina na cabeça nem barra em gomos
+(`mockups/ronda2a_vulto_antes_depois.png`, `mockups/ronda_vulto_antes_depois_r1.png`).
 O dublê do gerador (52x50, agachado ~46 px) só mede o cenário: a folha é do Artista de Personagens (skill `padrao-personagem`).
 
 ### 36.3 A rua (`ronda_bg`, 640x360)
@@ -1525,6 +1533,14 @@ O nível 1 não muda a rua (só o jornal dá o nome). Corte (escopo §9): as cam
 - Região GATO PRETO: ícone (telhado de telha, lua e o vulto na cumeeira), plaquinha com a faixa da noite, ladrilho de **telha
   capa-canal azul-marinho**, anel `night`, **nó lacrado** (o "faltando" com um lacre cinza do capuz). Os 3 nós usam o desenho de
   hoje do mesmo efeito (`skill_crew_regulars`, `skill_prep_day` com **+2**, `skill_body_crew`) com o **carimbo do gato** no canto.
+
+### 36.9 Recortes dos bandidos vencidos (Ronda 2a1, B1)
+- 1 papel **15x18** por bandido vencido (estepe, bicicleta, portão), ao lado do recorte do Gato Preto e do capuz, empilhados na
+  ordem em que abrem (o último por cima, ~3 px de sobreposição). São notas de rodapé do recorte grande: **sem texto em 1x**
+  (não cabe); leem pela **foto** (o que o bandido largou: o estepe e a chave de roda / a bicicleta / o portão e o pé de cabra), por
+  2 barras de manchete e pelo **carimbo vermelho do gato** (orelhas baixas, sem ponta). O hover mostra a manchete do mais recente
+  (`alley_<id>_clipping`). Papel creme com a luz da lâmpada na garagem; branco na academia e no centro.
+- Pontos: `docs/arte/ronda2a-manifest.md` §B1 (conferidos no gerador: 0 problemas, parede lisa embaixo nos 3 fundos).
 
 ### 36.8 Placeholder / precisa de pixel artist
 A rua é montagem por código (blocos, chapa em listras, luz em faixas com dither, poças de luz redondas); à mão: chapa amassada,

@@ -692,6 +692,14 @@ static func textura_disc(nome: String) -> Texture2D:
 ## Folha "_disc" do jogador (garagem ou luta): troca a textura pela montada em camadas com o visual do discípulo.
 ## Chamar todo quadro (um `definir` novo volta a textura pronta); o cache faz disso uma consulta barata.
 static func aplicar_visual_disc(sp: AnimSprite) -> void:
+	if sp != null and sp.nome_sprite.begins_with("fight_vulto_"):
+		# Ronda 2a1: o vulto lutando é a folha em camadas do próprio nome (traje + capuz), com o visual do discípulo da vez.
+		var look: Dictionary = GameState.visual_lutador()
+		if not look.is_empty():
+			var tv := DiscVisual.textura(sp.nome_sprite, look, GameState.simbolo_no_lutador())
+			if sp.texture != tv:
+				sp.texture = tv
+		return
 	if sp == null or GameState.lutador_atual() != "disciple" or not sp.nome_sprite.ends_with("_disc"):
 		return
 	var cam := DiscVisual.nome_em_camadas(sp.nome_sprite)

@@ -37,7 +37,8 @@ const HELPERS := ["neighbor_1", "neighbor_2", "neighbor_3", "uncle_1", "uncle_2"
 const LIGHT_C := Vector2(305, 90)   # lâmpada da garagem (mesma do fundo)
 const PORTRAIT_BG := {"opp_warmup": ["gr0", "gr1"], "opp_strong": ["r0", "r1"], "opp_fast": ["b0", "b2"], "opp_tank": ["br1", "y0"],
 	"opp_gym_1": ["p0", "p1"], "opp_gym_2": ["st0", "st2"],
-	"opp_reg_1": ["r0", "st1"], "opp_reg_2": ["g0", "g2"], "opp_reg_3": ["b0", "b2"], "opp_james": ["d1", "y0"]}
+	"opp_reg_1": ["r0", "st1"], "opp_reg_2": ["g0", "g2"], "opp_reg_3": ["b0", "b2"], "opp_james": ["d1", "y0"],
+	"opp_alley_tire": ["gr0", "gr1"], "opp_alley_bike": ["p0", "p1"], "opp_alley_gate": ["st0", "st1"]}
 
 var L
 var P
@@ -227,7 +228,66 @@ const REG_NOTE := {
 	"opp_reg_2": "Tião Estaca 'Pé de Cimento' (forte, liga regional): alto, pernas grossas, base sempre larga, careca com barba cheia, camiseta cinza-cimento manchada, calça de lona dobrada na canela, botina de obra, luvas verdes.",
 	"opp_reg_3": "Rony Sabão 'o Escorrega' (rápido, liga regional): magro e solto, na ponta dos pés, cabelo lambido de gel com rabicho, bigode fino, sem camisa, calção azul-claro com cós branco, descalço, luvas amarelo-sabão.",
 	"opp_james": "James Blindado (resistente, dono do cinturão regional): alto, ombros largos em V, peito estufado e queixo erguido, topete loiro, calção azul-marinho com cós dourado, bota branca com cadarço dourado, luvas douradas.",
+	"opp_alley_tire": "Zeca Estepe, o bandido do estepe (Ronda 2a1, forte): baixinho e largo, gorro de lã verde, bigode, regata encardida, bermuda jeans, chinelo de dedo, luva de borracha amarela de borracharia.",
+	"opp_alley_bike": "Fio, o bandido da bicicleta (Ronda 2a1, rápido): magrelo comprido, boné para trás, cavanhaque, corta-vento roxo com zíper, calça de moletom, tênis, luvas de fita cinza.",
+	"opp_alley_gate": "Seu Pé de Cabra, o bandido do portão (Ronda 2a1, resistente): barrigudo careca de bigodão, camisa social cinza-azulada, jeans com cinto, botina, luvas de couro de obra.",
 }
+
+## ---------------------------------------------------------------- Ronda 2a1: os 3 bandidos do beco (modo "alley")
+## Cabeças = as dos ladrões da Ronda 1 (make_sprites_ronda.gd TH_HEAD), mesma grade do HEAD_SIDE. C/c/k = gorro/boné,
+## o = bigode, u = barba rala. O boné do Fio fica 2 colunas para trás (âncora (9,7)).
+const HEAD_ALLEY_TIRE := [   # baixinho largo: gorro de lã com a barra dobrada, bigode
+	"....cckkkc....",
+	"..cccckkkkcc..",
+	".Cccccckkkccc.",
+	".CCCCCCCCCCCC.",
+	"HHHHHHHsssll..",
+	"HHHHHHssbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	".HHEEssssssll.",
+	".HHHsssssssss.",
+	"..HSssssoooo..",
+	"...SSssssmSs..",
+	"....SSuuuuu...",
+	".....SSSuu....",
+]
+const HEAD_ALLEY_BIKE := [   # magrelo comprido: boné virado para trás, cavanhaque
+	"......CCCCCC....",
+	"....CCcccckkCC..",
+	"...CCccccckkkCC.",
+	"CCCCCCCCCCCCCCC.",
+	"..HHHHHHHsssll..",
+	"..HHHHHHssbbbl..",
+	"..HHHEEssssesl..",
+	"..HHHEsEsssssl..",
+	"...HHEEssssssll.",
+	"...HHHsssssssss.",
+	"....HSssssssss..",
+	".....SSssssmSs..",
+	"......SSsuuuu...",
+	".......SSuuu....",
+]
+const HEAD_ALLEY_GATE := [   # barrigudo: careca com coroa de cabelo, bigodão
+	"....SSssss....",
+	"..SSsssllsss..",
+	".SSssssslllls.",
+	".SSsssssssslS.",
+	"HHSssssssssl..",
+	"HHHSsssbbbbl..",
+	"HHHEEssssesl..",
+	"HHHEsEsssssl..",
+	".HHEEssssssll.",
+	".HHHsssssssss.",
+	"..HSsssoooooo.",
+	"...SSssssmSs..",
+	"....SSsssss...",
+	".....SSSss....",
+]
+## Chinelo de dedo de perfil (o Zeca): pé descalço do PE_FLAT/PE_BALL com a tira (w) e a sola (c). Mesmo alcance do tênis.
+const CHINELO_F := ["..DMM......", "..DwwM.....", ".DMMwwLL...", "DMMMMMMMMLD", "ccccccccccc"]
+const CHINELO_F_BALL := [".DM........", ".DwwM......", "..DMwwM....", "...DMMMLL..", "....DDMMMLD", "......ccccc"]
+const OPPS_ALLEY := ["opp_alley_tire", "opp_alley_bike", "opp_alley_gate"]
 
 ## Pé descalço (Tonhão, tatame): mesma legenda do tênis (D/M/L/w/c), cores de pele no build. Mesmo deslocamento
 ## ponta->tornozelo do tênis, para a perna ter o mesmo alcance.
@@ -464,6 +524,43 @@ func opp_def(oid: String) -> Dictionary:
 					"up": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": -90.0}},
 				"glove": "marca", "glove_ramp": ["br2", "y0", "y1"],
 				"shoulder": 1.45, "hip_w": 0.92, "arm_r": [3.8, 3.0, 3.2, 2.1], "leg_r": [4.8, 3.6, 3.2, 1.9]}}
+		# ---------------- Ronda 2a1 (beco): os corpos dos 3 ladrões da Ronda 1 no rig de luta. Roupa de rua, luvas de trabalho.
+		"opp_alley_tire":   # Zeca Estepe: o mais BAIXO e largo, pescoço enterrado, base larga, joga o peso para a frente
+			return {"s": 0.9, "am": 0.96, "lean": 1.5, "head_d": V(1, 2), "neck_k": 0.55, "shk": 1.5, "stance": [2, -2], "toes": false,
+				"fps_k": 0.9, "crouch": 1.0,
+				"build": {"head_side": HEAD_ALLEY_TIRE, "cap": ["gr0", "gr1", "gr2"], "mustache": "d1", "stubble": "sk0",
+				"hair": ["d1", "g0"], "brow": "ink", "skin": ["sk0", "sk1", "sk2"],
+				"top": "tank", "shirt": ["g2", "g3", "cream"], "grease": true, "tank_neck": 0.8,
+				"shorts": ["b0", "b1", "b2"], "band": "b1", "shorts_t": 0.72,
+				"shoes": ["sk0", "sk1", "sk2", "b2", "y0"],
+				"shoe_maps": {"flat": {"rows": CHINELO_F, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": 0.0},
+					"ball": {"rows": CHINELO_F_BALL, "toe": Vector2i(10, 5), "ankle": Vector2i(2, 0), "ang": 0.0},
+					"up": {"rows": CHINELO_F, "toe": Vector2i(10, 4), "ankle": Vector2i(3, 0), "ang": -90.0}},
+				"glove": "worn", "glove_ramp": ["br2", "y0", "y1"],
+				"shoulder": 1.65, "hip_w": 1.3, "belly": 2.5, "arm_r": [4.4, 3.5, 3.7, 2.4], "leg_r": [5.0, 3.9, 3.4, 2.0]}}
+		"opp_alley_bike":   # Fio: o mais MAGRO e comprido, braços de alicate, pescoço fino, sempre na ponta do pé
+			return {"s": 1.08, "am": 1.08, "lean": 1.0, "head_d": V(0, 0), "neck_k": 1.15, "shk": 0.8, "stance": [0, 0], "toes": true,
+				"fps_k": 1.2,
+				"build": {"head_side": HEAD_ALLEY_BIKE, "head_anchor_side": Vector2i(9, 7), "head_px": 2, "cap": ["b0", "b1", "b2"],
+				"stubble": "br1", "hair": ["br0", "br1"], "brow": "br0", "skin": ["sk1", "sk2", "y2"],
+				"top": "tshirt", "sleeve_long": true, "shirt_detail": "zip", "shirt": ["p0", "p1", "p2"],
+				"bottom": "pants", "shorts": ["g0", "g1", "g2"], "band": "g2",
+				"shoes": ["g2", "g3", "white", "r2", "g1"],
+				"glove": "tape", "glove_ramp": ["g1", "g2", "g3"],
+				"shoulder": 0.76, "hip_w": 0.74, "arm_r": [2.4, 1.8, 2.0, 1.4], "leg_r": [3.2, 2.4, 2.2, 1.3]}}
+		"opp_alley_gate":   # Seu Pé de Cabra: BARRIGA na frente e tronco para trás, careca, bigodão, botina
+			return {"s": 1.04, "am": 1.0, "lean": -0.5, "head_d": V(0, 1), "neck_k": 0.8, "shk": 1.15, "stance": [2, -2], "toes": false,
+				"fps_k": 0.85,
+				"build": {"head_side": HEAD_ALLEY_GATE, "mustache": "ink",
+				"hair": ["d1", "d2"], "brow": "d1", "skin": ["br0", "sk0", "sk1"],
+				"top": "tshirt", "sleeve_t": 0.42, "shirt_detail": "social", "shirt": ["st1", "st2", "st3"],
+				"bottom": "pants", "shorts": ["b0", "b1", "b2"], "band": "br0", "belt": ["br0", "br1", "br1", "y0"],
+				"shoes": ["br0", "br1", "br2", "y0", "ink"],
+				"shoe_maps": {"flat": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": 0.0},
+					"ball": {"rows": BOTA_BALL, "toe": Vector2i(10, 6), "ankle": Vector2i(2, 1), "ang": 0.0},
+					"up": {"rows": BOTA_FLAT, "toe": Vector2i(10, 7), "ankle": Vector2i(3, 3), "ang": -90.0}},
+				"glove": "couro", "glove_ramp": ["br0", "br1", "br2"],
+				"shoulder": 1.15, "hip_w": 1.3, "belly": 7.5, "arm_r": [3.8, 3.0, 3.1, 2.2], "leg_r": [5.0, 3.7, 3.3, 2.0]}}
 	return {}
 
 func make_opp_build(oid: String) -> Dictionary:
@@ -476,6 +573,9 @@ func make_opp_build(oid: String) -> Dictionary:
 	o["lt"] = 17.5 * s
 	o["ls"] = 16.5 * s
 	o["faces_side"] = transfer_faces(P.HEAD_SIDE, P.FACES_SIDE, o.head_side)
+	if int(o.get("head_px", 0)) > 0:   # Ronda 2a1: cabeça mais larga para trás (boné do Fio): as expressões andam junto
+		o["faces_side"] = P._cut_faces(P.HEAD_SIDE, P.FACES_SIDE, o.head_side, int(o.head_px), 0)
+	o.erase("head_px")
 	if oid == "opp_reg_2":
 		o["faces_side"].merge(FACES_ESTACA, true)
 	for f in o.get("faces_extra", {}):   # 8a1: expressões próprias (James)
@@ -577,6 +677,16 @@ func personality(oid: String, action: String, i: int) -> Dictionary:
 			if action == "idle":              # balança solto na ponta dos pés, o ombro gingando
 				return [{"head": V(6, -71)}, {"hip": V(1, -38), "top": V(3, -62), "head": V(7, -72), "shoef": "ball"},
 					{"hip": V(0, -36), "top": V(1, -60), "head": V(4, -70)}, {"hip": V(-1, -37), "top": V(1, -61), "head": V(4, -71)}][i]
+		"opp_alley_tire":
+			if action == "idle":              # pesado: balança devagar o peso, o ombro sobe 1 px
+				return [{}, {"top": V(2, -62), "head": V(5, -72)}, {}, {"hip": V(0, -36), "top": V(2, -60), "head": V(5, -70)}][i]
+		"opp_alley_bike":
+			if action == "idle":              # nervoso: quica na ponta dos pés, os braços compridos balançam
+				return [{"head": V(5, -71)}, {"hip": V(0, -38), "top": V(2, -62), "head": V(5, -72), "shoef": "ball"},
+					{"hip": V(0, -36), "top": V(2, -60), "head": V(5, -70)}, {"hip": V(0, -37), "top": V(3, -61), "head": V(6, -71)}][i]
+		"opp_alley_gate":
+			if action == "idle":              # respira pela barriga, quase parado
+				return [{}, {}, {"hip": V(0, -36), "top": V(2, -60), "head": V(5, -70)}, {"hip": V(0, -37), "top": V(2, -61), "head": V(5, -71)}][i]
 		"opp_james":
 			if action in ["idle", "victory", "jab", "heavy", "dodge"]:
 				return {"face": "joy" if action == "victory" else "smirk"}
@@ -1622,6 +1732,75 @@ func run_regional(args: Array) -> void:
 	f.close()
 	print("ok regional: %d entradas" % entradas.size())
 
+# ================================================================ Ronda 2a1: BANDIDOS DO BECO (modo "alley")
+## Uso: ... make_sprites_elenco.gd -- <saida> <antigos> alley <exp_golpes> <exp_7a1> <exp_7b1> <exp_8a1> <exp_r2a>
+##          <golpes_8a1_adv.json> <golpes_ronda2a_adv.json>
+## Igual ao modo regional (as 9 ações do rig + as 16 reações de sempre), com:
+##  - a pose da PASSIVA de cada um (a mesma da liga, poses do golpes_8a1_adv.json): Zeca = plant_feet (Base larga),
+##    Fio = guard + block (Blindado: guarda fechada no 1º round), Seu Pé de Cabra = shake_head (Queixo de ferro);
+##  - a FUGA TONTA (daze_flee, golpes_ronda2a_adv.json): "SAIU TONTO E FUGIU" (vitória por pontos), sem ninguém no chão.
+## Grava <saida>/opponents/opp_alley_*/..., retratos e <saida>/ronda2a_bandidos.json (sprites + by_data_id).
+const ALLEY_SIG := {"opp_alley_tire": ["plant_feet"], "opp_alley_bike": ["guard", "block"], "opp_alley_gate": ["shake_head"]}
+const ALLEY_EXTRA := {"opp_alley_tire": {"signature": "plant_feet", "flee": "daze_flee"},
+	"opp_alley_bike": {"signature": "guard", "flee": "daze_flee"}, "opp_alley_gate": {"signature": "shake_head", "flee": "daze_flee"}}
+const ALLEY_INFO := {
+	"opp_alley_tire": {"bandit": "tire", "name_hint": "Zeca Estepe", "profile": "FORTE", "color": "gr2"},
+	"opp_alley_bike": {"bandit": "bike", "name_hint": "Fio", "profile": "RÁPIDO", "color": "p2"},
+	"opp_alley_gate": {"bandit": "gate", "name_hint": "Seu Pé de Cabra", "profile": "RESISTENTE", "color": "st3"},
+}
+
+func run_alley(args: Array) -> void:
+	var listas := []
+	for i in range(3, 8):
+		listas.append(JSON.parse_string(FileAccess.get_file_as_string(args[i])))
+	var src8: Dictionary = (JSON.parse_string(FileAccess.get_file_as_string(args[8])) as Dictionary).reactions
+	var srcR: Dictionary = (JSON.parse_string(FileAccess.get_file_as_string(args[9])) as Dictionary).reactions
+	var entradas := {}
+	var by := {}
+	var newf := {}
+	for oid in OPPS_ALLEY:
+		# quem usa cada pose de assinatura da 8a1: só o bandido da passiva certa (o resto fica de fora)
+		var src := {}
+		for nome in src8:
+			var e8: Dictionary = (src8[nome] as Dictionary).duplicate(true)
+			e8["who"] = [oid] if nome in ALLEY_SIG[oid] else []
+			src[nome] = e8
+		var b := make_opp_build(oid)
+		var acoes := {}
+		for a in ACTIONS:
+			var id: String = oid + "_" + a
+			REG[id] = reg_entry(oid, a)
+			REG[id]["note"] = str(REG[id].note).replace("Fase 8a1.", "Ronda 2a1.")
+			var fr := gen_fight(oid, b, a)
+			save_sheet(out_dir + res_to_rel(spr(id).file), id, fr)
+			entradas[id] = REG[id]
+			acoes[a] = id
+			newf[id] = fr
+		for li in 5:
+			var s: Dictionary = {}
+			if li == 3:
+				s = src
+			elif li == 4:
+				s = srcR
+			reg_reacoes(oid, b, listas[li], s, entradas, acoes, newf)
+		var por := make_portrait(oid, b)
+		por.save_png(out_dir + "opponents/portrait_%s.png" % oid)
+		var pe: Dictionary = (M.sprites["portrait_" + REG_TEMPLATE] as Dictionary).duplicate(true)
+		pe["file"] = "res://assets/sprites/opponents/portrait_%s.png" % oid
+		pe["note"] = "Retrato 32x32 (recorte do próprio sprite de luta, fundo na cor dele), virado para a DIREITA (no HUD o adversário usa flip_h). Serve também de retrato do Dossiê. " + REG_NOTE[oid]
+		entradas["portrait_" + oid] = pe
+		var info: Dictionary = ALLEY_INFO[oid]
+		for kx in ALLEY_EXTRA[oid]:
+			acoes[kx] = oid + "_" + str(ALLEY_EXTRA[oid][kx])
+		by[oid] = {"actions": acoes, "portrait": "portrait_" + oid, "portrait_frame": "ui_portrait_frame", "pos": [346, 318],
+			"facing": "esquerda", "name_hint": info.name_hint, "profile": info.profile, "color": info.color,
+			"scale": float(opp_def(oid).s), "bandit": info.bandit,
+			"_nota": "Ronda 2a1 (Artista de Personagens): bandido do beco no rig de luta dos adversários. Mesmo quadro 112x104 e pivô (56,98). actions.signature = pose da passiva (a mesma da liga); actions.flee = SAIU TONTO E FUGIU (loop, a tela leva o x para a direita). K.O. = ko/ko_back/ko_knees/fall_spin do rig, sem sangue. docs/arte/ronda2a-manifest.md."}
+	var f := FileAccess.open(out_dir + "ronda2a_bandidos.json", FileAccess.WRITE)
+	f.store_string(JSON.stringify({"sprites": entradas, "by_data_id": by}, "\t"))
+	f.close()
+	print("ok alley: %d entradas" % entradas.size())
+
 # ================================================================ main
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -1638,6 +1817,11 @@ func _init() -> void:
 		return
 	if args.size() > 2 and args[2] == "luz6d2":
 		run_luz_6d2()
+		_write_report()
+		quit()
+		return
+	if args.size() > 9 and args[2] == "alley":
+		run_alley(args)
 		_write_report()
 		quit()
 		return

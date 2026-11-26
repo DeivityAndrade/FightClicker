@@ -27,6 +27,7 @@ var _ciclos: Array = []  # [ocorrência][ciclo] = [tempo de trabalho, aviso fals
 var _pend: Array = []  # eventos ainda não lidos pela UI (nomes)
 var _btn := false
 var _aperto := false
+var _hold_perto := 0.0  # s segurando sem parar perto do fim do muro (só para a dica "SOLTE E CLIQUE!")
 
 const PASSO_MAX := 1.0 / 60.0  # quadro grande é fatiado: o "visto" nunca pula um instante
 const CICLOS := 40
@@ -109,7 +110,16 @@ func _visto() -> void:
 
 
 ## Um passo de `dt` s. `segurando` = botão pressionado; `apertou` = borda de descida do botão neste quadro.
+## Depois da regra, mede há quanto tempo o botão está segurado perto do fim do muro (D2: só alimenta a dica, nunca a regra).
 func passo(dt: float, segurando: bool, apertou: bool) -> void:
+	_passo_regra(dt, segurando, apertou)
+	if segurando and fase == "jogando" and _oc == "jogando" and _dist >= float(_c.scare_zone) - 1.0e-9:
+		_hold_perto += dt
+	else:
+		_hold_perto = 0.0
+
+
+func _passo_regra(dt: float, segurando: bool, apertou: bool) -> void:
 	if fase == "fim":
 		return
 	if fase == "contagem":
@@ -198,7 +208,10 @@ func estado() -> Dictionary:
 		"ocorrencia": ocorrencia, "id": str(o.id), "oc_fase": _oc, "distancia": _dist,
 		"perto": jogando and _dist >= float(_c.scare_zone) - 1.0e-9,
 		"ladrao": _lad, "ladrao_frac": clampf(_lad_t / _lad_dur, 0.0, 1.0) if _lad_dur > 0.0 else 0.0,
-		"sustos": sustos, "vistos": vistos, "segurando": _btn, "total": _c.occurrences.size()}
+		"sustos": sustos, "vistos": vistos, "segurando": _btn, "total": _c.occurrences.size(),
+		# D2: segurou perto por hold_hint_s sem soltar = a tela mostra "SOLTE E CLIQUE!" (some ao soltar, no SUSTO, no VISTO e no fim)
+		"segurando_perto_s": _hold_perto, "hold_hint_s": float(_c.get("hold_hint_s", 0.6)),
+		"dica_soltar": jogando and _hold_perto >= float(_c.get("hold_hint_s", 0.6)) - 1.0e-9}
 
 
 ## Eventos desde a última leitura (nomes): aviso, aviso_falso, olhou, susto, visto, proxima, fim, fim_tempo, sair.

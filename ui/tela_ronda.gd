@@ -24,6 +24,9 @@ const PULO_S := 0.25  # o vulto salta do muro até a calçada (quadros 1 a 3 da 
 const PULO_ATRASO := 0.083  # o quadro 0 antecipa
 const FUGA_S := 0.75
 
+## Ronda 2a1: o fim da aproximação da briga (depois do letreiro do SUSTO / VISTO): o Fluxo abre a prévia da noite.
+signal previa_pedida
+
 var info: Dictionary = {}
 var premio: Dictionary = {}
 var janela: JanelaPremioRonda
@@ -61,6 +64,11 @@ var _ladrao: AnimSprite
 var _ladrao_base := Vector2.ZERO
 var _aviso: AnimSprite
 var _perto: AnimSprite
+var _dica_soltar: Label  # D2: "SOLTE E CLIQUE!" (piscando) quando segura perto do fim do muro
+var _alley := false  # Ronda 2a1: a noite é a aproximação de uma briga de beco (1 ocorrência; no fim vem a prévia, não o prêmio)
+var _desafio: Label  # a linha do desafio da noite (só na briga, durante a contagem)
+var _fim_t := 0.0
+var _previa_enviada := false
 var _estepe: AnimSprite
 var _banner_susto: AnimSprite
 var _banner_fugiu: AnimSprite
@@ -88,6 +96,7 @@ static func retangulo(a: Array) -> Rect2:
 
 func abrir(info_: Dictionary) -> void:
 	info = info_
+	_alley = str(info_.get("night", "")) == "alley"
 	position = Vector2.ZERO
 	size = TELA
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -213,6 +222,10 @@ func _montar_palco() -> void:
 	_perto.z_index = 720
 	_perto.visible = false
 	_mundo.add_child(_perto)
+	_dica_soltar = UiTema.rotulo(_mundo, UiTema.txt("hint_release_click", "SOLTE E CLIQUE!"), UiTema.Y2, 0, 0, 0, HORIZONTAL_ALIGNMENT_CENTER, false, true)
+	_dica_soltar.size = Vector2(120.0, 12.0)
+	_dica_soltar.z_index = 730
+	_dica_soltar.visible = false
 	# Letreiros do SUSTO! (grande, 2x, no meio) e do ESCAPOU (menor, em cima do ladrão).
 	var sb: Dictionary = layout().get("scare_banner", {})
 	_banner_susto = AnimSprite.new()
@@ -282,14 +295,15 @@ func _montar_hud() -> void:
 	_rotulo_ocorrencia = UiTema.rotulo_centrado(cartao, Rect2(area.position.x, area.position.y + 1.0, area.size.x, 10.0), "", UiTema.INK, 1, false, "center_h")
 	var iw := 9.0
 	var gap := 4.0
-	var gw := iw * 3.0 + gap * 2.0
+	var n_pips := 1 if _alley else 3  # a briga tem 1 ocorrência
+	var gw := iw * float(n_pips) + gap * float(n_pips - 1)
 	var grupo := Control.new()
 	grupo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	grupo.size = Vector2(gw, iw)
 	grupo.position = Vector2(roundf((ob.size.x - gw) / 2.0), area.position.y + 12.0)
 	UiTema.alinhar(grupo, "center_h")
 	cartao.add_child(grupo)
-	for i in 3:
+	for i in n_pips:
 		var ic := UiTema.textura_rect(grupo, "icon_occurrence", (iw + gap) * float(i), 0.0)
 		ic.modulate = Color(0.42, 0.4, 0.47)
 		_pips_sustos.append(ic)
@@ -307,7 +321,17 @@ func _montar_hud() -> void:
 	_dica = UiTema.rotulo(_hud, str(info.get("tip", "")).to_upper(), UiTema.CREAM, 0.0, 338.0, 0, HORIZONTAL_ALIGNMENT_CENTER, false, true)
 	_dica.size = Vector2(TELA.x, 12.0)
 	UiTema.alinhar(_dica, "center_h")
+	if _alley:
+		# A instrução da briga é longa (~530 px): não pode encostar no SAIR (x 8..56); ela fica à direita dele, colada na margem direita.
+		_dica.position.x = 64.0
+		_dica.size.x = 572.0
+		_dica.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		UiTema.alinhar(_dica, "right")
 	_titulo = UiTema.rotulo_centrado(_hud, Rect2(0, 62, TELA.x, 12), str(info.get("name", "")).to_upper(), UiTema.CREAM, 1, true, "center_h")
+	if _alley:
+		# O desafio da noite, em letra pequena, durante a contagem (some quando a aproximação começa).
+		var ch: Dictionary = info.get("challenge", {})
+		_desafio = UiTema.rotulo_centrado(_hud, Rect2(0, 46, TELA.x, 12), str(ch.get("text", "")).to_upper(), UiTema.Y1, 1, true, "center_h")
 	# No céu, entre o cartão do topo e os telhados: nunca em cima da placa 24H da borracharia (A3 do QA).
 	_centro = UiTema.rotulo_centrado(_hud, Rect2(0, 76, TELA.x, 28), UiTema.txt("mini_ready", "PREPARAR"), UiTema.Y2, 2, true, "center_h")
 
@@ -515,7 +539,14 @@ func _process(delta: float) -> void:
 	_oc_fase_antes = str(e.oc_fase)
 	_ladrao_antes = str(e.ladrao)
 	if str(e.fase) == "fim" and janela == null:
-		_concluir()
+		if _alley:
+			_fim_t += delta  # deixa o letreiro (SUSTO! / ESCAPOU) aparecer antes da prévia
+			if _fim_t >= 1.4 and not _previa_enviada and str(GameState.briga_estado().get("fase", "")) == "previa":
+				_previa_enviada = true
+				_centro.visible = false
+				previa_pedida.emit()
+		else:
+			_concluir()
 
 
 func _atualizar_fase(e: Dictionary) -> void:
@@ -544,6 +575,8 @@ func _atualizar_fase(e: Dictionary) -> void:
 		_:
 			_centro.visible = false
 			_titulo.visible = false
+	if _desafio != null:
+		_desafio.visible = fase == "contagem"
 
 
 func _atualizar_hud(e: Dictionary) -> void:
@@ -557,6 +590,8 @@ func _atualizar_hud(e: Dictionary) -> void:
 	var nomes: Array = info.get("occurrence_names", [])
 	var i := mini(int(e.ocorrencia), ids.size() - 1)
 	var nome := str(nomes[i]) if i < nomes.size() else UiTema.txt("ronda_occ_" + str(ids[i]), str(ids[i]).to_upper())
+	if _alley and not _bandido_conhecido(str(info.get("bandit", ""))):
+		nome = UiTema.txt("alley_occ_%s_anon" % str(info.get("bandit", "")), nome)  # 2a1 B2: sem nome até a 1ª vitória
 	if _rotulo_ocorrencia.text != nome.to_upper():
 		_rotulo_ocorrencia.text = nome.to_upper()
 	# Marcas de SUSTO: apagada = ainda não, ouro = SUSTO, vermelha = ESCAPOU; a da vez pisca devagar.
@@ -601,8 +636,13 @@ func _atualizar_palco(e: Dictionary, delta: float) -> void:
 	_barra_zone.texture = _zone_tex[int(_t * 6.0) % 2] if oc_fase == "jogando" else _zone_tex[0]
 	_barra.visible = oc_fase in ["intro", "jogando"] or (oc_fase == "visto")
 	# SUSTO! pequeno piscando em cima do vulto.
-	_perto.visible = perto
+	# D2 (vale na Ronda 1 e na briga): segurou perto sem soltar = "SOLTE E CLIQUE!" piscando no lugar do sinal PERTO.
+	var soltar := bool(e.get("dica_soltar", false)) and perto
+	_perto.visible = perto and not soltar
 	_perto.position = Vector2(_vulto.position.x, walk_y - 50.0)
+	_dica_soltar.visible = soltar
+	_dica_soltar.modulate.a = 1.0 if int(_t * 5.0) % 2 == 0 else 0.45
+	_dica_soltar.position = Vector2(clampf(roundf(_vulto.position.x - 60.0), 4.0, TELA.x - 124.0), walk_y - 62.0)
 	# Aviso do ladrão (? começando, ? cheio, ! olhando).
 	var lad := str(e.ladrao)
 	if oc_fase in ["intro", "jogando"] and lad != "trabalha":
@@ -811,6 +851,9 @@ func _piscar(cor: Color, alfa: float, dur: float = 0.16) -> void:
 func _sair() -> void:
 	if janela != null:
 		return
+	if _alley:
+		GameState.ronda_concluir()  # SAIR da briga: nada gravado, o capuz fica no prego, a sala volta (ronda_mudou("") fecha esta tela)
+		return
 	_concluir()
 
 
@@ -879,3 +922,11 @@ func _input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 		_soltar()  # perdeu o foco com o botão apertado: larga (senão o vulto anda sozinho)
+
+
+## 2a1 B2: o bandido já tem ficha (venceu alguma vez)? Sem ela o nome fica escondido.
+func _bandido_conhecido(id: String) -> bool:
+	for f in GameState.dossie():
+		if str(f.bandit) == id:
+			return bool(f.known)
+	return false

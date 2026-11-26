@@ -27,8 +27,7 @@ func abrir_com(premio: Dictionary, _info: Dictionary = {}) -> void:
 		altura += float(l.h)
 	var topo := roundf((360.0 - altura) / 2.0)
 	moldura("ui_window", Rect2(JANELA_X, topo, JANELA_L, altura))
-	var titulo := UiTema.txt("ronda_level_up", "A LENDA CRESCEU") if sobe else UiTema.txt("ronda_reward_title", "RONDA FEITA")
-	faixa_titulo("victory" if sobe else "neutral", Rect2(182, topo + 6.0, 276, 22), titulo, UiTema.Y2 if sobe else UiTema.WHITE, 2)
+	faixa_titulo("victory" if sobe else "neutral", Rect2(182, topo + 6.0, 276, 22), _titulo_da_janela(sobe), UiTema.Y2 if sobe else UiTema.WHITE, 2)
 	var y := topo + 36.0 + TOPO_EXTRA
 	for l in linhas:
 		l.f.call(y)
@@ -40,6 +39,11 @@ func abrir_com(premio: Dictionary, _info: Dictionary = {}) -> void:
 		tw.tween_callback(func() -> void:
 			(_pip_novo.texture as AtlasTexture).region = Rect2(7.0, 0, 7, 7))  # acendendo -> acesa
 	set_process(true)
+
+
+## Título da faixa grande (a noite de briga troca por BRIGA GANHA / NOITE PERDIDA).
+func _titulo_da_janela(sobe: bool) -> String:
+	return UiTema.txt("ronda_level_up", "A LENDA CRESCEU") if sobe else UiTema.txt("ronda_reward_title", "RONDA FEITA")
 
 
 func _process(delta: float) -> void:
