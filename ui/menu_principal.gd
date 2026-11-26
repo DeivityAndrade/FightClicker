@@ -334,11 +334,26 @@ func _botao(pai: Node, rect: Rect2, texto: String) -> Button:
 	return b
 
 
-## Estilo do botão: "foco" (vermelho, em foco), "papel" (secundário) ou "asfalto" (CONTINUAR sem foco).
+## Estilo do botão: "foco" (vermelho, em foco), "papel" (secundário) ou "vermelho" (CONTINUAR sem foco: segue vermelho, sem o filete).
 func _estilo_botao(b: Button, modo: String) -> void:
 	var l: Label = b.get_meta("rotulo")
-	var base := "c_btn_foco" if modo == "foco" else ("c_btn_normal" if modo == "asfalto" else "c_btn_papel_normal")
+	var vermelho := modo == "foco" or modo == "vermelho"
+	var base := "c_btn_foco" if vermelho else ("c_btn_normal" if modo == "asfalto" else "c_btn_papel_normal")
 	b.add_theme_stylebox_override("normal", UiTema.estilo(base))
+	# CONTINUAR fica sempre vermelho; em foco ganha um filete creme de 1 px por dentro (as setas também o acompanham).
+	if b.has_meta("realce"):
+		(b.get_meta("realce") as Control).visible = modo == "foco"
+	elif _ids.size() > 0 and _botoes.find(b) >= 0 and _ids[_botoes.find(b)] == "continuar":
+		var r := ReferenceRect.new()
+		r.editor_only = false
+		r.border_color = UiTema.CREAM
+		r.border_width = 1.0
+		r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		r.position = Vector2(2, 2)
+		r.size = b.size - Vector2(4, 4)
+		r.visible = modo == "foco"
+		b.add_child(r)
+		b.set_meta("realce", r)
 	if modo == "papel":
 		l.add_theme_color_override("font_color", UiTema.INK)
 		l.remove_theme_color_override("font_shadow_color")
@@ -438,7 +453,7 @@ func _atualizar_foco() -> void:
 		if i == _foco:
 			_estilo_botao(_botoes[i], "foco")
 		elif _ids[i] == "continuar":
-			_estilo_botao(_botoes[i], "asfalto")
+			_estilo_botao(_botoes[i], "vermelho")
 		else:
 			_estilo_botao(_botoes[i], "papel")
 	_posicionar_setas()
