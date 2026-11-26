@@ -26,7 +26,16 @@ func rodar_testes() -> void:
 	_teste_quem_briga_igual()
 
 
-func _novo(nome: String, lenda: int = 30, com_marco: bool = true, campanha: int = 4) -> Node:
+## Limiar da lenda do nível i (0 = nível 1) e intervalo do capuz: sempre do ronda.json (2a2: nada fixo no teste).
+func _LV(i: int) -> int:
+	return int(RondaData.carregar().niveis[i])
+
+
+func _IV() -> float:
+	return float(RondaData.carregar().capuz.interval_s)
+
+
+func _novo(nome: String, lenda: int = -1, com_marco: bool = true, campanha: int = 4) -> Node:
 	var gs: Node = GameStateScript.new()
 	gs.inicializar(pasta_limpa(nome), "res://data/config.json")
 	gs.autosave_ativo = false
@@ -43,6 +52,8 @@ func _novo(nome: String, lenda: int = 30, com_marco: bool = true, campanha: int 
 	gs.escola.milestones["black_cat_rumor_heard"] = {"campaign": campanha - 1, "version": 1}
 	if com_marco:
 		gs.escola.milestones["regional_league_opened"] = {"campaign": campanha - 1, "version": 1}
+	if lenda < 0:
+		lenda = _LV(2)  # nível 3: as brigas abrem
 	var nivel: int = gs.ronda_cfg.nivel_de(lenda)
 	gs.permanente["black_cat"] = {"legend": lenda, "rounds": 6, "scares": 3, "shown_level": nivel, "open_campaign": 3}
 	return gs
@@ -60,7 +71,7 @@ func _andar(gs: Node, s: int, passo: float = 1.0) -> void:
 
 ## Espera o capuz (de 0 ou do próximo relógio).
 func _capuz(gs: Node) -> bool:
-	for _i in 300:
+	for _i in 420:
 		if gs.capuz_info().get("clickable", false):
 			return true
 		gs.tick(1.0)
@@ -159,6 +170,7 @@ func _teste_python_exato() -> void:
 	var bandidos := {}
 	for b in gs.ronda_cfg.noites.alley.bandits:
 		bandidos[str(b.id)] = b
+	bandidos[str(gs.ronda_cfg.noites.alley.boss.id)] = gs.ronda_cfg.noites.alley.boss  # 2a2: o Apagao nos mesmos casos exatos
 	var iguais := 0
 	var primeira := ""
 	var soma := 0.0
@@ -209,18 +221,18 @@ func _teste_python_exato() -> void:
 
 # ---------------------------------------------------------------- destrave e ordem (A5)
 func _teste_destrave() -> void:
-	var g1 := _novo("r2a_dest1", 29)
+	var g1 := _novo("r2a_dest1", _LV(2) - 1)
 	_andar(g1, 181)
-	checar(not g1.briga_aberta() and not g1.capuz_info().hideout, "lenda 29 (nivel 2): briga fechada, o capuz leva ao SUSTO")
-	checar(g1.ronda_ir("alley", "tire").is_empty(), "lenda 29: ronda_ir(alley) recusa")
+	checar(not g1.briga_aberta() and not g1.capuz_info().hideout, "lenda abaixo do nivel 3: briga fechada, o capuz leva ao SUSTO")
+	checar(g1.ronda_ir("alley", "tire").is_empty(), "lenda abaixo do nivel 3: ronda_ir(alley) recusa")
 	var i1: Dictionary = g1.ronda_ir()
-	checar(str(i1.get("night", "")) == "scare" and g1.ronda_ativa == "scare", "lenda 29: ronda_ir() = SUSTO de sempre")
-	var g2 := _novo("r2a_dest2", 30, false)
+	checar(str(i1.get("night", "")) == "scare" and g1.ronda_ativa == "scare", "lenda abaixo do nivel 3: ronda_ir() = SUSTO de sempre")
+	var g2 := _novo("r2a_dest2", _LV(2), false)
 	_andar(g2, 181)
-	checar(not g2.briga_aberta() and not g2.capuz_info().hideout, "lenda 30 sem o marco da liga: briga fechada")
-	var g3 := _novo("r2a_dest3", 30, true)
+	checar(not g2.briga_aberta() and not g2.capuz_info().hideout, "nivel 3 sem o marco da liga: briga fechada")
+	var g3 := _novo("r2a_dest3", _LV(2), true)
 	_andar(g3, 181)
-	checar(g3.briga_aberta() and g3.capuz_info().hideout and g3.capuz_info().clickable, "lenda 30 + marco: Esconderijo")
+	checar(g3.briga_aberta() and g3.capuz_info().hideout and g3.capuz_info().clickable, "nivel 3 + marco: Esconderijo")
 	checar_igual(g3.capuz.open, "scare", "o prego continua guardando 'scare'")
 	# 2o e 3o so em ordem
 	checar(g3.ronda_ir("alley", "bike").is_empty() and g3.ronda_ir("alley", "gate").is_empty() and g3.ronda_ativa == "", "o 2o e o 3o fechados com o 1o por vencer")
@@ -248,7 +260,7 @@ func _teste_quadro_e_dossie() -> void:
 	checar(d.size() == 3 and not d[0].known and d[0].name == "???" and str(d[0].missing_text) == "" and str(d[1].missing_text) != "", "Dossie: 3 fichas; o 2o diz o que falta")
 	checar(str(d[0].rap_sheet) == "" and str(d[0].stamp) == "" and str(d[0].witness) == "", "ficha fechada: sem ficha corrida, selo nem testemunha")
 	var e: Dictionary = gs.esconderijo()
-	checar(e.open and e.trophies.is_empty() and e.legend.level == 3 and not e.boss.known and str(e.boss.missing_text).contains("5"), "Esconderijo: aberto, prateleira vazia, ficha do chefe com LENDA 5")
+	checar(e.open and e.trophies.size() == 4 and e.trophies.all(func(t): return t.state == "empty") and e.legend.level == 3 and not e.boss.known and str(e.boss.missing_text).contains("5"), "Esconderijo: aberto, prateleira com 4 lugares vazios, ficha do chefe com LENDA 5")
 	# depois de perder (revanche) e de vencer sem desafio
 	gs.permanente.black_cat["alley"] = {"tire": {"won": 0, "lost": 2, "first_win_campaign": 0, "challenge": false}}
 	checar(gs.quadro_noite()[1].revenge and gs.dossie()[0].revenge and not gs.dossie()[0].known, "perdeu e nao venceu: REVANCHE no quadro e na ficha")
@@ -259,7 +271,7 @@ func _teste_quadro_e_dossie() -> void:
 	gs.permanente.black_cat["alley"] = {"tire": {"won": 1, "lost": 0, "first_win_campaign": 5, "challenge": true}, "bike": {"won": 1, "lost": 0, "first_win_campaign": 6, "challenge": true},
 		"gate": {"won": 1, "lost": 1, "first_win_campaign": 7, "challenge": true}}
 	var q3: Array = gs.quadro_noite()
-	checar(q3.size() == 2 and q3[1].night == "quiet", "os 3 vencidos com desafio: O BECO ESTA QUIETO")
+	checar(q3.size() == 2 and q3[1].night == "boss" and q3[1].locked and str(q3[1].missing_text) != "", "os 3 vencidos com desafio: cartao do chefe trancado (2a2)")
 	_liberar(gs)
 
 
@@ -400,12 +412,12 @@ func _teste_luta_grava_uma_vez() -> void:
 	checar(info.arena == "arena_alley" and info.night == "alley" and info.fighter_name == "???" and info.events.size() > 0, "info: arena do beco, nome ???, eventos para a tela")
 	checar(gs.luta.is_empty() and gs.luta_atual().is_empty(), "GameState.luta intocada (a carreira nem sabe da noite)")
 	var pr: Dictionary = info.night_prize
-	checar(pr.win and pr.scare and pr.legend_gain == 4 and pr.dossier_new and pr.clipping_new and pr.legend == 34, "vitoria com SUSTO: lenda +4 (floor 1 + SUSTO 1 + vitoria 2)")
+	checar(pr.win and pr.scare and pr.legend_gain == 4 and pr.dossier_new and pr.clipping_new and pr.legend == _LV(2) + 4, "vitoria com SUSTO: lenda +4 (floor 1 + SUSTO 1 + vitoria 2)")
 	checar(pr.challenge_done and pr.style_unlocked == "night_band" and str(pr.style_text).contains("{") == false, "desafio da surpresa: estilo faixa da noite")
 	var f: Dictionary = _ficha(gs, "tire")
 	checar(int(f.won) == 1 and int(f.lost) == 0 and int(f.first_win_campaign) == 4 and bool(f.challenge), "ficha gravada: venceu, campanha 4, desafio feito")
-	checar(int(_bc(gs).rounds) == 7 and int(_bc(gs).scares) == 4 and int(_bc(gs).legend) == 34, "rounds +1, scares +1, lenda +4")
-	checar(gs.capuz.open == "" and absf(float(gs.capuz.next_at) - (hood + 240.0)) < 1.0e-6, "prego vazio, proximo capuz em +240 s")
+	checar(int(_bc(gs).rounds) == 7 and int(_bc(gs).scares) == 4 and int(_bc(gs).legend) == _LV(2) + 4, "rounds +1, scares +1, lenda +4")
+	checar(gs.capuz.open == "" and absf(float(gs.capuz.next_at) - (hood + _IV())) < 1.0e-6, "prego vazio, proximo capuz em +intervalo")
 	for k in estados:
 		checar(gs.get(k).state == estados[k], "a noite nao mexe em %s" % k)
 	checar(gs.briga_resultado() == pr and gs.ronda_concluir() == pr, "briga_resultado e ronda_concluir devolvem o mesmo premio")
@@ -458,11 +470,11 @@ func _teste_derrota_pequena() -> void:
 	checar(gs.sala_ativa() and gs.fim.is_empty(), "perder nao encerra a carreira")
 	checar(gs.quadro_noite()[1].bandit == "bike" and gs.quadro_noite()[1].revenge, "REVANCHE no quadro")
 	var hood1: float = gs.capuz.hood_s
-	checar(absf(float(gs.capuz.next_at) - (hood1 + 240.0)) < 1.0e-6 and gs.capuz.open == "", "o capuz volta no proximo relogio (240 s de sala)")
-	_andar(gs, 239)
-	checar(not gs.capuz_info().get("clickable", false), "239 s: ainda sem capuz")
+	checar(absf(float(gs.capuz.next_at) - (hood1 + _IV())) < 1.0e-6 and gs.capuz.open == "", "o capuz volta no proximo relogio (intervalo de sala)")
+	_andar(gs, int(_IV()) - 1)
+	checar(not gs.capuz_info().get("clickable", false), "1 s antes do intervalo: ainda sem capuz")
 	_andar(gs, 2)
-	checar(gs.capuz_info().get("clickable", false), "240 s de sala: o capuz volta")
+	checar(gs.capuz_info().get("clickable", false), "intervalo de sala: o capuz volta")
 	checar(hood1 >= hood0, "relogio so andou para frente")
 	# derrota com SUSTO: lenda +2
 	var info2: Dictionary = _briga(gs, "bike", "scare", PEQUENO)

@@ -68,7 +68,8 @@
 				{ "id": "white",  "enabled": true, "colors": ["#8f8890", "#b8b0aa", "#d9cdb4", "#f2ece0"], "tokens": ["g2", "g3", "cream", "white"] },
 				{ "id": "purple", "enabled": true, "colors": ["#4a2f6b", "#7a4fa0", "#b07ad8", "#d9cdb4"], "tokens": ["p0", "p1", "p2", "cream"] },
 				{ "id": "yellow", "enabled": true, "colors": ["#9a5f36", "#e0a040", "#f5d26b", "#fff3c4"], "tokens": ["br2", "y0", "y1", "y2"] },
-				{ "id": "night", "enabled": false, "requires": "black_cat_style:night_shorts", "mark": "cat", "colors": ["#14101a", "#2a2233", "#3d3346", "#e0a040"], "tokens": ["ink", "d1", "d2", "y0"] }
+				{ "id": "night", "enabled": false, "requires": "black_cat_style:night_shorts", "mark": "cat", "colors": ["#14101a", "#2a2233", "#3d3346", "#e0a040"], "tokens": ["ink", "d1", "d2", "y0"] },
+				{ "id": "live_wire", "enabled": false, "requires": "black_cat_style:live_wire", "mark": "cat", "rare": true, "colors": ["#2a2233", "#e0a040", "#f5d26b", "#2a2233"], "tokens": ["d1", "y0", "y1", "d1"] }
 			]
 		},
 		"top": {

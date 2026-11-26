@@ -6,15 +6,16 @@ extends RefCounted
 
 const CAMINHO := "res://data/ronda.json"
 const KINDS := ["stealth_scare", "alley_fight"]  # lógicas de noite que existem (SUSTO e briga de beco da Ronda 2a1)
-const DESAFIOS := ["surprise", "early_finish", "clean_win"]  # tipos de desafio dos bandidos
+const DESAFIOS := ["surprise", "early_finish", "clean_win", "surprise_early"]  # tipos de desafio dos bandidos
 const REQUISITOS := ["legend_level", "milestone"]  # chaves aceitas em `requires` da briga
+const REQUISITOS_CHEFE := ["legend_level", "all_bandits", "regional_belts_min"]  # chaves aceitas em `requires` do chefe (2a2)
 
 var vazio := true
 var abertura := {"requires_milestone": "black_cat_rumor_heard", "campaigns_after_rumor": 1, "min_campaign": 3, "no_rumor_from_campaign": 5}
-var capuz := {"first_after_s": 180.0, "interval_s": 240.0, "spot_by_location": {}, "hover_text": "hood_hover", "night_choice": "first_available", "hideout_from": ""}
+var capuz := {"first_after_s": 180.0, "interval_s": 300.0, "spot_by_location": {}, "hover_text": "hood_hover", "night_choice": "first_available", "hideout_from": ""}
 var ordem: Array[String] = []  # night_order (só as noites válidas)
 var noites: Dictionary = {}  # id -> bloco (números já validados)
-var niveis: Array[int] = [1, 12, 30, 52, 80]
+var niveis: Array[int] = [1, 10, 24, 42, 64]
 var recortes: Array[String] = []  # chave de texto por nível (0..5)
 var camadas: Array = []  # camadas da rua por nível (0..5)
 var avisos: Array[String] = []
@@ -57,7 +58,7 @@ func _ler(d: Dictionary) -> void:
 	var h = d.get("hood", {})
 	if h is Dictionary:
 		capuz["first_after_s"] = _num(h, "first_after_s", 180.0, 1.0, 1.0e6, "hood.")
-		capuz["interval_s"] = _num(h, "interval_s", 240.0, 1.0, 1.0e6, "hood.")
+		capuz["interval_s"] = _num(h, "interval_s", 300.0, 1.0, 1.0e6, "hood.")
 		var sp = h.get("spot_by_location", {})
 		capuz["spot_by_location"] = sp.duplicate() if sp is Dictionary else {}
 		capuz["hover_text"] = str(h.get("hover_text", "hood_hover"))
@@ -90,7 +91,7 @@ func _ler(d: Dictionary) -> void:
 		if not ok.is_empty():
 			niveis = ok
 		else:
-			_aviso("legend.levels inválido (precisa crescer): padrão 1/12/30/52/80.")
+			_aviso("legend.levels inválido (precisa crescer): padrão 1/10/24/42/64.")
 		var rc = lg.get("clipping_text_by_level", [])
 		for x in (rc if rc is Array else []):
 			recortes.append(str(x))
@@ -189,6 +190,7 @@ func _noite_beco(id: String, b: Dictionary, scare_b: Dictionary) -> Dictionary:
 		_aviso("noite '%s' sem bandidos válidos: ignorada." % id)
 		return {}
 	r["bandits"] = bandidos
+	r["boss"] = _chefe(b.get("boss", null), p + "boss.", vistos)  # 2a2: {} = sem chefe (a ficha "???" da 2a1 continua)
 	r["occurrences"] = bandidos.map(func(x: Dictionary) -> Dictionary: return x.approach)
 	return r
 
@@ -229,11 +231,50 @@ func _bandido(item: Variant, p: String, vistos: Array[String]) -> Dictionary:
 	return d
 
 
+## O chefe (2a2): um bandido com extras (arena, letreiro, apagão, troféu, título, camada do menu). Ausente/ruim = {}.
+func _chefe(item: Variant, p: String, vistos: Array[String]) -> Dictionary:
+	if item == null:
+		return {}
+	var d := _bandido(item, p, vistos)
+	if d.is_empty():
+		return {}
+	var rq := {"legend_level": 0, "all_bandits": false, "regional_belts_min": 0}
+	var ok_rq := true
+	var rb = item.get("requires", null)
+	if rb is Dictionary:
+		for k in rb:
+			if not (str(k) in REQUISITOS_CHEFE):
+				_aviso("%srequires.%s desconhecido: chefe indisponível." % [p, str(k)])
+				ok_rq = false
+		rq = {"legend_level": int(_quieto(rb, "legend_level", 0.0, 0.0, 99.0)), "all_bandits": bool(rb.get("all_bandits", false)),
+			"regional_belts_min": int(_quieto(rb, "regional_belts_min", 0.0, 0.0, 999.0))}
+	else:
+		ok_rq = false
+	d["requires"] = rq
+	d["disponivel"] = ok_rq
+	d["arena"] = str(item.get("arena", "arena_alley"))
+	d["entrance_banner"] = str(item.get("entrance_banner", ""))
+	d["entrance_s"] = _quieto(item, "entrance_s", 1.5, 0.0, 30.0)
+	var bo = item.get("blackout", {})
+	var bod: Dictionary = bo if bo is Dictionary else {}
+	d["blackout"] = {"after_round": int(_quieto(bod, "after_round", 2.0, 1.0, 99.0)), "dark_s": _quieto(bod, "dark_s", 1.0, 0.0, 10.0), "visual_only": true}
+	var tr = item.get("trophy", {})
+	var trd: Dictionary = tr if tr is Dictionary else {}
+	d["trophy"] = {"id": str(trd.get("id", "")), "slot": int(_quieto(trd, "slot", 0.0, 0.0, 3.0)), "sprite": str(trd.get("sprite", "")),
+		"sprite_rare": str(trd.get("sprite_rare", "")), "name": str(trd.get("name", "")), "name_rare": str(trd.get("name_rare", ""))}
+	d["press_title"] = str(item.get("press_title", ""))
+	d["menu_layer"] = str(item.get("menu_layer", ""))
+	return d
+
+
 ## Termina a validação com os dados do jogo: passiva do bandido (a mesma regra da liga) e estilo (a opção tem de existir no
 ## disciples.json, com `requires` igual a "black_cat_style:<id>"). Inválido = sem passiva / sem estilo, com aviso.
 func validar_com(lutas: FightData, disc: DiscipulosData) -> void:
 	var beco: Dictionary = noites.get("alley", {})
-	for b in beco.get("bandits", []):
+	var todos: Array = beco.get("bandits", []).duplicate()
+	if not beco.get("boss", {}).is_empty():
+		todos.append(beco.boss)
+	for b in todos:
 		if not b.passive.is_empty() and lutas != null:
 			b["passive"] = lutas._validar_passiva_adv(b.passive, str(b.id))
 		var st: Dictionary = b.style
@@ -248,7 +289,10 @@ func validar_com(lutas: FightData, disc: DiscipulosData) -> void:
 ## Bloco da aproximação de um bandido, no formato que a RondaLogica lê (1 ocorrência, night_s = approach_s). {} se o id não existe.
 func cfg_aproximacao(bandido_id: String) -> Dictionary:
 	var beco: Dictionary = noites.get("alley", {})
-	for b in beco.get("bandits", []):
+	var todos: Array = beco.get("bandits", []).duplicate()
+	if not beco.get("boss", {}).is_empty():
+		todos.append(beco.boss)
+	for b in todos:
 		if str(b.id) == bandido_id:
 			var c := beco.duplicate()
 			c["occurrences"] = [b.approach]

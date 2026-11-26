@@ -1184,6 +1184,11 @@ func briga_previa() -> Dictionary: return _beco.previa()
 func briga_lutar(tatica_id: String) -> Dictionary: return _beco.lutar(tatica_id)
 ## 2a1: o prêmio da noite (o `night_prize` do briga_lutar); {} antes de lutar.
 func briga_resultado() -> Dictionary: return _ronda_premio if ronda_ativa == "alley" else {}
+## 2a2: o chefe da Ronda (Apagão) está aberto (lenda 5, os 3 bandidos e o Cinturão do Vale)?
+func chefe_aberto() -> bool: return _beco.chefe_aberto()
+## 2a2: o que falta para o chefe: "legend" | "bandits" | "belt" | "" e o texto pronto ("" se nada falta).
+func chefe_falta() -> String: return _beco.chefe_falta()
+func chefe_falta_texto() -> String: return _beco.chefe_falta_texto()
 ## 2a1: o estilo da noite já foi ganho (desafio cumprido)?
 func estilo_liberado(estilo_id: String) -> bool: return _beco.estilo_liberado(estilo_id)
 ## A lógica da Ronda em andamento (RondaLogica) ou null.

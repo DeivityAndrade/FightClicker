@@ -11,7 +11,7 @@
 	"hood": {
 		"_doc": "Design §3. Capuz no prego. Relogio proprio (hood_s), anda so com a sala ativa (com ou sem Osmar), como o do convite, mas separado dele. 1o capuz da campanha com hood_s >= first_after_s; depois de usar, o proximo com hood_s >= (hood_s da volta) + interval_s. Enquanto o capuz esta no prego o relogio nao conta para o proximo (nao acumula: no maximo 1). Nunca aparece em janela, luta, cena, fala, dia da luta, treino fora ou sucessao: espera e aparece no 1o quadro em que tudo vale. Nao some sozinho.",
 		"first_after_s": 180.0,
-		"interval_s": 240.0,
+		"interval_s": 300.0,
 		"spot_by_location": {
 			"garage": "hood_spot",
 			"gym": "gym_hood_spot",
@@ -21,7 +21,8 @@
 		"night_choice": "first_available",
 		"_doc_night_choice": "Gancho do futuro (pedido do dono): o capuz carrega um TIPO DE NOITE. first_available = o 1o de night_order que esta disponivel. Hoje so existe 'scare'.",
 		"_doc_hideout": "Ronda 2a1: com a noite 'alley' disponivel (requires), o clique no capuz abre o ESCONDERIJO (quadro ESTA NOITE) em vez de ir direto ao SUSTO. Sem a 'alley' disponivel: igual a Ronda 1. O prego continua guardando open = 'scare' (o capuz existe); a escolha so vale no clique e nao vai para o save.",
-		"hideout_from": "alley"
+		"hideout_from": "alley",
+		"_doc_interval_2a2": "Ronda 2a2 (ronda2a2-design §A): interval_s 240 -> 300 (5 min de sala; pedido do dono: menos noites). first_after_s continua 180. Niveis da lenda reajustados x0,8 para o ritmo nao mudar (ver legend._doc_2a2)."
 	},
 	"night_order": [
 		"scare",
@@ -111,7 +112,7 @@
 				"per_scare": 1,
 				"win": 2
 			},
-			"challenges_doc": "Desafio medido so no resultado da noite; a previa conta a chance do desafio nas mesmas 200 sementes da chance de vencer (por tatica). surprise = SUSTO na aproximacao E venceu. clean_win = venceu com pct_player >= min_life. early_finish = venceu com ko true e round <= max_round (round = floor(t_ko / round_length) + 1).",
+			"challenges_doc": "Desafio medido so no resultado da noite; a previa conta a chance do desafio nas mesmas 200 sementes da chance de vencer (por tatica). surprise = SUSTO na aproximacao E venceu. clean_win = venceu com pct_player >= min_life. early_finish = venceu com ko true e round <= max_round (round = floor(t_ko / round_length) + 1). surprise_early (2a2, chefe) = surprise E early_finish juntos.",
 			"bandits": [
 				{
 					"id": "tire",
@@ -245,17 +246,91 @@
 						"option": "night"
 					}
 				}
-			]
+			],
+			"boss": {
+				"_doc": "Ronda 2a2 (docs/fases/ronda2a2-design.md). O chefe do beco: mesma noite da briga (aproximacao de 1 ocorrencia + luta no motor), com arena propria, letreiro de entrada e o apagao (so apresentacao). Nada da poder: premio = ficha, trofeu (normal; raro com o desafio), titulo da imprensa, cartaz no menu e (desafio) 1 estilo raro. Textos [ROT] ja gravados em ui_texts (alley_apagao_*, press_title_apagao).",
+				"id": "apagao",
+				"requires": {
+					"legend_level": 5,
+					"all_bandits": true,
+					"regional_belts_min": 1
+				},
+				"_doc_requires": "As tres juntas: nivel da lenda >= 5, os 3 bandidos de 'bandits' com won >= 1 (o desafio deles nao conta) e permanent.regional_belts >= 1 (a linhagem ja ganhou o Cinturao do Vale). Chave desconhecida = chefe indisponivel (com aviso).",
+				"approach": {
+					"id": "apagao",
+					"name": "alley_occ_apagao",
+					"spot": "beco_poste",
+					"gap_min": 0.8,
+					"gap_max": 1.2,
+					"warn_s": 0.35,
+					"look_s": 1.9,
+					"fake_warn": 0.3
+				},
+				"name": "alley_apagao_name",
+				"nickname": "alley_apagao_nick",
+				"profile": "RÁPIDO",
+				"strength": 420000000,
+				"agility": 840000000,
+				"endurance": 1240000000,
+				"passive": {
+					"id": "adv_slippery",
+					"locks": {
+						"thai_clinch": {
+							"clinch_base": 0.3,
+							"clinch_cap": 0.3,
+							"escape_base": 2.0
+						}
+					}
+				},
+				"challenge": {
+					"type": "surprise_early",
+					"max_round": 2,
+					"text": "alley_ch_apagao"
+				},
+				"dossier": {
+					"portrait": "alley_apagao_portrait",
+					"rap_sheet": "alley_apagao_rap",
+					"headline": "alley_apagao_headline",
+					"witness": "alley_apagao_witness"
+				},
+				"clipping": "alley_apagao_clipping",
+				"arena": "arena_apagao",
+				"entrance_banner": "alley_apagao_entrance",
+				"entrance_s": 1.5,
+				"blackout": {
+					"after_round": 2,
+					"dark_s": 1.0,
+					"visual_only": true
+				},
+				"_doc_blackout": "So apresentacao: na virada do round after_round para o seguinte (t = after_round x round_length), se a luta ainda nao acabou, a tela escurece por dark_s (so a luz da bateria e os olhos do vulto) e volta. Nao muda evento, sorteio, dano nem chance; a previa nao sabe dele. Se a luta acabou antes (K.O. ate o round 2 = o desafio), o apagao nunca acontece.",
+				"trophy": {
+					"id": "apagao_helmet",
+					"slot": 0,
+					"sprite": "trophy_apagao",
+					"sprite_rare": "trophy_apagao_rare",
+					"name": "trophy_apagao_name",
+					"name_rare": "trophy_apagao_rare_name"
+				},
+				"_doc_trophy": "Prateleira do Esconderijo (4 lugares). Vencer o chefe = o capacete com a lanterna quebrada no lugar 'slot'. Desafio cumprido = o MESMO lugar troca para a versao rara (lampada acesa, dourada). Derivado do save (boss.won e boss.challenge); nada gravado a parte.",
+				"press_title": "press_title_apagao",
+				"menu_layer": "apagao",
+				"style": {
+					"id": "live_wire",
+					"field": "shorts_color",
+					"option": "live_wire"
+				},
+				"_doc_challenge": "ANTES DO APAGAO (ronda2a2-design §3.3): surprise_early = SUSTO na aproximacao E venceu por K.O./finalizacao ate o fim do round max_round (round = floor(t_ko / round_length) + 1). Previa: sem SUSTO = DESAFIO: PERDIDO (sem %); com SUSTO = CHANCE DO DESAFIO: N% por tatica (as mesmas 200 lutas). Alternativa (se o dono preferir): type early_finish (so o K.O. ate o round 2)."
+			}
 		}
 	},
 	"legend": {
 		"_doc": "Design §4. LENDA = contador da linhagem (permanent.black_cat.legend), so cresce. Nivel = quantos limiares a lenda ja passou (0 a 5). Depois do maximo a Ronda continua (contador de ocorrencias, sem premio novo).",
 		"levels": [
 			1,
-			12,
-			30,
-			52,
-			80
+			10,
+			24,
+			42,
+			64
 		],
 		"clipping_text_by_level": [
 			"black_cat_clipping",
@@ -286,7 +361,8 @@
 				"kid_ears",
 				"whole_street"
 			]
-		]
+		],
+		"_doc_2a2": "Ronda 2a2 (ronda2a2-design §A): com o capuz a cada 300 s (era 240) cabem ~0,8x as noites por campanha. Os limiares foram de 1/12/30/52/80 para 1/10/24/42/64 (x0,8) para o nivel 3 e o 5 chegarem na mesma campanha de antes. Save com lenda antiga: so sobe de nivel (shown_level mostra a subida uma vez)."
 	},
 	"skill_tree": {
 		"_doc": "Design §5. Regiao GATO PRETO. Trava 'black_cat:N' = lenda no nivel N ou mais. A regiao so aparece no mapa com nivel >= 1. Tipos de efeito: start_generator e passive_bonus (ja existem) e league_prep_days_bonus (novo, ver o design §12.2).",
