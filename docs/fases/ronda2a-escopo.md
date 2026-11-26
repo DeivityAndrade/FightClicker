@@ -189,3 +189,6 @@ semente própria; passivas de adversário da 8a1 já existem). O jogo não foi r
 - Estilos: aparecem **só na personalização do próximo discípulo**. Não há troca no Esconderijo.
 - Poder: o dono deixou a decisão para o Produtor, que decidiu **só visual e lore** na 2a. Nenhum nó de poder novo.
 - Menu (identidade D4): primeiro o dono pediu o CONTINUAR sempre vermelho. Depois de ver a captura, mudou: **só o botão em foco fica vermelho** e os outros, CONTINUAR inclusive, ficam em papel.
+- **Supervilão da 2a: C, Capivarão** (escolha do dono em 2026-11-25). Antes da arte final, o focinho precisa ler como capivara em 1x.
+- **O B, Apagão (eletricista), fica guardado para um capítulo futuro.** O dono gostou e quer melhorá-lo: dar mais exagero ao corpo. Pode ser o vilão do Ringue da Lua na 8b ou do capítulo mundial.
+- O A, Rei Calota, fica de reserva.
