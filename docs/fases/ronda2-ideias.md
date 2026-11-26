@@ -63,3 +63,7 @@ O objetivo é fazer o jogador **gostar de seguir a lore**. O Designer escolhe e 
 Regras:
 - Tudo o que dá poder conta no teto de 10% e passa pelo simulador.
 - O que é só visual ou de lore pode ser generoso.
+
+## Vilões guardados (2026-11-25)
+- **Apagão** (eletricista que apaga a luz do bairro, com bateria nas costas e choque no soco). O dono quer usá-lo no futuro, melhorado e com o corpo mais exagerado. O mockup está em docs/arte/mockups/ronda2a_vilao_B.png.
+- **Rei Calota** (rei do ferro-velho com armadura de calotas). Fica de reserva. O mockup está em docs/arte/mockups/ronda2a_vilao_A.png.
