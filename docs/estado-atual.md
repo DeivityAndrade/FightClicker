@@ -1,8 +1,23 @@
-# Onde paramos (atualizado em 2026-11-25)
+# Onde paramos (atualizado em 2026-11-25, noite)
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-25) — RONDA NOTURNA FECHADA
+## Situação agora (2026-11-25, noite): IDENTIDADE VISUAL FECHADA
+A fase **Identidade visual** (ID1–ID4) foi integrada na main pelos PRs #32 a #40 e aprovada com ressalvas pelo Diretor
+(`docs/fases/identidade-revisao.md`).
+- O dono escolheu a **direção C (cartaz de luta)**. O jogo inteiro usa o tema C (`docs/arte/tema-c-spec.md`).
+- O **menu principal** tem a parede de cartazes, que se enche por marcos do save, a faixa animada, CONTINUAR, NOVO JOGO (com confirmação
+  dupla e cópia de segurança), OPÇÕES (`user://opcoes.cfg`) e SAIR.
+- O verificador ficou mais duro (`--estrito`): 0 achados em 586 estados do jogo e 16 do menu. O placar de `ignore` está em cerca de 19
+  (meta 15).
+- Tarefas futuras D1–D8 em `identidade-revisao.md`. Ainda depende do dono decidir se o CONTINUAR fica sempre vermelho (D4).
+
+### Próximo: Ronda 2a do Gato Preto
+Direção e prêmios em `docs/fases/ronda2-ideias.md`. Os capítulos andam junto da campanha (ver `docs/roadmap.md`):
+R2a (regional) → Ringue da Lua na 8b → capítulo mundial na 9 → capítulo final na 10, com a arte marcial do Gato Preto.
+Fazer antes ou junto: D2 da identidade (placar de `ignore` ≤ 15).
+
+## Situação anterior (2026-11-25): RONDA NOTURNA FECHADA
 A **Ronda Noturna do Gato Preto** foi terminada, testada pelo QA (`docs/fases/ronda-qa.md`, com reteste) e aprovada com
 ressalvas pelo Diretor (`docs/fases/ronda-revisao.md`). Integrada na main pelo PR da branch `ronda-noturna`.
 - Elenco completo (vulto em camadas por discípulo, faixa vermelha aprovada pelo dono; 3 ladrões), tela da Ronda, capuz no prego,
