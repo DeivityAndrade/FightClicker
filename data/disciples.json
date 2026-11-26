@@ -67,7 +67,8 @@
 				{ "id": "black",  "enabled": true, "colors": ["#2a2233", "#3d3346", "#4a4552", "#8f8890"], "tokens": ["d1", "d2", "g0", "g2"] },
 				{ "id": "white",  "enabled": true, "colors": ["#8f8890", "#b8b0aa", "#d9cdb4", "#f2ece0"], "tokens": ["g2", "g3", "cream", "white"] },
 				{ "id": "purple", "enabled": true, "colors": ["#4a2f6b", "#7a4fa0", "#b07ad8", "#d9cdb4"], "tokens": ["p0", "p1", "p2", "cream"] },
-				{ "id": "yellow", "enabled": true, "colors": ["#9a5f36", "#e0a040", "#f5d26b", "#fff3c4"], "tokens": ["br2", "y0", "y1", "y2"] }
+				{ "id": "yellow", "enabled": true, "colors": ["#9a5f36", "#e0a040", "#f5d26b", "#fff3c4"], "tokens": ["br2", "y0", "y1", "y2"] },
+				{ "id": "night", "enabled": false, "requires": "black_cat_style:night_shorts", "mark": "cat", "colors": ["#14101a", "#2a2233", "#3d3346", "#e0a040"], "tokens": ["ink", "d1", "d2", "y0"] }
 			]
 		},
 		"top": {
@@ -108,7 +109,8 @@
 				{ "id": "black",  "enabled": true, "colors": ["#2a2233", "#4a4552"], "tokens": ["d1", "g0"] },
 				{ "id": "blue",   "enabled": true, "colors": ["#2f4a78", "#4d7bb3"], "tokens": ["b1", "b2"] },
 				{ "id": "green",  "enabled": true, "colors": ["#2f6b4a", "#5aa25a"], "tokens": ["gr1", "gr2"] },
-				{ "id": "yellow", "enabled": true, "colors": ["#e0a040", "#f5d26b"], "tokens": ["y0", "y1"] }
+				{ "id": "yellow", "enabled": true, "colors": ["#e0a040", "#f5d26b"], "tokens": ["y0", "y1"] },
+				{ "id": "night", "enabled": false, "requires": "black_cat_style:night_band", "mark": "cat", "colors": ["#14101a", "#e0a040"], "tokens": ["ink", "y0"] }
 			]
 		},
 		"socks": {
@@ -117,7 +119,8 @@
 			"_doc": "Sem cor própria: cada opção copia slots de outro campo do mesmo look. none = as cores-chave do meião viram pele (some); on = cor do calção, com a listra no tom do cós.",
 			"options": [
 				{ "id": "none", "enabled": true, "weight": 1, "source": "skin",         "source_slots": ["shadow", "base", "base"] },
-				{ "id": "on",   "enabled": true, "weight": 1, "source": "shorts_color", "source_slots": ["dark", "mid", "band"] }
+				{ "id": "on",   "enabled": true, "weight": 1, "source": "shorts_color", "source_slots": ["dark", "mid", "band"] },
+				{ "id": "night_wraps", "enabled": false, "requires": "black_cat_style:night_wraps", "mark": "cat", "colors": ["#8f8890", "#d9cdb4", "#6b6570"], "tokens": ["g2", "cream", "g1"] }
 			]
 		}
 	},
