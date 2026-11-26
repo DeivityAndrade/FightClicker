@@ -216,6 +216,22 @@
 				30,
 				44
 			]
+		},
+		{
+			"file": "res://assets/sprites/menu/menu_item_apagao.png",
+			"id": "apagao",
+			"note": "cartaz PROCURA-SE do Apagão, rasgado, \"O VULTO QUE RELIGOU A LUZ\" (o chefe da Ronda 2a vencido). Canto livre de baixo à direita; luz do menu já pintada. Gerador: tools/art/make_sprites_ronda2a2.gd (confere a folga).",
+			"pos": [
+				444,
+				276
+			],
+			"requires": {
+				"black_cat_boss_won": "apagao"
+			},
+			"size": [
+				57,
+				69
+			]
 		}
 	],
 	"requires_legenda": {
