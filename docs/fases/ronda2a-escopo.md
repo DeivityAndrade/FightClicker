@@ -183,3 +183,9 @@ semente própria; passivas de adversário da 8a1 já existem). O jogo não foi r
   10% medido com tudo junto e o `--estrito` em 0.
 - São 3 perguntas de gosto: qual vilão (recomendo o do ferro-velho), onde escolher os estilos e se entra algum prêmio de poder
   (recomendo que não).
+
+## Decisões do dono (2026-11-25)
+- Supervilão: o dono quer ver **um mockup de cada** (A, B, C) antes de escolher.
+- Estilos: aparecem **só na personalização do próximo discípulo**. Não há troca no Esconderijo.
+- Poder: o dono deixou a decisão para o Produtor, que decidiu **só visual e lore** na 2a. Nenhum nó de poder novo.
+- Menu (identidade D4): o **CONTINUAR fica sempre vermelho**.
