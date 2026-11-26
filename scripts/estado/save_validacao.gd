@@ -10,6 +10,8 @@ func _init(g: EstadoJogo) -> void:
 
 
 func salvar() -> bool:
+	if gs.menu_aberto:
+		return false  # ID4: com o menu aberto nada mudou e nada se grava (um menu parado sem save não cria save)
 	if gs.store.bloqueado:
 		gs._avisar("Save não gravado: o arquivo no disco é de uma versão mais nova do jogo.")
 		return false
