@@ -18,6 +18,10 @@ Secoes:
            Ronda atento + 2a com brigas), numa corrida so; tempo de SALA ate o Kid e o James por campanha;
   ident    com a 7a2 em 'nenhum' e a 2a desligada a Carreira2a == ronda_sim (mesmas sementes);
   exportar tests/data/ronda2a_casos.json (lutas exatas contra os 3 bandidos, para o teste do Godot);
+  chefe    2a2: o Apagao (nights.alley.boss). A) previa no 1o cinturao regional da linhagem, nas escalas SIM_BOSS_ESC ("1.0";
+           SIM_BOSS="F,A,R" troca a base); B) a noite de verdade (lenda 5 + 3 bandidos + cinturao): quando abre, 1a vitoria,
+           desafio raro por tentativa (o robo volta pelo cartao DESAFIO com a tatica de maior chance de desafio);
+  aprox_chefe  a aproximacao dos 3 bandidos e do chefe;
   tudo     = aprox curva teto campanha.
 Alavancas: SIM_BAND="tire=F,A,R;bike=...;gate=..." (atributos), SIM_LIM2A (chance minima para o robo brigar; 0,5),
 SIM_NC (jogadores por combinacao na curva; 12), SIM_KC (campanhas; 12), SIM_NF (forca; 24), SIM_NR (campanha; 7),
@@ -65,6 +69,20 @@ if os.environ.get("SIM_CHEFE"):
               "challenge": {"type": "early_finish", "max_round": 2}}
         CHEFE.append(_c)
         f8.PAS[(_c["strength"], _c["agility"], _c["endurance"])] = _pv
+# 2a2: o chefe (nights.alley.boss) com a escala SIM_BOSS_ESC ("1.0" = os dados; varias = sondas). So a secao 'chefe' o usa.
+BOSS = dict(A2["boss"]) if A2.get("boss") else None
+BOSS_V = []
+if BOSS:
+    if os.environ.get("SIM_BOSS_APROX"):  # "gap_min,gap_max,warn_s,look_s,fake_warn" (sonda da aproximacao do chefe)
+        BOSS["approach"] = dict(BOSS["approach"], **dict(zip(("gap_min", "gap_max", "warn_s", "look_s", "fake_warn"),
+                                                             (float(x) for x in os.environ["SIM_BOSS_APROX"].split(",")))))
+    if os.environ.get("SIM_BOSS"):
+        BOSS.update(zip(("strength", "agility", "endurance"), (float(x) for x in os.environ["SIM_BOSS"].split(","))))
+    for _m in (float(x) for x in os.environ.get("SIM_BOSS_ESC", "1.0").split(",")):
+        _c = dict(BOSS, id="%s%.2f" % (BOSS["id"], _m), esc=_m, strength=BOSS["strength"] * _m, agility=BOSS["agility"] * _m,
+                  endurance=BOSS["endurance"] * _m)
+        BOSS_V.append(_c)
+        f8.PAS[(_c["strength"], _c["agility"], _c["endurance"])] = BOSS["passive"]
 NCH = int(os.environ.get("SIM_CH", "200"))
 IDX_KID = None
 
@@ -88,6 +106,8 @@ def desafio(b, r, susto):
         return False
     if ch["type"] == "surprise":
         return bool(susto)
+    if ch["type"] == "surprise_early":   # 2a2: SUSTO na aproximacao E K.O. ate o round max_round
+        return bool(susto) and bool(r["ko"]) and r["t_ko"] is not None and             int(math.floor(r["t_ko"] / RL + 1e-9)) + 1 <= ch["max_round"]
     if ch["type"] == "early_finish":
         rc = RL
         return bool(r["ko"]) and r["t_ko"] is not None and int(math.floor(r["t_ko"] / rc + 1e-9)) + 1 <= ch["max_round"]
@@ -120,7 +140,7 @@ def melhor(R, jog, b, n=None):
 # =================================================================== aproximacao
 def _aprox_um(args):
     bid, perfil, s = args
-    b = next(x for x in BANDS if x["id"] == bid)
+    b = next(x for x in BANDS + ([BOSS] if BOSS else []) if x["id"] == bid)
     sustos, _, dur, vistos = rs.jogar_robo(perfil, 70000 + s, cfg_aprox(b))
     return sustos, vistos, dur - rs.PREMIO_S
 
@@ -131,7 +151,7 @@ def sec_aprox(n):
     print("|---|---|---|---|---|---|")
     AP = {}
     with Pool(f8._proc()) as pool:
-        for b in BANDS:
+        for b in BANDS + ([BOSS] if BOSS and CFG.get("aprox_chefe") else []):
             for perfil in ("atento", "medio", "distraido"):
                 res = pool.map(_aprox_um, [(b["id"], perfil, s) for s in range(n)], chunksize=50)
                 su = sum(r[0] for r in res) / n
@@ -145,14 +165,14 @@ def sec_aprox(n):
 
 # =================================================================== a carreira com a noite (7a2 + Ronda + 2a)
 _L = {}                       # linhagem do Gato Preto na 2a: kid, vencidos, estatisticas
-CFG = {"briga": False, "perfil": "medio", "curva": False}
+CFG = {"briga": False, "perfil": "medio", "curva": False, "chefe": False, "aprox_chefe": False}
 APROX_P = {}                  # bandido -> chance de SUSTO na aproximacao (perfil da Ronda)
 
 
 def _zerar_l(semente):
     _L.clear()
     _L.update({"kid": False, "won": [], "noites": [], "rng": random.Random(semente * 31 + 7), "brigas": [],
-               "vis": {}})
+               "vis": {}, "belt": False})
 
 
 _zerar_l(0)
@@ -189,6 +209,10 @@ class Carreira2a(f72.Carreira7a2):
                 linha[b["id"]] = (p, pd, bt)
             _L["noites"].append(linha)
         prox = next((b for b in BANDS if b["id"] not in _L["won"]), None)
+        if CFG["chefe"] and BOSS_V and prox is None and self.arte and _L.get("belt") \
+                and rs.nivel(lenda_agora) >= BOSS["requires"]["legend_level"]:
+            if self._noite_chefe(jog, rng):
+                return
         if CFG["briga"] and aberta and prox is not None and self.arte:
             bt, p, pd, _ = melhor(self.R, jog, prox)
             if p >= LIM:
@@ -204,6 +228,46 @@ class Carreira2a(f72.Carreira7a2):
                 return
         self.lenda_c += rng.choice(rs.LENDA_POR_RONDA) if rs.LENDA_POR_RONDA else 1
 
+    def _noite_chefe(self, jog, rng):
+        """2a2: o chefe aberto (lenda 5 + 3 bandidos + cinturao da linhagem). Cada escala de SIM_BOSS_ESC tem o seu robo, independente
+        (a noite do chefe nao mexe em nada da carreira: a lenda ja esta no nivel maximo). Robo: antes de vencer, briga com >= LIM na
+        melhor tatica de vitoria; depois de vencer sem o desafio, volta pelo cartao DESAFIO com a tatica de MAIOR chance de desafio
+        (desde que a vitoria nela fique >= LIM). Devolve True se o robo da escala 0 brigou (lenda e SUSTO como a noite de briga)."""
+        if not _L.get("boss_open_k"):
+            _L["boss_open_k"] = (self.k, self.clk)
+            _L["boss_open"] = []
+            for b in BOSS_V:
+                bt, p, pd, out = melhor(self.R, jog, b)
+                _L["boss_open"].append((p, max(v[1] for v in out.values())))
+        T = _L.setdefault("chefe_t", [[] for _ in BOSS_V])
+        DISP = _L.setdefault("disp", [0 for _ in BOSS_V])   # noites com o chefe aberto ate a 1a vitoria (inclui as puladas)
+        brigou0 = False
+        for i, b in enumerate(BOSS_V):
+            ch = T[i]
+            if any(x["ch"] for x in ch):
+                continue
+            venceu = any(x["win"] for x in ch)
+            if not venceu:
+                DISP[i] += 1
+            bt, p, pd, out = melhor(self.R, jog, b)
+            if venceu:
+                tc = max(self.R.tac_ids, key=lambda t: (out[t][1], out[t][0]))
+                if out[tc][0] < LIM:
+                    continue
+                bt, p, pd = tc, out[tc][0], out[tc][1]
+            elif p < LIM:
+                continue
+            susto = rng.random() < APROX_P.get(BOSS["id"], 0.0)
+            r = self.R.lutar(jog, adv_de(b), bt, rng.randrange(1 << 30) + 1000)
+            if i == 0:
+                brigou0 = True
+                self.lenda_c += A2["legend"]["floor"] + (A2["legend"]["per_scare"] if susto else 0) + \
+                    (A2["legend"]["win"] if r["win"] else 0)
+            ch.append({"k": self.k, "p": p, "pd": pd, "pdmax": max(v[1] for v in out.values()), "win": r["win"],
+                       "ch": desafio(b, r, susto), "tentativa": len(ch) + 1, "caca": venceu, "noite": DISP[i],
+                       "k_abre": _L["boss_open_k"][0]})
+        return brigou0
+
     def talvez_lutar(self):
         if rs.ON and self.k >= rs.K0 and f5.CAL["on"] and not self.fim and self.clk >= self.n_prox - 1e-9:
             self.n_prox += rs.HOOD["interval_s"]
@@ -214,6 +278,15 @@ class Carreira2a(f72.Carreira7a2):
         r = f72.Carreira7a2.talvez_lutar(self)
         if not _L["kid"] and "opp_gym_2" in self.t_g:
             _L["kid"] = True
+        if CFG["chefe"] and BOSS_V and not jam and "opp_james" in self.t_g and self.arte:
+            # 2a2: previa contra o chefe com o discipulo que ACABOU de ganhar o cinturao (todas as escalas); 1o da linhagem marcado
+            pr = []
+            for c in BOSS_V:
+                bt, p, pd, out = melhor(self.R, jog0, c)
+                pr.append((p, pd, max(v[1] for v in out.values())))
+            _L.setdefault("cinto", []).append((self.k, not _L.get("belt"), rs.nivel(rs._ST["lenda"] + self.lenda_c),
+                                               len([b for b in BIDS if b in _L["won"]]), pr))
+            _L["belt"] = True
         if CHEFE and CFG["curva"] and not jam and "opp_james" in self.t_g and self.arte:
             # 2a2 (ideia): chance contra o Apagao com o discipulo que ACABOU de ganhar o cinturao regional
             _L.setdefault("chefe", []).append((self.k, [melhor(self.R, jog0, dict(c), 100)[1:3] for c in CHEFE]))
@@ -243,18 +316,18 @@ def _rodar2a(self):
 Carreira2a.rodar = _rodar2a
 
 
-def _init_w(arte, k, ronda_on, perfil, pol, briga, curva):
+def _init_w(arte, k, ronda_on, perfil, pol, briga, curva, chefe=False):
     global IDX_KID, RL
     rs._init_w(arte, k, ronda_on, perfil)
     f72.POLITICA = pol
     f6.Carreira6 = Carreira2a
-    CFG.update(briga=briga, curva=curva, perfil=perfil)
+    CFG.update(briga=briga, curva=curva, perfil=perfil, chefe=chefe)
     R0 = f5.DADOS[0]
     IDX_KID = next(i for i, o in enumerate(R0.opp) if o["id"] == "opp_gym_2")
     RL = R0.c["round_length"]
     APROX_P.clear()
     if PERFIS_OK(perfil):
-        for b in BANDS:
+        for b in BANDS + ([BOSS] if BOSS else []):
             APROX_P[b["id"]] = sum(rs.jogar_robo(perfil, 91000 + s, cfg_aprox(b))[0] for s in range(300)) / 300.0
 
 
@@ -280,12 +353,14 @@ def seq(args):
         f6.Carreira6.rodar = velho
     for r, s in zip(recs, sala):
         r["sala_vit"] = s
-    return recs, {"noites": list(_L["noites"]), "brigas": list(_L["brigas"]), "won": list(_L["won"]), "chefe": list(_L.get("chefe", []))}
+    return recs, {"noites": list(_L["noites"]), "brigas": list(_L["brigas"]), "won": list(_L["won"]), "chefe": list(_L.get("chefe", [])),
+                  "cinto": list(_L.get("cinto", [])), "chefe_t": list(_L.get("chefe_t", [])), "boss_open_k": _L.get("boss_open_k"),
+                  "boss_open": _L.get("boss_open")}
 
 
-def rodar_combo(arte, k, cps, n, K, ronda_on=True, perfil="medio", pol="nenhum", briga=False, curva=False):
+def rodar_combo(arte, k, cps, n, K, ronda_on=True, perfil="medio", pol="nenhum", briga=False, curva=False, chefe=False):
     tarefas = [(cps, 1000 + s, K, "padrao", arte, "normal", f5.T_MAX5) for s in range(n)]
-    with Pool(f8._proc(), initializer=_init_w, initargs=(arte, k, ronda_on, perfil, pol, briga, curva)) as pool:
+    with Pool(f8._proc(), initializer=_init_w, initargs=(arte, k, ronda_on, perfil, pol, briga, curva, chefe)) as pool:
         return pool.map(seq, tarefas, chunksize=1)
 
 
@@ -345,6 +420,117 @@ def sec_curva(n, K):
         " / ".join("%s %s (%s-%s)" % (b, f4.fmtk(med(TOT[b]["venc"])), f4.fmtk(pct(TOT[b]["venc"], .25)), f4.fmtk(pct(TOT[b]["venc"], .75))) for b in BIDS),
         " / ".join("%s %s (%s-%s)" % (b, f4.fmtk(med(TOT[b]["win"])), f4.fmtk(pct(TOT[b]["win"], .25)), f4.fmtk(pct(TOT[b]["win"], .75))) for b in BIDS),
         " / ".join("%s %.0f%%" % (b, 100 * sum(TOT[b]["ch"]) / max(1, len(TOT[b]["ch"]))) for b in BIDS)))
+
+
+# =================================================================== 2a2: o chefe
+def _m(x, q=None):
+    return (100 * (pct(x, q) if q else med(x))) if x else float("nan")
+
+
+def sec_chefe(n, K):
+    print("\n## Chefe (2a2): robo medio na Ronda (vai em todo capuz; briga com >= %.0f%%), sem 7a2; %d jogadores x %d campanhas. "
+          "Chefe %s %.0fM/%.0fM/%.0fM (%s), escalas %s. Previa = %d sementes." % (
+              100 * LIM, n, K, BOSS["id"], BOSS["strength"] / 1e6, BOSS["agility"] / 1e6, BOSS["endurance"] / 1e6,
+              BOSS["passive"]["id"], ", ".join("%.2fx" % c["esc"] for c in BOSS_V), NCH))
+    print("A) No 1o cinturao regional da linhagem (o discipulo que acabou de vencer o James): chance de vencer (melhor tatica; med e "
+          "p25-p75) / desafio na tatica de vitoria / desafio MAX entre as 3 taticas (med).")
+    print("| combinacao | cps | 1o cinturao (campanha) | nivel da lenda nesse instante | bandidos vencidos | " +
+          " | ".join("%.2fx" % c["esc"] for c in BOSS_V) + " |")
+    print("|---|---|---|---|---|" + "---|" * len(BOSS_V))
+    TA = [[] for _ in BOSS_V]
+    TD = [[] for _ in BOSS_V]
+    TB = [{"abre": [], "win": [], "p1": [], "pd1": [], "pdmax_t": [], "ch_k": [], "tent_ch": [], "ch_1a": [], "sem": 0, "tot": 0,
+           "lag": [], "pa": [], "pdma": [], "tent_w": [], "derrotas": [], "nunca": 0, "chs": [], "noites": [], "lag_w": [], "win_all": []} for _ in BOSS_V]
+    for (a, k) in f8.COMBOS:
+        for cps in _cps_l():
+            res = rodar_combo(a, k, cps, n, K, perfil="medio", briga=True, curva=False, chefe=True)
+            ks, nv, nb, P = [], [], [], [[] for _ in BOSS_V]
+            ab = []
+            w1 = [[] for _ in BOSS_V]
+            for recs, L in res:
+                pri = next((x for x in L["cinto"] if x[1]), None)
+                if pri:
+                    ks.append(pri[0])
+                    nv.append(pri[2])
+                    nb.append(pri[3])
+                    for i, v in enumerate(pri[4]):
+                        P[i].append(v)
+                        TA[i].append(v[0])
+                        TD[i].append(v[2])
+                if L["boss_open_k"]:
+                    ab.append(L["boss_open_k"][0])
+                for i in range(len(BOSS_V)):
+                    tb = TB[i]
+                    tb["tot"] += 1
+                    if L["boss_open_k"]:
+                        tb["abre"].append(L["boss_open_k"][0])
+                        tb["pa"].append(L["boss_open"][i][0])
+                        tb["pdma"].append(L["boss_open"][i][1])
+                        if pri:
+                            tb["lag"].append(L["boss_open_k"][0] - pri[0])
+                    t = L["chefe_t"][i] if L["chefe_t"] else []
+                    w = next((x for x in t if x["win"]), None)
+                    if w:
+                        w1[i].append(w["k"])
+                        tb["win"].append(w["k"])
+                        tb["p1"].append(w["p"])
+                        tb["pd1"].append(w["pd"])
+                        tb["tent_w"].append(w["tentativa"])
+                        tb["derrotas"].append(w["tentativa"] - 1)
+                        tb["noites"].append(w["noite"])
+                        tb["lag_w"].append(w["k"] - w["k_abre"])
+                        tb["ch_1a"].append(1 if w["ch"] else 0)
+                    elif L["boss_open_k"]:
+                        tb["nunca"] += 1
+                    if L["boss_open_k"]:
+                        tb["win_all"].append(w["k"] if w else 99)   # quem nao venceu conta como "depois do fim" (99)
+                    for x in t:
+                        tb["pdmax_t"].append(x["pdmax"])
+                        tb["chs"].append(1 if x["ch"] else 0)
+                    c = next((x for x in t if x["ch"]), None)
+                    if c:
+                        tb["ch_k"].append(c["k"])
+                        tb["tent_ch"].append(c["tentativa"])
+                    elif w:
+                        tb["sem"] += 1
+            print("| %s %s | %d/s | %s | %s | %s | %s | chefe abre %s; 1a vitoria %s |" % (
+                f8.NOME[a], f8.NOME_P[(a, k)], cps, f4.fmtk(med(ks)) if ks else "-", f4.fmtk(med(nv)) if nv else "-",
+                f4.fmtk(med(nb)) if nb else "-",
+                " | ".join(("%.0f%% (%.0f-%.0f) / %.0f%% / %.0f%%" % (
+                    _m([v[0] for v in P[i]]), _m([v[0] for v in P[i]], .25), _m([v[0] for v in P[i]], .75),
+                    _m([v[1] for v in P[i]]), _m([v[2] for v in P[i]]))) if P[i] else "-" for i in range(len(BOSS_V))),
+                f4.fmtk(med(ab)) if ab else "-",
+                " / ".join(f4.fmtk(med(w1[i])) if w1[i] else "-" for i in range(len(BOSS_V)))), flush=True)
+    for i, c in enumerate(BOSS_V):
+        if TA[i]:
+            print("- %.2fx (%.0fM/%.0fM/%.0fM): vencer med %.0f%% (p25-p75 %.0f-%.0f%%; p10-p90 %.0f-%.0f%%); desafio MAX entre "
+                  "taticas: med %.0f%%, p75 %.0f%%, p90 %.0f%%" % (
+                      c["esc"], c["strength"] / 1e6, c["agility"] / 1e6, c["endurance"] / 1e6, _m(TA[i]), _m(TA[i], .25),
+                      _m(TA[i], .75), _m(TA[i], .1), _m(TA[i], .9), _m(TD[i]), _m(TD[i], .75), _m(TD[i], .9)))
+    print("B) Jogando de verdade, por escala (cada escala com o seu robo, na mesma carreira):")
+    print("| escala | chefe abre (campanha med; p25-p75) | campanhas depois do 1o cinturao | na noite em que abre: vencer / desafio max (med; p25-p75) | "
+          "1a vitoria (campanha med; linhagens) | 1a vitoria contando quem nao venceu (med; p25-p75; '-' = depois do fim) | derrotas antes (med; p75) | chance mostrada na 1a vitoria | desafio na 1a vitoria: feito / mostrado | "
+          "noites abertas ate a 1a vitoria (med; p25-p75) | vence na 1a noite aberta | campanhas entre abrir e vencer (med; p25-p75) | "
+          "desafio MAX por tentativa, previa com SUSTO (med; p75; p90) | desafio feito por tentativa (real, com a aproximacao) | raro feito (linhagens; campanha med; tentativa med) | vencido sem raro ate o fim |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for i, c in enumerate(BOSS_V):
+        tb = TB[i]
+        fk = lambda x, q=None: (f4.fmtk(pct(x, q) if q else med(x)) if x else "-")
+        print("| %.2fx (%.0fM/%.0fM/%.0fM) | %s (%s-%s) | %s | %.0f%% (%.0f-%.0f) / %.0f%% (%.0f-%.0f) | %s; %d de %d | %s (%s-%s) | %s; %s | %.0f%% | "
+              "%.0f%% / %.0f%% | %s (%s-%s) | %.0f%% | %s (%s-%s) | %.0f%%; %.0f%%; %.0f%% | %.0f%% (%d tentativas) | %d; %s; %s | %d |" % (
+                  c["esc"], c["strength"] / 1e6, c["agility"] / 1e6, c["endurance"] / 1e6,
+                  fk(tb["abre"]), fk(tb["abre"], .25), fk(tb["abre"], .75), fk(tb["lag"]),
+                  _m(tb["pa"]), _m(tb["pa"], .25), _m(tb["pa"], .75), _m(tb["pdma"]), _m(tb["pdma"], .25), _m(tb["pdma"], .75),
+                  fk(tb["win"]), len(tb["win"]), tb["tot"],
+                  *[(f4.fmtk(v) if v < 99 else "-") for v in ((med(tb["win_all"]), pct(tb["win_all"], .25), pct(tb["win_all"], .75))
+                                                               if tb["win_all"] else (99, 99, 99))], fk(tb["derrotas"]), fk(tb["derrotas"], .75), _m(tb["p1"]),
+                  100 * sum(tb["ch_1a"]) / max(1, len(tb["ch_1a"])), _m(tb["pd1"]),
+                  fk(tb["noites"]), fk(tb["noites"], .25), fk(tb["noites"], .75),
+                  100 * sum(1 for x in tb["noites"] if x == 1) / max(1, len(tb["noites"])),
+                  fk(tb["lag_w"]), fk(tb["lag_w"], .25), fk(tb["lag_w"], .75),
+                  _m(tb["pdmax_t"]), _m(tb["pdmax_t"], .75), _m(tb["pdmax_t"], .9),
+                  100 * sum(tb["chs"]) / max(1, len(tb["chs"])), len(tb["chs"]),
+                  len(tb["ch_k"]), fk(tb["ch_k"]), fk(tb["tent_ch"]), tb["sem"]), flush=True)
 
 
 # =================================================================== teto: forca com tudo junto
@@ -513,7 +699,7 @@ def sec_exportar():
     casos = []
     rng = random.Random(2101)
     try:
-        for b in BANDS:
+        for b in BANDS + ([BOSS] if BOSS else []):   # 2a2: o chefe entra nos casos (opponent_id "apagao")
             adv = adv_de(b)
             for (a, k) in [(None, 0)] + f8.COMBOS:
                 for extra in ((0.0,) if a is None else (0.0, 0.5)):
@@ -545,7 +731,8 @@ def sec_exportar():
         json.dump({"_doc": "Ronda 2a1: lutas contra os 3 bandidos (sem arte e 6 combinacoes, extras 0 e 0,5). draws = todos os sorteios na "
                            "ordem; chance_200 = previa do Python (sementes 1..200); challenge.done = o desafio cumprido naquela luta "
                            "(surprise: so a vitoria, o SUSTO vem da aproximacao). Gerado por tools/sim/ronda2a_sim.py exportar.",
-                   "bandidos": [{k: b[k] for k in ("id", "strength", "agility", "endurance", "passive", "challenge")} for b in BANDS],
+                   "bandidos": [{k: b[k] for k in ("id", "strength", "agility", "endurance", "passive", "challenge")}
+                                for b in BANDS + ([BOSS] if BOSS else [])],
                    "exatos": casos}, fh, ensure_ascii=False)
     fins = {}
     for c in casos:
@@ -566,6 +753,11 @@ def main():
         sec_ident(int(os.environ.get("SIM_NI", "6")), int(os.environ.get("SIM_KI", "8")))
     if tudo or "curva" in secs:
         sec_curva(int(os.environ.get("SIM_NC", "12")), int(os.environ.get("SIM_KC", "12")))
+    if "aprox_chefe" in secs:  # 2a2: a aproximacao com o chefe junto
+        CFG["aprox_chefe"] = True
+        sec_aprox(int(os.environ.get("SIM_NA", "2000")))
+    if "chefe" in secs:  # 2a2 (fora do "tudo", para a 2a1 rodar igual)
+        sec_chefe(int(os.environ.get("SIM_NC", "12")), int(os.environ.get("SIM_KC", "12")))
     if tudo or "teto" in secs:
         sec_teto(int(os.environ.get("SIM_NF", "24")))
     if tudo or "campanha" in secs:
