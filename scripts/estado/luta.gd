@@ -287,9 +287,11 @@ func luta_atual() -> Dictionary:
 	return _montar_info_luta(opp, res, salvo)
 
 
-func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> Dictionary:
+## `luta_d` (opcional): {opponent, tactic, seed, player} da luta; vazio = a da carreira (`gs.luta`). A noite de briga (Ronda 2a1) passa a dela.
+func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary, luta_d: Dictionary = {}) -> Dictionary:
+	var L: Dictionary = luta_d if not luta_d.is_empty() else gs.luta
 	var c: Dictionary = gs.lutas.combate
-	var tj := gs.lutas.tatica(str(gs.luta.tactic))
+	var tj := gs.lutas.tatica(str(L.tactic))
 	var neutra := Luta.NEUTRA
 	var taticas_lado := [tj if not tj.is_empty() else neutra, neutra]
 	var eventos: Array = []
@@ -311,7 +313,7 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	var fase := "standing"
 	var chao_na_pegada := float(passiva.get("ground_at_grip", 0.5)) if eh_jj else 2.0
 	var golpe_anterior: Array = ["", ""]
-	var semente_golpes := int(gs.luta.seed)
+	var semente_golpes := int(L.seed)
 	for i in n:
 		var e: Dictionary = res.events[i]
 		var alvo: int = 1 - int(e.who)
@@ -397,7 +399,7 @@ func _montar_info_luta(opp: Dictionary, res: Dictionary, salvo: Dictionary) -> D
 	if salvo.ko and t_ko < float(c.min_ko_time):
 		grogue = {"who": perdedor, "from": t_ko, "to": float(c.min_ko_time)}
 	var info := {
-		"opponent": opp.id, "tactic": gs.luta.tactic, "seed": int(gs.luta.seed), "player": gs.luta.player.duplicate(),
+		"opponent": opp.id, "tactic": L.tactic, "seed": int(L.seed), "player": L.player.duplicate(),
 		"events": eventos, "result": salvo.duplicate(), "grogue": grogue, "loser": perdedor,
 		"life_max": {"player": vmax[0], "opponent": vmax[1]},
 		"intro_seconds": c.intro_seconds, "outro_seconds": c.outro_seconds,

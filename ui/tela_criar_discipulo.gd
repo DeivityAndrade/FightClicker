@@ -183,8 +183,10 @@ func _montar_campo(i: int, campo: String, rotulo_txt: String, kind: String, n_co
 		fundo.add_child(chip)
 		chips.append(chip)
 	var cont := UiTema.rotulo(valor, "", UiTema.WHITE, 0, 0)  # contador "2/6" (cores) ou nome da opção (texto)
+	var gato := UiTema.textura_rect(valor, "icon_region_black_cat_9", 0, 0)  # 2a1: marca dos estilos da noite (só nas opções marcadas)
+	gato.visible = false
 	_campos.append({"campo": campo, "kind": kind, "rotulo": rotulo, "valor": valor, "esq": esq, "dir": dir, "chips": chips,
-		"contador": cont, "n": n_cores})
+		"contador": cont, "n": n_cores, "gato": gato})
 	esq.pressed.connect(func() -> void: _trocar(campo, -1))
 	dir.pressed.connect(func() -> void: _trocar(campo, 1))
 
@@ -235,10 +237,17 @@ func _atualizar() -> void:
 		var pos := ids.find(atual) + 1
 		var cont: Label = c.contador
 		var y_txt := UiTema.y_texto(Rect2(0, 0, 1, ALT_LINHA))
+		var gato: TextureRect = c.gato
+		var marca := GameState.disciples.marca_da_opcao(campo, atual) == "cat"
+		var extra := 12.0 if marca else 0.0  # o gato (9 px + 3 de ar) entra no grupo centralizado
+		gato.visible = marca
+		gato.position.y = UiTema.y_imagem(Rect2(0, 0, 1, ALT_LINHA), 9.0)
 		if str(c.kind) == "text":
 			var nome_opcao := UiTema.txt("disc_opt_%s_%s" % [campo, atual], atual.to_upper())
 			cont.text = nome_opcao
-			cont.position = Vector2(roundf((LARG_VALOR - UiTema.largura_visivel(nome_opcao)) / 2.0), y_txt)
+			var gx := roundf((LARG_VALOR - UiTema.largura_visivel(nome_opcao) - extra) / 2.0)
+			gato.position.x = gx
+			cont.position = Vector2(gx + extra, y_txt)
 		else:
 			var hex: Array = cores.get(campo, {}).get("colors", [])
 			var chips: Array = c.chips
@@ -249,7 +258,8 @@ func _atualizar() -> void:
 			# Grupo [chips][6 px][contador] centralizado no valor (119 px de largura, 18 de altura).
 			var larg_chips := float(chips.size()) * 16.0 + float(chips.size() - 1) * 2.0
 			var total := larg_chips + 6.0 + UiTema.largura_visivel(texto)
-			var x0 := roundf((LARG_VALOR - total) / 2.0)
+			var x0 := roundf((LARG_VALOR - total - extra) / 2.0)
+			gato.position.x = x0 + total + 3.0
 			for k in chips.size():
 				((chips[k] as ColorRect).get_parent() as Control).position = Vector2(x0 + float(k) * 18.0, 4)
 			cont.position = Vector2(roundf(x0 + larg_chips + 6.0), y_txt)

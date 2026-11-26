@@ -110,7 +110,8 @@ func _teste_dados() -> void:
 	for campo in ["hair_style", "top", "top_color", "headband", "headband_color", "socks"]:
 		var ids: Array = []
 		for o in d.opcoes(campo):
-			ids.append(str(o.id))
+			if not o.has("requires"):  # estilos da noite (Ronda 2a1) têm teste próprio
+				ids.append(str(o.id))
 		ids_6b2[campo] = ids
 		checar(str(d.look_padrao[campo]) in ids, "6b2: %s tem o id padrão entre as opções" % campo)
 	checar_igual([ids_6b2.hair_style, ids_6b2.top, ids_6b2.headband, ids_6b2.socks],

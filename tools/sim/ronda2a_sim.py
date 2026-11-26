@@ -17,6 +17,7 @@ Secoes:
   campanha campanha de verdade (calendario, Legado, hall, centro), 'nada' (sem 7a2, sem Ronda) x 'tudo' (7a2 todos_max +
            Ronda atento + 2a com brigas), numa corrida so; tempo de SALA ate o Kid e o James por campanha;
   ident    com a 7a2 em 'nenhum' e a 2a desligada a Carreira2a == ronda_sim (mesmas sementes);
+  exportar tests/data/ronda2a_casos.json (lutas exatas contra os 3 bandidos, para o teste do Godot);
   tudo     = aprox curva teto campanha.
 Alavancas: SIM_BAND="tire=F,A,R;bike=...;gate=..." (atributos), SIM_LIM2A (chance minima para o robo brigar; 0,5),
 SIM_NC (jogadores por combinacao na curva; 12), SIM_KC (campanhas; 12), SIM_NF (forca; 24), SIM_NR (campanha; 7),
@@ -494,6 +495,64 @@ def sec_ident(n, K):
         print("- %s %s 4/s: %d de %d iguais; %d lutas" % (f8.NOME[a], f8.NOME_P[(a, k)], sum(r[0] for r in res), n, sum(r[1] for r in res)))
 
 
+# =================================================================== exportar: casos exatos para o teste do Godot
+def sec_exportar():
+    """tests/data/ronda2a_casos.json: lutas contra os 3 bandidos (sem arte e nas 6 combinacoes, nos extras 0 e 0,5) com SORTEIOS
+    EXPLICITOS (a mesma lista de numeros e consumida pelo Python e pelo GDScript, golpe a golpe). Mesmo formato do fase8a1_casos.json."""
+    import types
+    global RL
+    RL = f5.DADOS[0].c["round_length"]
+    G = f8.f7c.Gravador
+    shim = types.SimpleNamespace(Random=G)
+    velhos = (f8.f3.random, f8.f7.random, f8.f7b.random)
+    f8.f3.random = f8.f7.random = f8.f7b.random = shim
+    f8.f7c.RNG = G
+    fim = {"dano": "damage", "dano_dele": "damage", "pontos": "points", "nocaute": "knockout", "finalizacao": "submission",
+           "chute_rodado": "spin_kick"}
+    fim.update(f8.f7c.FINISH_JOGO)
+    casos = []
+    rng = random.Random(2101)
+    try:
+        for b in BANDS:
+            adv = adv_de(b)
+            for (a, k) in [(None, 0)] + f8.COMBOS:
+                for extra in ((0.0,) if a is None else (0.0, 0.5)):
+                    R = f8.regras(a, k, extra)
+                    for i in range(3):
+                        m = rng.uniform(0.6, 1.4)
+                        w = [rng.random() + 0.3 for _ in range(3)]
+                        sw = sum(w)
+                        jog = tuple(sum(adv) * m * x / sw for x in w)
+                        tat = R.tac_ids[i % 3]
+                        semente = 9000 + len(casos)
+                        r = R.lutar(jog, adv, tat, semente, registro=True)
+                        est = R.estado_passiva(jog, adv, tat) if a else {}
+                        ev = [[e["t"], e["who"], e["type"], bool(e.get("counter", False)), e.get("damage", 0.0),
+                               e.get("life_after", 0.0)] for e in r["ev"]]
+                        casos.append({"player": list(jog), "opponent_id": b["id"], "opponent": list(adv), "tactic": tat, "art": a or "",
+                                      "passive": k, "extra": extra, "draws": list(G.ultimo.sorteados), "win": r["win"], "ko": r["ko"],
+                                      "t_ko": r["t_ko"] if r["t_ko"] is not None else -1.0, "t_end": r["t"], "pct_player": r["pct"][0],
+                                      "pct_opponent": r["pct"][1], "vmax": list(r["vmax"]), "events": ev,
+                                      "finish": fim[r.get("metodo", ("dano" if r["win"] else "dano_dele") if r["ko"] else "pontos")],
+                                      "chance_200": R.chance(jog, adv, tat, 200),
+                                      "challenge": {"type": b["challenge"]["type"], "done": bool(desafio(b, r, True)) if b["challenge"]["type"] != "surprise" else bool(r["win"])},
+                                      "est": {kk: v for kk, v in est.items() if isinstance(v, (int, float, bool, str))}})
+    finally:
+        f8.f3.random, f8.f7.random, f8.f7b.random = velhos
+        f8.f7c.RNG = random.Random
+    destino = os.path.join(f8.f7b.f2.RAIZ, "tests", "data", "ronda2a_casos.json")
+    with open(destino, "w", encoding="utf-8") as fh:
+        json.dump({"_doc": "Ronda 2a1: lutas contra os 3 bandidos (sem arte e 6 combinacoes, extras 0 e 0,5). draws = todos os sorteios na "
+                           "ordem; chance_200 = previa do Python (sementes 1..200); challenge.done = o desafio cumprido naquela luta "
+                           "(surprise: so a vitoria, o SUSTO vem da aproximacao). Gerado por tools/sim/ronda2a_sim.py exportar.",
+                   "bandidos": [{k: b[k] for k in ("id", "strength", "agility", "endurance", "passive", "challenge")} for b in BANDS],
+                   "exatos": casos}, fh, ensure_ascii=False)
+    fins = {}
+    for c in casos:
+        fins[c["finish"]] = fins.get(c["finish"], 0) + 1
+    print("gravado %s: %d casos; fins %s" % (destino, len(casos), sorted(fins.items())))
+
+
 def main():
     f8._init8(quieto=True)
     secs = sys.argv[1:] or ["tudo"]
@@ -511,6 +570,8 @@ def main():
         sec_teto(int(os.environ.get("SIM_NF", "24")))
     if tudo or "campanha" in secs:
         sec_campanha(int(os.environ.get("SIM_NR", "7")), int(os.environ.get("SIM_KR", "10")))
+    if "exportar" in secs:  # fora do "tudo": regera o arquivo de casos do teste
+        sec_exportar()
 
 
 if __name__ == "__main__":

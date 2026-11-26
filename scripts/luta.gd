@@ -1425,7 +1425,8 @@ func chance(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> float:
 ## Mesma conta de chance(), contando também quantas vitórias vieram da passiva (K.O., finalização ou chute rodado).
 ## {chance, wins, wins_passive, n}; no Muay Thai também full_share (fração das lutas em que a perna encheu) e
 ## full_at (mediana de marks_full_at dessas lutas; -1 se nenhuma).
-func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> Dictionary:
+## `cond` (opcional, Ronda 2a1): Callable(resultado) -> bool, contada nas MESMAS sementes em `cond_wins` (chance do desafio da noite).
+func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0, cond: Callable = Callable()) -> Dictionary:
 	if n <= 0:
 		n = dados.risco.samples
 	var cen := preparar(jog, adv, tatica_id)
@@ -1435,9 +1436,12 @@ func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> 
 	var wp := 0
 	var cheias: Array[float] = []
 	var marcas: Array[float] = []  # 7b2: Por cima / Clinch: 1º instante da queda / do clinch; Contragolpista: carga máxima de cada luta
+	var wc := 0
 	for s in range(1, n + 1):
 		rng.seed = s
 		var r := rodar(cen, rng, sem, false)
+		if cond.is_valid() and bool(cond.call(r)):
+			wc += 1
 		if r.win:
 			w += 1
 			var f: String = r.get("finish", "")
@@ -1452,6 +1456,8 @@ func chance_detalhada(jog: Array, adv: Array, tatica_id: String, n: int = 0) -> 
 		if r.has("charge_peak"):
 			marcas.append(float(r.charge_peak))
 	var res := {"chance": float(w) / float(n), "wins": w, "wins_passive": wp, "n": n}
+	if cond.is_valid():
+		res["cond_wins"] = wc
 	if passiva.is_empty():
 		return res
 	if passiva.type == "shin":

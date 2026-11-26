@@ -168,9 +168,38 @@ static func _mapa(look: Dictionary) -> Dictionary:
 	var padrao: Dictionary = _paleta.get("default", {})
 	for campo in CAMPOS_COR:
 		_aplicar_opcao(r, chaves.get(campo, {}), opcoes.get(campo, []), str(look.get(campo, padrao.get(campo, ""))))
-	# Meião: sem cor própria, usa a entrada de options.socks com o mesmo id do calção.
-	_aplicar_opcao(r, chaves.get("socks", {}), opcoes.get("socks", []), str(look.get("shorts_color", padrao.get("shorts_color", ""))))
+	# Meião: sem cor própria, usa a entrada de options.socks com o mesmo id do calção; a bandagem da noite (night_wraps) tem a sua.
+	var id_meiao := "night_wraps" if str(look.get("socks", "")) == "night_wraps" else str(look.get("shorts_color", padrao.get("shorts_color", "")))
+	_aplicar_opcao(r, chaves.get("socks", {}), opcoes.get("socks", []), id_meiao)
+	_aplicar_estilos(r, look, chaves)
 	return r
+
+
+## Estilos da noite (Ronda 2a1): opção com `requires` no disciples.json (faixa/calção `night`, meião `night_wraps`) não existe na paleta do
+## manifest; pinta pelas cores do próprio disciples.json (o nome do slot = a chave do manifest). O meião "on" sobre o calção `night` também.
+static func _aplicar_estilos(r: Dictionary, look: Dictionary, chaves: Dictionary) -> void:
+	var d: DiscipulosData = GameState.disciples
+	if d == null:
+		return
+	var cores: Dictionary = {}
+	for campo in ["headband_color", "shorts_color", "socks"]:
+		var id := str(look.get(campo, ""))
+		var estilo := d.tem_requisito(campo, id)
+		if campo == "socks" and id == "on":
+			estilo = d.tem_requisito("shorts_color", str(look.get("shorts_color", "")))
+		if not estilo:
+			continue
+		if cores.is_empty():
+			cores = d.cores(look)
+		var c: Dictionary = cores.get(campo, {})
+		var ks: Dictionary = chaves.get(campo, {})
+		var slots: Array = c.get("slots", [])
+		var cs: Array = c.get("colors", [])
+		for i in mini(slots.size(), cs.size()):
+			if ks.has(slots[i]):
+				r[Color(str(ks[slots[i]])).to_rgba32()] = Color(str(cs[i]))
+		if ks.has("deep") and not slots.has("deep") and not cs.is_empty():  # a paleta do manifest tem uma 3ª sombra sem slot nos dados
+			r[Color(str(ks["deep"])).to_rgba32()] = Color(str(cs[0])).darkened(0.3)
 
 
 static func _aplicar_opcao(r: Dictionary, ks: Dictionary, lista: Array, id: String) -> void:

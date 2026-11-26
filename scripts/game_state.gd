@@ -92,6 +92,8 @@ signal aquecido_mudou(ativo: bool)  # AQUECIDO guardado ou gasto (ícone perto d
 signal capuz_mudou(noite: String)  # o capuz apareceu no prego (id da noite) ou saiu dele ("")
 signal ronda_mudou(estado: String)  # o jogador foi para a Ronda (id da noite) ou voltou para a sala ("")
 signal lenda_mudou(nivel: int)  # o nível da lenda do Gato Preto mudou
+signal dossie_mudou()  # Ronda 2a1: uma ficha do Dossiê mudou (briga de beco gravada)
+signal briga_mudou(fase: String)  # Ronda 2a1: a noite de briga mudou de fase ("aproximacao" | "previa" | "luta" | "" = acabou)
 
 const CAMINHO_CONFIG := "res://data/config.json"
 # Pasta usada quando o autoload sobe dentro de um teste (--script): nunca o save real.
@@ -298,7 +300,9 @@ const _LigaRegional := preload("res://scripts/estado/liga_regional.gd")
 const _Centro := preload("res://scripts/estado/centro.gd")
 const _MenuOpcoes := preload("res://scripts/estado/menu_opcoes.gd")
 const _Ronda := preload("res://scripts/estado/ronda.gd")
+const _BrigaBeco := preload("res://scripts/estado/briga_beco.gd")
 var _ronda := _Ronda.new(self)
+var _beco := _BrigaBeco.new(self)  # Ronda 2a1: brigas de beco, Esconderijo, Dossiê, estilos
 var _menu := _MenuOpcoes.new(self)  # ID4: menu principal, cópia do save, parede, opções
 var _centro := _Centro.new(self)
 var _liga := _LigaRegional.new(self)
@@ -350,6 +354,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 		dados_academia: GymData = null, dados_dialogos: DialogosData = null, dados_discipulos: DiscipulosData = null) -> void:
 	config = GameConfig.carregar(caminho_config)
 	disciples = dados_discipulos if dados_discipulos != null else DiscipulosData.carregar()
+	disciples.liberado = Callable(_beco, "requisito_liberado")  # 2a1: estilos da noite (opção com `requires`) liberados pelo Dossiê
 	escola_cfg = _casa._ler_json_dados("res://data/escola.json")
 	hall_cfg = _casa._ler_json_dados("res://data/hall.json")
 	_rng_sucessao.randomize()
@@ -374,6 +379,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 	_rng_treino.randomize()
 	_treino.zerar()
 	ronda_cfg = RondaData.carregar()
+	ronda_cfg.validar_com(lutas, disciples)  # 2a1: passiva dos bandidos e estilos conferidos com os dados do jogo
 	_ronda.zerar()
 	store = SaveStore.new(pasta_save)
 	_menu.opcoes_carregar()  # ID4: volume e tela cheia (arquivo próprio, ao lado do save)
@@ -1159,8 +1165,27 @@ func ronda_aberta() -> bool: return _ronda.ronda_aberta()
 func capuz_visivel() -> String: return _ronda.capuz_visivel()
 ## {night, spot, spot_name, hover_text, clickable} do capuz no prego ({} sem capuz).
 func capuz_info() -> Dictionary: return _ronda.capuz_info()
-## Clicou no capuz: congela o jogo e abre a Ronda. {night, kind, name, tip, countdown_s, night_s, level, legend, layers, occurrences, occurrence_names}.
-func ronda_ir() -> Dictionary: return _ronda.ronda_ir()
+## Clicou no capuz (ou no IR do Esconderijo): congela o jogo e abre a Ronda. {night, kind, name, tip, countdown_s, night_s, level, legend, layers, occurrences, occurrence_names}.
+## ronda_ir("alley", bandido) = a briga de beco (2a1; ver docs/fases/ronda2a-contrato.md).
+func ronda_ir(noite_id: String = "", bandido_id: String = "") -> Dictionary: return _ronda.ronda_ir(noite_id, bandido_id)
+## 2a1: a briga de beco está disponível (lenda 3 + marco da liga)?
+func briga_aberta() -> bool: return _beco.aberta()
+## 2a1: tudo do Esconderijo {open, legend, board, dossier, boss, trophies}.
+func esconderijo() -> Dictionary: return _beco.esconderijo()
+## 2a1: o quadro ESTA NOITE (cartões SUSTO, próximo bandido ou "quiet", DESAFIO).
+func quadro_noite() -> Array: return _beco.quadro_noite()
+## 2a1: uma ficha do Dossiê por bandido.
+func dossie() -> Array: return _beco.dossie()
+## 2a1: {fase, bandit, approach, challenge_only, revenge} da noite de briga em andamento.
+func briga_estado() -> Dictionary: return _beco.estado()
+## 2a1: a prévia da noite (depois da aproximação): chance, chance do desafio, passivas.
+func briga_previa() -> Dictionary: return _beco.previa()
+## 2a1: LUTAR na noite: grava tudo numa vez só e devolve a luta para a tela (+ night_prize).
+func briga_lutar(tatica_id: String) -> Dictionary: return _beco.lutar(tatica_id)
+## 2a1: o prêmio da noite (o `night_prize` do briga_lutar); {} antes de lutar.
+func briga_resultado() -> Dictionary: return _ronda_premio if ronda_ativa == "alley" else {}
+## 2a1: o estilo da noite já foi ganho (desafio cumprido)?
+func estilo_liberado(estilo_id: String) -> bool: return _beco.estilo_liberado(estilo_id)
 ## A lógica da Ronda em andamento (RondaLogica) ou null.
 func ronda_jogo() -> Variant: return _ronda.ronda_jogo()
 ## Fim ou SAIR: soma a lenda e salva (uma vez). Devolve o prêmio.

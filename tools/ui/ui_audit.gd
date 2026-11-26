@@ -164,6 +164,11 @@ const ESTADOS_TODOS := [
 	"f8a2_mapa_centro_aberto", "f8a2_fim_retire_centro",
 	# Ronda Noturna do Gato Preto (capuz, noite, prêmio, recortes por nível, região GATO PRETO)
 	"ronda_capuz_garagem", "ronda_capuz_hover", "ronda_capuz_academia", "ronda_capuz_centro", "ronda_capuz_janela", "ronda_contagem", "ronda_aviso", "ronda_perto", "ronda_susto", "ronda_visto", "ronda_sair", "ronda_premio_sobe", "ronda_premio_normal", "ronda_premio_max", "ronda_premio_sem_susto", "ronda_voltar", "ronda_recorte_n1", "ronda_recorte_n3", "ronda_recorte_n5", "ronda_recorte_n5_zoom", "ronda_recorte_academia_n3", "ronda_mapa_lacrado", "ronda_mapa_aberto",
+	# Ronda 2a1: Esconderijo, quadro, Dossiê, aproximação, prévia, luta no beco, prêmio e personalização com os estilos
+	"r2a_esc_travado", "r2a_esc_aberto", "r2a_quadro_briga", "r2a_quadro_revanche", "r2a_quadro_desafio", "r2a_quadro_quieto",
+	"r2a_dossie_vazio", "r2a_dossie_meio", "r2a_dossie_cheio", "r2a_dossie_ficha", "r2a_aprox_contagem", "r2a_aprox_dica", "r2a_previa",
+	"r2a_previa_gate", "r2a_luta_beco", "r2a_luta_beco_estilos", "r2a_luta_beco_fim", "r2a_premio_vitoria", "r2a_premio_derrota",
+	"r2a_premio_desafio", "r2a_premio_nivel", "r2a_personalizacao",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -196,6 +201,7 @@ var _f8a1 = preload("res://tools/ui/audit/estados_f8a1.gd").new(self)
 var _f8a2 = preload("res://tools/ui/audit/estados_f8a2.gd").new(self)
 var _menu = preload("res://tools/ui/audit/estados_menu.gd").new(self)
 var _ronda = preload("res://tools/ui/audit/estados_ronda.gd").new(self)
+var _ronda2a = preload("res://tools/ui/audit/estados_ronda2a.gd").new(self)
 var _estr = preload("res://tools/ui/audit/regras_estritas.gd").new(self)  # regras da fase Identidade (--estrito)
 var achados_arquivo := ""  # --achados <arquivo>: grava os achados das regras estritas (TSV)
 var modo_torta := false  # --torta: audita a cena torta de propósito e confere que cada regra reprova
@@ -223,6 +229,15 @@ func _initialize() -> void:
 			modo_torta = true
 		i += 1
 	pedidos = ESTADOS_TODOS.duplicate() if sel == "todos" else Array(sel.split(","))
+	if sel != "todos" and not modo_torta:
+		var invalidos: PackedStringArray = []
+		for p in pedidos:
+			if not (p in ESTADOS_TODOS):
+				invalidos.append(str(p))
+		if not invalidos.is_empty():
+			print("ERRO: estado(s) inexistente(s) em --estados (use nomes exatos de ESTADOS_TODOS, sem glob): %s" % ", ".join(invalidos))
+			quit(1)
+			return
 	DirAccess.make_dir_recursive_absolute(saida)
 	gs = root.get_node("GameState")
 	await process_frame
@@ -233,6 +248,11 @@ func _initialize() -> void:
 	await _esperar(0.4)  # deixa o áudio esvaziar antes de sair
 	_relatorio_estrito()
 	print("ESTADOS %d | PROBLEMAS %d" % [estados_feitos, problemas.size()])
+	# Nome pedido que não existe, ou rodada sem nenhum estado: falha em vez de passar calada.
+	if estados_feitos == 0:
+		print("ERRO: a rodada executou 0 estados; confira o nome em --estados")
+		quit(1)
+		return
 	quit(1 if problemas.size() > 0 else 0)
 
 
@@ -523,6 +543,7 @@ func _rodar() -> void:
 	await _f8a1._rodar_fase8a1()
 	await _f8a2._rodar_fase8a2()
 	await _ronda._rodar_fase_ronda()
+	await _ronda2a._rodar_fase_ronda2a()
 	await _menu._rodar_menu()
 	_fechar_cena()
 

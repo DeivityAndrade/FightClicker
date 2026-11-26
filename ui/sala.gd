@@ -110,6 +110,9 @@ var _gesto_sprite := ""
 var _parede: Dictionary = {}  # objeto -> {sprite, rect, dica}
 var _recorte: AnimSprite  # 7a2: recorte de jornal do vulto (garagem e academia, campanha 2 em diante)
 var _recorte_rect := Rect2()  # área do hover (vazio = não desenhado)
+var _beco_recortes: Dictionary = {}  # 2a1 B1: bandido -> AnimSprite do recorte dele na parede
+var _beco_rect := Rect2()  # união dos recortes de bandido desenhados (vazio = nenhum)
+var _beco_texto := ""  # chave de texto do hover: a manchete do último bandido vencido
 var _recorte_zoom: TextureRect  # dica de zoom: o recorte grande, só com o mouse em cima
 var _cartaz: AnimSprite  # 8a1: cartaz da Liga Regional do Vale (academia, depois de abrir a liga)
 var _cartaz_rect := Rect2()
@@ -206,6 +209,7 @@ func _ready() -> void:
 	GameState.patrocinio_mudou.connect(_ao_patrocinio)  # 8a2: envelope, cartaz com a marca, aviso da proposta
 	GameState.arte_mudou.connect(_ao_arte)
 	GameState.capuz_mudou.connect(func(_n: String) -> void: _atualizar_capuz())  # Ronda
+	GameState.dossie_mudou.connect(_atualizar_recortes_beco)  # 2a1 B1: um recorte novo por bandido vencido
 	GameState.lenda_mudou.connect(func(_n: int) -> void: _atualizar_recorte())  # Ronda: o recorte troca de manchete e de desenho
 	GameState.gesto_pedido.connect(_ao_gesto_pedido)
 	GameState.gesto_cancelado.connect(_ao_gesto_cancelado)
@@ -1799,6 +1803,13 @@ func _montar_parede() -> void:
 	_recorte.visible = false
 	_recorte.z_index = -45 + ordem.find("photo_old")
 	_mundo.add_child(_recorte)
+	# 2a1 B1: um recorte por bandido de beco vencido (ordem do manifest; o último fica por cima).
+	for bid in ["tire", "bike", "gate"]:
+		var sb := AnimSprite.new()
+		sb.visible = false
+		sb.z_index = -45 + ordem.find("photo_old")
+		_mundo.add_child(sb)
+		_beco_recortes[bid] = sb
 	# 6c2: o mural da escola (garagem e academia); a folha e o ponto vêm de mural_na_sala() e do manifest.
 	_mural = AnimSprite.new()
 	_mural.visible = false
@@ -2098,7 +2109,47 @@ func _atualizar_envelope() -> void:
 	_envelope_rect = Rect2(float(cr[0]), float(cr[1]), float(cr[2]), float(cr[3]))
 
 
+## 2a1 B1: o recorte de cada bandido vencido (dossie()), no ponto do local atual, na ordem do manifest; esconde com wall_objects.
+func _atualizar_recortes_beco() -> void:
+	_beco_rect = Rect2()
+	_beco_texto = ""
+	if _beco_recortes.is_empty():
+		return
+	var chave := "alley_clipping_spot"
+	if GameState.local_id == "gym":
+		chave = "gym_alley_clipping_spot"
+	elif GameState.local_id == "center":
+		chave = "center_alley_clipping_spot"
+	var lay: Dictionary = UiTema.manifest().get("layout", {})
+	var info = lay.get(chave + "_info", {})
+	var pontos = lay.get(chave, {})
+	var vencidos: Array = []
+	if info is Dictionary and pontos is Dictionary and not ("wall_objects" in _cena_oculta):
+		var ficha := {}
+		for f in GameState.dossie():
+			ficha[str(f.bandit)] = bool(f.known)
+		for id in info.get("order", []):
+			if bool(ficha.get(str(id), false)):
+				vencidos.append(str(id))
+	for bid in _beco_recortes:
+		(_beco_recortes[bid] as AnimSprite).visible = false
+	for id in vencidos:
+		var nome := str(info.get("sprite_by_id", {}).get(id, ""))
+		var p = pontos.get(id, [])
+		var s: AnimSprite = _beco_recortes.get(id)
+		if s == null or p.size() != 2 or UiTema.sprite(nome).is_empty():
+			continue
+		s.definir(nome)
+		s.parar(0)
+		s.position = Vector2(float(p[0]), float(p[1]))
+		s.visible = true
+		var r := Rect2(s.position, UiTema.tamanho_quadro(nome))
+		_beco_rect = r if _beco_rect.size == Vector2.ZERO else _beco_rect.merge(r)
+		_beco_texto = str(info.get("object_text_by_id", {}).get(id, ""))
+
+
 func _atualizar_parede() -> void:
+	_atualizar_recortes_beco()
 	_atualizar_capuz()
 	_atualizar_cartaz()
 	_atualizar_clipvale()
@@ -2156,6 +2207,11 @@ func _texto_parede(p: Vector2) -> String:
 %s" % [str(rv.clipping.title), str(rv.clipping.text), str(rv.clipping.footer)]
 	if _recorte != null and _recorte.visible and _recorte_rect.has_point(p):
 		return GameState.texto_ui(str(GameState.recorte_gato_preto().get("object_text", "black_cat_clipping")), "")
+	if _beco_texto != "" and _beco_rect.has_point(p):
+		for bid in _beco_recortes:  # a área é a união dos desenhados: o mouse tem de estar em cima de um deles
+			var sb: AnimSprite = _beco_recortes[bid]
+			if sb.visible and Rect2(sb.position, UiTema.tamanho_quadro(sb.nome_sprite)).has_point(p):
+				return GameState.texto_ui(_beco_texto, "")
 	if _mural != null and _mural.visible and _mural_rect.has_point(p):
 		var dm: DialogosData = GameState.dialogos
 		var chave_m := str(GameState.mural_na_sala().get("object_text", "mural"))

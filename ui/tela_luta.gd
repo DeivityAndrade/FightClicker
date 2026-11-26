@@ -67,6 +67,8 @@ var _shake_amp := 1
 var _ultimo_publico := -10.0
 var _t := 0.0
 var _opp_id := ""
+var _alley := false  # Ronda 2a1: luta da noite de briga (vulto x bandido, arena do beco; nada vai para a carreira)
+var _arte_noite: Dictionary = {}  # luta.art = {opponent, vulto, arena, portrait}
 var _escala_opp := 1.0
 var _eventos_vistos := 0
 var _ordem_numeros := 0
@@ -491,6 +493,9 @@ func _novo_lutador(i: int, base: Vector2, escala: float) -> Dictionary:
 # Nome do sprite da ação `acao` do lutador i (a luva do jogador vem do sufixo da luva equipada).
 func _nome(i: int, acao: String) -> String:
 	var by: Dictionary = UiTema.manifest().get("by_data_id", {})
+	if i == 0 and _alley:
+		var vid := str(_arte_noite.get("vulto", "vulto_fight"))
+		return str(by.get(vid, {}).get("actions", {}).get(acao, "fight_vulto_" + acao))  # o vulto não usa luva própria
 	if i == 0:
 		return UiTema.com_luva(str(by.get("player_fight", {}).get("actions", {}).get(acao, "fight_player_" + acao)))
 	return str(by.get(_opp_id, {}).get("actions", {}).get(acao, _opp_id + "_" + acao))
@@ -514,9 +519,12 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	# Jogador (esquerda)
 	var pf: Array = lay.get("player_portrait_frame", [6, 6])
 	var quadro_j := UiTema.textura_rect(hud, "c_retrato_moldura", float(pf[0]), float(pf[1]))
-	UiTema.textura_rect(quadro_j, UiTema.nome_retrato_jogador(), 2, 2).texture = UiTema.textura_disc(UiTema.nome_retrato_jogador())  # o retrato fica dentro da moldura
+	if _alley:  # o vulto: retrato sem rosto e nome escondido
+		UiTema.textura_rect(quadro_j, str(by.get(str(_arte_noite.get("vulto", "vulto_fight")), {}).get("portrait", "portrait_vulto")), 2, 2)
+	else:
+		UiTema.textura_rect(quadro_j, UiTema.nome_retrato_jogador(), 2, 2).texture = UiTema.textura_disc(UiTema.nome_retrato_jogador())  # o retrato fica dentro da moldura
 	var pn: Array = lay.get("player_name", [46, 6])
-	UiTema.rotulo(hud, UiTema.txt("preview_you", "VOCÊ"), UiTema.CREAM, float(pn[0]), float(pn[1]))
+	UiTema.rotulo(hud, UiTema.txt("fighter_name_hidden", "???") if _alley else UiTema.txt("preview_you", "VOCÊ"), UiTema.CREAM, float(pn[0]), float(pn[1]))
 	var bj: Array = lay.get("player_hp_bar", [46, 16, 236, 12])
 	_barras.append(Barra.new(self, hud, Rect2(float(bj[0]), float(bj[1]), float(bj[2]), float(bj[3])), 0))
 	var pt: Array = lay.get("player_tactic", [46, 32])
@@ -558,7 +566,11 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	var quadro_o := UiTema.textura_rect(hud, UiTema.moldura_retrato(str(info_o.get("portrait_frame", "ui_portrait_frame"))), float(of[0]), float(of[1]))
 	var ret := UiTema.textura_rect(quadro_o, str(info_o.get("portrait", "")), 2, 2)
 	ret.flip_h = true
+	if _alley and not _bandido_conhecido():
+		ret.modulate = UiTema.INK  # silhueta, igual à prévia: ele ainda não tem ficha
 	var opp: Dictionary = GameState.lutas.adversario(opp_id)
+	if _alley:
+		opp = _dados_bandido()
 	var on: Array = lay.get("opponent_name_right", [594, 6])
 	var nome_o := str(opp.get("name", opp_id)).to_upper()
 	var l_nome := UiTema.rotulo(hud, nome_o, UiTema.CREAM, 0, float(on[1]))
@@ -589,6 +601,48 @@ func _montar_hud(opp_id: String, lay: Dictionary, by: Dictionary) -> void:
 	_rotulo_round = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0, col.size.x, 7.0), "", UiTema.G0, 1, false, "center_h")
 	_rotulo_tempo = UiTema.rotulo_centrado(hud, Rect2(col.position.x, y0 + 10.0, col.size.x, 14.0), "0:16", UiTema.INK, 2, false,
 		"center_h")
+
+
+## O bandido desta luta já foi vencido antes (tem nome no Dossiê)? A ficha nasce ao LUTAR: `dossier_new` = primeira vez.
+func _bandido_conhecido() -> bool:
+	var id := str(luta.get("bandit", ""))
+	var conhecido := false
+	for f in GameState.dossie():
+		if str(f.bandit) == id:
+			conhecido = bool(f.known)
+	if bool((luta.get("night_prize", {}) as Dictionary).get("dossier_new", false)):
+		conhecido = false
+	return conhecido
+
+
+## Noite de briga: o que o HUD mostra do bandido (o apelido e o perfil; o nome verdadeiro só vem com a vitória, no Dossiê).
+func _dados_bandido() -> Dictionary:
+	for b in GameState.ronda_cfg.noites.get("alley", {}).get("bandits", []):
+		if str(b.id) == str(luta.get("bandit", "")):
+			var conhecido := _bandido_conhecido()
+			var nome := UiTema.txt(str(b.nickname), "???") if conhecido else UiTema.txt("alley_%s_anon" % str(b.id), UiTema.txt(str(b.nickname), "???"))  # 2a1 B2
+			return {"name": nome, "profile": str(b.profile)}
+	return {"name": UiTema.txt("fighter_name_hidden", "???"), "profile": ""}
+
+
+## Fuga tonta do bandido que perde por pontos ("SAIU TONTO E FUGIU"): a folha `flee` anda no lugar, a tela leva o x para a direita.
+func _fuga_tonta(i: int) -> void:
+	var l: Dictionary = _l[i]
+	var nome := _nome(i, "flee")
+	if UiTema.sprite(nome).is_empty():
+		_estado(i, "tired")
+		return
+	l.estado = "flee"
+	var spr: AnimSprite = l.spr
+	spr.definir(nome)
+	var seq: Array = []
+	for q in spr.hframes:
+		seq.append(q)
+	spr.tocar(seq, float(UiTema.sprite(nome).get("fps", 9.0)), true)
+	var x0: float = spr.position.x
+	var tw := create_tween()
+	tw.tween_interval(0.3)
+	tw.tween_method(func(k: float) -> void: spr.position.x = roundf(x0 + 150.0 * k), 0.0, 1.0, 1.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
 ## HUD da passiva (7a1), na fileira da tática, à direita do nome dela (x 140..282). Boxe: CANSADO (ícone + texto, só no 3º round)
@@ -696,7 +750,9 @@ func _cor_tatica(nome_cor: String) -> Color:
 func iniciar(dados: Dictionary) -> void:
 	luta = dados
 	finalizada = false
-	_montar(str(dados.opponent))
+	_alley = str(dados.get("night", "")) == "alley"
+	_arte_noite = dados.get("art", {}) if _alley and dados.get("art", {}) is Dictionary else {}
+	_montar(str(_arte_noite.get("opponent", "opp_alley_" + str(dados.get("bandit", "")))) if _alley else str(dados.opponent))
 	_clock = -float(dados.intro_seconds)
 	_idx = 0
 	_cues.clear()
@@ -825,8 +881,14 @@ func _agendar_tudo() -> void:
 			_texto_banner(UiTema.txt("fight_time", "TEMPO!"), UiTema.Y2, 2))
 		_cue(t_end + 0.35, func() -> void:
 			_comemorar(vencedor)
-			_estado(1 - vencedor, "tired")
-			_texto_sub(UiTema.txt("fight_points", "POR PONTOS"), UiTema.CREAM)
+			if _alley and vencedor == 0:
+				_fuga_tonta(1)  # o bandido perdeu por pontos: SAIU TONTO E FUGIU
+			else:
+				_estado(1 - vencedor, "tired")
+			if _alley:
+				_texto_banner(str(luta.get("points_banner", "")) if bool(res.win) else str(luta.get("lose_line", "")), UiTema.Y2, 2)
+			else:
+				_texto_sub(UiTema.txt("fight_points", "POR PONTOS"), UiTema.CREAM)
 			sfx.publico()
 			_publico_cheer(false)
 			if bool(res.win):
@@ -1573,6 +1635,10 @@ func _chao(i: int) -> void:
 
 ## O letreiro do fim: K.O.! (ou CHUTE RODADO! quando o chute rodado derrubou: o mesmo pop e a mesma tremida).
 func _banner_ko_mostrar(finish: String = "") -> void:
+	if _alley:  # APAGOU! (ele caiu) ou SAIU MANCANDO (o vulto caiu): letreiro de texto, sem sangue e sem o K.O. da liga
+		_texto_banner(str(luta.get("ko_banner", "")) if bool(luta.result.get("win", false)) else str(luta.get("lose_line", "")), UiTema.Y2, 3)
+		_tremer(2, 0.3)
+		return
 	if _banners_fim.has(finish):  # 7b2: K.O. NO CONTRAGOLPE! / JOELHADA!
 		_banner_fim_mostrar(finish, "")
 		return
@@ -2327,6 +2393,10 @@ func _finalizar() -> void:
 	finalizada = true
 	ativa = false
 	_mostrar_pular(false)
+	if _alley:
+		# Noite de briga: o resultado já foi gravado no LUTAR (GameState.briga_lutar); a carreira não sabe da luta.
+		terminou.emit({"night": "alley", "win": bool(luta.result.get("win", false)), "prize": luta.get("night_prize", {})})
+		return
 	var resumo := GameState.concluir_luta()  # aplica o resultado UMA vez e salva
 	terminou.emit(resumo)
 

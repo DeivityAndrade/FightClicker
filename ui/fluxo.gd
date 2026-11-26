@@ -188,23 +188,125 @@ func _fechar_treino() -> void:
 var _esperando_info_ronda := false
 
 ## Clicou no capuz no prego. O GameState abre a noite e congela o jogo; a tela nasce com a resposta do IR (camadas da rua, nomes).
-func ir_para_ronda() -> void:
+func ir_para_ronda(noite: String = "", bandido: String = "") -> bool:
 	if ocupado():
-		return
+		return false
+	if noite == "" and bool(GameState.capuz_info().get("hideout", false)):
+		abrir_esconderijo()  # 2a1: com a briga aberta o capuz leva ao Esconderijo (nada muda no jogo até escolher o IR)
+		return true
 	_esperando_info_ronda = true
-	var info := GameState.ronda_ir()
+	var info := GameState.ronda_ir(noite, bandido)
 	_esperando_info_ronda = false
 	if info.is_empty():
-		return
+		return false
 	if ronda == null:
 		_abrir_ronda(info)
+	return true
 
 
 func _ao_ronda(id: String) -> void:
 	if id == "":
 		_fechar_ronda()
+		# 2a1: a noite de briga acabou por baixo (a trava de 120 s no prêmio devolveu a sala): a arena e a janela saem junto.
+		if janela is JanelaPremioBriga or (tela.visible and str(tela.luta.get("night", "")) == "alley"):
+			_fechar_tudo()
 	elif ronda == null and not _esperando_info_ronda:
 		_abrir_ronda({})  # a Ronda abriu por outro caminho (teste, atalho): a tela abre igual, com a rua do nível
+
+
+# --- Ronda 2a1: Esconderijo (o capuz com a briga aberta), ficha do Dossiê e a noite de briga ---
+
+func abrir_esconderijo(dados: Dictionary = {}) -> void:
+	if ocupado():
+		return
+	var j := TelaEsconderijo.new()
+	_abrir(j)
+	Dica.limpar()
+	j.abrir_com(dados)
+	j.voltar_pedido.connect(_fechar)  # VOLTAR: fecha a tela, nada gravado, o capuz continua no prego
+	j.ir_pedido.connect(_ir_do_esconderijo)
+	j.ficha_pedida.connect(_abrir_ficha)
+
+
+func _ir_do_esconderijo(noite: String, bandido: String) -> void:
+	if not (janela is TelaEsconderijo):
+		return
+	janela.queue_free()
+	janela = null
+	GameState.definir_modal(false)
+	if not ir_para_ronda(noite if noite != "" else "scare", bandido):
+		abrir_esconderijo()  # a noite não abriu (fora de ordem, sem capuz): o Esconderijo volta
+
+
+func _abrir_ficha(bandido: String) -> void:
+	if not (janela is TelaEsconderijo):
+		return
+	for f in GameState.dossie():
+		if str(f.bandit) == bandido:
+			var j := JanelaFicha.new()
+			_abrir(j)
+			j.abrir_com(f)
+			j.fechar_pedido.connect(func() -> void:
+				if janela == j:
+					janela.queue_free()
+					janela = null
+					abrir_esconderijo())
+			return
+
+
+## Fim da aproximação: a prévia da noite (a tela da Ronda avisa depois do letreiro do SUSTO / VISTO).
+func _abrir_previa_briga() -> void:
+	if janela != null or ronda == null:
+		return
+	var dados := GameState.briga_previa()
+	if dados.is_empty():
+		return
+	var j := JanelaPreviaBriga.new()
+	_abrir(j)
+	j.abrir_com(dados)
+	j.sair_pedido.connect(_sair_da_briga)
+	j.lutar_pedido.connect(_lutar_briga)
+
+
+## SAIR na prévia: nada gravado, a sala volta e o capuz continua no prego.
+func _sair_da_briga() -> void:
+	if janela != null:
+		janela.queue_free()
+		janela = null
+	GameState.definir_modal(false)
+	GameState.ronda_concluir()  # {left: true}: já devolve a sala (ronda_mudou("") fecha a tela da Ronda)
+	_fechar_ronda()
+	if _barra != null and not tela.visible:
+		_barra.definir_janela_aberta(false)
+	janela_mudou.emit(ocupado())
+
+
+func _lutar_briga(tatica_id: String) -> void:
+	var info := GameState.briga_lutar(tatica_id)  # grava tudo agora e devolve a luta para a arena
+	if info.is_empty():
+		return
+	if janela != null:
+		janela.queue_free()
+		janela = null
+	if ronda != null:
+		ronda.visible = false
+	tela.iniciar(info)
+	if _barra != null:
+		_barra.definir_janela_aberta(true)
+	janela_mudou.emit(true)
+
+
+func _abrir_premio_briga(premio: Dictionary) -> void:
+	var j := JanelaPremioBriga.new()
+	_abrir(j)
+	j.abrir_com(premio)
+	j.voltar_pedido.connect(_voltar_da_briga)
+
+
+func _voltar_da_briga() -> void:
+	GameState.ronda_voltar()  # devolve a sala (a tela da Ronda fecha pelo sinal)
+	_fechar_ronda()
+	_fechar_tudo()
 
 
 func _abrir_ronda(info: Dictionary) -> void:
@@ -214,6 +316,7 @@ func _abrir_ronda(info: Dictionary) -> void:
 	_fechar_cartao()
 	ronda = TelaRonda.new()
 	add_child(ronda)
+	ronda.previa_pedida.connect(_abrir_previa_briga)
 	ronda.abrir(info)
 	if _barra != null:
 		_barra.definir_janela_aberta(true)
@@ -309,6 +412,9 @@ func _ao_luta_iniciada(info: Dictionary) -> void:
 
 
 func _ao_terminar_luta(resumo: Dictionary) -> void:
+	if str(resumo.get("night", "")) == "alley":
+		_abrir_premio_briga(resumo.get("prize", {}))  # noite de briga: vitória ou derrota, a janela do prêmio da noite
+		return
 	if bool(resumo.get("win", false)):
 		_abrir_vitoria(resumo, false)
 	# Derrota: `fim_de_carreira` já abriu a tela de fim por cima da arena.
@@ -617,8 +723,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if not (janela as JanelaPrevia).dia_da_luta:  # a prévia do dia não fecha com Esc
 				_voltar_da_previa()
 			get_viewport().set_input_as_handled()
-		elif janela is JanelaAposentar:
+		elif janela is JanelaAposentar or janela is TelaEsconderijo:
 			_fechar()
+			get_viewport().set_input_as_handled()
+		elif janela is JanelaFicha:
+			janela.fechar_pedido.emit()
 			get_viewport().set_input_as_handled()
 		elif janela is JanelaPatrocinio:
 			_fechar()  # Esc = AGORA NÃO

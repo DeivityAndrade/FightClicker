@@ -483,3 +483,7 @@ escopo §5). Ícone do gato para as opções de estilo.
   aplicado: o "Bairro agradece" de +40% para **+25%** → pior trecho **9,2%** (aguarda o dono, P3).
 - **2a2 (ideia):** Apagão com o Ensaboado, ~110M/220M/325M para ~40% no dia do cinturão regional, desafio "antes do apagão"
   (~13%), apagão só como apresentação.
+
+## Decisão do dono (2026-11-26)
+- **P3:** o dono aprovou o plano da 2a1 e escolheu o corte de **+20%** para o "Bairro agradece" (`cat_thanks` 0,4 → **0,2**, equipe ×1,20). O pior trecho fica em **8,7%**, com tudo junto. O §8 e o A3 passam a valer com 0,2. O Programador regenera `tests/data/ronda_casos.json` com esse valor.
+- **Supervilão da 2a2:** Apagão v2 (ver escopo).

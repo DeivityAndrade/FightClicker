@@ -1,0 +1,340 @@
+{
+	"_sobre": "Ronda 2a1 B1 (Diretor de Arte): recortes dos bandidos vencidos. sprites -> manifest.sprites (todas novas); layout -> manifest.layout (todas novas). Doc: docs/arte/ronda2a-manifest.md §B1.",
+	"sprites": {
+		"wall_clipping_alley_tire": {
+			"file": "res://assets/sprites/garage/wall_clipping_alley_tire.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				269,
+				108
+			],
+			"point": "alley_clipping_spot.tire",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'tire' vencido, na GARAGEM (papel creme, luz da lâmpada pela esquerda) (15x18). Sem texto em 1x: foto do que ele largou (o estepe e a chave de roda), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_tire_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_bike": {
+			"file": "res://assets/sprites/garage/wall_clipping_alley_bike.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				284,
+				112
+			],
+			"point": "alley_clipping_spot.bike",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'bike' vencido, na GARAGEM (papel creme, luz da lâmpada pela esquerda) (15x18). Sem texto em 1x: foto do que ele largou (a bicicleta), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_bike_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_gate": {
+			"file": "res://assets/sprites/garage/wall_clipping_alley_gate.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				275,
+				127
+			],
+			"point": "alley_clipping_spot.gate",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'gate' vencido, na GARAGEM (papel creme, luz da lâmpada pela esquerda) (15x18). Sem texto em 1x: foto do que ele largou (o portão e o pé de cabra), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_gate_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_tire_gym": {
+			"file": "res://assets/sprites/gym/wall_clipping_alley_tire_gym.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				365,
+				39
+			],
+			"point": "gym_alley_clipping_spot.tire",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'tire' vencido, na ACADEMIA (papel branco) (15x18). Sem texto em 1x: foto do que ele largou (o estepe e a chave de roda), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_tire_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_bike_gym": {
+			"file": "res://assets/sprites/gym/wall_clipping_alley_bike_gym.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				378,
+				43
+			],
+			"point": "gym_alley_clipping_spot.bike",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'bike' vencido, na ACADEMIA (papel branco) (15x18). Sem texto em 1x: foto do que ele largou (a bicicleta), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_bike_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_gate_gym": {
+			"file": "res://assets/sprites/gym/wall_clipping_alley_gate_gym.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				370,
+				55
+			],
+			"point": "gym_alley_clipping_spot.gate",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'gate' vencido, na ACADEMIA (papel branco) (15x18). Sem texto em 1x: foto do que ele largou (o portão e o pé de cabra), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_gate_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_tire_center": {
+			"file": "res://assets/sprites/gym/wall_clipping_alley_tire_gym.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				365,
+				103
+			],
+			"point": "center_alley_clipping_spot.tire",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'tire' vencido, no CENTRO (mesmo arquivo da academia) (15x18). Sem texto em 1x: foto do que ele largou (o estepe e a chave de roda), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_tire_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_bike_center": {
+			"file": "res://assets/sprites/gym/wall_clipping_alley_bike_gym.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				378,
+				107
+			],
+			"point": "center_alley_clipping_spot.bike",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'bike' vencido, no CENTRO (mesmo arquivo da academia) (15x18). Sem texto em 1x: foto do que ele largou (a bicicleta), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_bike_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		},
+		"wall_clipping_alley_gate_center": {
+			"file": "res://assets/sprites/gym/wall_clipping_alley_gate_gym.png",
+			"frame_size": [
+				15,
+				18
+			],
+			"frames": 1,
+			"fps": 0.0,
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				370,
+				121
+			],
+			"point": "center_alley_clipping_spot.gate",
+			"layer": "wall",
+			"z": -45,
+			"note": "Ronda 2a1 (B1): recorte de jornal do bandido 'gate' vencido, no CENTRO (mesmo arquivo da academia) (15x18). Sem texto em 1x: foto do que ele largou (o portão e o pé de cabra), 2 barras de manchete e o carimbo vermelho do gato. Hover: o texto alley_gate_clipping (manchete do mais recente). Gerador: tools/art/make_arte_ronda2a_recortes.gd. docs/arte/ronda2a-manifest.md §B1."
+		}
+	},
+	"layout": {
+		"alley_clipping_spot": {
+			"tire": [
+				269,
+				108
+			],
+			"bike": [
+				284,
+				112
+			],
+			"gate": [
+				275,
+				127
+			]
+		},
+		"alley_clipping_spot_info": {
+			"location": "garage",
+			"anchor": "canto de cima à esquerda (cada ponto)",
+			"size": [
+				15,
+				18
+			],
+			"layer": "wall",
+			"z": -45,
+			"order": [
+				"tire",
+				"bike",
+				"gate"
+			],
+			"sprite_by_id": {
+				"tire": "wall_clipping_alley_tire",
+				"bike": "wall_clipping_alley_bike",
+				"gate": "wall_clipping_alley_gate"
+			},
+			"object_text_by_id": {
+				"tire": "alley_tire_clipping",
+				"bike": "alley_bike_clipping",
+				"gate": "alley_gate_clipping"
+			},
+			"click_rect": [
+				269,
+				108,
+				30,
+				37
+			],
+			"when": "um por bandido vencido (permanent.alley); desenhar na ordem de order (o último fica por cima)",
+			"hover": "o texto object_text_by_id do bandido vencido mais recente (o último de order que já foi vencido)",
+			"_nota": "Ronda 2a1 (B1): embaixo do pôster SOCO (até y 104) e à esquerda do recorte do Gato Preto (x 304); acima da corda no gancho (296,166) e da zona do alvo (y 150). Parede lisa embaixo (conferido no gerador)."
+		},
+		"gym_alley_clipping_spot": {
+			"tire": [
+				365,
+				39
+			],
+			"bike": [
+				378,
+				43
+			],
+			"gate": [
+				370,
+				55
+			]
+		},
+		"gym_alley_clipping_spot_info": {
+			"location": "gym",
+			"anchor": "canto de cima à esquerda (cada ponto)",
+			"size": [
+				15,
+				18
+			],
+			"layer": "wall",
+			"z": -45,
+			"order": [
+				"tire",
+				"bike",
+				"gate"
+			],
+			"sprite_by_id": {
+				"tire": "wall_clipping_alley_tire_gym",
+				"bike": "wall_clipping_alley_bike_gym",
+				"gate": "wall_clipping_alley_gate_gym"
+			},
+			"object_text_by_id": {
+				"tire": "alley_tire_clipping",
+				"bike": "alley_bike_clipping",
+				"gate": "alley_gate_clipping"
+			},
+			"click_rect": [
+				365,
+				39,
+				28,
+				34
+			],
+			"when": "um por bandido vencido (permanent.alley); desenhar na ordem de order (o último fica por cima)",
+			"hover": "o texto object_text_by_id do bandido vencido mais recente (o último de order que já foi vencido)",
+			"_nota": "Ronda 2a1 (B1): à direita do recorte do Gato Preto (até x 363), acima do relógio de rounds (y 74), antes do cartaz da liga (x 394) e embaixo do teto. Parede lisa embaixo (conferido no gerador)."
+		},
+		"center_alley_clipping_spot": {
+			"tire": [
+				365,
+				103
+			],
+			"bike": [
+				378,
+				107
+			],
+			"gate": [
+				370,
+				121
+			]
+		},
+		"center_alley_clipping_spot_info": {
+			"location": "center",
+			"anchor": "canto de cima à esquerda (cada ponto)",
+			"size": [
+				15,
+				18
+			],
+			"layer": "wall",
+			"z": -45,
+			"order": [
+				"tire",
+				"bike",
+				"gate"
+			],
+			"sprite_by_id": {
+				"tire": "wall_clipping_alley_tire_center",
+				"bike": "wall_clipping_alley_bike_center",
+				"gate": "wall_clipping_alley_gate_center"
+			},
+			"object_text_by_id": {
+				"tire": "alley_tire_clipping",
+				"bike": "alley_bike_clipping",
+				"gate": "alley_gate_clipping"
+			},
+			"click_rect": [
+				365,
+				103,
+				28,
+				36
+			],
+			"when": "um por bandido vencido (permanent.alley); desenhar na ordem de order (o último fica por cima)",
+			"hover": "o texto object_text_by_id do bandido vencido mais recente (o último de order que já foi vencido)",
+			"_nota": "Ronda 2a1 (B1): à direita do capuz no prego (até x 362), embaixo do relógio de rounds (até y 100), antes da porta de vidro (x 399). Parede lisa embaixo (conferido no gerador)."
+		}
+	}
+}
