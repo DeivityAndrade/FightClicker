@@ -7,6 +7,13 @@ extends Control
 ## Ao abrir o jogo (fase3-api §8): tela de fim pendente -> luta pendente (pula a animação) -> garagem.
 
 signal janela_mudou(aberta: bool)
+## ID4: o menu principal escolheu e o Fluxo já agiu. `acao`: "continuar" | "novo_jogo" | "sair" | "copia_falhou" (o save foi mantido, o menu segue aberto).
+signal menu_escolheu(acao: String)
+
+## Script do menu (UI/UX). Se não existir, o jogo abre direto na sala, como antes. Variável para os testes trocarem por um menu falso.
+var caminho_menu := "res://ui/menu_principal.gd"
+var acao_sair := Callable()  # só para testes: no lugar de fechar o jogo no SAIR
+var menu: Control  # o menu principal enquanto aberto (contrato: docs/fases/identidade-id4-contrato.md)
 
 var tela: TelaLuta
 var janela: JanelaBase  # prévia, vitória, fim ou confirmação de aposentar (só uma por vez)
@@ -38,18 +45,95 @@ func _ready() -> void:
 	GameState.aviso_data.connect(_ao_aviso_data)
 	GameState.treino_fora_mudou.connect(_ao_treino_fora)
 	GameState.ronda_mudou.connect(_ao_ronda)
+	if _menu_automatico():
+		mostrar_menu()  # ID4: o menu vem primeiro; as pendências esperam ele fechar
 	call_deferred("_checar_pendencias")
 
 
 ## Liga os botões LUTAR! e APOSENTAR da barra de baixo.
 func ligar(barra: BarraBaixo) -> void:
 	_barra = barra
+	if menu != null:
+		barra.definir_janela_aberta(true)  # o menu abriu antes da barra ser ligada
 	barra.lutar_pedido.connect(abrir_previa)
 	barra.aposentar_pedido.connect(abrir_aposentar)
 
 
 func ocupado() -> bool:
-	return janela != null or tela.visible or treino != null or ronda != null
+	return janela != null or tela.visible or treino != null or ronda != null or menu != null
+
+
+# --- ID4: menu principal (abre antes de tudo; CONTINUAR / NOVO JOGO / SAIR) ---
+
+## O menu abre sozinho ao iniciar o jogo, exceto em testes e ferramentas (`--script`) e com `--sem-menu`.
+func _menu_automatico() -> bool:
+	var args := OS.get_cmdline_args()
+	return not ("--script" in args or "-s" in args or "--sem-menu" in OS.get_cmdline_user_args() or "--sem-menu" in args)
+
+
+## Abre o menu. Devolve false (e nada muda) se o script do menu não existe ou não segue o contrato.
+func mostrar_menu() -> bool:
+	if menu != null:
+		return true
+	if not ResourceLoader.exists(caminho_menu):
+		return false
+	var script = load(caminho_menu)
+	if not (script is GDScript) or not (script as GDScript).can_instantiate():
+		return false
+	var novo = (script as GDScript).new()
+	if not (novo is Control) or not novo.has_signal("escolheu"):
+		if novo is Node:
+			novo.free()
+		return false
+	menu = novo
+	menu.escolheu.connect(_ao_menu_escolheu)
+	GameState.definir_menu_aberto(true)  # jogo parado, nada salvo, nenhuma janela por baixo
+	Dica.limpar()
+	_fechar_cartao()
+	add_child(menu)
+	if _barra != null:
+		_barra.definir_janela_aberta(true)
+	janela_mudou.emit(true)
+	return true
+
+
+func _ao_menu_escolheu(acao: String) -> void:
+	if menu == null:
+		return
+	match acao:
+		"sair":
+			if acao_sair.is_valid():
+				acao_sair.call()  # gancho dos testes (não podem fechar o processo)
+			else:
+				get_tree().quit()  # sem salvar: nada mudou desde que o menu abriu
+			menu_escolheu.emit(acao)
+			return
+		"novo_jogo":
+			if GameState.tem_save():
+				GameState.novo_jogo_com_copia()
+				if GameState.tem_save():
+					menu_escolheu.emit("copia_falhou")  # a cópia falhou: o save foi mantido e o menu continua
+					return
+			else:
+				GameState.apagar_save()  # sem save: só zera o estado (a abertura toca)
+		"continuar":
+			pass
+		_:
+			return
+	_fechar_menu()
+	menu_escolheu.emit(acao)
+
+
+func _fechar_menu() -> void:
+	if menu == null:
+		return
+	menu.queue_free()
+	menu = null
+	GameState.definir_menu_aberto(false)
+	if _barra != null and janela == null and not tela.visible:
+		_barra.definir_janela_aberta(false)
+	janela_mudou.emit(ocupado())
+	call_deferred("_checar_pendencias")  # fim pendente, luta pendente, escolha de arte, prévia do dia
 
 
 # --- Fase 7a2: treino fora de hora (IR no balão do Osmar -> Choque ou Panfletagem -> prêmio -> VOLTAR) ---
@@ -476,7 +560,7 @@ func _ao_carreira_mudou() -> void:
 
 # Ordem de abertura: tela de fim pendente -> luta pendente -> garagem normal.
 func _checar_pendencias() -> void:
-	if janela != null or tela.visible:
+	if janela != null or tela.visible or menu != null:
 		return
 	if GameState.tem_fim_pendente():
 		_abrir_fim(GameState.fim)

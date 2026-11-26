@@ -194,6 +194,7 @@ var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
 var _f7b2 = preload("res://tools/ui/audit/estados_f7b2.gd").new(self)
 var _f8a1 = preload("res://tools/ui/audit/estados_f8a1.gd").new(self)
 var _f8a2 = preload("res://tools/ui/audit/estados_f8a2.gd").new(self)
+var _menu = preload("res://tools/ui/audit/estados_menu.gd").new(self)
 var _ronda = preload("res://tools/ui/audit/estados_ronda.gd").new(self)
 var _estr = preload("res://tools/ui/audit/regras_estritas.gd").new(self)  # regras da fase Identidade (--estrito)
 var achados_arquivo := ""  # --achados <arquivo>: grava os achados das regras estritas (TSV)
@@ -522,6 +523,7 @@ func _rodar() -> void:
 	await _f8a1._rodar_fase8a1()
 	await _f8a2._rodar_fase8a2()
 	await _ronda._rodar_fase_ronda()
+	await _menu._rodar_menu()
 	_fechar_cena()
 
 

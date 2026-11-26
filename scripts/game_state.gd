@@ -156,6 +156,11 @@ var ultimo_save_unix := 0
 var ultimo_save_texto := "nenhum"
 var avisos: Array[String] = []
 var autosave_ativo := true
+# ID4: o menu principal está aberto (jogo parado, nada é salvo). Opções vivem em user://opcoes.cfg, fora do save.
+var menu_aberto := false
+var volume_geral := 1.0  # 0 a 1 (bus Master)
+var volume_efeitos := 1.0  # 0 a 1 (bus Efeitos)
+var tela_cheia := false
 
 var _tempo_autosave := 0.0
 var _tempo_risco := 0.0
@@ -291,8 +296,10 @@ const _SaveValidacao := preload("res://scripts/estado/save_validacao.gd")
 const _TreinoFora := preload("res://scripts/estado/treino_fora.gd")
 const _LigaRegional := preload("res://scripts/estado/liga_regional.gd")
 const _Centro := preload("res://scripts/estado/centro.gd")
+const _MenuOpcoes := preload("res://scripts/estado/menu_opcoes.gd")
 const _Ronda := preload("res://scripts/estado/ronda.gd")
 var _ronda := _Ronda.new(self)
+var _menu := _MenuOpcoes.new(self)  # ID4: menu principal, cópia do save, parede, opções
 var _centro := _Centro.new(self)
 var _liga := _LigaRegional.new(self)
 var _treino := _TreinoFora.new(self)
@@ -369,6 +376,7 @@ func inicializar(pasta_save: String, caminho_config: String,
 	ronda_cfg = RondaData.carregar()
 	_ronda.zerar()
 	store = SaveStore.new(pasta_save)
+	_menu.opcoes_carregar()  # ID4: volume e tela cheia (arquivo próprio, ao lado do save)
 	_aparelhos._ajustar_assist()
 	carregar_save()
 
@@ -1161,3 +1169,24 @@ func ronda_concluir() -> Dictionary: return _ronda.ronda_concluir()
 func ronda_voltar() -> void: _ronda.ronda_voltar()
 ## {legend, level, next_level_at, max_level, scares, rounds, shown_level}.
 func lenda() -> Dictionary: return _ronda.lenda()
+
+
+# ===== ID4: menu principal, repasses para scripts/estado/menu_opcoes.gd =====
+## Há save (principal ou backup)? Sem ele o CONTINUAR não existe.
+func tem_save() -> bool: return _menu.tem_save()
+## NOVO JOGO: copia o save para user://save_copia_AAAAMMDD_HHMMSS.json, apaga o save e zera o estado. Devolve a cópia ("" = não havia save ou a cópia falhou e o save foi mantido).
+func novo_jogo_com_copia() -> String: return _menu.novo_jogo_com_copia()
+## Ids das camadas da parede do menu visíveis (ordem do parede.json). Sem save: só as sempre.
+func parede_menu() -> Array: return _menu.parede_menu()
+## O mesmo com os dicionários do parede.json (id, file, pos, size).
+func parede_camadas() -> Array: return _menu.parede_camadas()
+## O Fluxo marca o menu aberto: jogo parado e nada salvo.
+func definir_menu_aberto(aberto: bool) -> void: _menu.definir_menu_aberto(aberto)
+## Lê opcoes.cfg (ausente = padrões) e aplica.
+func opcoes_carregar() -> void: _menu.opcoes_carregar()
+## Grava opcoes.cfg (nunca o save).
+func opcoes_salvar() -> bool: return _menu.opcoes_salvar()
+## Aplica volume_geral, volume_efeitos e tela_cheia nos buses e na janela.
+func opcoes_aplicar() -> void: _menu.opcoes_aplicar()
+## Estado real da janela (F11 muda por fora).
+func tela_cheia_atual() -> bool: return _menu.tela_cheia_atual()
