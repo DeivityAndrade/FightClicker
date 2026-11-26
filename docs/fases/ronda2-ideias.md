@@ -67,3 +67,5 @@ Regras:
 ## Vilões guardados (2026-11-25)
 - **Apagão** (eletricista que apaga a luz do bairro, com bateria nas costas e choque no soco). O dono quer usá-lo no futuro, melhorado e com o corpo mais exagerado. O mockup está em docs/arte/mockups/ronda2a_vilao_B.png.
 - **Rei Calota** (rei do ferro-velho com armadura de calotas). Fica de reserva. O mockup está em docs/arte/mockups/ronda2a_vilao_A.png.
+
+- **Atualização (2026-11-25):** o Apagão v2 virou o supervilão da Ronda 2a. Quem fica guardado agora é o **Capivarão** v2 (ex-mascote de várzea preso na fantasia), que o dono também gostou. Mockup: docs/arte/mockups/ronda2a_capivarao_v2.png.

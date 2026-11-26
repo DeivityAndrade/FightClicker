@@ -192,3 +192,4 @@ semente própria; passivas de adversário da 8a1 já existem). O jogo não foi r
 - **Supervilão da 2a: C, Capivarão** (escolha do dono em 2026-11-25). Antes da arte final, o focinho precisa ler como capivara em 1x.
 - **O B, Apagão (eletricista), fica guardado para um capítulo futuro.** O dono gostou e quer melhorá-lo: dar mais exagero ao corpo. Pode ser o vilão do Ringue da Lua na 8b ou do capítulo mundial.
 - O A, Rei Calota, fica de reserva.
+- **Atualização (2026-11-25):** depois de ver as versões v2, o dono trocou o supervilão. **O da 2a passa a ser o B, Apagão (v2)**: bateria nas costas, coroa de cabos, choque e a pose de apagão. Passiva sugerida: `adv_slippery`. Troféu: o capacete com a lanterna quebrada. **O Capivarão (v2) fica guardado** para um capítulo futuro, e o Rei Calota continua de reserva.
