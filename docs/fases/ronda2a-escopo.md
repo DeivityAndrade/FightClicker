@@ -188,4 +188,4 @@ semente própria; passivas de adversário da 8a1 já existem). O jogo não foi r
 - Supervilão: o dono quer ver **um mockup de cada** (A, B, C) antes de escolher.
 - Estilos: aparecem **só na personalização do próximo discípulo**. Não há troca no Esconderijo.
 - Poder: o dono deixou a decisão para o Produtor, que decidiu **só visual e lore** na 2a. Nenhum nó de poder novo.
-- Menu (identidade D4): o **CONTINUAR fica sempre vermelho**.
+- Menu (identidade D4): primeiro o dono pediu o CONTINUAR sempre vermelho. Depois de ver a captura, mudou: **só o botão em foco fica vermelho** e os outros, CONTINUAR inclusive, ficam em papel.

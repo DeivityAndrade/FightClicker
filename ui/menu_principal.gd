@@ -450,10 +450,9 @@ func _focar(i: int, com_som: bool = true) -> void:
 
 func _atualizar_foco() -> void:
 	for i in _botoes.size():
+		# Decisão do dono (2026-11-25): só o botão em foco é vermelho; os outros, CONTINUAR inclusive, ficam em papel.
 		if i == _foco:
 			_estilo_botao(_botoes[i], "foco")
-		elif _ids[i] == "continuar":
-			_estilo_botao(_botoes[i], "vermelho")
 		else:
 			_estilo_botao(_botoes[i], "papel")
 	_posicionar_setas()
