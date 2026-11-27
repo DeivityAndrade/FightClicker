@@ -2700,7 +2700,8 @@ func _atualizar_mentor() -> void:
 	_atualizar_mentor2(stand)
 	# O caixote fica com ou sem gente sentada (assento_visivel); na cena grande ele só aparece quando a cena o pousa.
 	var tex_caixote := UiTema.com_local("garage_crate")
-	var caixote := ((GameState.assento_visivel() or not seat.is_empty()) and not _cena_ativa) or _caixote_cena  # quem senta sempre tem o caixote
+	# Quem senta sempre tem o caixote, mesmo numa cena que não esconde os mentores (chegada_discipulo): sem isso o John flutua.
+	var caixote := (GameState.assento_visivel() and not _cena_ativa) or not seat.is_empty() or _caixote_cena
 	if _caixote.visible != caixote:
 		_caixote.visible = caixote
 	if caixote and _caixote.texture != UiTema.textura(tex_caixote):
