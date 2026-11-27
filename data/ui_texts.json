@@ -751,6 +751,60 @@
 	"belt_regional_lost": "O BLINDADO FICA COM O CINTURÃO. VOLTE MAIS FORTE",
 	"belt_regional_label": "CINTURÃO DO VALE",
 
+	"league_national_name": "LIGA NACIONAL",
+	"league_national_next": "PRÓXIMA LUTA NACIONAL: {d} DIAS",
+	"league_national_invite_title": "CONVITE: LIGA NACIONAL",
+	"league_national_invite_line": "O BLINDADO CAIU. O PAÍS QUER VER A RAÍZES",
+	"arena_nacional_name": "GINÁSIO NACIONAL DE ESPORTES",
+
+	"opp_passive_adv_cold_read_name": "LEITURA FRIA",
+	"opp_passive_adv_cold_read_line": "LÊ O SEU CONTRAGOLPE: O K.O. DE CONTRAGOLPE QUASE NÃO SAI",
+	"opp_passive_adv_cold_read_jeito": "CONTRAGOLPE",
+	"opp_passive_adv_oak_leg_name": "CANELA DE JEQUITIBÁ",
+	"opp_passive_adv_oak_leg_line": "CHUTE NA CANELA DELE É CHUTE NA MADEIRA: O RODADO QUASE NÃO DERRUBA",
+	"opp_passive_adv_oak_leg_jeito": "CHUTE RODADO",
+	"opp_passive_adv_champion_name": "LEITURA COMPLETA",
+	"opp_passive_adv_champion_line": "JÁ VIU TODOS OS JEITOS: CADA UM DECIDE PELA METADE",
+	"opp_passive_adv_champion_jeito": "TODOS OS JEITOS",
+	"opp_passive_adv_blindado_study_name": "BLINDADO ESTUDIOSO",
+	"opp_passive_adv_blindado_study_line": "GUARDA FECHADA NO 1º ROUND, E TRAVA O JEITO QUE ELE ASSISTIU NA FITA",
+	"opp_passive_adv_blindado_study_jeito": "TODOS NO 1º ROUND",
+	"opp_passive_studied": "ELE ESTUDOU O SEU {jeito}",
+	"opp_passive_studied_other": "ELE ESTUDOU O {jeito}. VOCÊ MUDOU: SÓ A GUARDA",
+	"opp_passive_half": "ATRAPALHA: {jeito} (METADE)",
+
+	"fight_opp_block_counter": "LEU O CONTRA",
+	"fight_opp_block_spin": "PERNA DE PAU",
+	"fight_opp_block_sub": "SAIU DA CHAVE",
+
+	"reason_opp_adv_cold_read": "ELE LEU O CONTRAGOLPE: O K.O. NÃO SAIU",
+	"reason_opp_adv_oak_leg": "O RODADO ACERTOU E ELE FICOU DE PÉ: CANELA DE MADEIRA",
+	"reason_opp_adv_champion": "O CAMPEÃO JÁ TINHA VISTO O SEU JEITO: ELE DECIDE PELA METADE",
+	"reason_opp_adv_blindado_study": "O BLINDADO ESTUDOU A FITA: A GUARDA E A TRAVA SEGURARAM VOCÊ",
+	"tip_opp_adv_cold_read": [
+		"CONTRAGOLPE NÃO ENGANA ELE. TENTE OUTRO JEITO",
+		"MÃO RÁPIDA E AS ARTES DE CHÃO NÃO PRECISAM DO CONTRA"
+	],
+	"tip_opp_adv_oak_leg": [
+		"O RODADO NÃO DERRUBA. TREINE FORÇA OU ENTRE NO CLINCH",
+		"CLINCH, QUEDA E SOCO NÃO DEPENDEM DA CANELA"
+	],
+	"tip_opp_adv_champion": [
+		"NENHUM JEITO SOZINHO RESOLVE. TREINE OS ATRIBUTOS",
+		"ELE LÊ TUDO PELA METADE. SOBRA FORÇA E RESISTÊNCIA"
+	],
+	"tip_opp_adv_blindado_study": [
+		"ELE ASSISTIU AO SEU JEITO. MUDE DE JEITO NA PRÓXIMA CAMPANHA",
+		"MUDE DE TÁTICA NA LUTA: O DEFENSIVO ABRE A GUARDA"
+	],
+
+	"belt_national_title": "CINTURÃO NACIONAL",
+	"belt_national_line": "O CAMPEÃO CAIU. O PAÍS CONHECE A RAÍZES",
+	"belt_national_unlock": "COMPLEXO DE ELITE LIBERADO",
+	"belt_national_soon": "A MUDANÇA CHEGA NA PRÓXIMA VERSÃO",
+	"belt_national_lost": "O CAMPEÃO FICA COM O CINTURÃO NACIONAL. VOLTE MAIS FORTE",
+	"belt_national_label": "CINTURÃO NACIONAL",
+
 	"move_title_center": "CENTRO RAÍZES",
 	"move_effect_center": "TREINO x{mult} / ALUNOS NOVOS",
 	"move_no_fights_center": "SEM LUTA NOVA POR ENQUANTO",

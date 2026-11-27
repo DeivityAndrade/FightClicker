@@ -52,7 +52,11 @@
 		"regional_league_opened": { "priority": 9, "defer": true },
 		"regional_belt_first": { "priority": 9, "defer": true },
 		"james_intro": { "priority": 10, "defer": false },
-		"james_after": { "priority": 10, "defer": true }
+		"james_after": { "priority": 10, "defer": true },
+		"national_league_opened": { "priority": 9, "defer": true },
+		"national_belt_first": { "priority": 9, "defer": true },
+		"james_nac_intro": { "priority": 10, "defer": false },
+		"james_nac_after": { "priority": 10, "defer": true }
 	},
 	"opening": {
 		"max_seconds": 20, "skip_hold_seconds": 0.5, "gap_between": 0.3, "first_line_at": 1.5,
@@ -76,6 +80,8 @@
 		{ "id": "cl_primeira_academia", "speaker": "coach", "text": "a garagem vai junto,\nmesmo sem a lâmpada.", "trigger": "gym_arrival", "repeat": "once", "conditions": { "location": "gym", "milestone_present": ["cena_primeira_academia"] } },
 		{ "id": "cl_liga_regional", "speaker": "coach", "text": "é o blindado. já ouvi\nfalar da academia dele.", "trigger": "regional_league_opened", "repeat": "once", "conditions": { "milestone_present": ["regional_league_opened"] } },
 		{ "id": "cl_cinturao_regional", "speaker": "coach", "text": "o cinturão é do vale.\no resto a gente vê.", "trigger": "regional_belt_first", "repeat": "once", "conditions": { "milestone_present": ["regional_belt_first"] } },
+		{ "id": "cl_liga_nacional", "speaker": "coach", "text": "liga nacional. tem\ntelão e tudo.", "trigger": "national_league_opened", "repeat": "once", "conditions": { "milestone_present": ["national_league_opened"] } },
+		{ "id": "cl_cinturao_nacional", "speaker": "coach", "text": "cinturão nacional.\nnunca achei que ia ver um.", "trigger": "national_belt_first", "repeat": "once", "conditions": { "milestone_present": ["national_belt_first"] } },
 		{ "id": "cl_passar_posto", "speaker": "coach", "text": "a escola não para.\nquem sai ensina.", "trigger": "retire", "repeat": "once", "enabled": false, "conditions": { "location": "garage" } },
 
 		{ "id": "cl_compra_1", "speaker": "coach", "text": "a sala tá ficando gente.", "trigger": "big_purchase", "repeat": "rest", "group": "compra" },
@@ -168,7 +174,19 @@
 		{ "id": "rival_james_after_win_many_1", "speaker": "rival", "text": "escola pequena não dura.\nvolte quando crescer.", "trigger": "james_after", "repeat": "rest", "group": "james_after_win_many" },
 		{ "id": "rival_james_after_lose_first_1", "speaker": "rival", "text": "sorte de principiante.\nescola pequena tem isso.", "trigger": "james_after", "repeat": "rest", "group": "james_after_lose_first" },
 		{ "id": "rival_james_after_lose_school_won_1", "speaker": "rival", "text": "duas sortes. coincidência\nda escola, só isso.", "trigger": "james_after", "repeat": "rest", "group": "james_after_lose_school_won" },
-		{ "id": "rival_james_after_lose_many_1", "speaker": "rival", "text": "noite ruim, só isso.\na raízes que não se iluda.", "trigger": "james_after", "repeat": "rest", "group": "james_after_lose_many" }
+		{ "id": "rival_james_after_lose_many_1", "speaker": "rival", "text": "noite ruim, só isso.\na raízes que não se iluda.", "trigger": "james_after", "repeat": "rest", "group": "james_after_lose_many" },
+
+		{ "id": "rival_jn_intro_first_1", "speaker": "rival", "text": "liga nacional. o vale\nficou pequeno pra mim.", "trigger": "james_nac_intro", "repeat": "rest", "group": "jn_intro_first" },
+		{ "id": "rival_jn_intro_first_2", "speaker": "rival", "text": "ainda não sei o seu jeito.\nvou aprender de graça.", "trigger": "james_nac_intro", "repeat": "rest", "group": "jn_intro_first" },
+		{ "id": "rival_jn_intro_studied_1", "speaker": "rival", "text": "assisti às suas lutas.\nconheço o seu jeito de cor.", "trigger": "james_nac_intro", "repeat": "rest", "group": "jn_intro_studied" },
+		{ "id": "rival_jn_intro_studied_2", "speaker": "rival", "text": "caderno, fita, tudo.\nnão tem surpresa aqui.", "trigger": "james_nac_intro", "repeat": "rest", "group": "jn_intro_studied" },
+		{ "id": "rival_jn_intro_changed_1", "speaker": "rival", "text": "mudou o jeito? esperto.\nmeu caderno não previu.", "trigger": "james_nac_intro", "repeat": "rest", "group": "jn_intro_changed" },
+		{ "id": "rival_jn_intro_changed_2", "speaker": "rival", "text": "estudei outra coisa.\nainda assim, a guarda fica.", "trigger": "james_nac_intro", "repeat": "rest", "group": "jn_intro_changed" },
+
+		{ "id": "rival_jn_after_win_first_1", "speaker": "rival", "text": "estudar valeu a pena.\nvocês quase incomodam.", "trigger": "james_nac_after", "repeat": "rest", "group": "jn_after_win_first" },
+		{ "id": "rival_jn_after_win_many_1", "speaker": "rival", "text": "de novo no meu caderno.\nvocês ensinam bem. só isso.", "trigger": "james_nac_after", "repeat": "rest", "group": "jn_after_win_many" },
+		{ "id": "rival_jn_after_lose_first_1", "speaker": "rival", "text": "isso eu não anotei.\nnão foi só sorte, vá.", "trigger": "james_nac_after", "repeat": "rest", "group": "jn_after_lose_first" },
+		{ "id": "rival_jn_after_lose_many_1", "speaker": "rival", "text": "vou reescrever o caderno.\nnão se acostume.", "trigger": "james_nac_after", "repeat": "rest", "group": "jn_after_lose_many" }
 	],
 	"objects": {
 		"debt_notice": { "title": "AVISO DE COBRANÇA", "title_alt": "AVISO FINAL", "text": "Aluguel em atraso. Regularize ou desocupe." },
