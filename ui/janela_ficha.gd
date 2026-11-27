@@ -2,6 +2,7 @@ class_name JanelaFicha
 extends JanelaBase
 ## Ronda 2a1: a ficha de um bandido já vencido (clicar em LER na parede do Dossiê): retrato, nome e apelido, ficha corrida, a manchete do
 ## dia seguinte, a testemunha (nunca diz quem é o vulto), o carimbo da campanha e o desafio. Só lê o item de `GameState.dossie()`.
+## Ronda 2a2: a ficha do chefe (`esconderijo().boss`, tem `id` no lugar de `bandit`) usa a moldura dourada e mostra o título da imprensa.
 
 signal fechar_pedido
 
@@ -15,19 +16,23 @@ func abrir_com(f: Dictionary) -> void:
 	var rap := str(f.get("rap_sheet", "")).to_upper()
 	var manchete := str(f.get("headline", "")).to_upper()
 	var testemunha := str(f.get("witness", "")).to_upper()
+	var chefe := not f.has("bandit")
+	var titulo := str(f.get("press_title", "")).to_upper()
 	var h := 18.0 + 6.0 + 36.0 + 8.0  # faixa do título + ar + retrato + ar
 	var n_rap := _linhas_de(rap)
 	var n_man := _linhas_de(manchete)
 	var n_tes := _linhas_de(testemunha)
 	h += 9.0 * float(n_rap) + 8.0 + 9.0 * float(n_man) + 8.0 + 9.0 * float(n_tes) + 8.0
 	h += 12.0 + 12.0 + 8.0 + 38.0  # carimbo, desafio, ar, botão e margem
+	if titulo != "":
+		h += 12.0  # o título da imprensa
 	h = ceilf(h)
 	var topo := floorf((360.0 - (h + SOMBRA)) / 2.0)
 	moldura("ui_window", Rect2(152, topo, 336, h))
 	faixa_titulo("neutral", Rect2(154, topo + 2.0, 332, 16), str(f.get("name", "")).to_upper())
 	var y := topo + 24.0
-	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("opp_alley_" + str(f.get("bandit", "")), {})
-	var q := UiTema.textura_rect(painel, "c_retrato_moldura", X0, y)
+	var info: Dictionary = UiTema.manifest().get("by_data_id", {}).get("opp_alley_" + str(f.get("id", "") if chefe else f.get("bandit", "")), {})
+	var q := UiTema.textura_rect(painel, "c_retrato_moldura_ouro" if chefe else "c_retrato_moldura", X0, y)
 	UiTema.textura_rect(q, str(info.get("portrait", "")), 2, 2)
 	UiTema.rotulo(painel, str(f.get("nickname", "")).to_upper(), UiTema.R1, X0 + 42, y + 5)
 	UiTema.rotulo(painel, str(f.get("profile", "")).to_upper(), UiTema.cor_nome(str(info.get("color", "g3"))), X0 + 42, y + 17)
@@ -45,6 +50,9 @@ func abrir_com(f: Dictionary) -> void:
 	y += _bloco(testemunha, UiTema.G3, y, n_tes)
 	UiTema.rotulo_centro(painel, str(f.get("stamp", "")).to_upper(), UiTema.Y1, 320.0, y)
 	y += 12.0
+	if titulo != "":
+		UiTema.rotulo_centro(painel, titulo, UiTema.Y2, 320.0, y)
+		y += 12.0
 	UiTema.rotulo_centro(painel, str(f.get("challenge_text", "")).to_upper(), UiTema.GR3 if bool(f.get("challenge", false)) else UiTema.G3, 320.0, y)
 	var b := botao_texto(Rect2(240, topo + h - 12.0 - 26.0, 160, 26), UiTema.txt("hideout_close", "FECHAR"), UiTema.WHITE, "", 1, "", true)
 	b.pressed.connect(func() -> void: fechar_pedido.emit())

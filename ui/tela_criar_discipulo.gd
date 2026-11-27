@@ -191,6 +191,14 @@ func _montar_campo(i: int, campo: String, rotulo_txt: String, kind: String, n_co
 	dir.pressed.connect(func() -> void: _trocar(campo, 1))
 
 
+## A opção é rara (`rare` no disciples.json: o calção FIO DESENCAPADO)? Só muda o gato da marca.
+func _opcao_rara(campo: String, id: String) -> bool:
+	for o in GameState.disciples.opcoes(campo):
+		if str(o.get("id", "")) == id:
+			return bool(o.get("rare", false))
+	return false
+
+
 func _linha_apagada(campo: String) -> bool:
 	for l in GameState.linhas_tela_criacao():
 		if str(l.field) == campo:
@@ -241,6 +249,7 @@ func _atualizar() -> void:
 		var marca := GameState.disciples.marca_da_opcao(campo, atual) == "cat"
 		var extra := 12.0 if marca else 0.0  # o gato (9 px + 3 de ar) entra no grupo centralizado
 		gato.visible = marca
+		gato.texture = UiTema.textura("icon_region_black_cat_9_gold" if marca and _opcao_rara(campo, atual) else "icon_region_black_cat_9")  # 2a2: o raro tem o gato dourado
 		gato.position.y = UiTema.y_imagem(Rect2(0, 0, 1, ALT_LINHA), 9.0)
 		if str(c.kind) == "text":
 			var nome_opcao := UiTema.txt("disc_opt_%s_%s" % [campo, atual], atual.to_upper())

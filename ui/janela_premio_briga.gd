@@ -3,6 +3,7 @@ extends JanelaPremioRonda
 ## Ronda 2a1: prêmio da noite de briga (depois da luta no beco). Mesma janela do prêmio da Ronda, com outro conteúdo: BRIGA GANHA
 ## (ficha nova, recorte, desafio cumprido, estilo novo, lenda) ou NOITE PERDIDA (SAIU MANCANDO, o capuz volta no próximo relógio e a
 ## REVANCHE fica no quadro). Só lê o `night_prize` que `GameState.briga_lutar()` devolveu; nada de regra aqui.
+## Ronda 2a2 (o chefe, `boss`): na vitória vêm também o capacete (normal e/ou o raro aceso), o título da imprensa e o cartaz no menu.
 
 
 func _titulo_da_janela(_sobe: bool) -> String:
@@ -34,6 +35,8 @@ func _linhas(sobe: bool) -> Array:
 			if manchete != "":
 				var n3 := _linhas_de(manchete)
 				r.append({"h": 9.0 * float(n3) + 8.0, "f": func(y: float) -> void: _texto(manchete, UiTema.G3, y, n3)})
+		if bool(p.get("boss", false)):
+			r.append_array(_linhas_chefe())
 		if bool(p.get("challenge_done", false)):
 			r.append({"h": 19.0, "f": func(y: float) -> void: _faixa_desafio(y)})
 			var estilo := str(p.get("style_text", "")).to_upper()
@@ -52,6 +55,36 @@ func _linhas(sobe: bool) -> Array:
 	r.append({"h": 32.0, "f": func(y: float) -> void: _bolinhas(y, nivel, sobe)})
 	r.append({"h": 40.0, "f": func(y: float) -> void: _botao_voltar(y)})
 	return r
+
+
+## O que o chefe dá: o capacete (a lâmpada acesa no raro), as linhas do troféu, do título da imprensa e do cartaz do menu.
+func _linhas_chefe() -> Array:
+	var p := _premio
+	var r: Array = []
+	var trofeu := str(p.get("trophy_new", ""))
+	if trofeu != "":
+		var spr := ""
+		for t in GameState.esconderijo().get("trophies", []):
+			if str(t.get("state", "empty")) != "empty":
+				spr = str(t.get("sprite", ""))
+		if spr != "" and not UiTema.sprite(spr).is_empty():
+			r.append({"h": UiTema.tamanho_quadro(spr).y + 4.0, "f": func(y: float) -> void: _capacete(spr, y)})
+	for k in ["trophy_line", "trophy_rare_line", "press_title_line", "poster_line"]:
+		var tx := str(p.get(k, "")).to_upper()
+		if tx == "":
+			continue
+		var n := _linhas_de(tx)
+		var cor: Color = UiTema.Y2 if k == "trophy_rare_line" else UiTema.Y1
+		r.append({"h": 9.0 * float(n) + 2.0, "f": func(y: float) -> void: _texto(tx, cor, y, n)})
+	if not r.is_empty():
+		r.append({"h": 4.0, "f": func(_y: float) -> void: pass})  # ar entre o bloco do chefe e as bolinhas da lenda
+	return r
+
+
+func _capacete(spr: String, y: float) -> void:
+	var q := UiTema.tamanho_quadro(spr)
+	var t := UiTema.textura_rect(painel, spr, roundf(320.0 - q.x / 2.0), y)
+	UiTema.alinhar(t, "center_h")
 
 
 ## Faixa vermelha "DESAFIO CUMPRIDO" com o gato, no meio da janela (fundo escuro: texto cream).

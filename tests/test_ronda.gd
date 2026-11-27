@@ -59,11 +59,25 @@ func _noite(gs: Node) -> Dictionary:
 	return gs.ronda_cfg.noites["scare"]
 
 
+## Intervalo do capuz e limiares da lenda: sempre lidos do ronda.json (2a2: nada de 240 nem de limiares no teste).
+func _iv(gs: Node) -> int:
+	return int(gs.ronda_cfg.capuz.interval_s)
+
+
+func _lv(gs: Node, i: int) -> int:
+	return int(gs.ronda_cfg.niveis[i])
+
+
 # ---------------------------------------------------------------- dados
 func _teste_dados() -> void:
 	var gs := _novo("ronda_dados")
 	checar(not gs.ronda_cfg.vazio and gs.ronda_cfg.noites.has("scare"), "ronda.json lido (noite scare)")
-	checar_igual(gs.ronda_cfg.niveis, [1, 12, 30, 52, 80], "niveis da lenda")
+	var iguais: bool = gs.ronda_cfg.niveis.size() == casos.levels.size()
+	for i in mini(gs.ronda_cfg.niveis.size(), casos.levels.size()):
+		iguais = iguais and int(gs.ronda_cfg.niveis[i]) == int(casos.levels[i])
+	checar(iguais and gs.ronda_cfg.niveis.size() == 5, "niveis da lenda = os dos casos (ronda.json)")
+	checar_igual(int(gs.ronda_cfg.capuz.interval_s), 300, "capuz a cada 300 s (2a2)")
+	checar_igual(int(gs.ronda_cfg.capuz.first_after_s), 180, "1o capuz aos 180 s")
 	checar(gs.ronda_cfg.avisos.is_empty(), "ronda.json sem avisos do validador")
 	var ok := true
 	for l in 81:
@@ -339,8 +353,8 @@ func _teste_concluir_e_sair() -> void:
 	checar(p.level == 1 and p.level_before == 0 and p.level_up and str(p.level_up_line) != "" and str(p.clipping_text).contains("GATO PRETO"), "subiu ao nivel 1 com a manchete que da o nome")
 	checar(str(p.line) != "" and p.ended == "all", "linha de premio pela contagem de sustos")
 	var l: Dictionary = gs.lenda()
-	checar(l.legend == 5 and l.rounds == 1 and l.scares == 3 and l.level == 1 and l.shown_level == 1 and l.next_level_at == 12, "lenda da linhagem gravada")
-	checar(gs.capuz.open == "" and absf(float(gs.capuz.next_at) - (hood + 240.0)) < 1.0e-6, "prego vazio e proximo capuz a +240 s da volta")
+	checar(l.legend == 5 and l.rounds == 1 and l.scares == 3 and l.level == 1 and l.shown_level == 1 and l.next_level_at == _lv(gs, 1), "lenda da linhagem gravada")
+	checar(gs.capuz.open == "" and absf(float(gs.capuz.next_at) - (hood + float(_iv(gs)))) < 1.0e-6, "prego vazio e proximo capuz a +intervalo da volta")
 	checar(gs.ronda_concluir() == p, "concluir de novo devolve o mesmo premio")
 	checar_igual(gs.recorte_gato_preto().get("object_text", "black_cat_clipping_1") if not gs.recorte_gato_preto().is_empty() else "black_cat_clipping_1", "black_cat_clipping_1", "recorte pelo nivel (chave da manchete 1)")
 	checar_igual(gs._ronda.chave_recorte(), "black_cat_clipping_1", "chave do recorte no nivel 1")
@@ -349,8 +363,10 @@ func _teste_concluir_e_sair() -> void:
 	checar(salvo.permanent.black_cat.legend == 5 and salvo.career.black_cat_hood.open == "", "save com lenda e prego vazio")
 	gs.ronda_voltar()
 	# SAIR: piso + sustos feitos, sem bonus
-	_andar(gs, 240)
-	checar(gs.capuz_info().get("clickable", false), "proximo capuz 240 s depois da volta")
+	_andar(gs, _iv(gs) - 1)
+	checar(not gs.capuz_info().get("clickable", false), "1 s antes do intervalo: sem capuz")
+	_andar(gs, 1)
+	checar(gs.capuz_info().get("clickable", false), "proximo capuz um intervalo depois da volta")
 	gs.ronda_ir()
 	gs.ronda_jogo().sustos = 2
 	var q: Dictionary = gs.ronda_concluir()
@@ -358,19 +374,19 @@ func _teste_concluir_e_sair() -> void:
 	checar(str(q.line) == gs.texto_ui("ronda_left_line"), "SAIR usa a linha ronda_left_line")
 	gs.ronda_voltar()
 	# lenda so cresce; nivel 5 acima: ronda_count so no maximo
-	gs.permanente["black_cat"].legend = 79
-	_andar(gs, 240)
+	gs.permanente["black_cat"].legend = _lv(gs, 4) - 1
+	_andar(gs, _iv(gs))
 	gs.ronda_ir()
 	gs.ronda_jogo().sustos = 3
 	gs.ronda_jogo().fase = "fim"
 	var r5: Dictionary = gs.ronda_concluir()
 	checar(r5.level == 5 and r5.max_level and r5.level_up, "nivel 5 alcancado")
 	gs.ronda_voltar()
-	_andar(gs, 240)
+	_andar(gs, _iv(gs))
 	gs.ronda_ir()
 	gs.ronda_jogo().sair()
 	var r6: Dictionary = gs.ronda_concluir()
-	checar(not r6.level_up and r6.max_level and gs.lenda().legend > 80 and gs.lenda().next_level_at == 0, "depois do nivel 5: segue contando, sem aviso novo")
+	checar(not r6.level_up and r6.max_level and gs.lenda().legend > _lv(gs, 4) and gs.lenda().next_level_at == 0, "depois do nivel 5: segue contando, sem aviso novo")
 	_liberar(gs)
 
 
@@ -415,10 +431,10 @@ func _teste_arvore() -> void:
 	checar_igual(gs.estado_no("cat_watch"), "locked", "aba antiga: lacrado = trancado")
 	var item: Dictionary = gs.arvore_mapa().filter(func(n): return n.id == "cat_watch")[0]
 	checar(item.state == "sealed" and str(item.sealed_text) == "PRECISA DA LENDA NÍVEL 3" and str(item.sealed_name) == "???" and not item.can_buy, "mapa: lacrado com titulo e subtitulo do roteirista, sem compra")
-	gs.permanente["black_cat"].legend = 30
+	gs.permanente["black_cat"].legend = _lv(gs, 2)
 	checar_igual(gs.estado_mapa("cat_watch"), "visible", "lenda nivel 3: cat_watch abre")
 	checar_igual(gs.estado_mapa("cat_thanks"), "sealed", "lenda nivel 3: cat_thanks segue lacrado")
-	gs.permanente["black_cat"].legend = 80
+	gs.permanente["black_cat"].legend = _lv(gs, 4)
 	checar_igual(gs.estado_mapa("cat_thanks"), "visible", "lenda nivel 5: cat_thanks abre")
 	# compra: gasta Legado exato; Legado insuficiente recusa
 	gs.permanente["skill_nodes"] = []
@@ -486,10 +502,10 @@ func _teste_saves() -> void:
 	checar(gs.lenda().legend == 0 and gs.lenda().rounds == 0 and gs.lenda().scares == 0 and gs.lenda().shown_level == 0, "save sujo (tipos/negativos): tudo 0")
 	checar(gs.capuz.hood_s == 0.0 and gs.capuz.next_at == 180.0 and gs.capuz.open == "", "capuz sujo: padrao e open invalido = vazio")
 	var s2: Dictionary = base.duplicate(true)
-	s2.permanent["black_cat"] = {"legend": 12, "rounds": 2, "scares": 99, "shown_level": 9, "open_campaign": 3}
+	s2.permanent["black_cat"] = {"legend": _lv(gs, 1), "rounds": 2, "scares": 99, "shown_level": 9, "open_campaign": 3}
 	s2.career["black_cat_hood"] = {"hood_s": 50.0, "next_at": 290.0, "open": "scare"}
 	gs.aplicar_save(s2)
-	checar(gs.lenda().scares == 6 and gs.lenda().shown_level == 2 and gs.lenda().legend == 12, "scares <= 3 x rounds e shown_level <= nivel")
+	checar(gs.lenda().scares == 6 and gs.lenda().shown_level == 2 and gs.lenda().legend == _lv(gs, 1), "scares <= 3 x rounds e shown_level <= nivel")
 	checar(gs.capuz.open == "scare" and gs.capuz.hood_s == 50.0, "capuz valido volta como estava")
 	var s3: Dictionary = base.duplicate(true)
 	s3.permanent["black_cat"] = {"legend": 1.0e30, "rounds": 1.0e30}

@@ -1,0 +1,2635 @@
+{
+	"_sobre": "Ronda 2a2 (Artista de Personagens): entradas para MESCLAR no assets/sprites/manifest.json (todas novas). sprites -> manifest.sprites; by_data_id -> manifest.by_data_id; alley_fight_add -> acrescentar ao by_data_id.alley_fight; disciple_palette_add -> acrescentar às listas de by_data_id.disciple_palette. Script: tools/art/manifest_ronda2a2.py. Doc: Gerador: tools/art/make_sprites_ronda2a2.gd.",
+	"alley_fight_add": {
+		"arenas": {
+			"apagao": "arena_apagao"
+		},
+		"bandits": {
+			"apagao": "opp_alley_apagao"
+		}
+	},
+	"by_data_id": {
+		"arena_apagao": {
+			"_nota": "Ronda 2a2: prefixo da arena do chefe (_bg, _lamp, _crowd_back = garoa, _crowd_front; as 3 últimas são as do beco) + _dark_bg (o apagão de 1 s). data/ronda.json boss.arena = arena_apagao.",
+			"dark": "arena_apagao_dark_bg",
+			"lamp": true,
+			"lugar": "beco do poste com a caixa de luz (luta do chefe Apagão)"
+		},
+		"opp_alley_apagao": {
+			"_nota": "Ronda 2a2 (Artista de Personagens): o CHEFE do beco no rig de luta dos adversários. Mesmo quadro 112x104 e pivô (56,98). As mesmas ações dos bandidos da 2a1 (rig + reações + signature = slip_clinch, a passiva adv_slippery + flee = daze_flee) e o extra actions.blackout (puxa a alavanca: peak_frame 2 = o beco escurece). fx do golpe forte: fx_apagao_choque no hit_point. K.O. limpo: o capacete rola e a bateria solta fumaça cinza. Gerador: tools/art/make_sprites_ronda2a2.gd.",
+			"actions": {
+				"blackout": "opp_alley_apagao_blackout",
+				"block": "opp_alley_apagao_block",
+				"daze_flee": "opp_alley_apagao_daze_flee",
+				"dodge": "opp_alley_apagao_dodge",
+				"fall": "opp_alley_apagao_fall",
+				"fall_spin": "opp_alley_apagao_fall_spin",
+				"flee": "opp_alley_apagao_daze_flee",
+				"ground_bottom_idle": "opp_alley_apagao_ground_bottom_idle",
+				"ground_hit": "opp_alley_apagao_ground_hit",
+				"ground_punch": "opp_alley_apagao_ground_punch",
+				"heavy": "opp_alley_apagao_heavy",
+				"held_clinch": "opp_alley_apagao_held_clinch",
+				"hit": "opp_alley_apagao_hit",
+				"hit_body": "opp_alley_apagao_hit_body",
+				"hit_clinch": "opp_alley_apagao_hit_clinch",
+				"hit_head": "opp_alley_apagao_hit_head",
+				"hit_leg": "opp_alley_apagao_hit_leg",
+				"hit_spin": "opp_alley_apagao_hit_spin",
+				"hit_up": "opp_alley_apagao_hit_up",
+				"idle": "opp_alley_apagao_idle",
+				"jab": "opp_alley_apagao_jab",
+				"ko": "opp_alley_apagao_ko",
+				"ko_back": "opp_alley_apagao_ko_back",
+				"ko_knees": "opp_alley_apagao_ko_knees",
+				"limp": "opp_alley_apagao_limp",
+				"limp_heavy": "opp_alley_apagao_limp_heavy",
+				"signature": "opp_alley_apagao_slip_clinch",
+				"slip_clinch": "opp_alley_apagao_slip_clinch",
+				"tap_out": "opp_alley_apagao_tap_out",
+				"tired": "opp_alley_apagao_tired",
+				"victory": "opp_alley_apagao_victory"
+			},
+			"boss": "apagao",
+			"color": "y1",
+			"facing": "esquerda",
+			"name_hint": "Nélson Volt, O Apagão",
+			"portrait": "portrait_opp_alley_apagao",
+			"portrait_frame": "ui_portrait_frame_gold",
+			"portrait_silhouette": "portrait_opp_alley_apagao_silhouette",
+			"pos": [
+				346,
+				318
+			],
+			"profile": "RÁPIDO",
+			"scale": 1.1
+		}
+	},
+	"disciple_palette_add": {
+		"options": {
+			"shorts_color": [
+				{
+					"id": "live_wire",
+					"ramp": {
+						"band": "#2a2233",
+						"dark": "#2a2233",
+						"deep": "#14101a",
+						"light": "#f5d26b",
+						"mid": "#e0a040"
+					}
+				}
+			]
+		},
+		"school_symbol_source_leg_map": {
+			"live_wire": "blue"
+		}
+	},
+	"sprites": {
+		"arena_apagao_bg": {
+			"file": "res://assets/sprites/ronda2a/arena/arena_apagao_bg.png",
+			"fps": 0.0,
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"layer": "fundo",
+			"note": "Ronda 2a2: arena do chefe APAGÃO = o beco da 2a1 com o POSTE de concreto (x 166..182), o transformador, a cruzeta, a fiação embolada do 'gato' e a CAIXA DE LUZ aberta na parede (x 371..413, y 130..188) com a alavanca grande. Mesmo contrato: y 0..45 ink liso (HUD), pés em y 318, pivôs 296/346, chão livre x 200..440. Luz já aplicada. Gerador: tools/art/make_sprites_ronda2a2.gd.",
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				0,
+				0
+			],
+			"z": -100
+		},
+		"arena_apagao_crowd_back": {
+			"anim": {
+				"cheer": [
+					1.0,
+					0.0,
+					1.0,
+					0.0
+				],
+				"idle": [
+					0.0
+				]
+			},
+			"file": "res://assets/sprites/ronda2a/arena/arena_alley_crowd_back.png",
+			"fps": 4.0,
+			"frame_size": [
+				640.0,
+				314.0
+			],
+			"frames": 2.0,
+			"layer": "fundo",
+			"loop": true,
+			"note": "Ronda 2a2: a mesma camada do beco (arena_alley_crowd_back, mesmo arquivo), para o prefixo arena_apagao ter as 4 camadas do contrato. Ronda 2a1: no beco não tem público; esta camada é a GAROA atrás dos lutadores (traços finos, mais claros perto da arandela, respingos no chão), 2 quadros alternando. Quadro maior que o das outras arenas (640x314 em (0,46)): a tela usa frame_size e pos do manifest. Não cobre o HUD (começa em y 46).",
+			"pivot": [
+				0.0,
+				0.0
+			],
+			"pos": [
+				0.0,
+				46.0
+			],
+			"z": -60.0
+		},
+		"arena_apagao_crowd_front": {
+			"anim": {
+				"cheer": [
+					1.0,
+					0.0,
+					1.0,
+					0.0
+				],
+				"idle": [
+					0.0
+				]
+			},
+			"file": "res://assets/sprites/ronda2a/arena/arena_alley_crowd_front.png",
+			"fps": 4.0,
+			"frame_size": [
+				640.0,
+				48.0
+			],
+			"frames": 2.0,
+			"layer": "frente",
+			"loop": true,
+			"note": "Ronda 2a2: a mesma camada do beco (arena_alley_crowd_front, mesmo arquivo), para o prefixo arena_apagao ter as 4 camadas do contrato. Ronda 2a1: primeiro plano do beco só nos cantos (x 0..137 e 503..640; nada em x 138..502): sacos de lixo e lata à esquerda, poça com respingo de chuva e caixote à direita. 2 quadros (o respingo muda).",
+			"pivot": [
+				0.0,
+				0.0
+			],
+			"pos": [
+				0.0,
+				312.0
+			],
+			"z": 50.0
+		},
+		"arena_apagao_dark_bg": {
+			"file": "res://assets/sprites/ronda2a/arena/arena_apagao_dark_bg.png",
+			"fps": 0.0,
+			"frame_size": [
+				640,
+				360
+			],
+			"frames": 1,
+			"layer": "fundo",
+			"note": "Ronda 2a2: o APAGÃO (1 s, só apresentação, §5 do design). O mesmo fundo 2 passos abaixo, a arandela apagada, só o cone da lanterna do capacete (do Apagão parado no pivô 346,318, no quadro 2 do blackout) e as faíscas da caixa e do transformador acesas. A tela troca o _bg por este durante dark_s e escurece os lutadores e a garoa por modulate; a arandela (arena_apagao_lamp) fica no quadro 2 (apagada). Depois volta piscando (anim flicker).",
+			"pivot": [
+				0,
+				0
+			],
+			"pos": [
+				0,
+				0
+			],
+			"z": -100
+		},
+		"arena_apagao_lamp": {
+			"anim": {
+				"flicker": [
+					2.0,
+					0.0
+				],
+				"idle": [
+					0.0
+				],
+				"swing": [
+					1.0,
+					0.0,
+					1.0,
+					0.0
+				]
+			},
+			"file": "res://assets/sprites/ronda2a/arena/arena_alley_lamp.png",
+			"fps": 0.0,
+			"frame_size": [
+				40.0,
+				40.0
+			],
+			"frames": 3.0,
+			"frames_note": "0 acesa, 1 fraca (falha), 2 apagada. 'swing' aqui = a arandela falhando (1,0,1,0): não balança, pisca.",
+			"layer": "frente_do_fundo",
+			"note": "Ronda 2a2: a mesma camada do beco (arena_alley_lamp, mesmo arquivo), para o prefixo arena_apagao ter as 4 camadas do contrato. Ronda 2a1: arandela de parede do beco (o 'poste piscando'). Braço de ferro e cúpula de esmalte verde; a luz da parede e do chão já está no fundo. Tocar flicker de vez em quando e swing no golpe forte/K.O., como o refletor da borracharia.",
+			"pivot": [
+				20.0,
+				0.0
+			],
+			"pos": [
+				320.0,
+				84.0
+			],
+			"z": -50.0
+		},
+		"fx_apagao_choque": {
+			"file": "res://assets/sprites/fx/fx_apagao_choque.png",
+			"fps": 0.0,
+			"frame_size": [
+				44,
+				20
+			],
+			"frames": 1,
+			"loop": false,
+			"note": "Ronda 2a2: o CHOQUE DE LONGE do Apagão (arco elétrico que sai da luva e passa da borda do quadro), virado para a ESQUERDA. Pivô (43,10) = o hit_point do opp_alley_apagao_heavy no quadro do contato (e do ground_punch). Mostrar ~0,15 s junto com o fx_fight_hit; só branco e amarelo.",
+			"pivot": [
+				43,
+				10
+			]
+		},
+		"icon_region_black_cat_9_gold": {
+			"file": "res://assets/sprites/ui/icon_region_black_cat_9_gold.png",
+			"fps": 0.0,
+			"frame_size": [
+				9,
+				9
+			],
+			"frames": 1,
+			"note": "Ronda 2a2: o GATO DOURADO 9x9 = o icon_region_black_cat_9 na mesma forma, pintado em ouro. Marca das opções com mark 'cat' e rare true (o calção FIO DESENCAPADO, live_wire), no lugar do gato normal.",
+			"pivot": [
+				0,
+				0
+			]
+		},
+		"opp_alley_apagao_blackout": {
+			"action": "blackout",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_blackout.png",
+			"fps": 8.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-26.0,
+						-52.0
+					],
+					"hand_front": [
+						-30.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						3.0,
+						-70.0
+					],
+					"hand_front": [
+						-28.0,
+						-52.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-82.0
+					],
+					"hand_front": [
+						-26.0,
+						-55.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-80.0
+					],
+					"hand_front": [
+						-26.0,
+						-55.0
+					]
+				}
+			],
+			"hold_last": true,
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Extra do chefe (actions.blackout): puxa a alavanca da bateria na virada do round 2 para o 3 (§5 do design). 4 quadros: guarda, alcança a alavanca, PUXA (peak_frame 2: faísca na bateria; é aqui que o beco escurece), segura. Só apresentação.",
+			"peak_frame": 2,
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_block": {
+			"action": "block",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_block.png",
+			"fps": 14.5,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-17.0,
+						-73.0
+					],
+					"hand_front": [
+						-20.0,
+						-71.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-72.0
+					],
+					"hand_front": [
+						-18.0,
+						-70.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-73.0
+					],
+					"hand_front": [
+						-19.0,
+						-71.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'block' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_daze_flee": {
+			"action": "daze_flee",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_daze_flee.png",
+			"fps": 9.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-9.0,
+						-31.0
+					],
+					"hand_front": [
+						-15.0,
+						-31.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-32.0
+					],
+					"hand_front": [
+						-13.0,
+						-32.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-30.0
+					],
+					"hand_front": [
+						-14.0,
+						-31.0
+					]
+				},
+				{
+					"hand_back": [
+						-11.0,
+						-31.0
+					],
+					"hand_front": [
+						-17.0,
+						-31.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-32.0
+					],
+					"hand_front": [
+						-13.0,
+						-32.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-31.0
+					],
+					"hand_front": [
+						-14.0,
+						-31.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. SAIU TONTO E FUGIU (vitória por pontos): recua cambaleando em loop, coroa de cabos murcha e faíscas rodando a cabeça; a tela leva o x para a direita. actions.flee.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_dodge": {
+			"action": "dodge",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_dodge.png",
+			"fps": 17.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-22.0,
+						-50.0
+					],
+					"hand_front": [
+						-26.0,
+						-47.0
+					]
+				},
+				{
+					"hand_back": [
+						-17.0,
+						-48.0
+					],
+					"hand_front": [
+						-21.0,
+						-44.0
+					]
+				},
+				{
+					"hand_back": [
+						-18.0,
+						-49.0
+					],
+					"hand_front": [
+						-23.0,
+						-46.0
+					]
+				},
+				{
+					"hand_back": [
+						-22.0,
+						-51.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'dodge' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_fall": {
+			"action": "fall",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_fall.png",
+			"fps": 12.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 9,
+			"ground_frame": 4.0,
+			"hands": [
+				{
+					"hand_back": [
+						-28.0,
+						-34.0
+					],
+					"hand_front": [
+						-33.0,
+						-32.0
+					]
+				},
+				{
+					"hand_back": [
+						-25.0,
+						-41.0
+					],
+					"hand_front": [
+						-31.0,
+						-40.0
+					]
+				},
+				{
+					"hand_back": [
+						14.0,
+						-66.0
+					],
+					"hand_front": [
+						7.0,
+						-68.0
+					]
+				},
+				{
+					"hand_back": [
+						25.0,
+						-40.0
+					],
+					"hand_front": [
+						18.0,
+						-44.0
+					]
+				},
+				{
+					"hand_back": [
+						15.0,
+						-4.0
+					],
+					"hand_front": [
+						12.0,
+						-6.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-11.0
+					],
+					"hand_front": [
+						5.0,
+						-13.0
+					]
+				},
+				{
+					"hand_back": [
+						4.0,
+						-14.0
+					],
+					"hand_front": [
+						4.0,
+						-15.0
+					]
+				},
+				{
+					"hand_back": [
+						-2.0,
+						-19.0
+					],
+					"hand_front": [
+						1.0,
+						-18.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						0.0,
+						-20.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'fall' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_fall_spin": {
+			"action": "fall_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_fall_spin.png",
+			"fps": 12.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 10,
+			"ground_frame": 5.0,
+			"hands": [
+				{
+					"hand_back": [
+						-1.0,
+						-57.0
+					],
+					"hand_front": [
+						-12.0,
+						-69.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-46.0
+					],
+					"hand_front": [
+						-7.0,
+						-58.0
+					]
+				},
+				{
+					"hand_back": [
+						5.0,
+						-31.0
+					],
+					"hand_front": [
+						-11.0,
+						-37.0
+					]
+				},
+				{
+					"hand_back": [
+						14.0,
+						-33.0
+					],
+					"hand_front": [
+						1.0,
+						-36.0
+					]
+				},
+				{
+					"hand_back": [
+						29.0,
+						-13.0
+					],
+					"hand_front": [
+						9.0,
+						-18.0
+					]
+				},
+				{
+					"hand_back": [
+						42.0,
+						-7.0
+					],
+					"hand_front": [
+						12.0,
+						-12.0
+					]
+				},
+				{
+					"hand_back": [
+						42.0,
+						-9.0
+					],
+					"hand_front": [
+						12.0,
+						-14.0
+					]
+				},
+				{
+					"hand_back": [
+						42.0,
+						-7.0
+					],
+					"hand_front": [
+						12.0,
+						-12.0
+					]
+				},
+				{
+					"hand_back": [
+						42.0,
+						-7.0
+					],
+					"hand_front": [
+						12.0,
+						-12.0
+					]
+				},
+				{
+					"hand_back": [
+						42.0,
+						-7.0
+					],
+					"hand_front": [
+						12.0,
+						-12.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'fall_spin' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_ground_bottom_idle": {
+			"action": "ground_bottom_idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_ground_bottom_idle.png",
+			"fps": 5.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						0.0,
+						-20.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-23.0
+					],
+					"hand_front": [
+						0.0,
+						-21.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-23.0
+					],
+					"hand_front": [
+						0.0,
+						-21.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						0.0,
+						-20.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'ground_bottom_idle' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_ground_hit": {
+			"action": "ground_hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_ground_hit.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-9.0,
+						-26.0
+					],
+					"hand_front": [
+						-5.0,
+						-24.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-25.0
+					],
+					"hand_front": [
+						-4.0,
+						-23.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-25.0
+					],
+					"hand_front": [
+						-3.0,
+						-23.0
+					]
+				},
+				{
+					"hand_back": [
+						-6.0,
+						-24.0
+					],
+					"hand_front": [
+						-2.0,
+						-21.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-23.0
+					],
+					"hand_front": [
+						-1.0,
+						-20.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						0.0,
+						-20.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'ground_hit' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_ground_punch": {
+			"action": "ground_punch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_ground_punch.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						0.0,
+						-20.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						-13.0,
+						-13.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						-15.0,
+						-12.0
+					]
+				},
+				{
+					"hand_back": [
+						-3.0,
+						-20.0
+					],
+					"hand_front": [
+						-15.0,
+						-37.0
+					]
+				},
+				{
+					"hand_back": [
+						-3.0,
+						-20.0
+					],
+					"hand_front": [
+						-15.0,
+						-39.0
+					]
+				},
+				{
+					"hand_back": [
+						-4.0,
+						-21.0
+					],
+					"hand_front": [
+						-12.0,
+						-35.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-22.0
+					],
+					"hand_front": [
+						0.0,
+						-20.0
+					]
+				}
+			],
+			"hit_frame": 3,
+			"hit_point": [
+				-15.0,
+				-37.0
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'ground_punch' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_heavy": {
+			"action": "heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_heavy.png",
+			"fps": 14.5,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-15.0,
+						-57.0
+					],
+					"hand_front": [
+						-28.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-28.0,
+						-57.0
+					],
+					"hand_front": [
+						-22.0,
+						-62.0
+					]
+				},
+				{
+					"hand_back": [
+						-48.0,
+						-64.0
+					],
+					"hand_front": [
+						-28.0,
+						-68.0
+					]
+				},
+				{
+					"hand_back": [
+						-45.0,
+						-64.0
+					],
+					"hand_front": [
+						-26.0,
+						-68.0
+					]
+				},
+				{
+					"hand_back": [
+						-27.0,
+						-67.0
+					],
+					"hand_front": [
+						-33.0,
+						-50.0
+					]
+				}
+			],
+			"hit_frame": 2,
+			"hit_point": [
+				-48.0,
+				-64.0
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'heavy' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_held_clinch": {
+			"action": "held_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_held_clinch.png",
+			"fps": 12.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 9,
+			"hands": [
+				{
+					"hand_back": [
+						-22.0,
+						-48.0
+					],
+					"hand_front": [
+						-27.0,
+						-45.0
+					]
+				},
+				{
+					"hand_back": [
+						-25.0,
+						-41.0
+					],
+					"hand_front": [
+						-27.0,
+						-39.0
+					]
+				},
+				{
+					"hand_back": [
+						-23.0,
+						-40.0
+					],
+					"hand_front": [
+						-25.0,
+						-38.0
+					]
+				},
+				{
+					"hand_back": [
+						-18.0,
+						-35.0
+					],
+					"hand_front": [
+						-21.0,
+						-33.0
+					]
+				},
+				{
+					"hand_back": [
+						-18.0,
+						-35.0
+					],
+					"hand_front": [
+						-21.0,
+						-33.0
+					]
+				},
+				{
+					"hand_back": [
+						-23.0,
+						-40.0
+					],
+					"hand_front": [
+						-25.0,
+						-38.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-44.0
+					],
+					"hand_front": [
+						-23.0,
+						-40.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-47.0
+					],
+					"hand_front": [
+						-25.0,
+						-43.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'held_clinch' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit": {
+			"action": "hit",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit.png",
+			"fps": 14.5,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 3,
+			"hands": [
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-19.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-22.0,
+						-52.0
+					],
+					"hand_front": [
+						-22.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-25.0,
+						-52.0
+					],
+					"hand_front": [
+						-29.0,
+						-49.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit_body": {
+			"action": "hit_body",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit_body.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-12.0,
+						-28.0
+					],
+					"hand_front": [
+						-17.0,
+						-25.0
+					]
+				},
+				{
+					"hand_back": [
+						-9.0,
+						-26.0
+					],
+					"hand_front": [
+						-13.0,
+						-22.0
+					]
+				},
+				{
+					"hand_back": [
+						-9.0,
+						-25.0
+					],
+					"hand_front": [
+						-13.0,
+						-22.0
+					]
+				},
+				{
+					"hand_back": [
+						-12.0,
+						-29.0
+					],
+					"hand_front": [
+						-19.0,
+						-25.0
+					]
+				},
+				{
+					"hand_back": [
+						-17.0,
+						-41.0
+					],
+					"hand_front": [
+						-26.0,
+						-37.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit_body' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit_clinch": {
+			"action": "hit_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit_clinch.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 6,
+			"hands": [
+				{
+					"hand_back": [
+						-11.0,
+						-47.0
+					],
+					"hand_front": [
+						-20.0,
+						-44.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-45.0
+					],
+					"hand_front": [
+						-17.0,
+						-43.0
+					]
+				},
+				{
+					"hand_back": [
+						-11.0,
+						-48.0
+					],
+					"hand_front": [
+						-20.0,
+						-45.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-51.0
+					],
+					"hand_front": [
+						-23.0,
+						-47.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-51.0
+					],
+					"hand_front": [
+						-25.0,
+						-47.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit_clinch' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit_head": {
+			"action": "hit_head",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit_head.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-51.0
+					],
+					"hand_front": [
+						-19.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-50.0
+					],
+					"hand_front": [
+						-16.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-51.0
+					],
+					"hand_front": [
+						-19.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-12.0,
+						-51.0
+					],
+					"hand_front": [
+						-23.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-13.0,
+						-51.0
+					],
+					"hand_front": [
+						-25.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit_head' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit_leg": {
+			"action": "hit_leg",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit_leg.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-13.0,
+						-40.0
+					],
+					"hand_front": [
+						-23.0,
+						-38.0
+					]
+				},
+				{
+					"hand_back": [
+						-11.0,
+						-35.0
+					],
+					"hand_front": [
+						-22.0,
+						-30.0
+					]
+				},
+				{
+					"hand_back": [
+						-11.0,
+						-35.0
+					],
+					"hand_front": [
+						-22.0,
+						-30.0
+					]
+				},
+				{
+					"hand_back": [
+						-13.0,
+						-39.0
+					],
+					"hand_front": [
+						-23.0,
+						-31.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-44.0
+					],
+					"hand_front": [
+						-25.0,
+						-35.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit_leg' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit_spin": {
+			"action": "hit_spin",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit_spin.png",
+			"fps": 12.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						-1.0,
+						-57.0
+					],
+					"hand_front": [
+						-12.0,
+						-69.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-46.0
+					],
+					"hand_front": [
+						-7.0,
+						-58.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-46.0
+					],
+					"hand_front": [
+						-7.0,
+						-58.0
+					]
+				},
+				{
+					"hand_back": [
+						7.0,
+						-46.0
+					],
+					"hand_front": [
+						-7.0,
+						-58.0
+					]
+				},
+				{
+					"hand_back": [
+						-3.0,
+						-45.0
+					],
+					"hand_front": [
+						-17.0,
+						-44.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-44.0
+					],
+					"hand_front": [
+						-25.0,
+						-35.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-48.0
+					],
+					"hand_front": [
+						-26.0,
+						-41.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit_spin' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_hit_up": {
+			"action": "hit_up",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_hit_up.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"hands": [
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-10.0,
+						-50.0
+					],
+					"hand_front": [
+						-21.0,
+						-47.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-48.0
+					],
+					"hand_front": [
+						-17.0,
+						-46.0
+					]
+				},
+				{
+					"hand_back": [
+						-4.0,
+						-47.0
+					],
+					"hand_front": [
+						-16.0,
+						-46.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-48.0
+					],
+					"hand_front": [
+						-18.0,
+						-46.0
+					]
+				},
+				{
+					"hand_back": [
+						-11.0,
+						-50.0
+					],
+					"hand_front": [
+						-23.0,
+						-48.0
+					]
+				},
+				{
+					"hand_back": [
+						-16.0,
+						-52.0
+					],
+					"hand_front": [
+						-27.0,
+						-48.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'hit_up' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_idle": {
+			"action": "idle",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_idle.png",
+			"fps": 7.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-26.0,
+						-52.0
+					],
+					"hand_front": [
+						-30.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-26.0,
+						-51.0
+					],
+					"hand_front": [
+						-30.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-26.0,
+						-49.0
+					],
+					"hand_front": [
+						-30.0,
+						-47.0
+					]
+				},
+				{
+					"hand_back": [
+						-26.0,
+						-49.0
+					],
+					"hand_front": [
+						-30.0,
+						-47.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'idle' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_jab": {
+			"action": "jab",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_jab.png",
+			"fps": 17.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-25.0,
+						-52.0
+					],
+					"hand_front": [
+						-25.0,
+						-52.0
+					]
+				},
+				{
+					"hand_back": [
+						-29.0,
+						-52.0
+					],
+					"hand_front": [
+						-43.0,
+						-62.0
+					]
+				},
+				{
+					"hand_back": [
+						-28.0,
+						-52.0
+					],
+					"hand_front": [
+						-37.0,
+						-61.0
+					]
+				},
+				{
+					"hand_back": [
+						-27.0,
+						-52.0
+					],
+					"hand_front": [
+						-31.0,
+						-49.0
+					]
+				}
+			],
+			"hit_frame": 1,
+			"hit_point": [
+				-43.0,
+				-62.0
+			],
+			"hit_point_note": "Ponto do contato relativo ao pivô (já no lado certo). fx_fight_hit/crit aqui.",
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'jab' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_ko": {
+			"action": "ko",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_ko.png",
+			"fps": 12.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 5,
+			"hands": [
+				{
+					"hand_back": [
+						-8.0,
+						-30.0
+					],
+					"hand_front": [
+						-16.0,
+						-30.0
+					]
+				},
+				{
+					"hand_back": [
+						-7.0,
+						-21.0
+					],
+					"hand_front": [
+						-16.0,
+						-22.0
+					]
+				},
+				{
+					"hand_back": [
+						39.0,
+						-52.0
+					],
+					"hand_front": [
+						9.0,
+						-53.0
+					]
+				},
+				{
+					"hand_back": [
+						27.0,
+						-5.0
+					],
+					"hand_front": [
+						-13.0,
+						-5.0
+					]
+				},
+				{
+					"hand_back": [
+						27.0,
+						-5.0
+					],
+					"hand_front": [
+						-13.0,
+						-5.0
+					]
+				}
+			],
+			"hold_last": true,
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'ko' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_ko_back": {
+			"action": "ko_back",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_ko_back.png",
+			"fps": 12.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"ground_frame": 4.0,
+			"hands": [
+				{
+					"hand_back": [
+						-2.0,
+						-64.0
+					],
+					"hand_front": [
+						-12.0,
+						-64.0
+					]
+				},
+				{
+					"hand_back": [
+						10.0,
+						-69.0
+					],
+					"hand_front": [
+						1.0,
+						-71.0
+					]
+				},
+				{
+					"hand_back": [
+						27.0,
+						-60.0
+					],
+					"hand_front": [
+						20.0,
+						-65.0
+					]
+				},
+				{
+					"hand_back": [
+						38.0,
+						-38.0
+					],
+					"hand_front": [
+						34.0,
+						-44.0
+					]
+				},
+				{
+					"hand_back": [
+						43.0,
+						-7.0
+					],
+					"hand_front": [
+						13.0,
+						-12.0
+					]
+				},
+				{
+					"hand_back": [
+						43.0,
+						-9.0
+					],
+					"hand_front": [
+						13.0,
+						-16.0
+					]
+				},
+				{
+					"hand_back": [
+						43.0,
+						-5.0
+					],
+					"hand_front": [
+						13.0,
+						-10.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'ko_back' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_ko_knees": {
+			"action": "ko_knees",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_ko_knees.png",
+			"fps": 9.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 7,
+			"ground_frame": 5.0,
+			"hands": [
+				{
+					"hand_back": [
+						-10.0,
+						-28.0
+					],
+					"hand_front": [
+						-14.0,
+						-25.0
+					]
+				},
+				{
+					"hand_back": [
+						-10.0,
+						-19.0
+					],
+					"hand_front": [
+						-14.0,
+						-17.0
+					]
+				},
+				{
+					"hand_back": [
+						-2.0,
+						-22.0
+					],
+					"hand_front": [
+						-7.0,
+						-19.0
+					]
+				},
+				{
+					"hand_back": [
+						-4.0,
+						-21.0
+					],
+					"hand_front": [
+						-8.0,
+						-17.0
+					]
+				},
+				{
+					"hand_back": [
+						-34.0,
+						-21.0
+					],
+					"hand_front": [
+						-39.0,
+						-16.0
+					]
+				},
+				{
+					"hand_back": [
+						-44.0,
+						-10.0
+					],
+					"hand_front": [
+						-15.0,
+						-6.0
+					]
+				},
+				{
+					"hand_back": [
+						-44.0,
+						-9.0
+					],
+					"hand_front": [
+						-15.0,
+						-5.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'ko_knees' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_limp": {
+			"action": "limp",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_limp.png",
+			"fps": 4.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-14.0,
+						-44.0
+					],
+					"hand_front": [
+						-25.0,
+						-35.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-44.0
+					],
+					"hand_front": [
+						-25.0,
+						-35.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-43.0
+					],
+					"hand_front": [
+						-25.0,
+						-34.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-43.0
+					],
+					"hand_front": [
+						-25.0,
+						-34.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'limp' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_limp_heavy": {
+			"action": "limp_heavy",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_limp_heavy.png",
+			"fps": 4.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-14.0,
+						-39.0
+					],
+					"hand_front": [
+						-15.0,
+						-24.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-39.0
+					],
+					"hand_front": [
+						-15.0,
+						-24.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-38.0
+					],
+					"hand_front": [
+						-15.0,
+						-23.0
+					]
+				},
+				{
+					"hand_back": [
+						-14.0,
+						-38.0
+					],
+					"hand_front": [
+						-15.0,
+						-23.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'limp_heavy' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_slip_clinch": {
+			"action": "slip_clinch",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_slip_clinch.png",
+			"fps": 14.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 10,
+			"hands": [
+				{
+					"hand_back": [
+						-22.0,
+						-48.0
+					],
+					"hand_front": [
+						-27.0,
+						-45.0
+					]
+				},
+				{
+					"hand_back": [
+						-30.0,
+						-53.0
+					],
+					"hand_front": [
+						-33.0,
+						-51.0
+					]
+				},
+				{
+					"hand_back": [
+						-30.0,
+						-52.0
+					],
+					"hand_front": [
+						-34.0,
+						-51.0
+					]
+				},
+				{
+					"hand_back": [
+						-17.0,
+						-48.0
+					],
+					"hand_front": [
+						-21.0,
+						-46.0
+					]
+				},
+				{
+					"hand_back": [
+						-11.0,
+						-51.0
+					],
+					"hand_front": [
+						-17.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-15.0,
+						-52.0
+					],
+					"hand_front": [
+						-19.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-18.0,
+						-52.0
+					],
+					"hand_front": [
+						-22.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-21.0,
+						-52.0
+					],
+					"hand_front": [
+						-26.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-24.0,
+						-52.0
+					],
+					"hand_front": [
+						-28.0,
+						-49.0
+					]
+				},
+				{
+					"hand_back": [
+						-26.0,
+						-52.0
+					],
+					"hand_front": [
+						-30.0,
+						-49.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Passiva adv_slippery (a mesma pose do Rony Sabão): o clinche começa, ele afunda, gira e escapa; no lugar das bolhas, faíscas e arcos nas luvas abertas. actions.signature.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_tap_out": {
+			"action": "tap_out",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_tap_out.png",
+			"fps": 10.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 8,
+			"hands": [
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						7.0,
+						-22.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						12.0,
+						-6.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						10.0,
+						-20.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						12.0,
+						-6.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						10.0,
+						-20.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						12.0,
+						-6.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						12.0,
+						-6.0
+					]
+				},
+				{
+					"hand_back": [
+						-8.0,
+						-17.0
+					],
+					"hand_front": [
+						12.0,
+						-6.0
+					]
+				}
+			],
+			"loop": false,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'tap_out' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_tired": {
+			"action": "tired",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_tired.png",
+			"fps": 7.0,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-23.0,
+						-37.0
+					],
+					"hand_front": [
+						-29.0,
+						-40.0
+					]
+				},
+				{
+					"hand_back": [
+						-23.0,
+						-34.0
+					],
+					"hand_front": [
+						-29.0,
+						-38.0
+					]
+				},
+				{
+					"hand_back": [
+						-23.0,
+						-34.0
+					],
+					"hand_front": [
+						-29.0,
+						-38.0
+					]
+				},
+				{
+					"hand_back": [
+						-23.0,
+						-37.0
+					],
+					"hand_front": [
+						-29.0,
+						-40.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'tired' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"opp_alley_apagao_victory": {
+			"action": "victory",
+			"facing": "esquerda",
+			"file": "res://assets/sprites/opponents/opp_alley_apagao/opp_alley_apagao_victory.png",
+			"fps": 9.5,
+			"frame_size": [
+				112.0,
+				104.0
+			],
+			"frames": 4,
+			"hands": [
+				{
+					"hand_back": [
+						-5.0,
+						-85.0
+					],
+					"hand_front": [
+						-16.0,
+						-86.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-85.0
+					],
+					"hand_front": [
+						-16.0,
+						-86.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-85.0
+					],
+					"hand_front": [
+						-20.0,
+						-77.0
+					]
+				},
+				{
+					"hand_back": [
+						-5.0,
+						-85.0
+					],
+					"hand_front": [
+						-16.0,
+						-86.0
+					]
+				}
+			],
+			"loop": true,
+			"note": "Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes. Ação 'victory' do rig dos adversários (as mesmas poses dos bandidos da 2a1), virado para a esquerda. Ronda 2a2.",
+			"pivot": [
+				56.0,
+				98.0
+			]
+		},
+		"portrait_opp_alley_apagao": {
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_alley_apagao.png",
+			"fps": 0.0,
+			"frame_size": [
+				32.0,
+				32.0
+			],
+			"frames": 1.0,
+			"note": "Retrato 32x32 (recorte do próprio sprite de luta, fundo escuro com a trama do macacão), virado para a DIREITA (no HUD o adversário usa flip_h). Serve também de retrato do Dossiê. Nélson Volt, O APAGÃO (chefe da Ronda 2a2, rápido): magro e corcunda, capacete amarelo de obra com lanterna, óculos de proteção, macacão cinza com faixas refletivas, bateria de carro nas costas com a coroa de cabos, luvas de borracha gigantes.",
+			"pivot": [
+				0.0,
+				0.0
+			]
+		},
+		"portrait_opp_alley_apagao_silhouette": {
+			"facing": "direita",
+			"file": "res://assets/sprites/opponents/portrait_opp_alley_apagao_silhouette.png",
+			"fps": 0.0,
+			"frame_size": [
+				32.0,
+				32.0
+			],
+			"frames": 1.0,
+			"note": "Silhueta 32x32 do chefe ANTES de vencer (Dossiê e cartão trancado): o retrato chapado em ink com só a lanterna acesa como pista. Alternativa ao modulate INK do retrato normal.",
+			"pivot": [
+				0.0,
+				0.0
+			]
+		},
+		"trophy_apagao": {
+			"file": "res://assets/sprites/ronda2a/trophy/trophy_apagao.png",
+			"fps": 0.0,
+			"frame_size": [
+				44,
+				30
+			],
+			"frames": 1,
+			"note": "Ronda 2a2: troféu do Esconderijo = o capacete de obra do Apagão, AMASSADO, com a lanterna de lente rachada. 44x30, pivô (22,29) = meio da base: no nicho 64x38 da prateleira fica em (10,7) do nicho. Lugar 'slot' 0 (data/ronda.json boss.trophy).",
+			"pivot": [
+				22,
+				29
+			]
+		},
+		"trophy_apagao_rare": {
+			"file": "res://assets/sprites/ronda2a/trophy/trophy_apagao_rare.png",
+			"fps": 0.0,
+			"frame_size": [
+				44,
+				30
+			],
+			"frames": 1,
+			"note": "Ronda 2a2: troféu RARO (desafio ANTES DO APAGÃO) = o mesmo capacete POLIDO, dourado, com a lanterna ACESA e o halo. TROCA o normal no mesmo lugar. Para piscar: alternar com trophy_apagao_rare_dim (opcional, ~1 vez a cada 2 s).",
+			"pivot": [
+				22,
+				29
+			]
+		},
+		"trophy_apagao_rare_dim": {
+			"file": "res://assets/sprites/ronda2a/trophy/trophy_apagao_rare_dim.png",
+			"fps": 0.0,
+			"frame_size": [
+				44,
+				30
+			],
+			"frames": 1,
+			"note": "Ronda 2a2: o troféu raro com a lanterna FRACA (sem halo): o quadro de 'piscar' do trophy_apagao_rare. Opcional.",
+			"pivot": [
+				22,
+				29
+			]
+		}
+	}
+}

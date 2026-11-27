@@ -169,6 +169,10 @@ const ESTADOS_TODOS := [
 	"r2a_dossie_vazio", "r2a_dossie_meio", "r2a_dossie_cheio", "r2a_dossie_ficha", "r2a_aprox_contagem", "r2a_aprox_dica", "r2a_previa",
 	"r2a_previa_gate", "r2a_luta_beco", "r2a_luta_beco_estilos", "r2a_luta_beco_fim", "r2a_premio_vitoria", "r2a_premio_derrota",
 	"r2a_premio_desafio", "r2a_premio_nivel", "r2a_personalizacao",
+	# Ronda 2a2: o chefe Apagão (Esconderijo, ficha, prévia, entrada, luta, apagão, prêmio, menu, personalização, capuz + convite)
+	"r2b_esc_trancado_lenda", "r2b_esc_trancado_bandidos", "r2b_esc_trancado_cinturao", "r2b_esc_aberto", "r2b_esc_revanche",
+	"r2b_esc_vencido", "r2b_esc_raro", "r2b_ficha_chefe", "r2b_previa_susto", "r2b_previa_perdido", "r2b_entrada", "r2b_luta_arena",
+	"r2b_apagao", "r2b_premio_normal", "r2b_premio_raro", "r2b_menu_cartaz", "r2b_personalizacao", "r2b_capuz_convite",
 ]
 
 const NOS_MISTA := ["body_jab", "career_purse", "career_scouting"]
@@ -202,6 +206,7 @@ var _f8a2 = preload("res://tools/ui/audit/estados_f8a2.gd").new(self)
 var _menu = preload("res://tools/ui/audit/estados_menu.gd").new(self)
 var _ronda = preload("res://tools/ui/audit/estados_ronda.gd").new(self)
 var _ronda2a = preload("res://tools/ui/audit/estados_ronda2a.gd").new(self)
+var _ronda2a2 = preload("res://tools/ui/audit/estados_ronda2a2.gd").new(self)
 var _estr = preload("res://tools/ui/audit/regras_estritas.gd").new(self)  # regras da fase Identidade (--estrito)
 var achados_arquivo := ""  # --achados <arquivo>: grava os achados das regras estritas (TSV)
 var modo_torta := false  # --torta: audita a cena torta de propósito e confere que cada regra reprova
@@ -544,6 +549,7 @@ func _rodar() -> void:
 	await _f8a2._rodar_fase8a2()
 	await _ronda._rodar_fase_ronda()
 	await _ronda2a._rodar_fase_ronda2a()
+	await _ronda2a2._rodar_fase_ronda2a2()
 	await _menu._rodar_menu()
 	_fechar_cena()
 

@@ -115,6 +115,10 @@ func _requisito_ok(req: Dictionary) -> bool:
 			"black_cat_rounds_min":
 				if int(gs.lenda().get("rounds", 0)) < int(req[chave]):
 					return false
+			"black_cat_boss_won":  # 2a2: chefe vencido (permanent.black_cat.boss.<id>.won >= 1); não é marco da escola de propósito
+				var bs = gs.permanente.get("black_cat", {}).get("boss", {})
+				if not (bs is Dictionary) or int(bs.get(str(req[chave]), {}).get("won", 0)) < 1:
+					return false
 			_:
 				return false
 	return true

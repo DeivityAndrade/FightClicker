@@ -37,6 +37,8 @@ func abrir_com(dados: Dictionary) -> void:
 
 
 func _conhecido(id: String) -> bool:
+	if bool(_dados.get("boss", false)):  # 2a2: a ficha do chefe está em esconderijo().boss
+		return bool(GameState.esconderijo().get("boss", {}).get("known", false))
 	for f in GameState.dossie():
 		if str(f.bandit) == id:
 			return bool(f.known)
@@ -64,10 +66,15 @@ func _montar() -> void:
 	# --- Retratos: ele (silhueta até vencer) à esquerda, o vulto à direita ---
 	var by: Dictionary = UiTema.manifest().get("by_data_id", {})
 	var info_opp: Dictionary = by.get("opp_alley_" + str(_dados.get("bandit", "")), {})
-	var quadro := UiTema.textura_rect(painel, "c_retrato_moldura", X0, y)
+	var chefe := bool(_dados.get("boss", false))
+	var quadro := UiTema.textura_rect(painel, "c_retrato_moldura_ouro" if chefe else "c_retrato_moldura", X0, y)
 	var ret := UiTema.textura_rect(quadro, str(info_opp.get("portrait", "")), 2, 2)
 	if not _conhecido(str(_dados.get("bandit", ""))):
-		ret.modulate = UiTema.INK  # silhueta: ele ainda não tem ficha
+		var sil := str(info_opp.get("portrait_silhouette", ""))
+		if chefe and sil != "" and not UiTema.sprite(sil).is_empty():
+			ret.texture = UiTema.textura(sil)  # o chefe é a silhueta feita à mão até vencer
+		else:
+			ret.modulate = UiTema.INK  # silhueta: ele ainda não tem ficha
 	UiTema.rotulo(painel, UiTema.txt("preview_him", "ELE"), UiTema.G2, X0 + 42, y + 2)
 	var apelido := str(opp.get("nickname", ""))
 	if not _conhecido(str(_dados.get("bandit", ""))):
@@ -223,6 +230,9 @@ func _mostrar_desafio(id: String) -> void:
 		var feito := bool(ch.get("done", false))
 		_desafio.text = UiTema.txt("alley_ch_done", "DESAFIO: FEITO") if feito else UiTema.txt("alley_ch_lost", "DESAFIO: PERDIDO")
 		UiTema.pintar(_desafio, UiTema.GR3 if feito else UiTema.R3)
+	elif bool(ch.get("lost", false)):  # 2a2 (surprise_early) sem SUSTO: perdido, sem porcentagem
+		_desafio.text = UiTema.txt("alley_ch_lost", "DESAFIO: PERDIDO")
+		UiTema.pintar(_desafio, UiTema.R3)
 	else:
 		_desafio.text = str(ch.get("line_by_tactic", {}).get(id, "")).to_upper()
 		UiTema.pintar(_desafio, UiTema.Y1)

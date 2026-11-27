@@ -98,7 +98,10 @@ func validar_permanente(p: Dictionary, r: Dictionary) -> void:
 		var beco: Dictionary = gs._beco.validar(v.get("alley", null), r)  # 2a1: brigas de beco (opcional)
 		if not beco.is_empty():
 			d["alley"] = beco
-		if rodadas > 0 or d.open_campaign > 0 or lenda_v > 0 or not beco.is_empty():
+		var chefe: Dictionary = gs._beco.validar_chefe(v.get("boss", null), r, beco)  # 2a2: o chefe (opcional)
+		if not chefe.is_empty():
+			d["boss"] = chefe
+		if rodadas > 0 or d.open_campaign > 0 or lenda_v > 0 or not beco.is_empty() or not chefe.is_empty():
 			r["black_cat"] = d
 	var nivel_r := _cfg().nivel_de(int(r.get("black_cat", {}).get("legend", 0))) if not _cfg().vazio else 0
 	for id in r.get("skill_nodes", []):
