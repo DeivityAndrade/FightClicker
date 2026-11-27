@@ -29,7 +29,7 @@ static func montar(raiz: Control) -> void:
 	cortado.size = Vector2(30, 12)
 
 	# 3. ignore sem motivo: IGNORE_SEM_MOTIVO.
-	var sem_motivo := Control.new()
+	var sem_motivo := Panel.new()  # Panel: Control puro sem texto agora é arte isenta
 	sem_motivo.position = Vector2(20, 60)
 	sem_motivo.size = Vector2(10, 10)
 	sem_motivo.mouse_filter = Control.MOUSE_FILTER_IGNORE  # com mouse ativo e sem filhos seria área de hover (isenta)

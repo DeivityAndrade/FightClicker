@@ -19,7 +19,7 @@ extends RefCounted
 ##                      ColorRect com desenho, irmã dele ou de um ancestral) que o cobre ou encosta nele (< 1 px); botão de baixo de janela com folga até a borda
 ##                      interna diferente do padrão (PADRAO_BASE_JANELA ± TOL_BASE_JANELA).
 ## Isenções por tipo (não exigem `ignore`, não entram no placar): área de hover sem desenho, ReferenceRect, peça sem texto dentro de
-## moldura/textura, Node2D de mundo. Continuam sujeitas ao OPACO_FORA.
+## moldura/textura, arte pura sem texto debaixo (TextureRect, NinePatchRect, ColorRect, Control sem script), Node2D de mundo. Continuam sujeitas ao OPACO_FORA.
 ## Placar: todo `ignore` visto é contado em `placar` (meta do estúdio: no máximo 15 no fim da fase).
 
 const BASE := Vector2(640, 360)
@@ -128,12 +128,25 @@ func _isento_por_tipo(n: Node) -> bool:
 		return true
 	if bool(n.get_meta("ui_area_hover", false)) and visiveis == 0:
 		return true
+	# Peça gráfica sem texto (dívida do placar, 2026-11-27): arte pura (moldura, textura, enchimento, grupo de camadas sem script) sem nenhum
+	# Label/Botão/campo de texto debaixo dela, em qualquer lugar da tela. Texto nunca é isento; nó com script (componente de interface) também não.
+	var arte_pura := n is TextureRect or n is NinePatchRect or n is ColorRect or (n.get_class() == "Control" and n.get_script() == null)
+	if arte_pura and not _tem_texto_abaixo(n):
+		return true
 	# Peça sem texto dentro de moldura ou textura.
 	if (n is TextureRect or n is NinePatchRect or n is ColorRect) and (n.get_parent() is NinePatchRect or n.get_parent() is TextureRect or n.get_parent() is Panel):
 		for l in n.find_children("*", "Label", true, false):
 			if l.text != "":
 				return false
 		return true
+	return false
+
+
+## Há Label, Button, RichTextLabel ou campo de texto em algum lugar debaixo do nó (visível ou não)?
+func _tem_texto_abaixo(n: Node) -> bool:
+	for c in n.find_children("*", "", true, false):
+		if c is Label or c is Button or c is RichTextLabel or c is LineEdit or c is TextEdit:
+			return true
 	return false
 
 
