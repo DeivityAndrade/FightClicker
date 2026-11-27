@@ -29,4 +29,8 @@ func rodar_testes() -> void:
 		checar(sala._caixote.visible, "carreira %d: chegada: o caixote aparece junto do mentor" % n)
 		sala.cena_palco_liberado()
 		checar(sala._caixote.visible, "carreira %d: depois da cena o caixote continua" % n)
-	sala.free()
+	for p in sala.find_children("*", "AudioStreamPlayer", true, false):
+		p.stop()  # a sucessão toca a moedinha; parar antes de soltar a sala
+	sala.queue_free()
+	await process_frame
+	await process_frame  # tweens e timers da sala soltam os recursos antes do fim (evita "resources still in use at exit")
