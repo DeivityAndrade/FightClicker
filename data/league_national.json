@@ -1,0 +1,161 @@
+{
+	"_doc": "Fase 8b1 (docs/fases/fase8b1-design.md). Liga nacional: abre ao vencer o James regional (after); as 4 lutas saem do centro (location center), na arena nacional, e entram na escada DEPOIS dos 4 regionais (o indice so cresce). passive.locks e passive.guard: mesmas regras da liga regional. passive.study (so o James preparado): {tipo da passiva do JOGADOR: travas}; na luta vale guard + locks {tipo_estudado: study[tipo_estudado]}, com tipo_estudado = o jeito da ultima vitoria da escola sobre o James numa campanha ANTERIOR (escola.rival.last_win_type / prev_win_type); sem isso, so a guarda. Nomes e textos [ROT] (docs/fases/fase8b1-textos.md).",
+	"id": "national",
+	"after": "opp_james",
+	"location": "center",
+	"fight_arena": "arena_nacional",
+	"opponents": [
+		{
+			"id": "opp_nac_1",
+			"location": "center",
+			"league": "national",
+			"name": "[ROT] Nacional 1",
+			"description": "[ROT]",
+			"entry": "[ROT]",
+			"wins_line": "[ROT]",
+			"loses_line": "[ROT]",
+			"profile": "RESISTENTE",
+			"strength": 300000000,
+			"agility": 250000000,
+			"endurance": 700000000,
+			"prize_money": 45000,
+			"prize_fame": 600,
+			"prep_days": 16,
+			"belt": false,
+			"passive": {
+				"id": "adv_cold_read",
+				"locks": {
+					"counter_punch": {
+						"ko_per_charge": 0.25,
+						"ko_cap": 0.25
+					}
+				}
+			}
+		},
+		{
+			"id": "opp_nac_2",
+			"location": "center",
+			"league": "national",
+			"name": "[ROT] Nacional 2",
+			"description": "[ROT]",
+			"entry": "[ROT]",
+			"wins_line": "[ROT]",
+			"loses_line": "[ROT]",
+			"profile": "FORTE",
+			"strength": 900000000,
+			"agility": 500000000,
+			"endurance": 1200000000,
+			"prize_money": 60000,
+			"prize_fame": 700,
+			"prep_days": 16,
+			"belt": false,
+			"passive": {
+				"id": "adv_oak_leg",
+				"locks": {
+					"shin": {
+						"spin_ko": 0.25
+					}
+				}
+			}
+		},
+		{
+			"id": "opp_james_nac",
+			"location": "center",
+			"league": "national",
+			"rival": "james",
+			"name": "James Blindado",
+			"description": "[ROT]",
+			"entry": "[ROT]",
+			"wins_line": "[ROT]",
+			"loses_line": "[ROT]",
+			"profile": "RESISTENTE",
+			"strength": 500000000,
+			"agility": 1600000000,
+			"endurance": 2300000000,
+			"prize_money": 80000,
+			"prize_fame": 800,
+			"prep_days": 18,
+			"belt": false,
+			"passive": {
+				"id": "adv_blindado_study",
+				"guard": {
+					"rounds": 1,
+					"taken_mult": 0.6
+				},
+				"study": {
+					"fast_hands": {
+						"ko_per_streak": 0.0,
+						"ko_cap": 0.0
+					},
+					"counter_punch": {
+						"ko_per_charge": 0.25,
+						"ko_cap": 0.25
+					},
+					"submission": {
+						"sub_base": 0.3,
+						"sub_cap": 0.3
+					},
+					"top_control": {
+						"td_base": 0.25,
+						"td_cap": 0.25
+					},
+					"shin": {
+						"spin_ko": 0.25
+					},
+					"thai_clinch": {
+						"clinch_base": 0.3,
+						"clinch_cap": 0.3,
+						"escape_base": 2.0
+					}
+				}
+			}
+		},
+		{
+			"id": "opp_nac_champ",
+			"location": "center",
+			"league": "national",
+			"name": "[ROT] Campeão nacional",
+			"description": "[ROT]",
+			"entry": "[ROT]",
+			"wins_line": "[ROT]",
+			"loses_line": "[ROT]",
+			"profile": "EQUILIBRADO",
+			"strength": 1950000000,
+			"agility": 1950000000,
+			"endurance": 3500000000,
+			"prize_money": 120000,
+			"prize_fame": 1000,
+			"prep_days": 18,
+			"belt": false,
+			"national_belt": true,
+			"passive": {
+				"id": "adv_champion",
+				"locks": {
+					"fast_hands": {
+						"ko_per_streak": 0.5,
+						"ko_cap": 0.5
+					},
+					"counter_punch": {
+						"ko_per_charge": 0.5,
+						"ko_cap": 0.5
+					},
+					"submission": {
+						"sub_base": 0.5,
+						"sub_cap": 0.5
+					},
+					"top_control": {
+						"td_base": 0.5,
+						"td_cap": 0.5
+					},
+					"shin": {
+						"spin_ko": 0.5
+					},
+					"thai_clinch": {
+						"clinch_base": 0.5,
+						"clinch_cap": 0.5
+					}
+				}
+			}
+		}
+	]
+}
