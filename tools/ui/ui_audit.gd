@@ -111,6 +111,7 @@ const ESTADOS_TODOS := [
 	"f6d_balao_gerador", "f6d_balao_melhoria", "f6d_balao_melhoria_baixo", "f6d_balao_loja", "f6d_balao_loja_metronomo",
 	"f6d_balao_cantos", "f6d_balao_mapa", "f6d_balao_hall",
 	"f6d_numeros_bjj", "f6d_numeros_bjj_critico", "f6d_numeros_pera", "f6d_numeros_um_atributo",
+	"p1a_sala_sopa", "p1a_bjj_sopa", "p1a_luta_sopa",  # Polimento 1a: normal pequeno, só o crítico grande, sem sopa
 	# Fase 6d2: tela C (sala larga, faixa de 30 px, painel pela direita, atalhos L/E/H, aparelho invisível até a caixa)
 	"f6d2_tela_fechada", "f6d2_painel_solto", "f6d2_so_sala", "f6d2_foco_trancado", "f6d2_aparelho_invisivel",
 	"f6d2_aparelho_caixa", "f6d2_aparelho_aberto", "f6d2_garagem_cheia", "f6d2_garagem_pequena", "f6d2_academia_cheia", "f6d2_academia_pequena",
@@ -197,6 +198,7 @@ var _f6b2_f6c1 = preload("res://tools/ui/audit/estados_f6b2_f6c1.gd").new(self)
 var _f6c2 = preload("res://tools/ui/audit/estados_f6c2.gd").new(self)
 var _f6d = preload("res://tools/ui/audit/estados_f6d.gd").new(self)
 var _f6d2 = preload("res://tools/ui/audit/estados_f6d2.gd").new(self)
+var _p1a = preload("res://tools/ui/audit/estados_p1a.gd").new(self)
 var _f7a1 = preload("res://tools/ui/audit/estados_f7a1.gd").new(self)
 var _f7a2 = preload("res://tools/ui/audit/estados_f7a2.gd").new(self)
 var _f7b1 = preload("res://tools/ui/audit/estados_f7b1.gd").new(self)
@@ -541,6 +543,7 @@ func _rodar() -> void:
 	await _f6c2._rodar_fase6c2()
 	await _f6d._rodar_fase6d()
 	await _f6d2._rodar_fase6d2()
+	await _p1a._rodar_p1a()
 	await _f7a1._rodar_fase7a1()
 	await _f7a2._rodar_fase7a2()
 	await _f7b1._rodar_fase7b1()

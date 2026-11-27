@@ -466,6 +466,37 @@ static func alinhar_motivo(no: Node, modo: String, motivo: String) -> void:
 	no.set_meta("ui_align_motivo", motivo)
 
 
+## Polimento 1a: A REGRA DOS NÚMEROS FLUTUANTES (sala, auto-soco, aparelhos comuns e das artes, luta).
+## Normal = pequeno (1x, discreto); só o crítico/forte é grande (2x). Ninguém decide escala por conta própria:
+## `Sala.Numero.iniciar` pede a escala aqui. Para a tela não virar sopa, no máximo NUM_MAX_NORMAIS números
+## normais ficam vivos juntos (o crítico nunca entra na conta nem é cortado).
+const NUM_ESCALA_NORMAL := 1.0
+const NUM_ESCALA_CRITICO := 2.0
+const NUM_MAX_NORMAIS := 6
+
+
+static func escala_numero(critico: bool) -> float:
+	return NUM_ESCALA_CRITICO if critico else NUM_ESCALA_NORMAL
+
+
+## Chamado a cada número normal novo: se já há normais demais vivos, os mais adiantados (mais velhos) somem na hora.
+## `lista` é o pool de `Sala.Numero`; `novo` é o recém-iniciado (nunca é cortado).
+static func limitar_normais(lista: Array, novo) -> void:
+	var normais: Array = []
+	for n in lista:
+		if n.ativo and not n.grande:
+			normais.append(n)
+	while normais.size() > NUM_MAX_NORMAIS:
+		var velho = null
+		for n in normais:
+			if n != novo and (velho == null or n.progresso() > velho.progresso()):
+				velho = n
+		if velho == null:
+			return
+		velho.encerrar()
+		normais.erase(velho)
+
+
 ## ignore COM MOTIVO (obrigatório): o nó e tudo abaixo dele ficam fora da conferência de alinhamento.
 ## Proibido em Button e em Label de texto fixo (o verificador acusa). `dinamico = true` diz que o texto
 ## muda em tempo de jogo (balão que escreve letra a letra, números flutuantes): só então o Label é aceito.

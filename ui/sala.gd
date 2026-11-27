@@ -10,7 +10,6 @@ const PONTO_PADRAO := Vector2(336, 222)
 const POOL_NUMEROS := 24
 const NUMEROS_FOLGA := 6.0  # 6d: espaço vertical entre os números de um mesmo clique
 const NUMEROS_MAX_POR_CLIQUE := 3  # 6d: no máximo 3 números por clique (um por atributo que subiu)
-const ESCALA_GRANDE_A_PARTIR := 0.75  # 6d: ganho >= 75% do maior sai grande (2x); abaixo disso, pequeno (1x)
 const POOL_FX := 6
 # Deslocamentos em x dos números sucessivos: espalham a coluna quando se clica rápido.
 const DESVIOS_X := [-30, 30, 0]
@@ -683,20 +682,13 @@ static func ganhos_por_atributo(ganho: float, aparelho: String) -> Array:
 	return lista.slice(0, NUMEROS_MAX_POR_CLIQUE)
 
 
-## Escala (inteira, para não borrar o pixel art) de cada número: o maior e os quase iguais a ele saem grandes (2x),
-## os menores ficam pequenos (1x).
-static func escala_do_ganho(ganho: float, maior: float) -> float:
-	return 2.0 if maior > 0.0 and ganho / maior >= ESCALA_GRANDE_A_PARTIR else 1.0
-
-
 ## Aparelho de vários atributos (Jiu-jitsu etc.): um número por atributo, na cor dele, empilhados subindo do ponto do
 ## clique (o maior embaixo, perto do clique). No crítico o maior leva o vermelho, o "!" e a frase de sabor.
 func _mostrar_numeros_divididos(p: Vector2, partes: Array, critico: bool, texto: String) -> void:
-	var maior := float(partes[0].ganho)
 	var escalas: Array[float] = []
 	var altura_total := 0.0
 	for i in partes.size():
-		var e := escala_do_ganho(float(partes[i].ganho), maior)
+		var e := UiTema.escala_numero(critico and i == 0)  # P1a: mesmo padrão dos aparelhos comuns (só o crítico é grande)
 		escalas.append(e)
 		altura_total += 7.0 * e + (NUMEROS_FOLGA if i > 0 else 0.0)
 	var dx := float(DESVIOS_X[_desvio_i % DESVIOS_X.size()])
@@ -724,7 +716,7 @@ func _mostrar_numeros_divididos(p: Vector2, partes: Array, critico: bool, texto:
 			var cor := UiTema.cor_atributo(a).lerp(UiTema.WHITE, 0.55 if a == "strength" else 0.25)
 			# A frase do crítico fica no topo da pilha (a linha extra nasce acima do número que a leva).
 			var frase := texto if critico and i == partes.size() - 1 else ""
-			n.iniciar(rotulo, cor, false, frase, Vector2(xi, y_i), 0.6 if escalas[i] > 1.0 else 0.5, 30.0, 1.0, escalas[i])
+			n.iniciar(rotulo, cor, false, frase, Vector2(xi, y_i), 0.5, 30.0, 1.0)
 		_afastar_antigos(n, critico and i == 0)
 
 
@@ -736,6 +728,8 @@ func _afastar_antigos(novo: Numero, critico: bool) -> void:
 ## Mesma regra para a garagem e para a arena: o número novo fica por cima e os que estavam embaixo dele sobem
 ## (mais de um, em cascata, para nenhum ficar encavalado).
 static func afastar(numeros: Array, novo: Numero, critico: bool) -> void:
+	if not novo.grande:
+		UiTema.limitar_normais(numeros, novo)  # P1a: sem sopa; o crítico nunca é cortado
 	for _volta in 10:
 		var mexeu := false
 		for i in numeros.size():
@@ -807,8 +801,8 @@ func _ao_auto_socou(ganho: float, critico: bool, aparelho: String, atributo: Str
 	if critico:
 		texto += "!"
 		cor = UiTema.R3
-	n.iniciar(texto, cor, false, "", Vector2(x, PONTO_PADRAO.y - 14.0), 0.5, 22.0, 0.6)
-	_afastar_antigos(n, false)
+	n.iniciar(texto, cor, critico, "", Vector2(x, PONTO_PADRAO.y - (18.0 if critico else 14.0)), 0.6 if critico else 0.5, 22.0, 0.85 if critico else 0.6)  # P1a: só o auto-soco crítico é grande
+	_afastar_antigos(n, critico)
 	_reagir(aparelho, false)
 	sfx.golpe_auto(aparelho)
 
@@ -2392,7 +2386,8 @@ class Numero extends RefCounted:
 		_principal.text = texto
 		_principal.add_theme_color_override("font_color", cor)
 		self.grande = grande
-		_principal.scale = Vector2(escala, escala) if escala > 0.0 else (Vector2(2, 2) if grande else Vector2.ONE)
+		var esc := UiTema.escala_numero(grande)  # P1a: a regra é uma só (UiTema); o parâmetro `escala` não vale mais
+		_principal.scale = Vector2(esc, esc)
 		_extra.visible = linha_extra != ""
 		_extra.text = linha_extra
 		_extra.add_theme_color_override("font_color", UiTema.Y2)
@@ -2414,6 +2409,11 @@ class Numero extends RefCounted:
 		_principal.position = Vector2(-100, -7)
 		_extra.position = Vector2(-100, -7 - 15.0 - _alt)
 		_raiz.modulate.a = _alfa * (1.0 if p < 0.65 else 1.0 - (p - 0.65) / 0.35) * _sumir
+
+	## Some na hora (usado pela regra de números do UiTema quando há normais demais).
+	func encerrar() -> void:
+		ativo = false
+		_raiz.visible = false
 
 	## Letreiro de fim: `p` de 0 a 1 apaga o número (a 1 ele sai de cena). `gen` é o uso que estava na tela quando o fade começou.
 	func sumir_com(p: float, gen: int) -> void:

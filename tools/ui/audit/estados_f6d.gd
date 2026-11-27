@@ -182,10 +182,7 @@ func _rodar_fase6d() -> void:
 			for v in vivos:
 				maior_escala = maxf(maior_escala, float(v.escala))
 				menor_escala = minf(menor_escala, float(v.escala))
-			au._exigir(maior_escala > menor_escala or q[2] == "speed_bag", q[0], "o maior ganho sai maior que os menores")
-			# O número maior é o do atributo de maior ganho (ele fica embaixo, perto do clique).
-			vivos.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a.y) > float(b.y))
-			au._exigir(float(vivos[0].escala) == maior_escala, q[0], "o número do maior ganho é o mais grande")
+			au._exigir(maior_escala == (2.0 if q[3] else 1.0) and menor_escala == 1.0, q[0], "P1a: só o crítico é grande (maior %.1fx, menor %.1fx)" % [maior_escala, menor_escala])
 			await au._ver(q[0])
 			au.gs.dados.crit_chance = 0.0
 	if au._quer("f6d_numeros_um_atributo"):
