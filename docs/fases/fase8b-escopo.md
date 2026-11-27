@@ -156,6 +156,16 @@ depois de respeitar a escola, por isso a 8b4 vem por último. Os artistas não s
    dono do cinturão de novo?
 3. **Campeão do Ringue da Lua:** o **Capivarão** escalado para nível nacional (**recomendo**: o senhor já gostou e estava guardado),
    o Rei Calota, ou um vilão novo do Roteirista? O Rei Calota pode ser um dos 2 lutadores da chave.
+   - **Decisão do dono e do Produtor (2026-11-26):**
+     - Fica para a 8b4: o dono escolhe pela amostra de arte, como fez com o Apagão.
+     - Candidatos: o Capivarão, o Rei Calota e **O Roçador**.
+     - O Roçador é uma ideia do dono no clima de terror de lenda urbana, original, sem nada de personagem de filme:
+       - caseiro calado de um terreno baldio, de máscara de solda rachada com uma luz fraca, macacão de terra e um facão de roçar enorme;
+       - o facão é só cena (ele crava no chão na entrada e luta de mão limpa; nada corta, sem sangue);
+       - nunca corre nem fala;
+       - passiva "NÃO CORRE": lento, mas aguenta e quase não cansa;
+       - mote: "duas lendas no mesmo telhado".
+     - O Sinaleiro, o Coronel Pipa e a Dona Marreta ficam de reserva.
 4. **Prêmio de poder no Ringue:** continua **só visual e lore** (**recomendo**: o teto está em 8,8%), ou entra 1 nó pequeno medido?
 5. **O Osmar desconfia:** só **balões curtos na sala quando a lenda sobe** (**recomendo**), ou também uma conversa pulável depois
    do campeão do Ringue?
