@@ -24,6 +24,16 @@ de polimento. Ela entra antes da implementação da 8b1, porque mexe no que o jo
    caixote que sumiu.
    - É bug: corrigir logo, sem esperar a fase.
 
+6. **Zoom na árvore incremental.** O jogador aproxima e afasta quando quiser, com a roda do mouse e/ou botões + e −, e arrasta para
+   andar pela árvore. O verificador de telas precisa cobrir o zoom mínimo e o máximo.
+7. **Árvore maior e mais funda.** Mais níveis e ramos mais compridos, não só mais nós soltos. Isso se junta ao item 4.
+8. **Comprar na árvore no meio da campanha.** Hoje o Legado só é gasto na troca de discípulo. O dono quer poder abrir a árvore
+   durante a campanha, comprar, e o nó já valer na campanha atual. Não precisa começar outra.
+   - O Designer decide como isso conversa com a sucessão. Por exemplo: o Legado da campanha atual só entra no fim, e o que já está
+     guardado pode ser gasto a qualquer hora.
+   - Tudo passa pelo simulador, porque comprar mais cedo acelera a curva.
+   - Os testes de "foto igual" não valem aqui, porque a regra muda de propósito.
+
 ## Cuidados
 - Os itens 2 e 3 são visuais: a "foto igual" (`foto.gd`) não pode mudar.
 - Os itens 1 e 4 mexem na economia: entram com simulador, mediana por arte e o teto de 10% dos minigames medido de novo.
