@@ -444,6 +444,7 @@ func _sinais() -> void:
 						a.set_process(false)  # congela a faísca num quadro para a captura
 				au._exigir(clink, au._estado, "a faísca de aço (fx_guard_clink) aparece no golpe")
 				au._exigir(str(t4._l[1].spr.nome_sprite) == "opp_james_block", au._estado, "ele reage com a guarda (%s)" % str(t4._l[1].spr.nome_sprite))
+				await au._esperar(0.6)  # BUG-3 (2a2): as barras do HUD ainda deslizam (tam 21,47 px); espera assentarem (tela parada, o relógio não anda) antes de medir
 				await au._ver("f8a1_luta_guarda_clink")
 			if au._quer("f8a1_luta_guarda_abriu"):
 				au._estado = "f8a1_luta_guarda_abriu"

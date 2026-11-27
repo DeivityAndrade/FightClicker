@@ -335,7 +335,10 @@ func _ficha(f: Dictionary, y: float, chefe: bool = false) -> void:
 		_txt(card, UiTema.txt("hideout_kind_boss", "CHEFE"), UiTema.R1, x, 18.0)
 	else:
 		_cadeado(card, x, 16.0)  # o cadeado diz que a ficha está trancada
-		_txt(card, str(f.get("missing_text", "")).to_upper(), UiTema.R1, x + 10.0, 18.0)
+		var falta := str(f.get("missing_text", ""))
+		if falta == "":  # liberado e ainda não vencido: sem esta linha o cadeado ficava sozinho (BUG-2 da 2a2)
+			falta = UiTema.txt("dossier_not_faced", "AINDA NÃO ENFRENTADO")
+		_txt(card, falta.to_upper(), UiTema.R1, x + 10.0, 18.0)
 	# B3: desafio feito = selo dourado com o gato aceso e texto escuro; por fazer = ícone e texto apagados.
 	var feito := bool(f.get("challenge", false))
 	if feito:
