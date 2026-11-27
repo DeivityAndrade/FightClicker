@@ -2,7 +2,19 @@
 
 Documento do Produtor para retomar noutra sessão/conta. Vale sobre memórias antigas.
 
-## Situação agora (2026-11-26): RONDA 2a1 FECHADA
+## Situação agora (2026-11-26, noite): RONDA 2a2 FECHADA
+A **Ronda 2a2** (o chefe **Apagão**, Nélson Volt) foi integrada na main. QA aprovado (`docs/fases/ronda2a2-qa.md`) e Diretor aprovado (`docs/fases/ronda2a2-revisao.md`).
+- **Destrave:** lenda 5, os 3 bandidos vencidos e o cinturão do Vale. Antes disso, o jogo mostra o que falta, uma coisa por vez.
+- **Força:** 0,8× (420M/840M/1,24B), "mais forte, mas não tão mais forte". Abre por volta da campanha 8, vence em mediana na 2ª noite aberta e todas as artes vencem até a campanha 11.
+- **Capuz:** a cada 5 min de sala (300 s). Limiares da lenda 1/10/24/42/64. O teto continua em 8,8%.
+- **Prêmios:** ficha no Dossiê, capacete na prateleira, título da imprensa e cartaz no menu ("O VULTO QUE RELIGOU A LUZ").
+  - O desafio "ANTES DO APAGÃO" (surpresa e K.O. até o 2º round, ~13% por tentativa) troca o capacete pelo raro aceso.
+  - O mesmo desafio libera o calção FIO DESENCAPADO, que aparece na personalização do próximo discípulo.
+- **Apagão:** só visual, cerca de 1 s depois do 2º round. Não muda a luta.
+- **Fica para depois** (revisão): placar de `ignore` da rodada completa (26 → ≤ 15) e os estados instáveis, na abertura da 8b; passe de arte nas poses do meio (K.O. primeiro), depois do teste do dono; BUG-2 do Dossiê; refazer `ronda2a_sim.py chefe` e repetir o `teto` a cada mudança da 8b.
+- **Próximo:** 8b (Nacional) com o Ringue da Lua.
+- **Pendências com o dono:** testar a 2a1 e a 2a2; dizer se a capa do vulto ainda lembra morcego; confirmar D1–D12 da 8a2.
+## Situação anterior (2026-11-26): RONDA 2a1 FECHADA
 A **Ronda 2a1** (brigas de beco do Gato Preto) foi integrada na main. Passou no QA, com reteste, e o Diretor aprovou (`docs/fases/ronda2a1-revisao.md`).
 - **Brigas:** 3 bandidos (Zeca Estepe, Fio e Seu Pé de Cabra), com nome escondido até a vitória. Usam o motor de luta na arena do beco, com o vulto de capuz e capa de lona.
 - **Esconderijo:** quadro da noite, Dossiê, prateleira de troféus vazia, desafios e 3 estilos da noite (aparecem só na personalização). Os recortes dos bandidos vencidos ficam na parede da sala.

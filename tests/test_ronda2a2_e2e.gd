@@ -100,47 +100,34 @@ func _natural(gs: Node) -> String:
 
 
 func _roteiro() -> void:
-	print("--- ROTEIRO PONTA A PONTA")
 	var gs := _novo("qa2_e2e")
 	var pasta: String = gs.store.pasta
 	_liberar(gs)
 	gs = _abrir(pasta)  # reabre do disco
 	var base: Dictionary = gs.para_save().duplicate(true)
 	var q: Array = gs.quadro_noite()
-	print("quadro: ", q.size(), " cartoes; 2o = ", JSON.stringify(q[1]))
 	checar(q[1].night == "boss" and not q[1].locked, "chefe aberto no quadro (lenda %d, 3 bandidos, cinturao)" % int(gs.lenda().legend))
 	checar(q[1].name == "???" and not q[1].known, "cartao do chefe com ??? antes de vencer")
 	var e: Dictionary = gs.esconderijo()
-	print("ficha: ", JSON.stringify(e.boss))
 	checar(e.boss.name == "???" and e.boss.nickname == "???" and e.boss.rap_sheet == "" and e.boss.headline == "" and e.boss.witness == "", "ficha do chefe: ??? e textos vazios antes de vencer")
 	checar(e.trophies.all(func(t): return t.state == "empty"), "prateleira vazia")
 	# natural
 	_capuz(gs)
 	var ir: Dictionary = gs.ronda_ir("alley", CHEFE)
 	checar(not ir.is_empty(), "ronda_ir(alley, apagao) abre")
-	print("ir: ", JSON.stringify(ir))
 	var ap := _natural(gs)
-	print("aproximacao natural (sem clicar): ", ap)
 	var prev: Dictionary = gs.briga_previa()
-	print("previa: ", JSON.stringify(prev).left(900))
 	var legend0: int = int(gs.lenda().legend)
 	gs.atributos = PEQUENO.duplicate()
 	var info: Dictionary = gs.briga_lutar(_tat(gs))
 	var pr: Dictionary = info.night_prize
-	print("DERROTA night_prize: ", JSON.stringify(pr))
-	print("info.blackout=", info.get("blackout"), " arena=", info.get("arena"), " entrance=", info.get("entrance_banner"), " s=", info.get("entrance_s"))
 	checar(not pr.win and pr.boss and pr.legend_gain == (2 if ap == "scare" else 1), "derrota: lenda +%d (aproximacao %s)" % [pr.legend_gain, ap])
 	checar(pr.level == 5 and pr.legend == legend0 + pr.legend_gain, "premio real: LENDA (nivel) = %d, lenda %d" % [pr.level, pr.legend])
 	var depois: Dictionary = gs.para_save().duplicate(true)
 	var d: Array = []
 	_diff(base, depois, "", d)
-	print("DIFF save depois da derrota:")
-	for x in d:
-		print("   ", x)
 	var fora: Array = d.filter(func(x): return not _ok_dif(str(x)))
 	checar(fora.is_empty(), "B4/B2: derrota so mexe em permanent.black_cat e career.black_cat_hood (fora: %s)" % str(fora))
-	print("black_cat apos derrota: ", JSON.stringify(depois.permanent.black_cat))
-	print("capuz: ", JSON.stringify(depois.career.black_cat_hood), " hood_s ", gs.capuz.hood_s)
 	gs.ronda_voltar()
 	checar(gs.quadro_noite()[1].revenge, "REVANCHE no cartao")
 	_liberar(gs)
@@ -149,7 +136,6 @@ func _roteiro() -> void:
 	checar(int(gs.permanente.black_cat.boss[CHEFE].lost) == 1, "derrota persistiu no disco")
 	_capuz(gs)
 	var hood_antes: float = gs.capuz.hood_s
-	print("capuz voltou apos hood_s=", hood_antes)
 	# vitoria SEM desafio (tempo, atributos grandes mas sem susto)
 	gs.ronda_ir("alley", CHEFE)
 	gs.ronda_jogo().sustos = 0
@@ -158,7 +144,6 @@ func _roteiro() -> void:
 	gs.tick(0.01)
 	gs.atributos = GRANDE.duplicate()
 	var w1: Dictionary = gs.briga_lutar(_tat(gs))
-	print("VITORIA sem desafio: ", JSON.stringify(w1.night_prize))
 	var p1: Dictionary = w1.night_prize
 	checar(p1.win and p1.trophy_new == "normal" and p1.press_title_new and p1.poster_new and not p1.challenge_done and p1.style_unlocked == "", "vitoria sem desafio: capacete normal, titulo, cartaz, sem estilo")
 	checar(p1.level == 5 and p1.legend_gain == 3, "premio real: nivel 5, +3")
@@ -167,12 +152,10 @@ func _roteiro() -> void:
 	_diff(base, s1, "", d)
 	fora = d.filter(func(x): return not _ok_dif(str(x)))
 	checar(fora.is_empty(), "B2: vitoria sem desafio, nada fora de black_cat/capuz (%s)" % str(fora))
-	print("black_cat apos vitoria: ", JSON.stringify(s1.permanent.black_cat))
 	checar(not s1.permanent.black_cat.boss[CHEFE].challenge and not gs.estilo_liberado("live_wire"), "sem desafio: sem estilo")
 	checar(not s1.permanent.has("school") or true, "ok")
 	gs.ronda_voltar()
 	var m_antes: Array = gs.escola.milestones.keys()
-	print("milestones: ", m_antes)
 	_liberar(gs)
 	# vitoria COM desafio (susto + KO round1)
 	gs = _abrir(pasta)
@@ -187,8 +170,6 @@ func _roteiro() -> void:
 	gs.atributos = GRANDE.duplicate()
 	var w2: Dictionary = gs.briga_lutar(_tat(gs))
 	var p2: Dictionary = w2.night_prize
-	print("VITORIA com desafio: ", JSON.stringify(p2))
-	print("blackout na luta rapida: ", w2.get("blackout"))
 	checar(p2.win and p2.challenge_done and p2.trophy_new == "rare" and p2.style_unlocked == "live_wire" and not p2.dossier_new and not p2.press_title_new, "2a vitoria cumprindo o desafio: raro + estilo; ficha/titulo nao repetem")
 	checar(p2.legend_gain == 4 and p2.level == 5, "premio: +4 e nivel 5 (lenda real %d)" % int(p2.legend))
 	checar(w2.blackout.is_empty(), "K.O. cedo: sem apagao")
@@ -198,15 +179,9 @@ func _roteiro() -> void:
 	_liberar(gs)
 	gs = _abrir(pasta)
 	var f: Dictionary = gs.permanente.black_cat.boss[CHEFE]
-	print("ficha final no disco: ", JSON.stringify(f))
 	checar(int(f.won) == 2 and int(f.lost) == 1 and bool(f.challenge) and int(f.first_win_campaign) == 9, "disco: won 2 lost 1 challenge first_win 9")
 	checar(gs.estilo_liberado("live_wire") and gs.disciples.opcoes_ativas("shorts_color").back() == "live_wire", "live_wire liberado e no fim da lista")
 	checar(gs._menu._requisito_ok({"black_cat_boss_won": CHEFE}), "cartaz do menu")
-	# sucessao
-	print("sucessao: ", gs.sucessao_estado(), " receber=", gs.receber_discipulo())
-	print("estado sucessao: ", gs.sucessao_estado())
-	gs.definir_rascunho("shorts_color", "live_wire")
-	print("look apos escolher live_wire: ", gs.sucessao_rascunho() if gs.has_method("sucessao_rascunho") else "n/a")
 	gs.aguardar_motivo()
 	gs.free()
 	# sem save de chefe: sem cartaz
@@ -217,11 +192,9 @@ func _roteiro() -> void:
 
 # B7: varredura grande
 func _b7_varredura() -> void:
-	print("--- B7 varredura")
 	var gs := _novo("qa2_b7")
 	var b: Dictionary = gs.ronda_cfg.noites.alley.boss
 	var t_apagao: float = float(b.blackout.after_round) * float(gs.motor.c.round_length)
-	print("t_apagao=", t_apagao)
 	var n := 0
 	var viol := 0
 	var com := 0
@@ -254,41 +227,33 @@ func _b7_varredura() -> void:
 				rapidas_com += 1
 			gs.ronda_voltar()
 			gs.permanente.black_cat.erase("boss")
-	print("lutas ", n, " com apagao ", com, " sem ", sem, " violacoes ", viol, " vitoria ate round2 com apagao ", rapidas_com)
 	checar(n > 100 and com > 0 and sem > 0 and viol == 0 and rapidas_com == 0 and igual, "B7: apagao so com t_end > %.2f; vitoria ate round 2 nunca mostra (n=%d)" % [t_apagao, n])
 	_liberar(gs)
 
 
 func _b5_destrave() -> void:
-	print("--- B5 destrave")
 	var lv: Array = RondaData.carregar().niveis
 	var casos := [["a lenda 63", int(lv[4]) - 1, 3, 1, "legend"], ["b 2 bandidos", int(lv[4]), 2, 1, "bandits"], ["c sem cinturao", int(lv[4]), 3, 0, "belt"], ["d tudo", int(lv[4]), 3, 1, ""]]
 	for c in casos:
 		var gs := _novo("qa2_b5", c[1], c[2], c[3])
 		var q: Array = gs.quadro_noite()
 		var ir: Dictionary = gs.ronda_ir("alley", CHEFE) if gs.capuz_info().get("clickable", false) or _capuz(gs) else {"x": 1}
-		print(c[0], " -> falta=", gs.chefe_falta() if gs.has_method("chefe_falta") else "?", " card2=", JSON.stringify(q[1]).left(300), " ir_vazio=", ir.is_empty())
 		if c[4] == "":
 			checar(q[1].night == "boss" and not q[1].locked and not ir.is_empty(), "B5 " + c[0] + ": cartao com IR")
 		else:
 			var bf: Dictionary = gs.esconderijo().boss
 			checar(ir.is_empty() and not bf.open and str(bf.missing_text) != "", "B5 " + c[0] + ": ficha trancada e ir() vazio")
-			print("   ficha.missing_text: ", bf.missing_text, " | cartao2: ", q[1].get("night"), " locked=", q[1].get("locked"), " txt=", q[1].get("missing_text"))
 		_liberar(gs)
 
 
 func _b9_vazamento() -> void:
-	print("--- B9 vazamento antes de vencer")
 	var gs := _novo("qa2_b9")
 	var j := JSON.stringify([gs.quadro_noite(), gs.esconderijo(), gs.dossie()])
 	var ju := j.to_upper()
 	checar(not ju.contains("NÉLSON") and not ju.contains("NELSON"), "esconderijo/quadro/dossie sem o nome NÉLSON VOLT antes de vencer")
-	var iv := ju.find("VOLT")
-	print("VOLT em: ", ju.substr(maxi(iv - 40, 0), 90) if iv >= 0 else "nao")
 	_capuz(gs)
 	var ir: Dictionary = gs.ronda_ir("alley", CHEFE)
 	var js := JSON.stringify(ir)
-	print("ir (aproximacao): ", js.left(600))
 	for s in ["NÉLSON", "VOLT"]:
 		checar(not js.contains(s), "aproximacao sem '%s'" % s)
 	gs.ronda_jogo().sustos = 1
@@ -300,6 +265,5 @@ func _b9_vazamento() -> void:
 	gs.atributos = GRANDE.duplicate()
 	var info: Dictionary = gs.briga_lutar(_tat(gs))
 	var lj := JSON.stringify(info.get("night_prize", {}))
-	print("luta fighter_name=", info.get("fighter_name"), " opponent=", info.get("opponent"))
 	checar(str(info.get("fighter_name")) == "???", "luta: nome da luta ???")
 	_liberar(gs)
