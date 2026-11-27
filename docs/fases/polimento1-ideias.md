@@ -29,10 +29,19 @@ de polimento. Ela entra antes da implementação da 8b1, porque mexe no que o jo
 7. **Árvore maior e mais funda.** Mais níveis e ramos mais compridos, não só mais nós soltos. Isso se junta ao item 4.
 8. **Comprar na árvore no meio da campanha.** Hoje o Legado só é gasto na troca de discípulo. O dono quer poder abrir a árvore
    durante a campanha, comprar, e o nó já valer na campanha atual. Não precisa começar outra.
-   - O Designer decide como isso conversa com a sucessão. Por exemplo: o Legado da campanha atual só entra no fim, e o que já está
-     guardado pode ser gasto a qualquer hora.
+   - **Decisão do dono (2026-11-27):** só o Legado **já guardado** pode ser gasto a qualquer hora. O Legado que a campanha atual
+     vai render para o próximo discípulo entra só na sucessão, como hoje ("senão quebra o jogo").
    - Tudo passa pelo simulador, porque comprar mais cedo acelera a curva.
    - Os testes de "foto igual" não valem aqui, porque a regra muda de propósito.
+
+9. **Auto-clique na árvore (2026-11-27).** Nós que dão um auto-clique, com o golpe saindo sozinho num ritmo que sobe aos poucos.
+   - Só a partir de uma fase mais adiantada do jogo. Bem mais à frente, quem quiser quase não precisa clicar.
+   - Opcional: clicar na mão continua ajudando.
+   - O dono pediu cuidado. O Designer escolhe quando começa e o ritmo, mede com o simulador e garante que o auto-clique não toma o
+     lugar da equipe nem fura o teto.
+10. **Ressalva D1 da 8b1 (Designer).** No centro, o Jiu-jitsu cresce cerca de 2,5× mais rápido que Boxe e Muay Thai, porque o bônus
+    da equipe da arte multiplica os Alunos. Por isso o campeão nacional fica bem mais fácil para o Jiu-jitsu. Rever isso junto com
+    os aparelhos das artes (item 1).
 
 ## Cuidados
 - Os itens 2 e 3 são visuais: a "foto igual" (`foto.gd`) não pode mudar.
