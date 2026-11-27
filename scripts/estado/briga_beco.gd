@@ -631,6 +631,7 @@ func lutar(tatica_id: String) -> Dictionary:
 		"level_before": int(antes.level), "level": nivel, "level_up": subiu,
 		"level_up_line": str(linhas_nivel[nivel - 1]) if subiu and nivel >= 1 and nivel - 1 < linhas_nivel.size() else "",
 		"max_level": nivel >= _cfg().niveis.size(), "next_level_at": gs._ronda.lenda().next_level_at,
+		"scares_total": gs._ronda._bc_num("scares"),  # no nível 5 a janela mostra OCORRÊNCIAS: N (o mesmo número do prêmio da Ronda)
 		"challenge_done": novo_desafio, "challenge_ever": bool(f.challenge), "style_unlocked": str(estilo.get("id", "")), "style": estilo.duplicate(),
 		"style_text": gs.preencher(_t("alley_style_unlocked", "ESTILO NOVO: {estilo}"),
 			{"estilo": _t("disc_opt_%s_%s" % [estilo.get("field", ""), estilo.get("option", "")], str(estilo.get("id", "")).to_upper())}) if novo_desafio else "",

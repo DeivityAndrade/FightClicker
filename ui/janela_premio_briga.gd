@@ -76,6 +76,8 @@ func _linhas_chefe() -> Array:
 		var n := _linhas_de(tx)
 		var cor: Color = UiTema.Y2 if k == "trophy_rare_line" else UiTema.Y1
 		r.append({"h": 9.0 * float(n) + 2.0, "f": func(y: float) -> void: _texto(tx, cor, y, n)})
+	if not r.is_empty():
+		r.append({"h": 4.0, "f": func(_y: float) -> void: pass})  # ar entre o bloco do chefe e as bolinhas da lenda
 	return r
 
 

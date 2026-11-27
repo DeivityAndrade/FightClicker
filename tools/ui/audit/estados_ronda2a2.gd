@@ -257,6 +257,12 @@ func _premio(raro: bool) -> Dictionary:
 	p["poster_new"] = true
 	p["poster_line"] = _t("alley_poster_new", "")
 	p["legend_gain"] = 4
+	# o chefe só abre na lenda 64 (nível 5): o prêmio real sai sempre no nível máximo
+	p["legend"] = 68
+	p["level_before"] = 5
+	p["level"] = 5
+	p["max_level"] = true
+	p["scares_total"] = 23
 	if raro:
 		p["challenge_done"] = true
 		p["challenge_ever"] = true
